@@ -4,14 +4,18 @@ layout: default
 
 <article class="post">
   <h1>{{ page.title }}</h1>
+{% if page.l1 and page.t1 %}
   <ul class="link">
-    <li><a href="{{ page.l1 }}">{{ page.t1 }}</a></p>
-    </li>
-    <li><a href="{{ page.l2 }}">{{ page.t2 }}</a></p>
-    </li>
-    <li><a href="{{ page.l3 }}">{{ page.t3 }}</a></p>
-    </li>
+      <li><a href="{{ page.l1 }}">{{ page.t1 }}</a></li>
+    {% if page.l2 and page.t2 %}
+      <li><a href="{{ page.l2 }}">{{ page.t2 }}</a></li>
+    {% endif %}
+    
+    {% if page.l3 and page.t3 %}
+      <li><a href="{{ page.l3 }}">{{ page.t3 }}</a></li>
+    {% endif %}
   </ul>
+{% endif %}
   <p>{{ content }}</p>
   <h3 class="date-post">{{ page.date | date: "%B %d, %Y" }}</h3> 
 </article>
