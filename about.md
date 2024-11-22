@@ -7,4 +7,4 @@ Hello, my name is Kyle Boas. I am the author of the [Tactics Journal](https://ta
 
 I've always wanted a link blog, this is where I will be sharing what I am reading or watching. Some things will not be football related.
 
-If you have any suggestions please send them to me at kyle@tacticsjournal.com. 
+If you have any suggestions of things to read or watch, please send them to me at <a href="mailto:kyle@tacticsjournal.com">kyle@tacticsjournal.com</a>.
