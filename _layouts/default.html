@@ -2,14 +2,10 @@
 <html>
   <head>
     <title>{% if page.title %}{{ page.title }} - Kyle Boas{% else %}Kyle Boas{% endif %}</title>
-
-    {% include favicon.html %}
      
     {% if site.tags != "" %}
     {% include collecttags.html %}
     {% endif %}
-
-    {% include meta.html %}
     
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
 
