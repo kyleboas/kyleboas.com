@@ -5,9 +5,9 @@ layout: default
 {% assign posts_by_date = site.posts | group_by: "date" %}
 
 {% for date_group in posts_by_date %}
-  <h3>{{ date_group.name | date: "%B %d, %Y" }}</h3>
-
   {% assign sorted_posts = date_group.items | sort: 'date' | reverse %}
+
+  <h3>{{ date_group.name | date: "%B %d, %Y" }}</h3>
 
   {% for post in sorted_posts %}
     <div class="post">
@@ -16,6 +16,3 @@ layout: default
     </div>
   {% endfor %}
 {% endfor %}
-
-
-
