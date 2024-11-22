@@ -14,9 +14,8 @@ layout: null
   xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"
 >
   <channel>
-    <title>Tactics Journal</title>
+    <title>Kyle Boas</title>
     <link>{{ site.url }}</link>
-    <description>Analyzing football tactics by Kyle Boas</description>
     <language>en-us</language>
     <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
     <atom:link href="{{ site.url }}/feed" rel="self" type="application/rss+xml" />
