@@ -37,7 +37,18 @@ layout: null
     {{ excerpt }}
   {% endif %}
 ]]></description>
-          <content:encoded><![CDATA[{{ post.content }}]]></content:encoded>
+          <content:encoded><![CDATA[ {% if page.l1 and page.t1 %}
+              <ul class="link">
+                <li><a href="{{ page.l1 }}">{{ page.t1 }}</a></li>
+                {% if page.l2 and page.t2 %}
+                  <li><a href="{{ page.l2 }}">{{ page.t2 }}</a></li>
+                {% endif %}
+                {% if page.l3 and page.t3 %}
+                  <li><a href="{{ page.l3 }}">{{ page.t3 }}</a></li>
+                {% endif %}
+              </ul>
+            {% endif %}  {{ post.content }}
+          ]]></content:encoded>
         </item>
       {% endunless %}
     {% endfor %}
