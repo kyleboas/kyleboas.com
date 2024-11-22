@@ -6,7 +6,7 @@ layout: default
   {% assign currentdate = post.date | date: "%B %d, %Y" %}
   {% if currentdate != date %}
     {% unless forloop.first %}{% endunless %}
-    <h3 id="y{{post.date | date: "%B %d, %Y"}}">{{ currentdate }}</h3>
+    <h3>{{post.date | date: "%B %d, %Y"}}</h3>
     <div class="post">
     {% assign date = currentdate %}
   {% endif %}
