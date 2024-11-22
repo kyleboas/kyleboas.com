@@ -7,7 +7,7 @@ layout: default
   {% if currentdate != date %}
     {% unless forloop.first %}{% endunless %}
    <div class="day"> 
-    <h3 class="home-date">{{post.date | date: "%B %d, %Y"}}</h3>
+    <h3 class="day-date">{{post.date | date: "%B %d, %Y"}}</h3>
     <div class="post">
     {% assign date = currentdate %}
   {% endif %}
