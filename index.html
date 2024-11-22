@@ -5,13 +5,16 @@ layout: default
 {% assign posts_by_date = site.posts | group_by: "date" %}
 
 {% for date_group in posts_by_date %}
+  {% assign sorted_posts = date_group.items | sort: 'date' | reverse %}
+
   <h3>{{ date_group.name | date: "%B %d, %Y" }}</h3>
-  
-  {% for post in date_group.items %}
+
+  {% for post in sorted_posts %}
     <div class="post">
       <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
       <p>{{ post.content }}</p>
     </div>
   {% endfor %}
 {% endfor %}
+
 
