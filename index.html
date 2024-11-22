@@ -2,9 +2,7 @@
 layout: default
 ---
 
-{% for post in site.posts %}
-
-   {% assign posts_by_date = site.posts | group_by: "date" %}
+{% assign posts_by_date = site.posts | group_by: "date" %}
 
 {% for date_group in posts_by_date %}
   <h3>{{ date_group.name | date: "%B %d, %Y" }}</h3>
@@ -15,7 +13,5 @@ layout: default
       <p>{{ post.content }}</p>
     </div>
   {% endfor %}
-{% endfor %}
-
 {% endfor %}
 
