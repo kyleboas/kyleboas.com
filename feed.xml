@@ -24,10 +24,6 @@ layout: null
       {% unless post.categories contains 'Notes' %}
         <item>
           <title>{{ post.title }}</title>
-          {% if post.link %}
-            <link>{{ post.link }}</link>
-            <guid isPermaLink="true">{{ post.link }}</guid>
-          {% else %}
             <link>{{ site.url }}{{ post.url | uri_escape }}</link>
             <guid isPermaLink="true">{{ site.url }}{{ post.url | uri_escape }}</guid>
           {% endif %}
