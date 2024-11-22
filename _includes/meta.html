@@ -9,6 +9,9 @@
 <meta property="og:description" content="{{ page.excerpt | strip_html }}" />
 <meta property="twitter:description" content="{{ page.excerpt | strip_html }}" />
 {% else %}
+<meta name="description" content="Analyzing football tactics by Kyle Boas.">
+<meta property="og:description" content="Analyzing football tactics by Kyle Boas."/>
+<meta property="twitter:description" content="Analyzing football tactics by Kyle Boas."/>
 {% endif %}
 
 <meta name="author" content="Kyle Boas" />
@@ -17,8 +20,8 @@
 <meta property="og:title" content="{{ page.title }}" />
 <meta property="twitter:title" content="{{ page.title }}" />
 {% else %}
-<meta property="og:title" content="Kyle Boas" />
-<meta property="twitter:title" content="Kyle Boas" />
+<meta property="og:title" content="Tactics Journal" />
+<meta property="twitter:title" content="Tactics Journal" />
 {% endif %}
 
 {% if page.url %}
@@ -30,7 +33,7 @@
 {% endif %}
 
 {% if site.logo %}
-<meta property="og:image" content="" />
+<meta property="og:image" content="https://tacticsjournal.com/assets/49C5CFDB-8903-4364-A836-0A3DE4DB2CD4.jpeg" />
 {% endif %}
   
 {% if page.image %}
@@ -39,6 +42,6 @@
 <meta property="twitter:image" content="{{ page.image }}">
 {% else %}
 <meta property="twitter:card" content="summary_large_image">
-<meta property="og:image" content="" />
-<meta property="twitter:image" content="">
+<meta property="og:image" content="https://tacticsjournal.com/assets/49C5CFDB-8903-4364-A836-0A3DE4DB2CD4.jpeg" />
+<meta property="twitter:image" content="https://tacticsjournal.com/assets/49C5CFDB-8903-4364-A836-0A3DE4DB2CD4.jpeg">
 {% endif %}
