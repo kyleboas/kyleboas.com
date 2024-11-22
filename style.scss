@@ -33,6 +33,7 @@ h5 a {
 
 .day {
    padding-top: 60px;
+   padding-bottom: 80px;
 } 
 
 .post {
@@ -43,6 +44,18 @@ p {
   line-height: 1.6em;
   font-size: 1.25em;
 }
+
+.footer {
+   padding-top: 60px;
+   font-size: 0.9em;
+   text-align: center;
+} 
+
+.footer a {
+   text-decoration: none;
+   color: #000000;
+} 
+
 
 @media (min-width: 760px) {
 
