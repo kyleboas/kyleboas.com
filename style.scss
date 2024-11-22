@@ -21,8 +21,8 @@ h2 a,
 h3 a, 
 h4 a, 
 h5 a {
-    text-decoration: none;
-    color: #000000;
+  text-decoration: none;
+  color: #000000;
 } 
 
 p {
@@ -31,11 +31,11 @@ p {
   font-size: 1.25em;
 }
 
-@media (min-width: 860px) {
+@media (min-width: 760px) {
 
 body {
    margin: 120px auto;
-   width: 860px;
+   width: 720px;
 } 
 
 }
