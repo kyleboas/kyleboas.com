@@ -33,7 +33,7 @@ layout: null
           {% endif %}
           <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
           <dc:creator><![CDATA[Kyle Boas]]></dc:creator>
-          <description><![CDATA[ {{ post.excerpt | strip_html }} ]]></description>
+          <description><![CDATA[ {{ post.excerpt | strip_html | truncate: 265, '...' }} ]]></description>
           <content:encoded><![CDATA[{{ post.content }}]]></content:encoded>
         </item>
       {% endunless %}
