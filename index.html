@@ -3,9 +3,19 @@ layout: default
 ---
 
 {% for post in site.posts %}
-   <main>
+
+   {% assign posts_by_date = site.posts | group_by: "date" %}
+
+{% for date_group in posts_by_date %}
+  <h3>{{ date_group.name | date: "%B %d, %Y" }}</h3>
+  
+  {% for post in date_group.items %}
+    <div class="post">
       <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
       <p>{{ post.content }}</p>
-   </main> 
+    </div>
+  {% endfor %}
+{% endfor %}
+
 {% endfor %}
 
