@@ -21,8 +21,14 @@ h2 a,
 h3 a, 
 h4 a, 
 h5 a {
-    text-decoration: none;
-    color: #000000;
+   text-decoration: none;
+   color: #000000;
+}
+
+.day-date {
+   font-size: 1em;
+   color: #848484;
+   border-bottom: 1px solid #848484;
 } 
 
 p {
