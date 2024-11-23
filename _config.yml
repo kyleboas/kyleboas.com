@@ -106,7 +106,7 @@ defaults:
   - scope:
       path: ""
     values:
-      image_path: "https://tacticsjournal.com/images/"
+      image_path: "https://kyleboas.com/images/"
 
 # Exclude these files from your production _site
 exclude:
