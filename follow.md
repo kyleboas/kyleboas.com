@@ -8,3 +8,5 @@ BlueSky: [@kyleboas.com](https://bsky.app/profile/kyleboas.com)
 
 
 RSS: [https://kyleboas.com/feed](https://kyleboas.com/feed)
+
+[Tactics Journal](https://tacticsjournal.com)
