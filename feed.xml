@@ -19,6 +19,11 @@ layout: null
     <language>en-us</language>
     <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
     <atom:link href="{{ site.url }}/feed" rel="self" type="application/rss+xml" />
+    <image>
+      <url>https://kyleboas.com/assets/favicon-96x96.png</url>
+      <title>Kyle Boas</title>
+      <link>{{ site.url }}</link>
+    </image>
 
     {% for post in site.posts %}
       {% unless post.categories contains 'Notes' %}
