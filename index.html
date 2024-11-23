@@ -2,11 +2,11 @@
 layout: default
 ---
 
+<div class="home">
 {% for post in site.posts %}
   {% assign currentdate = post.date | date: "%B %d, %Y" %}
   {% if currentdate != date %}
-    {% unless forloop.first %}{% endunless %}
-  <div class="home"> 
+    {% unless forloop.first %}{% endunless %} 
    <div class="day">
     <h3 class="date">{{post.date | date: "%B %d, %Y"}}</h3>
     <div class="post">
@@ -29,6 +29,6 @@ layout: default
       <p>{{ post.content }}</p>
     </div>
   </div>
- </div> 
   {% if forloop.last %}{% endif %}
 {% endfor %}
+</div> 
