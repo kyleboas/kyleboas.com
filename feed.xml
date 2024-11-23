@@ -38,14 +38,14 @@ layout: null
           ]]></description>
 
           <content:encoded><![CDATA[ 
-            {% if page.l1 and page.t1 %}
+            {% if post.l1 and post.t1 %}
               <ul class="link">
-                <li><a href="{{ page.l1 }}">{{ page.t1 }}</a></li>
-                {% if page.l2 and page.t2 %}
-                  <li><a href="{{ page.l2 }}">{{ page.t2 }}</a></li>
+                <li><a href="{{ post.l1 }}">{{ post.t1 }}</a></li>
+                {% if post.l2 and post.t2 %}
+                  <li><a href="{{ post.l2 }}">{{ post.t2 }}</a></li>
                 {% endif %}
-                {% if page.l3 and page.t3 %}
-                  <li><a href="{{ page.l3 }}">{{ page.t3 }}</a></li>
+                {% if post.l3 and post.t3 %}
+                  <li><a href="{{ post.l3 }}">{{ post.t3 }}</a></li>
                 {% endif %}
               </ul>
             {% endif %}
