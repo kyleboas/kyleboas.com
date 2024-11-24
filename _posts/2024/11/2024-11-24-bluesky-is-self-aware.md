@@ -2,7 +2,7 @@
 layout: post
 date: 2024-11-24 07:45  UTC-5
 title: "Bluesky is self-aware"
-l1: "https://bsky.app/profile/danabra.mov/post/3lbo5ww37us2c
+l1: "https://bsky.app/profile/danabra.mov/post/3lbo5ww37us2c"
 t1: "@danabra.mov on Bluesky"
 l2: "https://www.youtube.com/watch?v=F1sJW6nTP6E"
 t2: "Web Without Walls - Dan Abramov - React Universe Conference 2024"
