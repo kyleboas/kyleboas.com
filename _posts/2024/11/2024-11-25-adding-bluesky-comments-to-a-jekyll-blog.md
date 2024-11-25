@@ -12,5 +12,3 @@ I greatly appreciate when there is discussion around something I write but I don
 I've never been more tempted to add comments to my blog because of how simple and intuitive this Bluesky setup is.
 
 I'm going to test it on this post.
-
-{% include bluesky.html %}
