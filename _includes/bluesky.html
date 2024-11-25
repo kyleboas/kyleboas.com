@@ -1,7 +1,7 @@
-{% if include.bluesky %}
+{% if include.bluesky_post_uri %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const uri = '{{ include.bluesky }}';
+    const uri = '{{ include.bluesky_post_uri }}';
     if (uri) {
       initBlueskyComments('bluesky-comments', uri);
     } 
