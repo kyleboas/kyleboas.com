@@ -10,5 +10,3 @@ bluesky_post_uri: "https://bsky.app/profile/kyleboas.com/post/3lbs4jwujoq2u"
 I greatly appreciate when there is discussion around something I write but I don't like comments on blogs largely due to moderation. 
 
 I've never been more tempted to add comments to my blog because of how simple and intuitive this Bluesky setup is.
-
-I'm going to test it on this post.
