@@ -13,14 +13,12 @@ I've never been more tempted to add comments to my blog because of how simple an
 
 I'm going to test it on this post.
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
+<script>document.addEventListener('DOMContentLoaded', function() {
     const uri = 'https://bsky.app/profile/kyleboas.com/post/3lbs4jwujoq2u';
     if (uri) {
       initBlueskyComments('bluesky-comments', uri);
     } 
-  });
-</script>
+  });</script>
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
