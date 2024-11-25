@@ -12,4 +12,4 @@ Lionel Messi:
 > 
 > “My kids are Catalan. I have lived most of my life there and I feel from Barcelona. You never know where life will take you, but the intention is to live in Barcelona because it’s our home.”
 
-Friendly reminder to watch more Inter Miami matches because he isn't going to play forever.
+Friendly reminder to watch more Inter Miami matches because he isn't going to play forever. 
