@@ -18,10 +18,3 @@ I'm going to test it on this post.
 <script src="https://unpkg.com/bluesky-comments@0.3.0/dist/bluesky-comments.umd.js">
 
 {% include bluesky.html %}
-
-<script>document.addEventListener('DOMContentLoaded', function() {
-    const uri = 'https://bsky.app/profile/kyleboas.com/post/3lbs4jwujoq2u';
-    if (uri) {
-      initBlueskyComments('bluesky-comments', uri);
-    } 
-  });</script>
