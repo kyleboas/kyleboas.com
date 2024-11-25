@@ -14,7 +14,9 @@ I've never been more tempted to add comments to my blog because of how simple an
 I'm going to test it on this post.
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js">
+
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">
+
 <script src="https://unpkg.com/bluesky-comments@0.3.0/dist/bluesky-comments.umd.js">
 
 {% include bluesky.html %}
