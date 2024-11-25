@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2024-11-25 07:00  UTC-5
+date: 2024-11-25 08:30  UTC-5
 title: "ChatGPT Search"
 l1: "https://youtu.be/Mgl4BGZMenI?si=wuDK6z-pTq5Vw6fZ"
 t1: "CNET: OpenAI's New ChatGPT Search Engine: My Hands-On Test"
