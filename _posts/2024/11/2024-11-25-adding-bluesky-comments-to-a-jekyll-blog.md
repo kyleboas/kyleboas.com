@@ -13,6 +13,12 @@ I've never been more tempted to add comments to my blog because of how simple an
 
 I'm going to test it on this post.
 
+<!-- Add React and ReactDOM, which are bundled externally -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js">
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">
+<script src="https://unpkg.com/bluesky-comments@0.3.0/dist/bluesky-comments.umd.js">
+<!-- <script src="/assets/bluesky-comments/bluesky-comments.umd.js"></script> -->
+
 <script src="https://unpkg.com/react@18/umd/react.production.min.js">
 
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">
