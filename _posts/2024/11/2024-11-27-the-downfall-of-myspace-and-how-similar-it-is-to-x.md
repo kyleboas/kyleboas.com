@@ -4,6 +4,8 @@ date: 2024-11-27 08:30  UTC-5
 title: "The downfall of MySpace and how similar it is to X"
 l1: "https://www.historytools.org/companies/the-real-reason-my-space-failed-spectacularly"
 t1: "The Spectacular Rise and Fall of MySpace: A Case Study in Product Complacency"
+l2: "https://bsky.app/profile/mkarolian.bsky.social/post/3lbunm54agc2k"
+t2: "@mkarolian.bsky.social on Bluesky"
 ---
 
 History Tools:
@@ -19,6 +21,12 @@ History Tools:
 If you lived through this period when Facebook took over, like I did, you know how adoption and early adoption work. We are still in the early adoption phase.
 
 More features will be added to Bluesky; the UI will improve, and third-party developers are pouring in because it is a more developer-friendly place to create. Creators are moving in because they want to capture that first wave. They can share external links to their work [without it being suppressed](https://themarkup.org/investigations/2023/09/15/twitter-is-still-throttling-competitors-links-check-for-yourself) because Bluesky is a link-friendly platform.
+
+Matt Karolian on Bluesky:
+
+> Traffic from Bluesky to @bostonglobe.com is already 3x that of Threads, and we are seeing 4.5x the conversions to paying digital subscribers.
+
+Advantage to the creators because external links have equal weight and are encouraged, which is unique to Bluesky.
 
 From what I can see, most people I know want to go someplace else other than X. But abandoning a large audience is difficult. Abandoning a large potential audience is difficult.
 
