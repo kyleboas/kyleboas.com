@@ -11,7 +11,7 @@ on:
     - cron: '30 19 * * *' # 19:30
 
 jobs:
-  curl:
+  curl: 
     runs-on: ubuntu-latest
     env:
       TZ: UTC
