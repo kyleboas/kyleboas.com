@@ -79,9 +79,20 @@ li {
    font-size: 1.125em;
 }
 
+pre {
+    overflow-x: auto;
+    white-space: pre;
+}
+
 code {
-   font-size: 1.125em;
-} 
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.code-container {
+    max-width: 100%;
+    width: auto;
+}
 
 .footer {
    padding-top: 80px;

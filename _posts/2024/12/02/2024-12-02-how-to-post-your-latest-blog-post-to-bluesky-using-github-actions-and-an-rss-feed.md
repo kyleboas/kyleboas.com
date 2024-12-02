@@ -17,51 +17,51 @@ In your Github repository, create a new file called `rss-to-bluesky.yml` in the 
 Copy and paste the following code into that `rss-to-bluesky.yml` file you created:
 
 ```
-    name: Post Latest Blog from RSS to Bluesky
-    
-    on: 
-      schedule:
-        - cron: '00 12 * * *'
-    
-    jobs:
-     fetch-and-post:
-     runs-on: ubuntu-latest
-     
-     steps:
-      # Install xmllint and dateutils
-       - name: Install xmllint and dateutils
+name: Post Latest Blog from RSS to Bluesky
+
+on: 
+  schedule:
+    - cron: ‘00 12 * * *’
+
+jobs:
+ fetch-and-post:
+ runs-on: ubuntu-latest
+ 
+ steps:
+  # Install xmllint and dateutils
+   - name: Install xmllint and dateutils
+   
+   run: |
+       sudo apt-get update && sudo apt-get install -y libxml2-utils dateutils
        
-       run: |
-           sudo apt-get update && sudo apt-get install -y libxml2-utils dateutils
-           
-           # Fetch the latest blog post from RSS feed
-           
-            - name: Fetch Latest Blog Post
-            
-            id: fetch_post
-            run: |
-            RSS_FEED_URL="https://WEBSITE.com/feed"
-            
-            response=$(curl -s "$RSS_FEED_URL")
-            
-            description=$(echo "$response" | xmllint --xpath "string(//item[1]/description)" -)
-            url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" -)
-            
-            description=$(echo "$description" | xargs)
-            preview="$description $url"
-            
-            echo "preview=$preview" >> $GITHUB_ENV
-            echo "rss_url=$url" >> $GITHUB_ENV
-            
-         # Post to Bluesky
-         - name: Post to Bluesky
-         uses: myConsciousness/bluesky-post@v5
-         with:
-          text: "${{ env.preview }}"
-          link-preview-url: "${{ env.rss_url }}"
-          identifier: yourusername.bsky.social
-          password: ${{ secrets.BLUESKY_APP_PASSWORD }}
-``` 
+       # Fetch the latest blog post from RSS feed
+       
+        - name: Fetch Latest Blog Post
+        
+        id: fetch_post
+        run: |
+        RSS_FEED_URL=“https://WEBSITE.com/feed”
+        
+        response=$(curl -s “$RSS_FEED_URL”)
+        
+        description=$(echo “$response” | xmllint —xpath “string(//item[1]/description)” -)
+        url=$(echo “$response” | xmllint —xpath “string(//item[1]/link)” -)
+        
+        description=$(echo “$description” | xargs)
+        preview=“$description $url”
+        
+        echo “preview=$preview” >> $GITHUB_ENV
+        echo “rss_url=$url” >> $GITHUB_ENV
+        
+     # Post to Bluesky
+     - name: Post to Bluesky
+     uses: myConsciousness/bluesky-post@v5
+     with:
+      text: “${% raw %}{{ env.preview }}{% endraw %}”
+      link-preview-url: “${% raw %}{{ env.rss_url }{% endraw %}”
+      identifier: yourusername.bsky.social
+      password: “${% raw %}{{ secrets.BLUESKY_APP_PASSWORD }}{% endraw %}”
+```
 
 * You can change the name at the top to whatever you like. 
 * Replace `https://WEBSITE.com/feed` with your blog's RSS feed URL. It should end in `/feed`, `/rss`, `/feed.xml`. Every blogging platform like WordPress, Blogspot, etc. creates an RSS feed for you by default.
@@ -109,3 +109,5 @@ on:
 This will run once both my `Schedule Posts` and the `Pages Build and Deployment` actions have run to ensure that my blog post has been created before it tries to share the latest blog post to Bluesky.
 
 You can combine any one of these three methods to make the action run, and there are probably many other ways to get it to run that I am unaware of. Have long conversations with ChatGPT, like I did, if you are struggling, or feel free to [contact me](https://kyleboas.com/contact/).
+
+You can view [my current workflow here](https://github.com/kyleboas/tacticsjournal.com/blob/master/.github/workflows/rss-to-bluesky.yml).
