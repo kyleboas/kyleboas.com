@@ -86,12 +86,12 @@ Now you are set up to post via an RSS feed to Bluesky. There are a few other way
 
 2) Another way is to manually run it, if you want to test to see if the action is working. To do that you must include `workflow_dispatch:` below `on:`.
 
-       on:
+      on:
        workflow_dispatch:
 
 3) Another way is that you can have it run when another action runs.
 
-       on:
+      on:
        workflow_run:
          workflows:
           - "Schedule Posts"
