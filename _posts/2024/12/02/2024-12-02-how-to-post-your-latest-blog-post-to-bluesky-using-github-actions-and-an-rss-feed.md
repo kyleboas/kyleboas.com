@@ -80,14 +80,14 @@ Now you are set up to post via an RSS feed to Bluesky. There are a few other way
 
 1) In the example code above, I choose to have it run on a schedule, at 12:00 UTC every day.
 
-     on: 
-      schedule:
-       - cron: '00 12 * * *'
+       on: 
+        schedule:
+         - cron: '00 12 * * *'
 
 2) Another way is to manually run it, if you want to test to see if the action is working. To do that you must include `workflow_dispatch:` below `on:`.
 
-      on:
-       workflow_dispatch:
+       on:
+         workflow_dispatch:
 
 3) Another way is that you can have it run when another action runs.
 
