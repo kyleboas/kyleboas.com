@@ -57,11 +57,15 @@ jobs:
      - name: Post to Bluesky
      uses: myConsciousness/bluesky-post@v5
      with:
-      text: “\${{ env.preview }}”
-      link-preview-url: “\${{ env.rss_url }}”
+      text: “${% raw %}{{ env.preview }}{% endraw %}”
+      link-preview-url: “${% raw %}{{ env.rss_url }{% endraw %}”
       identifier: yourusername.bsky.social
-      password: “\${{ secrets.BLUESKY_APP_PASSWORD }}”
-``` 
+      password: “${% raw %}{{ secrets.BLUESKY_APP_PASSWORD }}{% endraw %}”
+```
+
+{% raw %}
+  {{ env.preview }}
+{% endraw %}
 
 * You can change the name at the top to whatever you like. 
 * Replace `https://WEBSITE.com/feed` with your blog's RSS feed URL. It should end in `/feed`, `/rss`, `/feed.xml`. Every blogging platform like WordPress, Blogspot, etc. creates an RSS feed for you by default.
