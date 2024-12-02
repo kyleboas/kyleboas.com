@@ -109,3 +109,5 @@ on:
 This will run once both my `Schedule Posts` and the `Pages Build and Deployment` actions have run to ensure that my blog post has been created before it tries to share the latest blog post to Bluesky.
 
 You can combine any one of these three methods to make the action run, and there are probably many other ways to get it to run that I am unaware of. Have long conversations with ChatGPT, like I did, if you are struggling, or feel free to [contact me](https://kyleboas.com/contact/).
+
+You can view [my current workflow here](https://github.com/kyleboas/tacticsjournal.com/blob/master/.github/workflows/rss-to-bluesky.yml).
