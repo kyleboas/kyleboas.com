@@ -1,13 +1,18 @@
 name: Post Latest Blog from RSS to Bluesky
 
 on:
-  workflow_dispatch:
+  push:
+    paths:
+      - posts/** 
 
 jobs:
   fetch-and-post:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+         
       # Initial two-minute delay
       - name: Initial Delay
         run: |
