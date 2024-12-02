@@ -16,6 +16,7 @@ In your Github repository, create a new file called `rss-to-bluesky.yml` in the 
 
 Copy and paste the following code into that `rss-to-bluesky.yml` file you created:
 
+```
     name: Post Latest Blog from RSS to Bluesky
     
     on: 
@@ -60,6 +61,7 @@ Copy and paste the following code into that `rss-to-bluesky.yml` file you create
           link-preview-url: "${{ env.rss_url }}"
           identifier: yourusername.bsky.social
           password: ${{ secrets.BLUESKY_APP_PASSWORD }}
+``` 
 
 * You can change the name at the top to whatever you like. 
 * Replace `https://WEBSITE.com/feed` with your blog's RSS feed URL. It should end in `/feed`, `/rss`, `/feed.xml`. Every blogging platform like WordPress, Blogspot, etc. creates an RSS feed for you by default.
@@ -68,11 +70,9 @@ Copy and paste the following code into that `rss-to-bluesky.yml` file you create
 
 Here is how to add your Bluesky app password:
 
-1) Go to your Github repository settings, and then under "Secrets and Variables" create a new "Action" secret.
-
-2) Go to Bluesky and create an app password. For security reasons, I would not recommend using your regular Bluesky password; always create an app password.
-
-3) Paste the password into the "Action" secret field, and then save it.
+1. Go to your Github repository settings, and then under "Secrets and Variables" create a new "Action" secret.
+2. Go to Bluesky and create an app password. For security reasons, I would not recommend using your regular Bluesky password; always create an app password.
+3. Paste the password into the "Action" secret field, and then save it.
 
 ## Finished 
 
@@ -80,25 +80,31 @@ Now you are set up to post via an RSS feed to Bluesky. There are a few other way
 
 1) In the example code above, I choose to have it run on a schedule, at 12:00 UTC every day.
 
-      on: 
-       schedule:
-        - cron: '00 12 * * *'
+```
+on: 
+  schedule:
+    - cron: ‘00 12 * * *’
+```
 
 2) Another way is to manually run it, if you want to test to see if the action is working. To do that you must include `workflow_dispatch:` below `on:`.
 
-       on:
-         workflow_dispatch:
+```
+on:
+ workflow_dispatch:
+``` 
 
 3) Another way is that you can have it run when another action runs.
 
-      on:
-       workflow_run:
-         workflows:
-          - "Schedule Posts"
-          - "Pages Build and Deployment"
+```
+on:
+ workflow_run:
+   workflows:
+     - "Schedule Posts"
+     - "Pages Build and Deployment"
           
-          types:
-           - completed
+     types:
+     - completed
+```
 
 This will run once both my `Schedule Posts` and the `Pages Build and Deployment` actions have run to ensure that my blog post has been created before it tries to share the latest blog post to Bluesky.
 
