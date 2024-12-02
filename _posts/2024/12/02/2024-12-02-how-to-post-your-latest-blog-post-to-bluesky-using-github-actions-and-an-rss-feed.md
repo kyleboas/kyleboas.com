@@ -60,7 +60,6 @@ Copy and paste the following code into that `rss-to-bluesky.yml` file you create
           link-preview-url: "${{ env.rss_url }}"
           identifier: yourusername.bsky.social
           password: ${{ secrets.BLUESKY_APP_PASSWORD }}
- 
 
 * You can change the name at the top to whatever you like. 
 * Replace `https://WEBSITE.com/feed` with your blog's RSS feed URL. It should end in `/feed`, `/rss`, `/feed.xml`. Every blogging platform like WordPress, Blogspot, etc. creates an RSS feed for you by default.
@@ -87,8 +86,8 @@ Now you are set up to post via an RSS feed to Bluesky. There are a few other way
 
 2) Another way is to manually run it, if you want to test to see if the action is working. To do that you must include `workflow_dispatch:` below `on:`.
 
-      on:
-       workflow_dispatch:
+       on:
+         workflow_dispatch:
 
 3) Another way is that you can have it run when another action runs.
 
