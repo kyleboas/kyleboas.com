@@ -60,7 +60,8 @@ Copy and paste the following code into that `rss-to-bluesky.yml` file you create
           link-preview-url: "${{ env.rss_url }}"
           identifier: yourusername.bsky.social
           password: ${{ secrets.BLUESKY_APP_PASSWORD }}
-      
+ 
+
 * You can change the name at the top to whatever you like. 
 * Replace `https://WEBSITE.com/feed` with your blog's RSS feed URL. It should end in `/feed`, `/rss`, `/feed.xml`. Every blogging platform like WordPress, Blogspot, etc. creates an RSS feed for you by default.
 * Replace `BLUESKY_USERNAME` with your Bluesky username, but don't include the `@`, for example, it should be `tacticsjournal.com`, `kyleboas.com`, or `yourusername.bsky.social`.
