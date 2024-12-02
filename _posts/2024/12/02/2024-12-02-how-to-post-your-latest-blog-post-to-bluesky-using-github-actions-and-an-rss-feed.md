@@ -4,7 +4,7 @@ date: 2024-12-02 11:56  UTC-5
 title: "How to post your latest blog post to Bluesky using Github Actions and an RSS feed"
 ---
 
-After several hours of trial and error, I have figured out how to automate posting directly to Bluesky from a Github repository. A process that only requires one file of code in a workflow that automates the process of posting from an RSS to Bluesky through Github Actions. A process that would normally require other great third-party services like Zapier, Buffer, dlvr.it, and so on. No more.
+After several hours of trial and error, I have figured out how to automate posting directly to Bluesky from a Github repository. A process that only requires one file of code in a workflow that automates the process of posting from an RSS feed to Bluesky through Github Actions. A process that would normally require other great third-party services like Zapier, Buffer, dlvr.it, and so on. No more.
 
 [kyleboas.com](https://kyleboas.com) and [tacticsjournal.com](https://tacticsjournal.com) both run on Github Pages powered by [jekyll-now](https://github.com/barryclark/jekyll-now), and if you clicked on this post from social media, that post was created using a modified version of this workflow.
 

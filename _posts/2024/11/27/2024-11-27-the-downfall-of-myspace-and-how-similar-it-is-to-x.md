@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2024-11-27 7:45  UTC-5
+date: 2024-11-27 7:50 UTC-5
 title: "The downfall of MySpace and how similar it is to X"
 l1: "https://www.historytools.org/companies/the-real-reason-my-space-failed-spectacularly"
 t1: "The Spectacular Rise and Fall of MySpace: A Case Study in Product Complacency"
