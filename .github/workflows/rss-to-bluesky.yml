@@ -3,7 +3,7 @@ name: Post Latest Blog from RSS to Bluesky
 on:
   push:
     paths:
-      - posts/** 
+      - posts/**
 
 jobs:
   fetch-and-post:
@@ -13,13 +13,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
          
-      # Initial two-minute delay
-      - name: Initial Delay
-        run: |
-          echo "Waiting for 1 minutes before starting..."
-          sleep 60
-
-      # Install xmllint and dateutils
+      # Install dependencies
       - name: Install xmllint and dateutils
         run: |
           sudo apt-get update && sudo apt-get install -y libxml2-utils dateutils
@@ -29,25 +23,22 @@ jobs:
         id: fetch_post
         run: |
           RSS_FEED_URL="https://kyleboas.com/feed"
-         
           response=$(curl -s "$RSS_FEED_URL")
           description=$(echo "$response" | xmllint --xpath "string(//item[1]/description)" -)
           url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" -)
           pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" -)
 
-          today=$(date -R)
+          # Format dates for comparison
+          pub_date_formatted=$(date -d "$pub_date" +"%Y-%m-%d")
+          today=$(date +"%Y-%m-%d")
 
-          pub_date_only=$(echo "$pub_date" | awk '{print $1", "$2" "$3" "$4}')
-          today_only=$(echo "$today" | awk '{print $1", "$2" "$3" "$4}')
-          
-          if [[ "$pub_date_only" != "$today_only" ]]; then
-            echo "The $pub_date_only for the blog post is not from $today_only. Exiting."
+          if [[ "$pub_date_formatted" != "$today" ]]; then
+            echo "The blog post was not published today. Exiting."
             exit 0
           fi
 
-          description=$(echo "$description" | xargs)
+          # Prepare the message
           preview="$description $url"
-
           echo "preview=$preview" >> $GITHUB_ENV
           echo "rss_url=$url" >> $GITHUB_ENV
 
