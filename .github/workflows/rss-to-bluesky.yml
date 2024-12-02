@@ -23,7 +23,7 @@ jobs:
       - name: Fetch Latest Blog Post
         id: fetch_post
         run: |
-          RSS_FEED_URL="https://tacticsjournal.com/feed"
+          RSS_FEED_URL="https://kyleboas.com/feed"
          
           response=$(curl -s "$RSS_FEED_URL")
           description=$(echo "$response" | xmllint --xpath "string(//item[1]/description)" -)
