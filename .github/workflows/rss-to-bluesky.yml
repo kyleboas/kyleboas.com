@@ -3,7 +3,7 @@ name: Post Latest Blog from RSS to Bluesky
 on:
   push:
     paths:
-      - posts/**
+      - _posts/**
 
 jobs:
   fetch-and-post:
