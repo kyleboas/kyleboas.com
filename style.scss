@@ -82,6 +82,8 @@ li {
 pre {
     overflow-x: auto;
     white-space: pre;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 code {
@@ -92,8 +94,6 @@ code {
 .code-container {
     max-width: 100%;
     width: auto;
-    padding-top: 20px;
-    padding-bottom: 20px;
 }
 
 .footer {
