@@ -1,7 +1,7 @@
 ---
 layout: default
 ---
-
+ 
 <div id="comments-section">
   <div id="comments-gated" style="display:none;">
     <p>You must be a member to view and post comments.</p>
