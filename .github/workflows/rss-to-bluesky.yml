@@ -44,7 +44,7 @@ jobs:
             exit 0
           fi
 
-          description=$(echo "$description" | xargs)
+          description=$(echo "$description" | tr '\n' '\0' | xargs -0)
           preview="$description $url"
 
           echo "preview=$preview" >> $GITHUB_ENV
