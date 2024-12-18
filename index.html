@@ -15,6 +15,7 @@ layout: default
     <div class="post">
       <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
 {% if post.l1 and post.t1 %}
+  <small>Referencing:</small>
   <ul class="link">
       <li><a href="{{ post.l1 }}">{{ post.t1 }}</a></li>
     {% if post.l2 and post.t2 %}
