@@ -39,6 +39,7 @@ layout: null
 
           <content:encoded><![CDATA[ 
             {% if post.l1 and post.t1 %}
+            <p>Referencing:</p>
               <ul class="link">
                 <li><a href="{{ post.l1 }}">{{ post.t1 }}</a></li>
                 {% if post.l2 and post.t2 %}
