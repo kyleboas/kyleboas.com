@@ -12,10 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Check for new files only
+      - name: Check for newly added files
+        id: check_new_files
+        run: |
+          git fetch --no-tags origin ${{ github.ref }} --depth=2
+          added_files=$(git diff --name-status HEAD^ HEAD | awk '$1 == "A" {print $2}' | grep '^_posts/')
+          
+          if [ -z "$added_files" ]; then
+            echo "No new posts detected. Exiting workflow."
+            exit 0
+          else
+            echo "New posts detected:"
+            echo "$added_files"
+          fi
+
       # Initial two-minute delay
       - name: Initial Delay
         run: |
-          echo "Waiting for 1 minutes before starting..."
+          echo "Waiting for 1 minute before starting..."
           sleep 60
 
       # Install xmllint and dateutils
