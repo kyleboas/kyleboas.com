@@ -3,7 +3,7 @@ layout: post
 date: 2024-12-17 18:09  UTC-5
 title: "I'll Never Forgive Them"
 l1: "https://www.wheresyoured.at/never-forgive-them/"
-t1: "Never Forgive Them by Edward Zitron"
+t1: ""Never Forgive Them" by Edward Zitron"
 ---
 
 Something has to give.
