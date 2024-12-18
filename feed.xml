@@ -37,20 +37,20 @@ layout: null
             {% endif %}
           ]]></description>
 
-          <content:encoded><![CDATA[ 
+          <content:encoded><![CDATA[
+          {{ post.content }}
             {% if post.l1 and post.t1 %}
             <p>Referencing:</p>
               <ul class="link">
-                <li><a href="{{ post.l1 }}">{{ post.t1 }}</a></li>
+                <ol><a href="{{ post.l1 }}">{{ post.t1 }}</a></ol>
                 {% if post.l2 and post.t2 %}
-                  <li><a href="{{ post.l2 }}">{{ post.t2 }}</a></li>
+                  <ol><a href="{{ post.l2 }}">{{ post.t2 }}</a></ol>
                 {% endif %}
                 {% if post.l3 and post.t3 %}
-                  <li><a href="{{ post.l3 }}">{{ post.t3 }}</a></li>
+                  <ol><a href="{{ post.l3 }}">{{ post.t3 }}</a></ol>
                 {% endif %}
               </ul>
-            {% endif %}
-         {{ post.content }} ]]></content:encoded>
+            {% endif %} ]]></content:encoded>
         </item>
       {% endunless %}
     {% endfor %}
