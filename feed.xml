@@ -39,7 +39,8 @@ layout: null
 
           <content:encoded><![CDATA[
             {% if post.l1 and post.t1 %}
-            <p>Referencing:</p> <a href="{{ post.l1 }}">{{ post.t1 }}</a> {% endif %}
+            <p>Referencing:</p> <a href="{{ post.l1 }}">{{ post.t1 }}</a>
+            {% endif %}
             {% if post.l2 and post.t2 %}
             <p>Referencing:</p> <a href="{{ post.l1 }}">{{ post.t1 }}</a>, <a href="{{ post.l2 }}">{{ post.t2 }}</a>
                 {% endif %}
