@@ -15,6 +15,7 @@ layout: null
 >
   <channel>
     <title>Kyle Boas</title>
+    <description>What I am reading and watching.</description> 
     <link>{{ site.url }}</link>
     <language>en-us</language>
     <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
