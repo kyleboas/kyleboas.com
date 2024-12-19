@@ -53,16 +53,6 @@ jobs:
           url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" -)
           pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" -)
 
-          today=$(date -R)
-
-          pub_date_only=$(echo "$pub_date" | awk '{print $1", "$2" "$3" "$4}')
-          today_only=$(echo "$today" | awk '{print $1", "$2" "$3" "$4}')
-          
-          if [[ "$pub_date_only" != "$today_only" ]]; then
-            echo "The $pub_date_only for the blog post is not from $today_only. Exiting."
-            exit 0
-          fi
-
           description=$(echo "$description" | tr '\n' '\0' | xargs -0)
           preview="$description $url"
 
