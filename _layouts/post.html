@@ -4,6 +4,7 @@ layout: default
 
 <article class="post">
   <h1>{{ page.title }}</h1>
+  <p>{{ content }}</p>
 {% if page.l1 and page.t1 %}
   <small>Referencing:</small>
   <ul class="link">
@@ -17,7 +18,6 @@ layout: default
     {% endif %}
   </ul>
 {% endif %}
-  <p>{{ content }}</p>
   <h3 class="date-post">{{ page.date | date: "%B %d, %Y" }}</h3> 
 </article>
 
