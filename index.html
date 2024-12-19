@@ -13,8 +13,8 @@ layout: default
     {% assign date = currentdate %}
   {% endif %}
     <div class="post">
-    <p>{{ post.content }}</p>
       <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
+      <p>{{ post.content }}</p>
 {% if post.l1 and post.t1 %}
   <small>Referencing:</small>
   <ul class="link">
