@@ -100,6 +100,44 @@ code {
     width: auto;
 }
 
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+
+thead th {
+  background-color: #f6f8fa;
+  color: #57606a;
+  text-align: left;
+  padding: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #d0d7de;
+}
+
+tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #d0d7de;
+  vertical-align: middle;
+}
+
+tbody tr:hover {
+  background-color: #f3f4f6;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0; /* Remove border for the last row */
+}
+
+.group-row {
+  background-color: #f6f8fa;
+  font-weight: bold;
+}
+
 .footer {
    padding-top: 80px;
    padding-bottom: 40px;
