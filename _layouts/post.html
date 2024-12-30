@@ -6,13 +6,13 @@ layout: default
   <h1>{{ page.title }}</h1>
   <p>{{ content }}</p>
 {% if post.l1 and post.t1 %}
-            <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</p></a></p>
+            <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</a></p>
             {% endif %}
             {% if post.l2 and post.t2 %}
-            <p class="link">Referencing:<a href="{{ post.l1 }}">{{ post.t1 }}</a>, <a href="{{ post.l2 }}">{{ post.t2 }}</p></a></p>
+            <p class="link">Referencing:<a href="{{ post.l1 }}">{{ post.t1 }}</a>, <a href="{{ post.l2 }}">{{ post.t2 }}</a></p>
                 {% endif %}
                 {% if post.l3 and post.t3 %}
-             <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</a>, <a href="{{ post.l2 }}">{{ post.t2 }}</a>, <a href="{{ post.l3 }}">{{ post.t3 }}</p></a></p>
+             <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</a>, <a href="{{ post.l2 }}">{{ post.t2 }}</a>, <a href="{{ post.l3 }}">{{ post.t3 }}</a></p>
                 {% endif %}
   <h3 class="date-post">{{ page.date | date: "%B %d, %Y" }}</h3> 
 </article>
