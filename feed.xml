@@ -39,8 +39,8 @@ layout: null
           ]]></description>
 
           <content:encoded><![CDATA[
+          {{ post.content }}
             {% if post.l1 and post.t1 %}
-            {{ post.content }}
             <p>Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</p></a>
             {% endif %}
             {% if post.l2 and post.t2 %}
