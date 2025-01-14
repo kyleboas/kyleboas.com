@@ -1,96 +1,62 @@
-const API_BASE = "https://api.infiniteflight.com/public/v2";
+// API key for Infinite Flight Live API
+const apiKey = "API_KEY";
 
-// Replace with your API key
-const API_KEY = "api-key";
-
-async function fetchData(endpoint) {
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    headers: { "Authorization": `Bearer ${API_KEY}` }
-  });
-  return response.json();
-}
-
-function calculateUptime(timeOpened) {
-  const openedTime = new Date(timeOpened).getTime();
-  const currentTime = Date.now();
-  return Math.round((currentTime - openedTime) / 60000); // Uptime in minutes
-}
-
-async function loadActiveATC() {
-  const atcData = await fetchData("/atc");
-  const groupedATC = new Map();
-
-  // Group ATC data by airport
-  atcData.forEach(atc => {
-    if (!groupedATC.has(atc.airport)) {
-      groupedATC.set(atc.airport, []);
-    }
-    groupedATC.get(atc.airport).push({
-      frequency: atc.frequency,
-      type: atc.type,
-      uptime: calculateUptime(atc.timeOpened)
-    });
-  });
-
-  const tableBody = document.querySelector("#atcTable tbody");
-  tableBody.innerHTML = "";
-
-  groupedATC.forEach((frequencies, airport) => {
-    // Add a header row for the airport
-    const airportRow = document.createElement("tr");
-    airportRow.className = "group-row";
-    airportRow.innerHTML = `<td colspan="4">${airport}</td>`;
-    tableBody.appendChild(airportRow);
-
-    // Add rows for each frequency at this airport
-    frequencies.forEach(freq => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td></td> <!-- Blank cell for airport grouping -->
-        <td>${freq.frequency}</td>
-        <td>${freq.type}</td>
-        <td>${freq.uptime}</td>
-      `;
-      tableBody.appendChild(row);
-    });
-  });
-}
-
-async function loadInboundFlights() {
-  const flightsData = await fetchData("/flights");
-  const airports = {};
-
-  flightsData.forEach(flight => {
-    if (flight.arrivalAirport && flight.timeToDestination) {
-      if (!airports[flight.arrivalAirport]) {
-        airports[flight.arrivalAirport] = [];
-      }
-      airports[flight.arrivalAirport].push(flight.timeToDestination);
+// Fetch all flights from the API
+async function fetchFlights() {
+  const response = await fetch("https://api.infiniteflight.com/v1/flights", {
+    headers: {
+      "Authorization": `Bearer ${apiKey}`
     }
   });
 
-  const sortedAirports = Object.entries(airports).map(([airport, times]) => {
-    const avgETA = Math.min(...times);
-    return { airport, count: times.length, eta: Math.round(avgETA / 60) };
-  }).sort((a, b) => a.eta - b.eta);
+  if (!response.ok) {
+    console.error("Error fetching flights:", response.status);
+    return [];
+  }
+  
+  const data = await response.json();
+  return data.result || [];
+}
 
-  const tableBody = document.querySelector("#inboundsTable tbody");
-  tableBody.innerHTML = "";
+// Filter flights by heading
+function filterFlightsByHeading(flights, minHeading, maxHeading) {
+  return flights.filter(flight =>
+    flight.heading >= minHeading && flight.heading <= maxHeading
+  );
+}
 
-  sortedAirports.forEach(entry => {
+// Render flights into the table
+function renderFlights(flights) {
+  const flightTable = document.getElementById("flightTable");
+  flightTable.innerHTML = ""; // Clear previous data
+  
+  flights.forEach(flight => {
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td>${entry.airport}</td>
-      <td>${entry.count}</td>
-      <td>${entry.eta}</td>
+      <td>${flight.callsign || "N/A"}</td>
+      <td>${flight.latitude.toFixed(2)}</td>
+      <td>${flight.longitude.toFixed(2)}</td>
+      <td>${flight.heading.toFixed(0)}</td>
     `;
-    tableBody.appendChild(row);
+    flightTable.appendChild(row);
   });
 }
 
-async function init() {
-  await loadActiveATC();
-  await loadInboundFlights();
+// Update flights with filtering
+async function updateFlights() {
+  const minHeading = parseFloat(document.getElementById("minHeading").value) || 0;
+  const maxHeading = parseFloat(document.getElementById("maxHeading").value) || 360;
+
+  const flights = await fetchFlights();
+  const filteredFlights = filterFlightsByHeading(flights, minHeading, maxHeading);
+  renderFlights(filteredFlights);
 }
 
-init();
+// Add event listener to the filter button
+document.getElementById("filterButton").addEventListener("click", updateFlights);
+
+// Auto-refresh every 30 seconds
+setInterval(updateFlights, 30000);
+
+// Initial load
+updateFlights();
