@@ -4,6 +4,11 @@ layout: page
 ---
 
   <div>
+    <label for="icaoCode">ICAO Code:</label>
+    <input type="text" id="icaoCode" placeholder="e.g., KATL">
+    <label for="radius">Radius (km):</label>
+    <input type="number" id="radius" placeholder="50" value="50">
+    <br><br>
     <label for="minHeading">Min Heading:</label>
     <input type="number" id="minHeading" placeholder="0" value="0">
     <label for="maxHeading">Max Heading:</label>
@@ -14,9 +19,12 @@ layout: page
     <thead>
       <tr>
         <th>Callsign</th>
-        <th>Latitude</th>
-        <th>Longitude</th>
         <th>Heading</th>
+        <th>Speed (knots)</th>
+        <th>Mach Speed</th>
+        <th>Aircraft ID</th>
+        <th>Altitude (feet)</th>
+        <th>Distance from Airport (km)</th>
       </tr>
     </thead>
     <tbody id="flightTable"></tbody>
