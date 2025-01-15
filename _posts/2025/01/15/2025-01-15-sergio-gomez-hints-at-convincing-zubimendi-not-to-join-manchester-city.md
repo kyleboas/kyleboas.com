@@ -3,7 +3,7 @@ layout: post
 date: 2025-01-15 08:21 UTC-5
 title: "Sergio Gomez hints at convincing Zubimendi not to join Manchester City"
 l1: "https://cityxtra.co.uk/23157/sergio-gomez-warns-star-teammate-that-life-is-much-better-at-current-club-than-manchester-city/"
-t1: "Sergio Gomez warns star teammate that life is “much better" at current club than Manchester City by Freddie Pye for City Xtra"
+t1: "Sergio Gomez warns star teammate that life is 'much better' at current club than Manchester City by Freddie Pye for City Xtra"
 ---
 
 Freddie Pye for City Xtra:
