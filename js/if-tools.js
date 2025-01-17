@@ -52,6 +52,14 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // Distance in nautical miles
 }
 
+// Calculate ETA in minutes
+function calculateETA(distance, groundSpeed) {
+    if (groundSpeed > 0) {
+        return (distance / groundSpeed) * 60; // ETA in minutes
+    }
+    return null; // Ground speed is 0 or invalid
+}
+
 // Fetch inbound flight IDs from the airport status API
 async function fetchInboundFlightIds(icao) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/airport/${icao}/status`;
@@ -106,17 +114,21 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
-// Render flight details in the table
+// Render flight details in the table with sorting by ETA
 function renderFlightsTable(flights) {
     const tableBody = document.querySelector('#flightsTable tbody');
     tableBody.innerHTML = '';
 
     if (flights.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7">No inbound flights found.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8">No inbound flights found.</td></tr>';
         return;
     }
 
+    // Sort flights by ETA (ascending)
+    flights.sort((a, b) => (a.eta || Infinity) - (b.eta || Infinity));
+
     flights.forEach(flight => {
+        const eta = flight.eta ? Math.round(flight.eta) : 'N/A';
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
@@ -125,7 +137,7 @@ function renderFlightsTable(flights) {
             <td>${(flight.speed / 666.739).toFixed(2) || 'N/A'}</td>
             <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
             <td>${flight.distanceToDestination?.toFixed(2) || 'N/A'}</td>
-            <td>${Math.round(flight.estimatedTimeEnroute / 60) || 'N/A'}</td>
+            <td>${eta}</td>
         `;
         tableBody.appendChild(row);
     });
@@ -162,7 +174,7 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
         // Fetch and filter flight details
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
 
-        // Calculate distance to destination for each flight
+        // Calculate distance to destination and ETA for each flight
         flights.forEach(flight => {
             flight.distanceToDestination = calculateDistance(
                 flight.latitude,
@@ -170,6 +182,7 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
                 airportCoordinates.latitude,
                 airportCoordinates.longitude
             );
+            flight.eta = calculateETA(flight.distanceToDestination, flight.speed);
         });
 
         // Render the flights in the table
