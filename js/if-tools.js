@@ -84,36 +84,6 @@ function calculateETA(distance, groundSpeed) {
     return null; // Return null if ground speed is 0 or invalid
 }
 
-// Parse ETA in MM:SS format to total seconds
-function parseETAInSeconds(eta) {
-    if (!eta || eta === 'N/A') return Infinity; // Return Infinity for invalid ETAs
-    const [minutes, seconds] = eta.split(':').map(Number);
-    return minutes * 60 + seconds;
-}
-
-// Highlight rows where ETAs are within one minute of each other
-function highlightCloseETAs(flights) {
-    const rows = document.querySelectorAll('#flightsTable tbody tr');
-
-    // Reset row colors
-    rows.forEach(row => {
-        row.style.backgroundColor = ''; // Clear previous highlighting
-    });
-
-    // Compare each flight's ETA
-    for (let i = 0; i < flights.length; i++) {
-        for (let j = i + 1; j < flights.length; j++) {
-            const eta1 = parseETAInSeconds(flights[i].etaMinutes);
-            const eta2 = parseETAInSeconds(flights[j].etaMinutes);
-
-            if (Math.abs(eta1 - eta2) <= 60) { // 60 seconds = 1 minute
-                rows[i].style.backgroundColor = 'yellow';
-                rows[j].style.backgroundColor = 'yellow';
-            }
-        }
-    }
-}
-
 // Fetch inbound flight IDs from the airport status API
 async function fetchInboundFlightIds(icao) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/airport/${icao}/status`;
@@ -254,9 +224,6 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     const hideFilter = headingFilterActive ? boldedHeadings : null; // Use the bolded headings as filter
     renderFlightsTable(allFlights, hideFilter);
 });
-    // Highlight rows with close ETAs
-    highlightCloseETAs(flights);
-}
 
 // Fetch and update the flights
 async function fetchAndUpdateFlights(icao) {
