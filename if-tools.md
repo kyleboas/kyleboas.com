@@ -50,5 +50,5 @@ th {
         </tbody>
     </table>
 </div>
-<script src="if.js"></script>
+<script src="if-tools.js"></script>
 </body>
