@@ -31,7 +31,78 @@ async function fetchFlightPlan(flightId) {
     }
 }
 
-// Calculate distance between two points using Haversine formula
+// Calculate cumulative distance using the flight plan waypoints
+function calculateCumulativeDistance(currentLat, currentLon, flightPlanItems) {
+    let totalDistance = 0;
+
+    if (flightPlanItems.length > 0) {
+        // Add distance from current position to the first waypoint
+        const firstWaypoint = flightPlanItems[0].location;
+        totalDistance += calculateDistance(
+            currentLat,
+            currentLon,
+            firstWaypoint.latitude,
+            firstWaypoint.longitude
+        );
+
+        // Add distances between consecutive waypoints
+        for (let i = 0; i < flightPlanItems.length - 1; i++) {
+            const wp1 = flightPlanItems[i].location;
+            const wp2 = flightPlanItems[i + 1].location;
+            totalDistance += calculateDistance(wp1.latitude, wp1.longitude, wp2.latitude, wp2.longitude);
+        }
+    }
+
+    return totalDistance;
+}
+
+// Update distances using the flight plan for more accuracy
+async function updateDistancesWithFlightPlans(flights) {
+    for (const flight of flights) {
+        const flightPlanItems = await fetchFlightPlan(flight.flightId);
+
+        if (flightPlanItems.length > 0) {
+            flight.distanceToDestination = calculateCumulativeDistance(
+                flight.latitude,
+                flight.longitude,
+                flightPlanItems
+            );
+        }
+    }
+}
+
+// Fetch airport latitude and longitude
+async function fetchAirportCoordinates(icao) {
+    const url = `${API_BASE_URL}/airport/${icao}`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error fetching airport data: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.errorCode !== 0) {
+            throw new Error(`API returned error: ${data.errorCode}`);
+        }
+
+        const { latitude, longitude } = data.result;
+        return { latitude, longitude };
+    } catch (error) {
+        console.error('Error fetching airport coordinates:', error.message);
+        alert('Failed to fetch airport coordinates.');
+        return null;
+    }
+}
+
+// Calculate distance between two coordinates using the Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 3440; // Earth's radius in nautical miles
     const toRadians = (degrees) => degrees * (Math.PI / 180);
@@ -50,41 +121,72 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // Distance in nautical miles
 }
 
-// Calculate cumulative distance along the flight plan
-function calculateCumulativeDistance(currentLat, currentLon, flightPlanItems) {
-    let totalDistance = 0;
-
-    // Add distance from current position to the first waypoint
-    if (flightPlanItems.length > 0) {
-        const firstWaypoint = flightPlanItems[0].location;
-        totalDistance += calculateDistance(currentLat, currentLon, firstWaypoint.latitude, firstWaypoint.longitude);
+// Calculate ETA in hours and minutes
+function calculateETA(distance, groundSpeed) {
+    if (groundSpeed > 0) {
+        const totalMinutes = (distance / groundSpeed) * 60;
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = Math.round(totalMinutes % 60);
+        return `${hours}:${minutes.toString().padStart(2, '0')}`; // Format as HH:MM
     }
-
-    // Add distances between consecutive waypoints
-    for (let i = 0; i < flightPlanItems.length - 1; i++) {
-        const wp1 = flightPlanItems[i].location;
-        const wp2 = flightPlanItems[i + 1].location;
-        totalDistance += calculateDistance(wp1.latitude, wp1.longitude, wp2.latitude, wp2.longitude);
-    }
-
-    return totalDistance;
+    return 'N/A'; // Return 'N/A' if ground speed is 0 or invalid
 }
 
-// Fetch and calculate distance to destination for each flight
-async function updateDistancesWithFlightPlans(flights) {
-    for (const flight of flights) {
-        const flightPlanItems = await fetchFlightPlan(flight.flightId);
+// Fetch inbound flight IDs from the airport status API
+async function fetchInboundFlightIds(icao) {
+    const url = `${API_BASE_URL}/sessions/${SESSION_ID}/airport/${icao}/status`;
 
-        // Calculate cumulative distance
-        flight.distanceToDestination = calculateCumulativeDistance(
-            flight.latitude,
-            flight.longitude,
-            flightPlanItems
-        );
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error fetching inbound flights: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.result.inboundFlights || [];
+    } catch (error) {
+        console.error('Error in fetchInboundFlightIds:', error.message);
+        alert('Failed to fetch inbound flight IDs.');
+        return [];
     }
 }
 
-// Render flight details in the table
+// Fetch all flights and filter by inbound flight IDs
+async function fetchInboundFlightDetails(inboundFlightIds) {
+    const url = `${API_BASE_URL}/sessions/${SESSION_ID}/flights`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error fetching flight details: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Filter flights that match the inbound flight IDs
+        return data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
+    } catch (error) {
+        console.error('Error in fetchInboundFlightDetails:', error.message);
+        alert('Failed to fetch flight details.');
+        return [];
+    }
+}
+
+// Render flight details in the table with sorting by ETA
 function renderFlightsTable(flights) {
     const tableBody = document.querySelector('#flightsTable tbody');
     tableBody.innerHTML = '';
@@ -98,7 +200,7 @@ function renderFlightsTable(flights) {
 
     flights.forEach(flight => {
         const eta = flight.distanceToDestination && flight.speed > 0
-            ? `${Math.floor((flight.distanceToDestination / flight.speed) * 60)}:${Math.round((flight.distanceToDestination % 60)).toString().padStart(2, '0')}`
+            ? calculateETA(flight.distanceToDestination, flight.speed)
             : 'N/A';
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -114,7 +216,7 @@ function renderFlightsTable(flights) {
     });
 }
 
-// Main form submission handler
+// Form submission handler
 document.getElementById('searchForm').addEventListener('submit', async (event) => {
     event.preventDefault();
 
@@ -125,7 +227,8 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
     }
 
     try {
-        const flights = await fetchInboundFlightDetails(await fetchInboundFlightIds(icao));
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
         await updateDistancesWithFlightPlans(flights);
         renderFlightsTable(flights);
     } catch (error) {
