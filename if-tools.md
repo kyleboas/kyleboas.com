@@ -48,6 +48,26 @@ th {
                 <th>ETA (minutes)</th>
             </tr>
         </thead>
+        <form id="filterForm">
+    <!-- Heading Criteria -->
+    <label for="minHeading">Min Heading:</label>
+    <input type="number" id="minHeading" name="minHeading" min="0" max="360" placeholder="e.g., 0">
+
+    <label for="maxHeading">Max Heading:</label>
+    <input type="number" id="maxHeading" name="maxHeading" min="0" max="360" placeholder="e.g., 90">
+
+    <button type="button" id="boldHeadingButton">Bold Aircraft</button>
+    <button type="button" id="toggleHeadingButton">Hide/Show Other Aircraft</button>
+
+    <!-- Distance to Destination -->
+    <label for="minDistance">Min Distance:</label>
+    <input type="number" id="minDistance" name="minDistance" min="0" placeholder="e.g., 50">
+
+    <label for="maxDistance">Max Distance:</label>
+    <input type="number" id="maxDistance" name="maxDistance" min="0" placeholder="e.g., 500">
+
+    <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
+</form>
         <tbody>
             <!-- Rows will be inserted dynamically -->
         </tbody>
