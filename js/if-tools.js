@@ -6,13 +6,14 @@ let allFlights = []; // Store all flights globally
 let headingFilterActive = false; // Track if heading-based hide/show filter is active
 let boldedHeadings = { minHeading: null, maxHeading: null }; // Store the current bold heading range
 let distanceFilterActive = false; // Track if distance-based filtering is active
-let maxDistance = null; // Store the maximum allowed distance for filtering
+let minDistance = null; // Minimum distance for filtering
+let maxDistance = null; // Maximum distance for filtering
 let updateInterval = null; // To store the interval ID
+let updateTimeout = null; // To store the timeout for the 15-minute limit
 
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
     const url = `${API_BASE_URL}/airport/${icao}`;
-
     try {
         const response = await fetch(url, {
             method: 'GET',
@@ -146,9 +147,14 @@ function renderFlightsTable(flights, hideFilter = false) {
             flight.headingFromAirport >= boldedHeadings.minHeading &&
             flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-        // Show/hide rows based on hide filter
+        // Apply distance filter
+        const isWithinDistance =
+            (!distanceFilterActive || (flight.distanceToDestination >= minDistance && flight.distanceToDestination <= maxDistance));
+
+        // Show/hide rows based on distance filter and hide filter
         const isVisible =
             !hideFilter || isBolded;
+            isWithinDistance && (!hideFilter || isBolded);
 
         row.style.fontWeight = isBolded ? 'bold' : 'normal'; // Apply bold style
         row.style.display = isVisible ? '' : 'none'; // Apply hide/show filter
@@ -281,10 +287,16 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
 // Handle form submission to prevent page reload
 document.getElementById('searchForm').addEventListener('submit', async (event) => {
     event.preventDefault();
+// Handle the distance filter button
+document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+    minDistance = parseFloat(document.getElementById('minDistance').value);
+    maxDistance = parseFloat(document.getElementById('maxDistance').value);
 
     const icao = document.getElementById('icao').value.trim().toUpperCase();
     if (!icao) {
         alert('Please enter a valid ICAO code.');
+    if (isNaN(minDistance) || isNaN(maxDistance)) {
+        alert('Please enter valid min and max distance values.');
         return;
     }
 
@@ -295,6 +307,8 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
     } catch (error) {
         console.error('Error during search:', error.message);
     }
+    distanceFilterActive = true; // Activate the distance filter
+    renderFlightsTable(allFlights); // Re-render the table to apply the distance filter
 });
 
 // Fetch and update flights
@@ -317,9 +331,11 @@ async function fetchAndUpdateFlights(icao) {
 document.getElementById('searchForm').addEventListener('submit', async (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
 
+// **Auto-Update Handling**
+document.getElementById('updateButton').addEventListener('click', () => {
     const icao = document.getElementById('icao').value.trim().toUpperCase();
     if (!icao) {
-        alert('Please enter a valid ICAO code.');
+        alert('Please enter a valid ICAO code before updating.');
         return;
     }
 
@@ -344,20 +360,27 @@ function startAutoUpdate(icao) {
     if (updateInterval) {
         clearInterval(updateInterval);
     }
+    stopAutoUpdate(); // Stop any existing update cycle
 
     updateInterval = setInterval(() => {
         fetchAndUpdateFlights(icao);
-    }, 60000);
+    }, 60000); // 1 minute interval
+
+    updateTimeout = setTimeout(() => {
+        stopAutoUpdate();
+        alert('Auto-update stopped after 15 minutes. Click "Update" to start again.');
+    }, 15 * 60 * 1000); // 15 minutes limit
 
     document.getElementById('stopUpdateButton').style.display = 'inline';
-}
+});
 
-// Stop auto-updating
+// **Stop Auto-Update**
+document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
+
+// Stop the auto-update process
 function stopAutoUpdate() {
-    if (updateInterval) {
-        clearInterval(updateInterval);
-        updateInterval = null;
-    }
+    if (updateInterval) clearInterval(updateInterval);
+    if (updateTimeout) clearTimeout(updateTimeout);
 
     document.getElementById('stopUpdateButton').style.display = 'none';
 }
