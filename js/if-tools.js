@@ -8,8 +8,7 @@ let updateInterval = null; // To store the interval ID
 // Fetch flight plan for a specific flight ID
 async function fetchFlightPlan(flightId) {
     if (cachedFlightPlans[flightId]) {
-        // Return cached flight plan if available
-        return cachedFlightPlans[flightId];
+        return cachedFlightPlans[flightId]; // Return cached flight plan if available
     }
 
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/flights/${flightId}/flightplan`;
@@ -38,6 +37,24 @@ async function fetchFlightPlan(flightId) {
     } catch (error) {
         console.error('Error fetching flight plan:', error.message);
         return [];
+    }
+}
+
+// Update distances using cached flight plans and calculate distance to destination
+async function updateDistancesWithFlightPlans(flights) {
+    for (const flight of flights) {
+        const flightPlanItems = await fetchFlightPlan(flight.flightId);
+
+        if (flightPlanItems.length > 0) {
+            flight.distanceToDestination = calculateCumulativeDistance(
+                flight.latitude,
+                flight.longitude,
+                flightPlanItems,
+                flight.track // Current aircraft heading
+            );
+        } else {
+            flight.distanceToDestination = 0; // Default to 0 if no flight plan is available
+        }
     }
 }
 
