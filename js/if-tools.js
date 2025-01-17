@@ -280,7 +280,7 @@ function startAutoUpdate(icao) {
 
     // Show "Stop Update" button
     document.getElementById('stopUpdateButton').style.display = 'inline';
-}
+} 
 
 // Stop automatic updates
 function stopAutoUpdate() {
