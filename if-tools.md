@@ -77,7 +77,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
       return;
     }
 
-const flightDetailsPromises = inboundFlights.map(async (flightId) => {
+    const flightDetailsPromises = inboundFlights.map(async (flightId) => {
   try {
     const routeResponse = await fetch(
       `${apiBaseUrl}/sessions/${sessionId}/flights/${flightId}/route`,
