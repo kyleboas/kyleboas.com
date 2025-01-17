@@ -6,7 +6,8 @@ let allFlights = []; // Store all flights globally
 let headingFilterActive = false; // Track if heading-based hide/show filter is active
 let boldedHeadings = { minHeading: null, maxHeading: null }; // Store the current bold heading range
 let distanceFilterActive = false; // Track if distance-based filtering is active
-let maxDistance = null; // Store the maximum allowed distance for filtering
+let minDistance = null; // Minimum distance for filtering
+let maxDistance = null; // Maximum distance for filtering
 let updateInterval = null; // To store the interval ID
 
 // Fetch airport latitude and longitude
@@ -146,12 +147,13 @@ function renderFlightsTable(flights, hideFilter = false) {
             flight.headingFromAirport >= boldedHeadings.minHeading &&
             flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-        // Show/hide rows based on hide filter
-        const isVisible =
-            !hideFilter || isBolded;
+        // Show/hide rows based on distance filter
+        const isWithinDistance =
+            !distanceFilterActive ||
+            (flight.distanceToDestination >= minDistance && flight.distanceToDestination <= maxDistance);
 
         row.style.fontWeight = isBolded ? 'bold' : 'normal'; // Apply bold style
-        row.style.display = isVisible ? '' : 'none'; // Apply hide/show filter
+        row.style.display = isWithinDistance ? '' : 'none'; // Apply distance filter
 
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
@@ -169,6 +171,33 @@ function renderFlightsTable(flights, hideFilter = false) {
     highlightCloseETAs(flights);
 }
 
+// Handle distance filter
+document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+    const minDistanceInput = parseFloat(document.getElementById('minDistance').value);
+    const maxDistanceInput = parseFloat(document.getElementById('maxDistance').value);
+
+    if (isNaN(minDistanceInput) || isNaN(maxDistanceInput)) {
+        alert('Please enter valid minimum and maximum distances.');
+        return;
+    }
+
+    distanceFilterActive = true; // Activate distance filter
+    minDistance = minDistanceInput; // Update minimum distance
+    maxDistance = maxDistanceInput; // Update maximum distance
+
+    renderFlightsTable(allFlights); // Re-render the table with the updated filter
+});
+
+// Clear distance filter
+document.getElementById('clearDistanceFilterButton').addEventListener('click', () => {
+    distanceFilterActive = false; // Deactivate distance filter
+    minDistance = null;
+    maxDistance = null;
+
+    renderFlightsTable(allFlights); // Re-render the table without the distance filter
+});
+
+
 // Handle the bold heading button
 document.getElementById('boldHeadingButton').addEventListener('click', () => {
     const minHeading = parseFloat(document.getElementById('minHeading').value);
@@ -181,12 +210,6 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 
     boldedHeadings = { minHeading, maxHeading }; // Update the bolded heading range
     renderFlightsTable(allFlights); // Re-render the table to apply bolding
-});
-
-// Handle the hide/show other aircraft button
-document.getElementById('toggleHeadingButton').addEventListener('click', () => {
-    headingFilterActive = !headingFilterActive; // Toggle the filter state
-    renderFlightsTable(allFlights, headingFilterActive); // Apply the heading filter
 });
 
 // Fetch and update the flights
