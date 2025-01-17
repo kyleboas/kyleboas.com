@@ -237,16 +237,16 @@ function renderFlightsTable(flights) {
     });
 }
 
-// Start automatic updates every 10 seconds
+// Start automatic updates every 60 seconds
 function startAutoUpdate(icao) {
     if (updateInterval) {
         clearInterval(updateInterval); // Clear any existing interval
     }
 
-    // Set a new interval to update every 10 seconds
+    // Set a new interval to update every 60 seconds
     updateInterval = setInterval(() => {
         fetchAndUpdateFlights(icao);
-    }, 10000);
+    }, 60000); // 60000 milliseconds = 60 seconds
 
     // Show "Stop Update" button
     document.getElementById('stopUpdateButton').style.display = 'inline';
