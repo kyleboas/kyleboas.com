@@ -6,29 +6,6 @@ let allFlights = []; // Store all flights globally
 let headingFilterActive = false; // Track if heading-based hide/show filter is active
 let boldedHeadings = { minHeading: null, maxHeading: null }; // Store the current bold heading range
 let updateInterval = null; // To store the interval ID
-let countdownInterval = null; // To store the countdown interval ID
-const updateFrequency = 60; // Update frequency in seconds
-
-// Update the countdown timer
-function startCountdown() {
-    let timeLeft = updateFrequency;
-
-    // Update the countdown every second
-    countdownInterval = setInterval(() => {
-        document.getElementById('countdownTimer').innerText = `Next update in: ${timeLeft} seconds`;
-        timeLeft--;
-
-        if (timeLeft < 0) {
-            clearInterval(countdownInterval); // Stop the countdown when it reaches 0
-        }
-    }, 1000);
-}
-
-// Stop the countdown timer
-function stopCountdown() {
-    clearInterval(countdownInterval);
-    document.getElementById('countdownTimer').innerText = ''; // Clear the countdown text
-}
 
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
@@ -78,22 +55,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c; // Distance in nautical miles
-}
-
-// Calculate bearing from airport to aircraft
-function calculateBearing(lat1, lon1, lat2, lon2) {
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const toDegrees = (radians) => radians * (180 / Math.PI);
-
-    const φ1 = toRadians(lat1);
-    const φ2 = toRadians(lat2);
-    const Δλ = toRadians(lon2 - lon1);
-
-    const y = Math.sin(Δλ) * Math.cos(φ2);
-    const x = Math.cos(φ1) * Math.sin(φ2) -
-              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-
-    return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360°
 }
 
 // Calculate ETA in MM:SS format
@@ -161,13 +122,94 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
+// Update distances and ETA for each flight
+async function updateDistancesAndETAs(flights, airportCoordinates) {
+    for (const flight of flights) {
+        flight.distanceToDestination = calculateDistance(
+            flight.latitude,
+            flight.longitude,
+            airportCoordinates.latitude,
+            airportCoordinates.longitude
+        );
+        flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
+    }
+}
+
+// Render flight details in the table with optional filters
+function renderFlightsTable(flights, hideFilter = null) {
+    const tableBody = document.querySelector('#flightsTable tbody');
+    tableBody.innerHTML = '';
+
+    if (flights.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="8">No inbound flights found.</td></tr>';
+        return;
+    }
+
+    // Sort flights by ETA in ascending order
+    flights.sort((a, b) => {
+        const etaA = a.etaMinutes !== null ? parseInt(a.etaMinutes.split(':')[0]) * 60 + parseInt(a.etaMinutes.split(':')[1]) : Infinity;
+        const etaB = b.etaMinutes !== null ? parseInt(b.etaMinutes.split(':')[0]) * 60 + parseInt(b.etaMinutes.split(':')[1]) : Infinity;
+        return etaA - etaB;
+    });
+
+    flights.forEach(flight => {
+        const row = document.createElement('tr');
+
+        // Bold rows within the current bolded heading range
+        const isBolded =
+            boldedHeadings.minHeading !== null &&
+            flight.heading >= boldedHeadings.minHeading &&
+            flight.heading <= boldedHeadings.maxHeading;
+
+        // Hide rows if the hide filter is active and the row is outside the heading range
+        const isVisible =
+            !hideFilter ||
+            (flight.heading >= hideFilter.minHeading && flight.heading <= hideFilter.maxHeading);
+
+        row.style.fontWeight = isBolded ? 'bold' : 'normal'; // Apply bold style
+        row.style.display = isVisible ? '' : 'none'; // Toggle visibility
+
+        row.innerHTML = `
+            <td>${flight.callsign || 'N/A'}</td>
+            <td>${flight.heading ? Math.round(flight.heading) : 'N/A'}</td>
+            <td>${flight.speed?.toFixed(0) || 'N/A'}</td>
+            <td>${(flight.speed / 666.739).toFixed(2) || 'N/A'}</td>
+            <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
+            <td>${flight.distanceToDestination?.toFixed(2) || 'N/A'}</td>
+            <td>${flight.etaMinutes || 'N/A'}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Bold Aircraft Within Heading Criteria
+document.getElementById('boldHeadingButton').addEventListener('click', () => {
+    const minHeading = parseFloat(document.getElementById('minHeading').value);
+    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
+
+    if (isNaN(minHeading) || isNaN(maxHeading)) {
+        alert('Please enter valid min and max heading values.');
+        return;
+    }
+
+    boldedHeadings = { minHeading, maxHeading }; // Update the bolded heading range
+    renderFlightsTable(allFlights); // Re-render the table to apply bolding
+});
+
+// Hide/Show Aircraft Not Matching Heading Criteria
+document.getElementById('toggleHeadingButton').addEventListener('click', () => {
+    headingFilterActive = !headingFilterActive; // Toggle the filter state
+    const hideFilter = headingFilterActive ? boldedHeadings : null; // Use the bolded headings as filter
+    renderFlightsTable(allFlights, hideFilter);
+});
+
 // Fetch and update the flights
 async function fetchAndUpdateFlights(icao) {
     try {
         const inboundFlightIds = await fetchInboundFlightIds(icao);
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
 
-        // Calculate distance, ETA, and heading from the airport for each flight
+        // Calculate distance and ETA for each flight
         const airportCoordinates = await fetchAirportCoordinates(icao);
         await updateDistancesAndETAs(flights, airportCoordinates);
 
@@ -177,32 +219,6 @@ async function fetchAndUpdateFlights(icao) {
         console.error('Error:', error.message);
         alert('An error occurred while fetching flight data.');
     }
-}
-
-// Start automatic updates every 60 seconds
-function startAutoUpdate(icao) {
-    if (updateInterval) {
-        clearInterval(updateInterval); // Clear any existing interval
-    }
-
-    updateInterval = setInterval(async () => {
-        await fetchAndUpdateFlights(icao);
-        startCountdown(); // Restart countdown after each update
-    }, updateFrequency * 1000);
-
-    startCountdown(); // Start the countdown
-    document.getElementById('stopUpdateButton').style.display = 'inline'; // Show "Stop Update" button
-}
-
-// Stop automatic updates
-function stopAutoUpdate() {
-    if (updateInterval) {
-        clearInterval(updateInterval);
-        updateInterval = null;
-    }
-
-    stopCountdown(); // Stop the countdown
-    document.getElementById('stopUpdateButton').style.display = 'none'; // Hide "Stop Update" button
 }
 
 // Handle the form submission to prevent page reload
@@ -229,3 +245,28 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
         alert('An error occurred while processing your request.');
     }
 });
+
+// Start automatic updates every 60 seconds
+function startAutoUpdate(icao) {
+    if (updateInterval) {
+        clearInterval(updateInterval); // Clear any existing interval
+    }
+
+    updateInterval = setInterval(async () => {
+        await fetchAndUpdateFlights(icao);
+    }, 60000);
+
+    // Show "Stop Update" button
+    document.getElementById('stopUpdateButton').style.display = 'inline';
+}
+
+// Stop automatic updates
+function stopAutoUpdate() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+    }
+
+    // Hide "Stop Update" button
+    document.getElementById('stopUpdateButton').style.display = 'none';
+}
