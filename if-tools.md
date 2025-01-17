@@ -37,6 +37,7 @@ th {
     <button type="button" id="updateButton">Update</button>
     <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
 </form>
+    <span id="countdownTimer">Next update in: 60 seconds</span>
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">

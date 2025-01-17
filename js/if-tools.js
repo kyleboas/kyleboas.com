@@ -330,34 +330,65 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
         // Fetch and update the flights
         await fetchAndUpdateFlights(icao);
 
-        // Start auto-update for the current ICAO
-        startAutoUpdate(icao);
     } catch (error) {
         console.error('Error during search:', error.message);
         alert('An error occurred while processing your request.');
     }
 });
 
-// Start automatic updates every 60 seconds
-// Start auto-updating every 60 seconds
-function startAutoUpdate(icao) {
-    if (updateInterval) {
-        clearInterval(updateInterval);
+let updateInterval = null; // To store the update interval ID
+let updateTimeout = null; // To store the 15-minute timeout
+let countdownInterval = null; // To store the countdown interval
+
+// Handle the "Update" button
+document.getElementById('updateButton').addEventListener('click', () => {
+    const icao = document.getElementById('icao').value.trim().toUpperCase();
+    if (!icao) {
+        alert('Please enter a valid ICAO code before updating.');
+        return;
     }
 
+    stopAutoUpdate(); // Stop any existing update cycle
+
+    let countdown = 60; // Initial countdown value in seconds
+    const countdownTimer = document.getElementById('countdownTimer');
+
+    // Start auto-update every 60 seconds
     updateInterval = setInterval(() => {
         fetchAndUpdateFlights(icao);
-    }, 60000);
+        countdown = 60; // Reset countdown after each update
+    }, 60000); // 1-minute interval
 
-    document.getElementById('stopUpdateButton').style.display = 'inline';
-}
+    // Start countdown timer
+    countdownInterval = setInterval(() => {
+        countdown--;
+        countdownTimer.textContent = `Next update in: ${countdown} seconds`;
+        if (countdown <= 0) countdown = 60; // Reset countdown if it reaches 0
+    }, 1000); // Update every second
 
-// Stop auto-updating
+    // Set a timeout to stop auto-update after 15 minutes
+    updateTimeout = setTimeout(() => {
+        stopAutoUpdate();
+        alert('Auto-update stopped after 15 minutes. Click "Update" to start again.');
+    }, 15 * 60 * 1000); // 15 minutes in milliseconds
+
+    document.getElementById('stopUpdateButton').style.display = 'inline'; // Show "Stop Update" button
+    countdownTimer.style.display = 'inline'; // Show the countdown timer
+});
+
+// Handle the "Stop Update" button
+document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
+
+// Stop the auto-update process
 function stopAutoUpdate() {
-    if (updateInterval) {
-        clearInterval(updateInterval);
-        updateInterval = null;
-    }
+    if (updateInterval) clearInterval(updateInterval); // Clear the interval
+    if (updateTimeout) clearTimeout(updateTimeout); // Clear the timeout
+    if (countdownInterval) clearInterval(countdownInterval); // Clear the countdown interval
 
-    document.getElementById('stopUpdateButton').style.display = 'none';
+    updateInterval = null;
+    updateTimeout = null;
+    countdownInterval = null;
+
+    document.getElementById('stopUpdateButton').style.display = 'none'; // Hide "Stop Update" button
+    document.getElementById('countdownTimer').style.display = 'none'; // Hide the countdown timer
 }
