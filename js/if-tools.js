@@ -114,8 +114,8 @@ function highlightCloseETAs(flights) {
         }
         // Highlight in grey if within 60 seconds but more than 30 seconds
         else if (Math.abs(eta1 - eta2) <= 60) {
-            rows[i].style.backgroundColor = '#beaba4';
-            rows[i + 1].style.backgroundColor = '#beaba4';
+            rows[i].style.backgroundColor = '#daceca';
+            rows[i + 1].style.backgroundColor = '#daceca';
         }
     }
 }
