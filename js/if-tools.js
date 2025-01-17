@@ -2,7 +2,7 @@ const API_BASE_URL = 'https://api.infiniteflight.com/public/v2';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8'; // Replace with the correct session ID
 const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk'; // Replace with your Infinite Flight API Key
 
-// Function to fetch inbound flight IDs
+// Fetch inbound flight IDs from the airport status API
 async function fetchInboundFlightIds(icao) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/airport/${icao}/status`;
 
@@ -28,7 +28,7 @@ async function fetchInboundFlightIds(icao) {
     }
 }
 
-// Function to fetch all flights and filter by inbound flight IDs
+// Fetch all flights and filter by inbound flight IDs
 async function fetchInboundFlightDetails(inboundFlightIds) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/flights`;
 
@@ -46,7 +46,9 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
         }
 
         const data = await response.json();
-        return data.result.filter(flight => inboundFlightIds.includes(flight.id));
+
+        // Filter flights that match the inbound flight IDs
+        return data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
     } catch (error) {
         console.error('Error in fetchInboundFlightDetails:', error.message);
         alert('Failed to fetch flight details.');
@@ -54,7 +56,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
-// Function to render flight details in the table
+// Render flight details in the table
 function renderFlightsTable(flights) {
     const tableBody = document.querySelector('#flightsTable tbody');
     tableBody.innerHTML = '';
@@ -69,10 +71,10 @@ function renderFlightsTable(flights) {
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
             <td>${flight.heading || 'N/A'}</td>
-            <td>${flight.groundSpeed || 'N/A'}</td>
+            <td>${flight.groundSpeed?.toFixed(0) || 'N/A'}</td>
             <td>${(flight.groundSpeed / 666.739).toFixed(2) || 'N/A'}</td>
-            <td>${flight.altitude || 'N/A'}</td>
-            <td>${flight.distanceToDestination.toFixed(2) || 'N/A'}</td>
+            <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
+            <td>${flight.distanceToDestination?.toFixed(2) || 'N/A'}</td>
             <td>${Math.round(flight.estimatedTimeEnroute / 60) || 'N/A'}</td>
         `;
         tableBody.appendChild(row);
