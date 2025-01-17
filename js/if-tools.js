@@ -41,26 +41,40 @@ async function fetchFlightPlan(flightId) {
     }
 }
 
-// Calculate cumulative distance using the flight plan waypoints
 function calculateCumulativeDistance(currentLat, currentLon, flightPlanItems) {
+    if (flightPlanItems.length === 0) return 0;
+
     let totalDistance = 0;
+    let nearestWaypointIndex = -1;
+    let shortestDistance = Infinity;
 
-    if (flightPlanItems.length > 0) {
-        // Add distance from current position to the first waypoint
-        const firstWaypoint = flightPlanItems[0].location;
-        totalDistance += calculateDistance(
-            currentLat,
-            currentLon,
-            firstWaypoint.latitude,
-            firstWaypoint.longitude
-        );
+    // Find the nearest active waypoint
+    for (let i = 0; i < flightPlanItems.length; i++) {
+        const waypoint = flightPlanItems[i].location;
+        const distance = calculateDistance(currentLat, currentLon, waypoint.latitude, waypoint.longitude);
 
-        // Add distances between consecutive waypoints
-        for (let i = 0; i < flightPlanItems.length - 1; i++) {
-            const wp1 = flightPlanItems[i].location;
-            const wp2 = flightPlanItems[i + 1].location;
-            totalDistance += calculateDistance(wp1.latitude, wp1.longitude, wp2.latitude, wp2.longitude);
+        if (distance < shortestDistance) {
+            shortestDistance = distance;
+            nearestWaypointIndex = i;
         }
+    }
+
+    // If no active waypoint is found, return 0
+    if (nearestWaypointIndex === -1) return 0;
+
+    // Add distance from current position to the nearest active waypoint
+    totalDistance += calculateDistance(
+        currentLat,
+        currentLon,
+        flightPlanItems[nearestWaypointIndex].location.latitude,
+        flightPlanItems[nearestWaypointIndex].location.longitude
+    );
+
+    // Add distances between consecutive waypoints, starting from the nearest active waypoint
+    for (let i = nearestWaypointIndex; i < flightPlanItems.length - 1; i++) {
+        const wp1 = flightPlanItems[i].location;
+        const wp2 = flightPlanItems[i + 1].location;
+        totalDistance += calculateDistance(wp1.latitude, wp1.longitude, wp2.latitude, wp2.longitude);
     }
 
     return totalDistance;
