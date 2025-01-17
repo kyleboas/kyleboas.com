@@ -5,6 +5,7 @@ const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk'; // Replace with your Infinit
 let allFlights = []; // Store all flights globally
 let headingFilterActive = false; // Track if heading-based filter is active
 let distanceFilterActive = false; // Track if distance-based filter is active
+let updateInterval = null; // To store the interval ID
 
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
@@ -241,3 +242,82 @@ async function fetchAndUpdateFlights(icao) {
         alert('An error occurred while fetching flight data.');
     }
 }
+
+// Handle the form submission to prevent page reload
+document.getElementById('searchForm').addEventListener('submit', async (event) => {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    const icao = document.getElementById('icao').value.trim().toUpperCase();
+    if (!icao) {
+        alert('Please enter a valid ICAO code.');
+        return;
+    }
+
+    try {
+        // Stop any ongoing auto-update when a new search is initiated
+        stopAutoUpdate();
+
+        // Fetch and update the flights
+        const airportCoordinates = await fetchAirportCoordinates(icao);
+        if (!airportCoordinates) return;
+
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
+
+        // Calculate distances and ETA
+        await updateDistancesAndETAs(flights, airportCoordinates);
+
+        // Store flights globally and render them
+        allFlights = flights;
+        renderFlightsTable(allFlights);
+
+        // Start auto-update for the current ICAO
+        startAutoUpdate(icao, airportCoordinates);
+    } catch (error) {
+        console.error('Error during search:', error.message);
+        alert('An error occurred while processing your request.');
+    }
+});
+
+// Start automatic updates every 60 seconds
+function startAutoUpdate(icao, airportCoordinates) {
+    if (updateInterval) {
+        clearInterval(updateInterval); // Clear any existing interval
+    }
+
+    // Set a new interval to update every 60 seconds
+    updateInterval = setInterval(async () => {
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
+        await updateDistancesAndETAs(flights, airportCoordinates);
+        renderFlightsTable(allFlights);
+    }, 60000);
+
+    // Show "Stop Update" button
+    document.getElementById('stopUpdateButton').style.display = 'inline';
+}
+
+// Stop automatic updates
+function stopAutoUpdate() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+    }
+
+    // Hide "Stop Update" button
+    document.getElementById('stopUpdateButton').style.display = 'none';
+}
+
+// Update button handler
+document.getElementById('updateButton').addEventListener('click', () => {
+    const icao = document.getElementById('icao').value.trim().toUpperCase();
+    if (!icao) {
+        alert('Please enter a valid ICAO code before updating.');
+        return;
+    }
+
+    startAutoUpdate(icao, fetchAirportCoordinates(icao));
+});
+
+// Stop Update button handler
+document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
