@@ -2,8 +2,8 @@ const apiKey = "${{ secrets.IF_API_KEY }}";
 
 // Fetch all flights from the Infinite Flight API
 async function fetchFlights() {
-  const response = await fetch("https://api.infiniteflight.com/v1/flights", {
-    headers: { "Authorization": `Bearer ${apiKey}` }
+  const response = await fetch("https://api.infiniteflight.com/public/v2/sessions/9bdfef34-f03b-4413-b8fa-c29949bb18f8/flights/?apikey=kqcfcn5ors95bzrdhzezbm9n9hnxq0qk", {
+    headers: { Authorization: Bearer ${apiKey} }
   });
   if (!response.ok) {
     console.error("Error fetching flights:", response.status);

@@ -1,8 +1,18 @@
----
-title: Infinite Flight Tools
-layout: page
----
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infinite Flight Tools</title>
+  <style>
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    input { margin: 0 10px; padding: 5px; }
+    button { padding: 5px 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
   <div>
     <label for="icaoCode">ICAO Code:</label>
     <input type="text" id="icaoCode" placeholder="e.g., KATL">
@@ -30,13 +40,65 @@ layout: page
     <tbody id="flightTable"></tbody>
   </table>
 
-<script src="if-tools.js"></script>
-<script src="/js/if-tools.js"></script>
+  <script>
+    const apiBaseUrl = "https://infiniteflight.com/api/live/v2"; // Replace with actual API base URL
+    const apiKey = "YOUR_API_KEY"; // Replace with your API key
 
-<style>
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background-color: #f4f4f4; }
-    input { margin: 0 10px; padding: 5px; }
-    button { padding: 5px 10px; cursor: pointer; }
-  </style>
+    document.getElementById("filterButton").addEventListener("click", async () => {
+      const icaoCode = document.getElementById("icaoCode").value.trim().toUpperCase();
+      const radius = parseInt(document.getElementById("radius").value);
+      const minHeading = parseInt(document.getElementById("minHeading").value);
+      const maxHeading = parseInt(document.getElementById("maxHeading").value);
+
+      if (!icaoCode) {
+        alert("Please enter a valid ICAO code.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${apiBaseUrl}/flights`, {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch flight data.");
+
+        const flights = await response.json();
+        const filteredFlights = flights.filter((flight) => {
+          return (
+            flight.destination === icaoCode &&
+            flight.distance < radius &&
+            flight.heading >= minHeading &&
+            flight.heading <= maxHeading
+          );
+        });
+
+        renderTable(filteredFlights);
+      } catch (error) {
+        console.error("Error fetching flights:", error);
+        alert("Error fetching flight data. Check the console for details.");
+      }
+    });
+
+    function renderTable(flights) {
+      const tableBody = document.getElementById("flightTable");
+      tableBody.innerHTML = "";
+
+      flights.forEach((flight) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td>${flight.callsign}</td>
+          <td>${flight.heading}</td>
+          <td>${flight.groundSpeed}</td>
+          <td>${flight.mach}</td>
+          <td>${flight.aircraftType}</td>
+          <td>${flight.altitude}</td>
+          <td>${flight.distance.toFixed(2)}</td>
+        `;
+
+        tableBody.appendChild(row);
+      });
+    }
+  </script>
+</body>
+</html>
