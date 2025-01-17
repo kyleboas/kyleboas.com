@@ -3,51 +3,64 @@ layout: page
 ---
 
 
+
   <style>
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background-color: #f4f4f4; }
-    input { margin: 0 10px; padding: 5px; }
-    button { padding: 5px 10px; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+    }
+    label, input, button {
+      margin: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    input, button {
+      padding: 10px;
+    }
+    button {
+      cursor: pointer;
+    }
   </style>
 
+  <h1>Airport Traffic Viewer</h1>
+  <label for="icaoCode">Enter ICAO Code:</label>
+  <input type="text" id="icaoCode" placeholder="e.g., EGLL" />
+  <button id="searchButton">Search</button>
 
-  <div>
-    <label for="icaoCode">ICAO Code:</label>
-    <input type="text" id="icaoCode" placeholder="e.g., KATL">
-    <label for="radius">Radius (km):</label>
-    <input type="number" id="radius" placeholder="50" value="50">
-    <br><br>
-    <label for="minHeading">Min Heading:</label>
-    <input type="number" id="minHeading" placeholder="0" value="0">
-    <label for="maxHeading">Max Heading:</label>
-    <input type="number" id="maxHeading" placeholder="360" value="360">
-    <button id="filterButton">Filter</button>
-  </div>
-  <table>
+  <table id="trafficTable">
     <thead>
       <tr>
         <th>Callsign</th>
+        <th>Altitude</th>
+        <th>Speed (kts)</th>
         <th>Heading</th>
-        <th>GS</th>
-        <th>Mach</th>
         <th>Aircraft</th>
-        <th>Alt</th>
-        <th>Dist.</th>
+        <th>Status</th>
       </tr>
     </thead>
-    <tbody id="flightTable"></tbody>
+    <tbody>
+      <!-- Dynamic rows go here -->
+    </tbody>
   </table>
 
   <script>
-    const apiBaseUrl = "https://infiniteflight.com/api/live/v2"; // Replace with actual API base URL
-    const apiKey = "${{ secrets.IF_API_KEY }}"; // Replace with your API key
+    const apiBaseUrl = "https://api.infiniteflight.com/live/v2"; // Replace with actual API URL
+    const apiKey = "YOUR_API_KEY"; // Replace with your API key
 
-    document.getElementById("filterButton").addEventListener("click", async () => {
+    document.getElementById("searchButton").addEventListener("click", async () => {
       const icaoCode = document.getElementById("icaoCode").value.trim().toUpperCase();
-      const radius = parseInt(document.getElementById("radius").value);
-      const minHeading = parseInt(document.getElementById("minHeading").value);
-      const maxHeading = parseInt(document.getElementById("maxHeading").value);
 
       if (!icaoCode) {
         alert("Please enter a valid ICAO code.");
@@ -55,44 +68,37 @@ layout: page
       }
 
       try {
-        const response = await fetch(`${apiBaseUrl}/flights`, {
-          headers: { Authorization: Bearer ${apiKey} },
+        const response = await fetch(`${apiBaseUrl}/airport-status?icao=${icaoCode}`, {
+          headers: { Authorization: `Bearer ${apiKey}` },
         });
 
-        if (!response.ok) throw new Error("Failed to fetch flight data.");
+        if (!response.ok) {
+          alert(`Failed to fetch data for ${icaoCode}.`);
+          return;
+        }
 
-        const flights = await response.json();
-        const filteredFlights = flights.filter((flight) => {
-          return (
-            flight.destination === icaoCode &&
-            flight.distance < radius &&
-            flight.heading >= minHeading &&
-            flight.heading <= maxHeading
-          );
-        });
-
-        renderTable(filteredFlights);
+        const data = await response.json();
+        updateTrafficTable(data);
       } catch (error) {
-        console.error("Error fetching flights:", error);
-        alert("Error fetching flight data. Check the console for details.");
+        console.error("Error fetching airport traffic:", error);
+        alert("An error occurred. Check the console for details.");
       }
     });
 
-    function renderTable(flights) {
-      const tableBody = document.getElementById("flightTable");
-      tableBody.innerHTML = "";
+    function updateTrafficTable(data) {
+      const tableBody = document.querySelector("#trafficTable tbody");
+      tableBody.innerHTML = ""; // Clear previous data
 
-      flights.forEach((flight) => {
+      data.flights.forEach((flight) => {
         const row = document.createElement("tr");
 
         row.innerHTML = `
-          <td>${flight.callsign}</td>
-          <td>${flight.heading}</td>
-          <td>${flight.groundSpeed}</td>
-          <td>${flight.mach}</td>
-          <td>${flight.aircraftType}</td>
-          <td>${flight.altitude}</td>
-          <td>${flight.distance.toFixed(2)}</td>
+          <td>${flight.callsign || "N/A"}</td>
+          <td>${flight.altitude || 0} ft</td>
+          <td>${flight.groundSpeed || 0} kts</td>
+          <td>${flight.heading || 0}</td>
+          <td>${flight.aircraftType || "Unknown"}</td>
+          <td>${flight.status || "Unknown"}</td>
         `;
 
         tableBody.appendChild(row);
