@@ -3,16 +3,7 @@ layout: page
 ---
 
 
-
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 0;
-    }
-    label, input, button {
-      margin: 10px;
-    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -28,77 +19,106 @@ layout: page
     }
     input, button {
       padding: 10px;
+      margin: 10px;
     }
     button {
       cursor: pointer;
     }
   </style>
 
-  <h1>Airport Traffic Viewer</h1>
+  <h1>Inbound Flights Viewer</h1>
   <label for="icaoCode">Enter ICAO Code:</label>
-  <input type="text" id="icaoCode" placeholder="e.g., EGLL" />
-  <button id="searchButton">Search</button>
+  <input type="text" id="icaoCode" placeholder="e.g., EGLL">
+  <button id="fetchButton">Fetch Inbound Flights</button>
 
-  <table id="trafficTable">
+  <table>
     <thead>
       <tr>
-        <th>Callsign</th>
-        <th>Altitude</th>
-        <th>Speed (kts)</th>
+        <th>Flight ID</th>
         <th>Heading</th>
-        <th>Aircraft</th>
-        <th>Status</th>
+        <th>Altitude</th>
+        <th>Ground Speed</th>
       </tr>
     </thead>
-    <tbody>
-      <!-- Dynamic rows go here -->
+    <tbody id="flightsTableBody">
+      <!-- Dynamic rows will go here -->
     </tbody>
   </table>
 
   <script>
-    const apiBaseUrl = "https://api.infiniteflight.com/live/v2"; // Replace with actual API URL
-    const apiKey = "${{ secrets.IF_API_KEY }}"; // Replace with your API key
+    const sessionId = "9bdfef34-f03b-4413-b8fa-c29949bb18f8"; // Replace with your session ID
+    const apiBaseUrl = "https://api.infiniteflight.com/public/v2";
+    const apiKey = "YOUR_API_KEY"; // Replace with your API key
 
-    document.getElementById("searchButton").addEventListener("click", async () => {
+    document.getElementById("fetchButton").addEventListener("click", async () => {
       const icaoCode = document.getElementById("icaoCode").value.trim().toUpperCase();
-
       if (!icaoCode) {
         alert("Please enter a valid ICAO code.");
         return;
       }
 
       try {
-        const response = await fetch(`${apiBaseUrl}/airport-status?icao=${icaoCode}`, {
-          headers: { Authorization: Bearer ${apiKey} },
-        });
+        // Step 1: Fetch inbound flight IDs
+        const inboundResponse = await fetch(
+          `${apiBaseUrl}/sessions/${sessionId}/airport/${icaoCode}/status`,
+          {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          }
+        );
 
-        if (!response.ok) {
-          alert(`Failed to fetch data for ${icaoCode}.`);
-          return;
+        if (!inboundResponse.ok) {
+          throw new Error(`Failed to fetch airport status: ${inboundResponse.statusText}`);
         }
 
-        const data = await response.json();
-        updateTrafficTable(data);
+        const inboundData = await inboundResponse.json();
+        const inboundFlights = inboundData.inboundFlights || [];
+
+        // Step 2: Fetch route data for each inbound flight
+        const flightDetailsPromises = inboundFlights.map(async (flightId) => {
+          const routeResponse = await fetch(
+            `${apiBaseUrl}/sessions/${sessionId}/flights/${flightId}/route`,
+            {
+              headers: { Authorization: `Bearer ${apiKey}` },
+            }
+          );
+
+          if (!routeResponse.ok) {
+            console.error(`Failed to fetch route for flight ${flightId}: ${routeResponse.statusText}`);
+            return null;
+          }
+
+          const routeData = await routeResponse.json();
+          const lastRoutePoint = routeData.route[routeData.route.length - 1]; // Use the last point of the route
+          return {
+            flightId,
+            heading: lastRoutePoint.heading || "N/A",
+            altitude: lastRoutePoint.altitude || "N/A",
+            groundSpeed: lastRoutePoint.groundSpeed || "N/A",
+          };
+        });
+
+        const flightDetails = (await Promise.all(flightDetailsPromises)).filter(Boolean);
+
+        // Step 3: Update table with flight details
+        updateTable(flightDetails);
       } catch (error) {
-        console.error("Error fetching airport traffic:", error);
-        alert("An error occurred. Check the console for details.");
+        console.error("Error:", error);
+        alert("An error occurred while fetching flight data. Check the console for details.");
       }
     });
 
-    function updateTrafficTable(data) {
-      const tableBody = document.querySelector("#trafficTable tbody");
-      tableBody.innerHTML = ""; // Clear previous data
+    function updateTable(flightDetails) {
+      const tableBody = document.getElementById("flightsTableBody");
+      tableBody.innerHTML = ""; // Clear existing rows
 
-      data.flights.forEach((flight) => {
+      flightDetails.forEach((flight) => {
         const row = document.createElement("tr");
 
         row.innerHTML = `
-          <td>${flight.callsign || "N/A"}</td>
-          <td>${flight.altitude || 0} ft</td>
-          <td>${flight.groundSpeed || 0} kts</td>
-          <td>${flight.heading || 0}</td>
-          <td>${flight.aircraftType || "Unknown"}</td>
-          <td>${flight.status || "Unknown"}</td>
+          <td>${flight.flightId}</td>
+          <td>${flight.heading}</td>
+          <td>${flight.altitude} ft</td>
+          <td>${flight.groundSpeed} kts</td>
         `;
 
         tableBody.appendChild(row);
