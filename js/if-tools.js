@@ -191,14 +191,17 @@ function renderFlightsTable(flights) {
     const tableBody = document.querySelector('#flightsTable tbody');
     tableBody.innerHTML = '';
 
-    if (flights.length === 0) {
+    // Exclude flights with speed below 30 knots
+    const filteredFlights = flights.filter(flight => flight.speed >= 30);
+
+    if (filteredFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="8">No inbound flights found.</td></tr>';
         return;
     }
 
-    flights.sort((a, b) => a.distanceToDestination - b.distanceToDestination);
+    filteredFlights.sort((a, b) => a.distanceToDestination - b.distanceToDestination);
 
-    flights.forEach(flight => {
+    filteredFlights.forEach(flight => {
         const eta = flight.distanceToDestination && flight.speed > 0
             ? calculateETA(flight.distanceToDestination, flight.speed)
             : 'N/A';
