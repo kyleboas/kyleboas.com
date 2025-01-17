@@ -107,15 +107,15 @@ function highlightCloseETAs(flights) {
         const eta1 = parseETAInSeconds(flights[i].etaMinutes);
         const eta2 = parseETAInSeconds(flights[i + 1].etaMinutes);
 
-        // Highlight in red if within 30 seconds
+        // Highlight in yellow if within 30 seconds
         if (Math.abs(eta1 - eta2) <= 30) {
-            rows[i].style.backgroundColor = 'red';
-            rows[i + 1].style.backgroundColor = 'red';
-        }
-        // Highlight in yellow if within 60 seconds but more than 30 seconds
-        else if (Math.abs(eta1 - eta2) <= 60) {
             rows[i].style.backgroundColor = 'yellow';
             rows[i + 1].style.backgroundColor = 'yellow';
+        }
+        // Highlight in grey if within 60 seconds but more than 30 seconds
+        else if (Math.abs(eta1 - eta2) <= 60) {
+            rows[i].style.backgroundColor = '#beaba4';
+            rows[i + 1].style.backgroundColor = '#beaba4';
         }
     }
 }
