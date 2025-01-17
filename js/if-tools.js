@@ -57,6 +57,22 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // Distance in nautical miles
 }
 
+// Calculate bearing from airport to aircraft
+function calculateBearing(lat1, lon1, lat2, lon2) {
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const toDegrees = (radians) => radians * (180 / Math.PI);
+
+    const φ1 = toRadians(lat1);
+    const φ2 = toRadians(lat2);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) -
+              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+    return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360°
+}
+
 // Calculate ETA in MM:SS format
 function calculateETA(distance, groundSpeed) {
     if (groundSpeed > 0) {
@@ -122,7 +138,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
-// Update distances and ETA for each flight
+// Update distances, ETA, and heading from the airport
 async function updateDistancesAndETAs(flights, airportCoordinates) {
     for (const flight of flights) {
         flight.distanceToDestination = calculateDistance(
@@ -132,6 +148,12 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
             airportCoordinates.longitude
         );
         flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
+        flight.headingFromAirport = calculateBearing(
+            airportCoordinates.latitude,
+            airportCoordinates.longitude,
+            flight.latitude,
+            flight.longitude
+        );
     }
 }
 
@@ -158,20 +180,20 @@ function renderFlightsTable(flights, hideFilter = null) {
         // Bold rows within the current bolded heading range
         const isBolded =
             boldedHeadings.minHeading !== null &&
-            flight.heading >= boldedHeadings.minHeading &&
-            flight.heading <= boldedHeadings.maxHeading;
+            flight.headingFromAirport >= boldedHeadings.minHeading &&
+            flight.headingFromAirport <= boldedHeadings.maxHeading;
 
         // Hide rows if the hide filter is active and the row is outside the heading range
         const isVisible =
             !hideFilter ||
-            (flight.heading >= hideFilter.minHeading && flight.heading <= hideFilter.maxHeading);
+            (flight.headingFromAirport >= hideFilter.minHeading && flight.headingFromAirport <= hideFilter.maxHeading);
 
         row.style.fontWeight = isBolded ? 'bold' : 'normal'; // Apply bold style
         row.style.display = isVisible ? '' : 'none'; // Toggle visibility
 
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
-            <td>${flight.heading ? Math.round(flight.heading) : 'N/A'}</td>
+            <td>${Math.round(flight.headingFromAirport) || 'N/A'}</td>
             <td>${flight.speed?.toFixed(0) || 'N/A'}</td>
             <td>${(flight.speed / 666.739).toFixed(2) || 'N/A'}</td>
             <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
@@ -209,7 +231,7 @@ async function fetchAndUpdateFlights(icao) {
         const inboundFlightIds = await fetchInboundFlightIds(icao);
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
 
-        // Calculate distance and ETA for each flight
+        // Calculate distance, ETA, and heading from the airport for each flight
         const airportCoordinates = await fetchAirportCoordinates(icao);
         await updateDistancesAndETAs(flights, airportCoordinates);
 
