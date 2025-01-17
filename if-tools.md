@@ -61,7 +61,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
   try {
     const inboundResponse = await fetch(
       `${apiBaseUrl}/sessions/${sessionId}/airport/${icaoCode}/status`,
-      { headers: { Authorization: `Bearer ${apiKey}` } }
+      { headers: { Authorization: Bearer ${apiKey} } }
     );
 
     if (!inboundResponse.ok) {
@@ -81,7 +81,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
       try {
         const routeResponse = await fetch(
           `${apiBaseUrl}/sessions/${sessionId}/flights/${flightId}/route`,
-          { headers: { Authorization: `Bearer ${apiKey}` } }
+          { headers: { Authorization: Bearer ${apiKey} } }
         );
 
         if (!routeResponse.ok) {
