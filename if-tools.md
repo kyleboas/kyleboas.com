@@ -33,22 +33,7 @@ th {
     <label for="icao">Enter Airport ICAO:</label>
     <input type="text" id="icao" name="icao" placeholder="e.g., KLAX" required>
     <button type="submit">Search</button>
-    <button type="button" id="updateButton">Update</button>
-    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-</form>
-    <table id="flightsTable">
-        <thead>
-            <tr>
-                <th>Callsign</th>
-                <th>Heading</th>
-                <th>Ground Speed (kts)</th>
-                <th>Mach Speed</th>
-                <th>Altitude (ft)</th>
-                <th>Distance to Destination (nm)</th>
-                <th>ETA (minutes)</th>
-            </tr>
-        </thead>
-        <form id="filterForm">
+    <form id="filterForm">
     <!-- Heading Criteria -->
     <label for="minHeading">Min Heading:</label>
     <input type="number" id="minHeading" name="minHeading" min="0" max="360" placeholder="e.g., 0">
@@ -68,6 +53,21 @@ th {
 
     <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
 </form>
+    <button type="button" id="updateButton">Update</button>
+    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
+</form>
+    <table id="flightsTable">
+        <thead>
+            <tr>
+                <th>Callsign</th>
+                <th>Heading</th>
+                <th>Ground Speed (kts)</th>
+                <th>Mach Speed</th>
+                <th>Altitude (ft)</th>
+                <th>Distance to Destination (nm)</th>
+                <th>ETA (minutes)</th>
+            </tr>
+        </thead>
         <tbody>
             <!-- Rows will be inserted dynamically -->
         </tbody>
