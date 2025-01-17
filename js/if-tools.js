@@ -5,9 +5,30 @@ const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk'; // Replace with your Infinit
 let allFlights = []; // Store all flights globally
 let headingFilterActive = false; // Track if heading-based hide/show filter is active
 let boldedHeadings = { minHeading: null, maxHeading: null }; // Store the current bold heading range
-let updateInterval = null; // To store the interval ID for updates
-let countdownInterval = null; // To store the interval ID for the countdown
-let countdownTime = 60; // Countdown time in seconds
+let updateInterval = null; // To store the interval ID
+let countdownInterval = null; // To store the countdown interval ID
+const updateFrequency = 60; // Update frequency in seconds
+
+// Update the countdown timer
+function startCountdown() {
+    let timeLeft = updateFrequency;
+
+    // Update the countdown every second
+    countdownInterval = setInterval(() => {
+        document.getElementById('countdownTimer').innerText = `Next update in: ${timeLeft} seconds`;
+        timeLeft--;
+
+        if (timeLeft < 0) {
+            clearInterval(countdownInterval); // Stop the countdown when it reaches 0
+        }
+    }, 1000);
+}
+
+// Stop the countdown timer
+function stopCountdown() {
+    clearInterval(countdownInterval);
+    document.getElementById('countdownTimer').innerText = ''; // Clear the countdown text
+}
 
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
@@ -140,83 +161,22 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
-// Update distances, ETA, and heading from the airport
-async function updateDistancesAndETAs(flights, airportCoordinates) {
-    for (const flight of flights) {
-        // Calculate distance from the airport to the aircraft
-        flight.distanceToDestination = calculateDistance(
-            flight.latitude,
-            flight.longitude,
-            airportCoordinates.latitude,
-            airportCoordinates.longitude
-        );
+// Fetch and update the flights
+async function fetchAndUpdateFlights(icao) {
+    try {
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
 
-        // Calculate ETA
-        flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
+        // Calculate distance, ETA, and heading from the airport for each flight
+        const airportCoordinates = await fetchAirportCoordinates(icao);
+        await updateDistancesAndETAs(flights, airportCoordinates);
 
-        // Calculate heading from the airport to the aircraft
-        flight.headingFromAirport = calculateBearing(
-            airportCoordinates.latitude,
-            airportCoordinates.longitude,
-            flight.latitude,
-            flight.longitude
-        );
+        allFlights = flights; // Store all flights globally
+        renderFlightsTable(allFlights); // Initial rendering without filters
+    } catch (error) {
+        console.error('Error:', error.message);
+        alert('An error occurred while fetching flight data.');
     }
-}
-
-// Render flight details in the table with optional filters
-function renderFlightsTable(flights) {
-    const tableBody = document.querySelector('#flightsTable tbody');
-    tableBody.innerHTML = '';
-
-    if (flights.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="8">No inbound flights found.</td></tr>';
-        return;
-    }
-
-    // Sort flights by ETA in ascending order
-    flights.sort((a, b) => {
-        const etaA = a.etaMinutes !== null ? parseInt(a.etaMinutes.split(':')[0]) * 60 + parseInt(a.etaMinutes.split(':')[1]) : Infinity;
-        const etaB = b.etaMinutes !== null ? parseInt(b.etaMinutes.split(':')[0]) * 60 + parseInt(b.etaMinutes.split(':')[1]) : Infinity;
-        return etaA - etaB;
-    });
-
-    flights.forEach(flight => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${flight.callsign || 'N/A'}</td>
-            <td>${Math.round(flight.headingFromAirport) || 'N/A'}</td>
-            <td>${flight.speed?.toFixed(0) || 'N/A'}</td>
-            <td>${(flight.speed / 666.739).toFixed(2) || 'N/A'}</td>
-            <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
-            <td>${flight.distanceToDestination?.toFixed(2) || 'N/A'}</td>
-            <td>${flight.etaMinutes || 'N/A'}</td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
-
-// Start the countdown
-function startCountdown() {
-    const countdownElement = document.getElementById('countdown');
-
-    if (countdownInterval) {
-        clearInterval(countdownInterval); // Clear existing interval
-    }
-
-    countdownInterval = setInterval(() => {
-        if (countdownTime > 0) {
-            countdownElement.textContent = `Next update in: ${countdownTime--}s`;
-        } else {
-            clearInterval(countdownInterval); // Stop when the countdown reaches 0
-        }
-    }, 1000);
-}
-
-// Reset the countdown
-function resetCountdown() {
-    countdownTime = 60; // Reset to 60 seconds
-    startCountdown(); // Start the countdown
 }
 
 // Start automatic updates every 60 seconds
@@ -227,11 +187,11 @@ function startAutoUpdate(icao) {
 
     updateInterval = setInterval(async () => {
         await fetchAndUpdateFlights(icao);
-        resetCountdown(); // Reset the countdown after each update
-    }, 60000);
+        startCountdown(); // Restart countdown after each update
+    }, updateFrequency * 1000);
 
-    document.getElementById('stopUpdateButton').style.display = 'inline'; // Show Stop button
-    resetCountdown(); // Start countdown immediately
+    startCountdown(); // Start the countdown
+    document.getElementById('stopUpdateButton').style.display = 'inline'; // Show "Stop Update" button
 }
 
 // Stop automatic updates
@@ -241,35 +201,13 @@ function stopAutoUpdate() {
         updateInterval = null;
     }
 
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-    }
-
-    document.getElementById('stopUpdateButton').style.display = 'none'; // Hide Stop button
-    document.getElementById('countdown').textContent = ''; // Clear countdown display
-}
-
-// Fetch and update the flights
-async function fetchAndUpdateFlights(icao) {
-    try {
-        const inboundFlightIds = await fetchInboundFlightIds(icao);
-        const flights = await fetchInboundFlightDetails(inboundFlightIds);
-
-        const airportCoordinates = await fetchAirportCoordinates(icao);
-        await updateDistancesAndETAs(flights, airportCoordinates);
-
-        allFlights = flights; // Store all flights globally
-        renderFlightsTable(allFlights); // Initial rendering
-    } catch (error) {
-        console.error('Error:', error.message);
-        alert('An error occurred while fetching flight data.');
-    }
+    stopCountdown(); // Stop the countdown
+    document.getElementById('stopUpdateButton').style.display = 'none'; // Hide "Stop Update" button
 }
 
 // Handle the form submission to prevent page reload
 document.getElementById('searchForm').addEventListener('submit', async (event) => {
-    event.preventDefault(); // Prevent page reload
+    event.preventDefault(); // Prevent the default form submission behavior
 
     const icao = document.getElementById('icao').value.trim().toUpperCase();
     if (!icao) {
@@ -277,7 +215,17 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
         return;
     }
 
-    stopAutoUpdate(); // Stop ongoing updates if any
-    await fetchAndUpdateFlights(icao); // Fetch data for the entered ICAO
-    startAutoUpdate(icao); // Start auto-updating
+    try {
+        // Stop any ongoing auto-update when a new search is initiated
+        stopAutoUpdate();
+
+        // Fetch and update the flights
+        await fetchAndUpdateFlights(icao);
+
+        // Start auto-update for the current ICAO
+        startAutoUpdate(icao);
+    } catch (error) {
+        console.error('Error during search:', error.message);
+        alert('An error occurred while processing your request.');
+    }
 });
