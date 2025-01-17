@@ -52,10 +52,13 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // Distance in nautical miles
 }
 
-// Calculate ETA in minutes
+// Calculate ETA in hours and minutes
 function calculateETA(distance, groundSpeed) {
     if (groundSpeed > 0) {
-        return (distance / groundSpeed) * 60; // ETA in minutes
+        const totalMinutes = (distance / groundSpeed) * 60;
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = Math.round(totalMinutes % 60);
+        return `${hours}:${minutes.toString().padStart(2, '0')}`; // Format as HH:MM
     }
     return 'N/A'; // Return 'N/A' if ground speed is 0 or invalid
 }
@@ -128,11 +131,11 @@ function renderFlightsTable(flights) {
     flights.sort((a, b) => (a.eta === 'N/A' ? Infinity : a.eta) - (b.eta === 'N/A' ? Infinity : b.eta));
 
     flights.forEach(flight => {
-        const eta = flight.eta !== 'N/A' ? Math.round(flight.eta) : 'N/A';
+        const eta = flight.eta !== 'N/A' ? flight.eta : 'N/A';
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
-            <td>${flight.heading || 'N/A'}</td>
+            <td>${flight.heading ? Math.round(flight.heading) : 'N/A'}</td>
             <td>${flight.speed?.toFixed(0) || 'N/A'}</td>
             <td>${(flight.speed / 666.739).toFixed(2) || 'N/A'}</td>
             <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
