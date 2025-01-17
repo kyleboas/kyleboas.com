@@ -52,49 +52,49 @@ const apiKey = "${{ secrets.IF_API_KEY }}"; // Replace with your API key
 document.getElementById("fetchButton").addEventListener("click", async () => {
   const icaoCode = document.getElementById("icaoCode").value.trim().toUpperCase();
   if (!icaoCode) {
-    alert("Please enter a valid ICAO code.");
-    return;
-  }
+  alert("Please enter a valid ICAO code.");
+  return;
+}
 
   try {
-    const inboundResponse = await fetch(
-      `${apiBaseUrl}/sessions/${sessionId}/airport/${icaoCode}/status`,
-      { headers: { Authorization: `Bearer ${apiKey}` } }
-    );
+  const inboundResponse = await fetch(
+   `${apiBaseUrl}/sessions/${sessionId}/airport/${icaoCode}/status`,
+  { headers: { Authorization: `Bearer ${apiKey}` } }
+ );
 
-    if (!inboundResponse.ok) {
-      throw new Error(`Failed to fetch airport status: ${inboundResponse.statusText}`);
-    }
+  if (!inboundResponse.ok) {
+   throw new Error(`Failed to fetch airport status: ${inboundResponse.statusText}`);
+  }
 
-    const inboundData = await inboundResponse.json();
-    const inboundFlights = inboundData.inboundFlights || [];
+  const inboundData = await inboundResponse.json();
+  const inboundFlights = inboundData.inboundFlights || [];
 
-    const flightDetailsPromises = inboundFlights.map(async (flightId) => {
-      const routeResponse = await fetch(
-        `${apiBaseUrl}/sessions/${sessionId}/flights/${flightId}/route`,
-        { headers: { Authorization: `Bearer ${apiKey}` } }
-      );
+  const flightDetailsPromises = inboundFlights.map(async (flightId) => {
+   const routeResponse = await fetch(
+   `${apiBaseUrl}/sessions/${sessionId}/flights/${flightId}/route`,
+   { headers: { Authorization: `Bearer ${apiKey}` } }
+   );
 
-      if (!routeResponse.ok) {
-        console.error(`Failed to fetch route for flight ${flightId}: ${routeResponse.statusText}`);
-        return null;
-      }
+if (!routeResponse.ok) {
+  console.error(`Failed to fetch route for flight ${flightId}: ${routeResponse.statusText}`);
+   return null;
+}
 
-      const routeData = await routeResponse.json();
-      const lastRoutePoint = routeData.route[routeData.route.length - 1];
-      return {
-        flightId,
-        heading: lastRoutePoint.heading || "N/A",
-        altitude: lastRoutePoint.altitude || "N/A",
-        groundSpeed: lastRoutePoint.groundSpeed || "N/A",
-      };
-    });
+const routeData = await routeResponse.json();
+const lastRoutePoint = routeData.route[routeData.route.length - 1];
+  return {
+    flightId,
+    heading: lastRoutePoint.heading || "N/A",
+    altitude: lastRoutePoint.altitude || "N/A",
+    groundSpeed: lastRoutePoint.groundSpeed || "N/A",
+ };
+});
 
-    const flightDetails = (await Promise.all(flightDetailsPromises)).filter(Boolean);
-    updateTable(flightDetails);
-  } catch (error) {
-    console.error("Error:", error);
-    alert("An error occurred while fetching flight data. Check the console for details.");
+const flightDetails = (await Promise.all(flightDetailsPromises)).filter(Boolean);
+ updateTable(flightDetails);
+} catch (error) {
+  console.error("Error:", error);
+  alert("An error occurred while fetching flight data. Check the console for details.");
   }
 });
 
@@ -103,14 +103,14 @@ function updateTable(flightDetails) {
   tableBody.innerHTML = "";
 
   flightDetails.forEach((flight) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${flight.flightId}</td>
-      <td>${flight.heading}</td>
-      <td>${flight.altitude} ft</td>
-      <td>${flight.groundSpeed} kts</td>
-    `;
-    tableBody.appendChild(row);
-  });
+ const row = document.createElement("tr");
+ row.innerHTML = `
+  <td>${flight.flightId}</td>
+  <td>${flight.heading}</td>
+  <td>${flight.altitude} ft</td>
+  <td>${flight.groundSpeed} kts</td>
+ `;
+ tableBody.appendChild(row);
+});
 }
 </script>
