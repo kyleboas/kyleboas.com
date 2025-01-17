@@ -53,14 +53,12 @@ const apiKey = "kqcfcn5ors95bzrdhzezbm9n9hnxq0qk"; // Consider moving this to a 
 document.getElementById("fetchButton").addEventListener("click", async () => {
   const icaoCode = document.getElementById("icaoCode").value.trim().toUpperCase();
 
-  // Validate ICAO Code
   if (!/^[A-Z]{4}$/.test(icaoCode)) {
     alert("Please enter a valid 4-character ICAO code.");
     return;
   }
 
   try {
-    // Fetch inbound flights for the ICAO code
     const inboundResponse = await fetch(
       `${apiBaseUrl}/sessions/${sessionId}/airport/${icaoCode}/status`,
       { headers: { Authorization: `Bearer ${apiKey}` } }
@@ -71,9 +69,14 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
     }
 
     const inboundData = await inboundResponse.json();
-    const inboundFlights = inboundData.inboundFlights.slice(0, 10) || []; // Limit to 10 flights
+    console.log("API Response:", inboundData); // Debugging API response
 
-    // Fetch flight details for each inbound flight
+    const inboundFlights = inboundData.inboundFlights || [];
+    if (inboundFlights.length === 0) {
+      alert("No inbound flights found for this airport.");
+      return;
+    }
+
     const flightDetailsPromises = inboundFlights.map(async (flightId) => {
       try {
         const routeResponse = await fetch(
@@ -87,6 +90,8 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
         }
 
         const routeData = await routeResponse.json();
+        console.log(`Route data for flight ${flightId}:`, routeData); // Debugging route data
+
         const lastRoutePoint = routeData.route?.[routeData.route.length - 1] || {};
         return {
           flightId,
@@ -101,6 +106,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
     });
 
     const flightDetails = (await Promise.all(flightDetailsPromises)).filter(Boolean);
+    console.log("Flight Details:", flightDetails); // Debugging processed flight details
     updateTable(flightDetails);
   } catch (error) {
     console.error("Error:", error);
@@ -108,10 +114,14 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
   }
 });
 
-// Update table with flight details
 function updateTable(flightDetails) {
   const tableBody = document.getElementById("flightsTableBody");
   tableBody.innerHTML = "";
+
+  if (flightDetails.length === 0) {
+    tableBody.innerHTML = "<tr><td colspan='4'>No flights available</td></tr>";
+    return;
+  }
 
   flightDetails.forEach((flight) => {
     const row = document.createElement("tr");
