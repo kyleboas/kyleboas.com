@@ -121,15 +121,15 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c; // Distance in nautical miles
 }
 
-// Calculate ETA in hours and minutes
+// Calculate ETA in MM:SS format
 function calculateETA(distance, groundSpeed) {
     if (groundSpeed > 0) {
-        const totalMinutes = (distance / groundSpeed) * 60;
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = Math.round(totalMinutes % 60);
-        return `${hours}:${minutes.toString().padStart(2, '0')}`; // Format as HH:MM
+        const totalSeconds = Math.round((distance / groundSpeed) * 3600); // Convert to seconds
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`; // Format as MM:SS
     }
-    return 'N/A'; // Return 'N/A' if ground speed is 0 or invalid
+    return null; // Return null if ground speed is 0 or invalid
 }
 
 // Fetch inbound flight IDs from the airport status API
@@ -192,19 +192,27 @@ function renderFlightsTable(flights) {
     tableBody.innerHTML = '';
 
     // Exclude flights with speed below 30 knots
-    const filteredFlights = flights.filter(flight => flight.speed >= 30);
+    const filteredFlights = flights
+        .filter(flight => flight.speed >= 30)
+        .map(flight => {
+            flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
+            return flight;
+        });
 
     if (filteredFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="8">No inbound flights found.</td></tr>';
         return;
     }
 
-    filteredFlights.sort((a, b) => a.distanceToDestination - b.distanceToDestination);
+    // Sort flights by ETA in ascending order
+    filteredFlights.sort((a, b) => {
+        const etaA = a.etaMinutes !== null ? parseInt(a.etaMinutes.split(':')[0]) * 60 + parseInt(a.etaMinutes.split(':')[1]) : Infinity;
+        const etaB = b.etaMinutes !== null ? parseInt(b.etaMinutes.split(':')[0]) * 60 + parseInt(b.etaMinutes.split(':')[1]) : Infinity;
+        return etaA - etaB;
+    });
 
     filteredFlights.forEach(flight => {
-        const eta = flight.distanceToDestination && flight.speed > 0
-            ? calculateETA(flight.distanceToDestination, flight.speed)
-            : 'N/A';
+        const eta = flight.etaMinutes !== null ? flight.etaMinutes : 'N/A';
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
