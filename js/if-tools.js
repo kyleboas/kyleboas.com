@@ -84,6 +84,34 @@ function calculateETA(distance, groundSpeed) {
     return null; // Return null if ground speed is 0 or invalid
 }
 
+// Parse ETA in MM:SS format to total seconds
+function parseETAInSeconds(eta) {
+    if (!eta || eta === 'N/A') return Infinity; // Return Infinity for invalid ETAs
+    const [minutes, seconds] = eta.split(':').map(Number);
+    return minutes * 60 + seconds;
+}
+
+// Highlight rows where aircraft are within one minute based on ETA
+function highlightCloseETAs(flights) {
+    const rows = document.querySelectorAll('#flightsTable tbody tr');
+
+    // Reset row colors
+    rows.forEach(row => {
+        row.style.backgroundColor = ''; // Clear previous highlighting
+    });
+
+    // Compare consecutive flights' ETAs
+    for (let i = 0; i < flights.length - 1; i++) {
+        const eta1 = parseETAInSeconds(flights[i].etaMinutes);
+        const eta2 = parseETAInSeconds(flights[i + 1].etaMinutes);
+
+        if (Math.abs(eta1 - eta2) <= 60) { // 60 seconds = 1 minute
+            rows[i].style.backgroundColor = 'yellow';
+            rows[i + 1].style.backgroundColor = 'yellow';
+        }
+    }
+}
+
 // Fetch inbound flight IDs from the airport status API
 async function fetchInboundFlightIds(icao) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/airport/${icao}/status`;
@@ -169,8 +197,8 @@ function renderFlightsTable(flights, hideFilter = null) {
 
     // Sort flights by ETA in ascending order
     flights.sort((a, b) => {
-        const etaA = a.etaMinutes !== null ? parseInt(a.etaMinutes.split(':')[0]) * 60 + parseInt(a.etaMinutes.split(':')[1]) : Infinity;
-        const etaB = b.etaMinutes !== null ? parseInt(b.etaMinutes.split(':')[0]) * 60 + parseInt(b.etaMinutes.split(':')[1]) : Infinity;
+        const etaA = parseETAInSeconds(a.etaMinutes);
+        const etaB = parseETAInSeconds(b.etaMinutes);
         return etaA - etaB;
     });
 
@@ -202,28 +230,10 @@ function renderFlightsTable(flights, hideFilter = null) {
         `;
         tableBody.appendChild(row);
     });
+
+    // Highlight rows with close ETAs
+    highlightCloseETAs(flights);
 }
-
-// Bold Aircraft Within Heading Criteria
-document.getElementById('boldHeadingButton').addEventListener('click', () => {
-    const minHeading = parseFloat(document.getElementById('minHeading').value);
-    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
-
-    if (isNaN(minHeading) || isNaN(maxHeading)) {
-        alert('Please enter valid min and max heading values.');
-        return;
-    }
-
-    boldedHeadings = { minHeading, maxHeading }; // Update the bolded heading range
-    renderFlightsTable(allFlights); // Re-render the table to apply bolding
-});
-
-// Hide/Show Aircraft Not Matching Heading Criteria
-document.getElementById('toggleHeadingButton').addEventListener('click', () => {
-    headingFilterActive = !headingFilterActive; // Toggle the filter state
-    const hideFilter = headingFilterActive ? boldedHeadings : null; // Use the bolded headings as filter
-    renderFlightsTable(allFlights, hideFilter);
-});
 
 // Fetch and update the flights
 async function fetchAndUpdateFlights(icao) {
@@ -280,7 +290,7 @@ function startAutoUpdate(icao) {
 
     // Show "Stop Update" button
     document.getElementById('stopUpdateButton').style.display = 'inline';
-} 
+}
 
 // Stop automatic updates
 function stopAutoUpdate() {
