@@ -45,9 +45,9 @@ button {
 </table>
 
 <script>
-const sessionId = "9bdfef34-f03b-4413-b8fa-c29949bb18f8"; // Replace with your session ID
+const sessionId = "9bdfef34-f03b-4413-b8fa-c29949bb18f8";
 const apiBaseUrl = "https://api.infiniteflight.com/public/v2";
-const apiKey = "kqcfcn5ors95bzrdhzezbm9n9hnxq0qk"; // Replace with your API key
+const apiKey = "kqcfcn5ors95bzrdhzezbm9n9hnxq0qk";
 
 document.getElementById("fetchButton").addEventListener("click", async () => {
   const icaoCode = document.getElementById("icaoCode").value.trim().toUpperCase();
@@ -59,7 +59,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
   try {
   const inboundResponse = await fetch(
    `${apiBaseUrl}/sessions/${sessionId}/airport/${icaoCode}/status`,
-  { headers: { Authorization: `Bearer ${apiKey}` } }
+  { headers: { Authorization: Bearer ${apiKey} } }
  );
 
   if (!inboundResponse.ok) {
@@ -72,7 +72,7 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
   const flightDetailsPromises = inboundFlights.map(async (flightId) => {
    const routeResponse = await fetch(
    `${apiBaseUrl}/sessions/${sessionId}/flights/${flightId}/route`,
-   { headers: { Authorization: `Bearer ${apiKey}` } }
+   { headers: { Authorization: Bearer ${apiKey} } }
    );
 
 if (!routeResponse.ok) {
