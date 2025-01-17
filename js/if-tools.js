@@ -7,7 +7,7 @@ let headingFilterActive = false; // Track if heading-based hide/show filter is a
 let boldedHeadings = { minHeading: null, maxHeading: null }; // Store the current bold heading range
 let distanceFilterActive = false; // Track if distance-based filtering is active
 let maxDistance = null; // Store the maximum allowed distance for filtering
-let updateInterval = null; // To store the interval ID
+let updateInterval = null; // To store the interval ID 
 
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
