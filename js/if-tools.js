@@ -109,8 +109,8 @@ function highlightCloseETAs(flights) {
 
         // Highlight in yellow if within 30 seconds
         if (Math.abs(eta1 - eta2) <= 30) {
-            rows[i].style.backgroundColor = 'yellow';
-            rows[i + 1].style.backgroundColor = 'yellow';
+            rows[i].style.backgroundColor = '#fffa9f';
+            rows[i + 1].style.backgroundColor = '#fffa9f';
         }
         // Highlight in grey if within 60 seconds but more than 30 seconds
         else if (Math.abs(eta1 - eta2) <= 60) {
