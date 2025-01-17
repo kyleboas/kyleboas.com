@@ -7,11 +7,15 @@ async function fetchInboundFlightIds(icao) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/airport/${icao}/status`;
 
     try {
-        const response = await fetch(url, {
+        const options = {
             headers: {
                 Authorization: `Bearer ${API_KEY}`,
             },
-        });
+        };
+
+        console.log('Request Headers:', options.headers); // Log headers for debugging
+
+        const response = await fetch(url, options);
 
         if (!response.ok) {
             throw new Error(`Error fetching inbound flights: ${response.status}`);
@@ -20,7 +24,7 @@ async function fetchInboundFlightIds(icao) {
         const data = await response.json();
         return data.result.inboundFlights || [];
     } catch (error) {
-        console.error(error);
+        console.error('Error in fetchInboundFlightIds:', error.message);
         alert('Failed to fetch inbound flight IDs.');
         return [];
     }
@@ -31,11 +35,15 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/flights`;
 
     try {
-        const response = await fetch(url, {
+        const options = {
             headers: {
                 Authorization: `Bearer ${API_KEY}`,
             },
-        });
+        };
+
+        console.log('Request Headers:', options.headers); // Log headers for debugging
+
+        const response = await fetch(url, options);
 
         if (!response.ok) {
             throw new Error(`Error fetching flight details: ${response.status}`);
@@ -44,7 +52,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
         const data = await response.json();
         return data.result.filter(flight => inboundFlightIds.includes(flight.id));
     } catch (error) {
-        console.error(error);
+        console.error('Error in fetchInboundFlightDetails:', error.message);
         alert('Failed to fetch flight details.');
         return [];
     }
@@ -98,7 +106,7 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
         renderFlightsTable(flights);
     } catch (error) {
-        console.error(error);
+        console.error('Error:', error.message);
         alert('An error occurred while fetching flight data.');
     }
 });
