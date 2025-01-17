@@ -7,10 +7,6 @@ async function fetchInboundFlightIds(icao) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/airport/${icao}/status`;
 
     try {
-        // Log the request URL and headers
-        console.log('Fetching:', url);
-        console.log('Authorization Header:', `Bearer ${API_KEY}`);
-
         const response = await fetch(url, {
             method: 'GET',
             headers: {
@@ -37,8 +33,6 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/flights`;
 
     try {
-        console.log('Fetching:', url);
-
         const response = await fetch(url, {
             method: 'GET',
             headers: {
@@ -52,12 +46,39 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
         }
 
         const data = await response.json();
+
+        // Filter flights matching inbound flight IDs
         return data.result.filter(flight => inboundFlightIds.includes(flight.id));
     } catch (error) {
         console.error('Error in fetchInboundFlightDetails:', error.message);
         alert('Failed to fetch flight details.');
         return [];
     }
+}
+
+// Function to render flight details in the table
+function renderFlightsTable(flights) {
+    const tableBody = document.querySelector('#flightsTable tbody');
+    tableBody.innerHTML = '';
+
+    if (flights.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7">No inbound flights found.</td></tr>';
+        return;
+    }
+
+    flights.forEach(flight => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${flight.callsign || 'N/A'}</td>
+            <td>${flight.heading}</td>
+            <td>${flight.groundSpeed}</td>
+            <td>${(flight.groundSpeed / 666.739).toFixed(2)}</td>
+            <td>${flight.altitude}</td>
+            <td>${flight.distanceToDestination.toFixed(2)}</td>
+            <td>${Math.round(flight.estimatedTimeEnroute / 60)}</td>
+        `;
+        tableBody.appendChild(row);
+    });
 }
 
 // Form submission handler
@@ -76,12 +97,15 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
 
         if (inboundFlightIds.length === 0) {
             alert('No inbound flights found for this airport.');
+            renderFlightsTable([]);
             return;
         }
 
         // Fetch and filter flight details
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
-        console.log('Fetched Flights:', flights);
+
+        // Render the flights in the table
+        renderFlightsTable(flights);
     } catch (error) {
         console.error('Error:', error.message);
         alert('An error occurred while fetching flight data.');

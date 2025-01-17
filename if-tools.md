@@ -34,21 +34,22 @@ th {
         <input type="text" id="icao" name="icao" placeholder="e.g., KLAX" required>
         <button type="submit">Search</button>
     </form>
-    <table id="flightsTable">
-        <thead>
-            <tr>
-                <th>Heading</th>
-                <th>Ground Speed (kts)</th>
-                <th>Mach Speed</th>
-                <th>Altitude (ft)</th>
-                <th>Distance to Destination (nm)</th>
-                <th>ETA (minutes)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Rows will be inserted dynamically -->
-        </tbody>
-    </table>
+<table id="flightsTable">
+    <thead>
+        <tr>
+            <th>Callsign</th>
+            <th>Heading</th>
+            <th>Ground Speed (kts)</th>
+            <th>Mach Speed</th>
+            <th>Altitude (ft)</th>
+            <th>Distance to Destination (nm)</th>
+            <th>ETA (minutes)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Rows will be inserted dynamically -->
+    </tbody>
+</table>
 </div>
 <script src="/js/if-tools.js"></script>
 </body>
