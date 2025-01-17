@@ -71,8 +71,8 @@ function renderFlightsTable(flights) {
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
             <td>${flight.heading || 'N/A'}</td>
-            <td>${flight.groundSpeed?.toFixed(0) || 'N/A'}</td>
-            <td>${(flight.groundSpeed / 666.739).toFixed(2) || 'N/A'}</td>
+            <td>${flight.speed?.toFixed(0) || 'N/A'}</td>
+            <td>${(flight.speed / 666.739).toFixed(2) || 'N/A'}</td>
             <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
             <td>${flight.distanceToDestination?.toFixed(2) || 'N/A'}</td>
             <td>${Math.round(flight.estimatedTimeEnroute / 60) || 'N/A'}</td>
