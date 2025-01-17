@@ -42,7 +42,7 @@
 
   <script>
     const apiBaseUrl = "https://infiniteflight.com/api/live/v2"; // Replace with actual API base URL
-    const apiKey = "YOUR_API_KEY"; // Replace with your API key
+    const apiKey = "${{ secrets.IF_API_KEY }}"; // Replace with your API key
 
     document.getElementById("filterButton").addEventListener("click", async () => {
       const icaoCode = document.getElementById("icaoCode").value.trim().toUpperCase();
