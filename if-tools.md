@@ -56,7 +56,7 @@ layout: page
 
       try {
         const response = await fetch(`${apiBaseUrl}/flights`, {
-          headers: { Authorization: `Bearer ${apiKey}` },
+          headers: { Authorization: Bearer ${apiKey} },
         });
 
         if (!response.ok) throw new Error("Failed to fetch flight data.");
