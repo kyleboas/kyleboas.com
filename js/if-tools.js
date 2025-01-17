@@ -41,6 +41,23 @@ async function fetchFlightPlan(flightId) {
     }
 }
 
+// Calculate bearing between two coordinates
+function calculateBearing(lat1, lon1, lat2, lon2) {
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const toDegrees = (radians) => radians * (180 / Math.PI);
+
+    const φ1 = toRadians(lat1);
+    const φ2 = toRadians(lat2);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) -
+              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+    return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360°
+}
+
+// Calculate cumulative distance using the next waypoint ahead
 function calculateCumulativeDistance(currentLat, currentLon, flightPlanItems, currentTrack) {
     if (flightPlanItems.length === 0) return 0;
 
@@ -86,52 +103,6 @@ function calculateCumulativeDistance(currentLat, currentLon, flightPlanItems, cu
     }
 
     return totalDistance;
-}
-
-// Update distances using cached flight plans
-async function updateDistancesWithFlightPlans(flights) {
-    for (const flight of flights) {
-        const flightPlanItems = await fetchFlightPlan(flight.flightId);
-
-        if (flightPlanItems.length > 0) {
-            flight.distanceToDestination = calculateCumulativeDistance(
-                flight.latitude,
-                flight.longitude,
-                flightPlanItems
-            );
-        }
-    }
-}
-
-// Fetch airport latitude and longitude
-async function fetchAirportCoordinates(icao) {
-    const url = `${API_BASE_URL}/airport/${icao}`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error fetching airport data: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.errorCode !== 0) {
-            throw new Error(`API returned error: ${data.errorCode}`);
-        }
-
-        const { latitude, longitude } = data.result;
-        return { latitude, longitude };
-    } catch (error) {
-        console.error('Error fetching airport coordinates:', error.message);
-        alert('Failed to fetch airport coordinates.');
-        return null;
-    }
 }
 
 // Calculate distance between two coordinates using the Haversine formula
@@ -268,7 +239,7 @@ function startAutoUpdate(icao) {
     // Set a new interval to update every 60 seconds
     updateInterval = setInterval(() => {
         fetchAndUpdateFlights(icao);
-    }, 60000); // 60000 milliseconds = 60 seconds
+    }, 60000);
 
     // Show "Stop Update" button
     document.getElementById('stopUpdateButton').style.display = 'inline';
