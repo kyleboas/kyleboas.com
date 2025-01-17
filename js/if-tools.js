@@ -1,5 +1,6 @@
-const API_PROXY_URL = 'https://infiniteflightapi.heyboas.workers.dev/';
-const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8'; 
+const API_BASE_URL = 'https://api.infiniteflight.com/public/v2';
+const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8'; // Replace with the correct session ID
+const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk'; // Replace with your Infinite Flight API Key
 
 let allFlights = []; // Store all flights globally
 let headingFilterActive = false; // Track if heading-based hide/show filter is active
@@ -10,12 +11,13 @@ let updateInterval = null; // To store the interval ID
 
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
-    const url = `${API_PROXY_URL}/airport/${icao}`;
+    const url = `${API_BASE_URL}/airport/${icao}`;
 
     try {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
+                Authorization: `Bearer ${API_KEY}`,
                 'Content-Type': 'application/json',
             },
         });
@@ -205,12 +207,13 @@ async function fetchAndUpdateFlights(icao) {
 
 // Fetch inbound flight IDs from the airport status API
 async function fetchInboundFlightIds(icao) {
-    const url = `${API_PROXY_URL}/sessions/${SESSION_ID}/airport/${icao}/status`;
+    const url = `${API_BASE_URL}/sessions/${SESSION_ID}/airport/${icao}/status`;
 
     try {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
+                Authorization: `Bearer ${API_KEY}`,
                 'Content-Type': 'application/json',
             },
         });
@@ -230,12 +233,13 @@ async function fetchInboundFlightIds(icao) {
 
 // Fetch all flights and filter by inbound flight IDs
 async function fetchInboundFlightDetails(inboundFlightIds) {
-    const url = `${API_PROXY_URL}/sessions/${SESSION_ID}/flights`;
+    const url = `${API_BASE_URL}/sessions/${SESSION_ID}/flights`;
 
     try {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
+                Authorization: `Bearer ${API_KEY}`,
                 'Content-Type': 'application/json',
             },
         });
