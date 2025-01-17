@@ -2,16 +2,11 @@ const API_BASE_URL = 'https://api.infiniteflight.com/public/v2';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8'; // Replace with the correct session ID
 const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk'; // Replace with your Infinite Flight API Key
 
-let cachedFlightPlans = {}; // To store flight plans
 let updateInterval = null; // To store the interval ID
 
-// Fetch flight plan for a specific flight ID
-async function fetchFlightPlan(flightId) {
-    if (cachedFlightPlans[flightId]) {
-        return cachedFlightPlans[flightId]; // Return cached flight plan if available
-    }
-
-    const url = `${API_BASE_URL}/sessions/${SESSION_ID}/flights/${flightId}/flightplan`;
+// Fetch airport latitude and longitude
+async function fetchAirportCoordinates(icao) {
+    const url = `${API_BASE_URL}/airport/${icao}`;
 
     try {
         const response = await fetch(url, {
@@ -23,7 +18,7 @@ async function fetchFlightPlan(flightId) {
         });
 
         if (!response.ok) {
-            throw new Error(`Error fetching flight plan for flight ${flightId}: ${response.status}`);
+            throw new Error(`Error fetching airport data: ${response.status}`);
         }
 
         const data = await response.json();
@@ -31,95 +26,13 @@ async function fetchFlightPlan(flightId) {
             throw new Error(`API returned error: ${data.errorCode}`);
         }
 
-        const flightPlanItems = data.result.flightPlanItems || [];
-        cachedFlightPlans[flightId] = flightPlanItems; // Cache the flight plan
-        return flightPlanItems;
+        const { latitude, longitude } = data.result;
+        return { latitude, longitude };
     } catch (error) {
-        console.error('Error fetching flight plan:', error.message);
-        return [];
+        console.error('Error fetching airport coordinates:', error.message);
+        alert('Failed to fetch airport coordinates.');
+        return null;
     }
-}
-
-// Update distances using cached flight plans and calculate distance to destination
-async function updateDistancesWithFlightPlans(flights) {
-    for (const flight of flights) {
-        const flightPlanItems = await fetchFlightPlan(flight.flightId);
-
-        if (flightPlanItems.length > 0) {
-            flight.distanceToDestination = calculateCumulativeDistance(
-                flight.latitude,
-                flight.longitude,
-                flightPlanItems,
-                flight.track // Current aircraft heading
-            );
-        } else {
-            flight.distanceToDestination = 0; // Default to 0 if no flight plan is available
-        }
-    }
-}
-
-// Calculate bearing between two coordinates
-function calculateBearing(lat1, lon1, lat2, lon2) {
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const toDegrees = (radians) => radians * (180 / Math.PI);
-
-    const φ1 = toRadians(lat1);
-    const φ2 = toRadians(lat2);
-    const Δλ = toRadians(lon2 - lon1);
-
-    const y = Math.sin(Δλ) * Math.cos(φ2);
-    const x = Math.cos(φ1) * Math.sin(φ2) -
-              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-
-    return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360°
-}
-
-// Calculate cumulative distance using the next waypoint ahead
-function calculateCumulativeDistance(currentLat, currentLon, flightPlanItems, currentTrack) {
-    if (flightPlanItems.length === 0) return 0;
-
-    let totalDistance = 0;
-    let nextWaypointIndex = -1;
-
-    // Find the next waypoint ahead of the aircraft
-    for (let i = 0; i < flightPlanItems.length; i++) {
-        const waypoint = flightPlanItems[i].location;
-
-        // Calculate the bearing to the waypoint
-        const bearingToWaypoint = calculateBearing(
-            currentLat,
-            currentLon,
-            waypoint.latitude,
-            waypoint.longitude
-        );
-
-        // Check if the waypoint is ahead (within ±90° of the current track)
-        const angleDifference = Math.abs((bearingToWaypoint - currentTrack + 360) % 360);
-        if (angleDifference <= 90) {
-            nextWaypointIndex = i;
-            break; // Stop at the first waypoint ahead
-        }
-    }
-
-    // If no next waypoint is found, return 0
-    if (nextWaypointIndex === -1) return 0;
-
-    // Add distance from current position to the next waypoint
-    totalDistance += calculateDistance(
-        currentLat,
-        currentLon,
-        flightPlanItems[nextWaypointIndex].location.latitude,
-        flightPlanItems[nextWaypointIndex].location.longitude
-    );
-
-    // Add distances between consecutive waypoints from the next waypoint to the destination
-    for (let i = nextWaypointIndex; i < flightPlanItems.length - 1; i++) {
-        const wp1 = flightPlanItems[i].location;
-        const wp2 = flightPlanItems[i + 1].location;
-        totalDistance += calculateDistance(wp1.latitude, wp1.longitude, wp2.latitude, wp2.longitude);
-    }
-
-    return totalDistance;
 }
 
 // Calculate distance between two coordinates using the Haversine formula
@@ -206,6 +119,19 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
+// Update distances and ETA for each flight
+async function updateDistancesAndETAs(flights, airportCoordinates) {
+    for (const flight of flights) {
+        flight.distanceToDestination = calculateDistance(
+            flight.latitude,
+            flight.longitude,
+            airportCoordinates.latitude,
+            airportCoordinates.longitude
+        );
+        flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
+    }
+}
+
 // Render flight details in the table with sorting by ETA
 function renderFlightsTable(flights) {
     const tableBody = document.querySelector('#flightsTable tbody');
@@ -248,14 +174,17 @@ function renderFlightsTable(flights) {
 }
 
 // Start automatic updates every 60 seconds
-function startAutoUpdate(icao) {
+function startAutoUpdate(icao, airportCoordinates) {
     if (updateInterval) {
         clearInterval(updateInterval); // Clear any existing interval
     }
 
     // Set a new interval to update every 60 seconds
-    updateInterval = setInterval(() => {
-        fetchAndUpdateFlights(icao);
+    updateInterval = setInterval(async () => {
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
+        await updateDistancesAndETAs(flights, airportCoordinates);
+        renderFlightsTable(flights);
     }, 60000);
 
     // Show "Stop Update" button
@@ -273,19 +202,6 @@ function stopAutoUpdate() {
     document.getElementById('stopUpdateButton').style.display = 'none';
 }
 
-// Fetch and update the flights
-async function fetchAndUpdateFlights(icao) {
-    try {
-        const inboundFlightIds = await fetchInboundFlightIds(icao);
-        const flights = await fetchInboundFlightDetails(inboundFlightIds);
-        await updateDistancesWithFlightPlans(flights);
-        renderFlightsTable(flights);
-    } catch (error) {
-        console.error('Error:', error.message);
-        alert('An error occurred while fetching flight data.');
-    }
-}
-
 // Form submission handler
 document.getElementById('searchForm').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -297,22 +213,31 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
     }
 
     stopAutoUpdate(); // Stop any ongoing auto-update when submitting a new search
-    cachedFlightPlans = {}; // Clear cached flight plans for a new search
-    await fetchAndUpdateFlights(icao);
+
+    const airportCoordinates = await fetchAirportCoordinates(icao);
+    if (!airportCoordinates) return;
+
+    const inboundFlightIds = await fetchInboundFlightIds(icao);
+    const flights = await fetchInboundFlightDetails(inboundFlightIds);
+    await updateDistancesAndETAs(flights, airportCoordinates);
+    renderFlightsTable(flights);
+
+    startAutoUpdate(icao, airportCoordinates); // Start auto-update after the initial search
 });
 
 // Update button handler
-document.getElementById('updateButton').addEventListener('click', () => {
+document.getElementById('updateButton').addEventListener('click', async () => {
     const icao = document.getElementById('icao').value.trim().toUpperCase();
     if (!icao) {
         alert('Please enter a valid ICAO code before updating.');
         return;
     }
 
-    startAutoUpdate(icao);
+    const airportCoordinates = await fetchAirportCoordinates(icao);
+    if (!airportCoordinates) return;
+
+    startAutoUpdate(icao, airportCoordinates);
 });
 
 // Stop Update button handler
-document.getElementById('stopUpdateButton').addEventListener('click', () => {
-    stopAutoUpdate();
-});
+document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
