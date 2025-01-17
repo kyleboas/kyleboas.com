@@ -1,4 +1,4 @@
-const apiKey = "IF_API_KEY";
+const apiKey = "${{ secrets.IF_API_KEY }}";
 
 // Fetch all flights from the Infinite Flight API
 async function fetchFlights() {
