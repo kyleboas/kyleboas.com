@@ -57,7 +57,7 @@ function calculateETA(distance, groundSpeed) {
     if (groundSpeed > 0) {
         return (distance / groundSpeed) * 60; // ETA in minutes
     }
-    return null; // Ground speed is 0 or invalid
+    return 'N/A'; // Return 'N/A' if ground speed is 0 or invalid
 }
 
 // Fetch inbound flight IDs from the airport status API
@@ -125,10 +125,10 @@ function renderFlightsTable(flights) {
     }
 
     // Sort flights by ETA (ascending)
-    flights.sort((a, b) => (a.eta || Infinity) - (b.eta || Infinity));
+    flights.sort((a, b) => (a.eta === 'N/A' ? Infinity : a.eta) - (b.eta === 'N/A' ? Infinity : b.eta));
 
     flights.forEach(flight => {
-        const eta = flight.eta ? Math.round(flight.eta) : 'N/A';
+        const eta = flight.eta !== 'N/A' ? Math.round(flight.eta) : 'N/A';
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
