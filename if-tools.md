@@ -31,12 +31,13 @@ th {
     <h1>Search Inbound Flights</h1>
     <!-- Search Form -->
     <form id="searchForm">
-        <label for="icao">Enter Airport ICAO:</label>
-        <input type="text" id="icao" name="icao" placeholder="e.g., KLAX" required>
-        <button type="submit">Search</button>
-        <button type="button" id="updateButton">Update</button>
-        <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-    </form>
+    <label for="icao">Enter Airport ICAO:</label>
+    <input type="text" id="icao" name="icao" placeholder="e.g., KLAX" required>
+    <button type="submit">Search</button>
+    <button type="button" id="updateButton">Update</button>
+    <span id="countdown" style="margin-left: 10px;">Next update in: 60s</span>
+    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
+</form>
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
