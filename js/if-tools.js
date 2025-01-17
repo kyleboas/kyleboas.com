@@ -2,6 +2,8 @@ const API_BASE_URL = 'https://api.infiniteflight.com/public/v2';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8'; // Replace with the correct session ID
 const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk'; // Replace with your Infinite Flight API Key
 
+let updateInterval = null; // To store the interval ID
+
 // Fetch flight plan for a specific flight ID
 async function fetchFlightPlan(flightId) {
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/flights/${flightId}/flightplan`;
@@ -227,6 +229,45 @@ function renderFlightsTable(flights) {
     });
 }
 
+// Start automatic updates every 10 seconds
+function startAutoUpdate(icao) {
+    if (updateInterval) {
+        clearInterval(updateInterval); // Clear any existing interval
+    }
+
+    // Set a new interval to update every 10 seconds
+    updateInterval = setInterval(() => {
+        fetchAndUpdateFlights(icao);
+    }, 10000);
+
+    // Show "Stop Update" button
+    document.getElementById('stopUpdateButton').style.display = 'inline';
+}
+
+// Stop automatic updates
+function stopAutoUpdate() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+    }
+
+    // Hide "Stop Update" button
+    document.getElementById('stopUpdateButton').style.display = 'none';
+}
+
+// Fetch and update the flights
+async function fetchAndUpdateFlights(icao) {
+    try {
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
+        await updateDistancesWithFlightPlans(flights);
+        renderFlightsTable(flights);
+    } catch (error) {
+        console.error('Error:', error.message);
+        alert('An error occurred while fetching flight data.');
+    }
+}
+
 // Form submission handler
 document.getElementById('searchForm').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -237,13 +278,23 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
         return;
     }
 
-    try {
-        const inboundFlightIds = await fetchInboundFlightIds(icao);
-        const flights = await fetchInboundFlightDetails(inboundFlightIds);
-        await updateDistancesWithFlightPlans(flights);
-        renderFlightsTable(flights);
-    } catch (error) {
-        console.error('Error:', error.message);
-        alert('An error occurred while fetching flight data.');
+    stopAutoUpdate(); // Stop any ongoing auto-update when submitting a new search
+
+    await fetchAndUpdateFlights(icao);
+});
+
+// Update button handler
+document.getElementById('updateButton').addEventListener('click', () => {
+    const icao = document.getElementById('icao').value.trim().toUpperCase();
+    if (!icao) {
+        alert('Please enter a valid ICAO code before updating.');
+        return;
     }
+
+    startAutoUpdate(icao);
+});
+
+// Stop Update button handler
+document.getElementById('stopUpdateButton').addEventListener('click', () => {
+    stopAutoUpdate();
 });

@@ -30,10 +30,12 @@ th {
 <div class="container">
     <h1>Search Inbound Flights</h1>
     <form id="searchForm">
-        <label for="icao">Enter Airport ICAO:</label>
-        <input type="text" id="icao" name="icao" placeholder="e.g., KLAX" required>
-        <button type="submit">Search</button>
-    </form>
+    <label for="icao">Enter Airport ICAO:</label>
+    <input type="text" id="icao" name="icao" placeholder="e.g., KLAX" required>
+    <button type="submit">Search</button>
+    <button type="button" id="updateButton">Update</button>
+    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
+</form>
     <table id="flightsTable">
         <thead>
             <tr>
