@@ -2,10 +2,16 @@ const API_BASE_URL = 'https://api.infiniteflight.com/public/v2';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8'; // Replace with the correct session ID
 const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk'; // Replace with your Infinite Flight API Key
 
+let cachedFlightPlans = {}; // To store flight plans
 let updateInterval = null; // To store the interval ID
 
 // Fetch flight plan for a specific flight ID
 async function fetchFlightPlan(flightId) {
+    if (cachedFlightPlans[flightId]) {
+        // Return cached flight plan if available
+        return cachedFlightPlans[flightId];
+    }
+
     const url = `${API_BASE_URL}/sessions/${SESSION_ID}/flights/${flightId}/flightplan`;
 
     try {
@@ -26,7 +32,9 @@ async function fetchFlightPlan(flightId) {
             throw new Error(`API returned error: ${data.errorCode}`);
         }
 
-        return data.result.flightPlanItems || [];
+        const flightPlanItems = data.result.flightPlanItems || [];
+        cachedFlightPlans[flightId] = flightPlanItems; // Cache the flight plan
+        return flightPlanItems;
     } catch (error) {
         console.error('Error fetching flight plan:', error.message);
         return [];
@@ -58,7 +66,7 @@ function calculateCumulativeDistance(currentLat, currentLon, flightPlanItems) {
     return totalDistance;
 }
 
-// Update distances using the flight plan for more accuracy
+// Update distances using cached flight plans
 async function updateDistancesWithFlightPlans(flights) {
     for (const flight of flights) {
         const flightPlanItems = await fetchFlightPlan(flight.flightId);
@@ -279,7 +287,7 @@ document.getElementById('searchForm').addEventListener('submit', async (event) =
     }
 
     stopAutoUpdate(); // Stop any ongoing auto-update when submitting a new search
-
+    cachedFlightPlans = {}; // Clear cached flight plans for a new search
     await fetchAndUpdateFlights(icao);
 });
 
