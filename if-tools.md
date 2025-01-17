@@ -77,40 +77,29 @@ document.getElementById("fetchButton").addEventListener("click", async () => {
       return;
     }
 
-    const flightDetailsPromises = inboundFlights.map(async (flightId) => {
-      try {
-        const routeResponse = await fetch(
-          `${apiBaseUrl}/sessions/${sessionId}/flights/${flightId}/route`,
-          { headers: { Authorization: `Bearer ${apiKey}` } }
-        );
+const flightDetailsPromises = inboundFlights.map(async (flightId) => {
+  try {
+    const routeResponse = await fetch(
+      `${apiBaseUrl}/sessions/${sessionId}/flights/${flightId}/route`,
+      { headers: { Authorization: `Bearer ${apiKey}` } }
+    );
 
-        if (!routeResponse.ok) {
-          console.error(`Failed to fetch route for flight ${flightId}: ${routeResponse.statusText}`);
-          return null;
-        }
+    if (!routeResponse.ok) {
+      console.error(`Failed to fetch route for flight ${flightId}: ${routeResponse.statusText}`);
+      return { flightId, heading: "N/A", altitude: "N/A", groundSpeed: "N/A" };
+    }
 
-        const routeData = await routeResponse.json();
-        console.log(`Route data for flight ${flightId}:`, routeData); // Debugging route data
-
-        const lastRoutePoint = routeData.route?.[routeData.route.length - 1] || {};
-        return {
-          flightId,
-          heading: lastRoutePoint?.heading || "N/A",
-          altitude: lastRoutePoint?.altitude || "N/A",
-          groundSpeed: lastRoutePoint?.groundSpeed || "N/A",
-        };
-      } catch (error) {
-        console.error(`Error fetching flight ${flightId}:`, error);
-        return null;
-      }
-    });
-
-    const flightDetails = (await Promise.all(flightDetailsPromises)).filter(Boolean);
-    console.log("Flight Details:", flightDetails); // Debugging processed flight details
-    updateTable(flightDetails);
+    const routeData = await routeResponse.json();
+    const lastRoutePoint = routeData.route?.[routeData.route.length - 1] || {};
+    return {
+      flightId,
+      heading: lastRoutePoint?.heading || "N/A",
+      altitude: lastRoutePoint?.altitude || "N/A",
+      groundSpeed: lastRoutePoint?.groundSpeed || "N/A",
+    };
   } catch (error) {
-    console.error("Error:", error);
-    alert("An error occurred while fetching flight data. Check the console for details.");
+    console.error(`Error fetching flight ${flightId}:`, error);
+    return { flightId, heading: "Error", altitude: "Error", groundSpeed: "Error" };
   }
 });
 
