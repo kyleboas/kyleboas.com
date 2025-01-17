@@ -69,7 +69,7 @@ layout: page
 
       try {
         const response = await fetch(`${apiBaseUrl}/airport-status?icao=${icaoCode}`, {
-          headers: { Authorization: `Bearer ${apiKey}` },
+          headers: { Authorization: Bearer ${apiKey} },
         });
 
         if (!response.ok) {
