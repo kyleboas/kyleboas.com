@@ -5,6 +5,8 @@ const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk'; // Replace with your Infinit
 let allFlights = []; // Store all flights globally
 let headingFilterActive = false; // Track if heading-based hide/show filter is active
 let boldedHeadings = { minHeading: null, maxHeading: null }; // Store the current bold heading range
+let distanceFilterActive = false; // Track if distance-based filtering is active
+let maxDistance = null; // Store the maximum allowed distance for filtering
 let updateInterval = null; // To store the interval ID
 
 // Fetch airport latitude and longitude
@@ -186,7 +188,7 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
 }
 
 // Render flight details in the table with optional filters
-function renderFlightsTable(flights, hideFilter = null) {
+function renderFlightsTable(flights) {
     const tableBody = document.querySelector('#flightsTable tbody');
     tableBody.innerHTML = '';
 
@@ -211,13 +213,11 @@ function renderFlightsTable(flights, hideFilter = null) {
             flight.headingFromAirport >= boldedHeadings.minHeading &&
             flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-        // Hide rows if the hide filter is active and the row is outside the heading range
-        const isVisible =
-            !hideFilter ||
-            (flight.headingFromAirport >= hideFilter.minHeading && flight.headingFromAirport <= hideFilter.maxHeading);
+        // Apply distance filter
+        const isWithinDistance = !distanceFilterActive || (maxDistance !== null && flight.distanceToDestination <= maxDistance);
 
         row.style.fontWeight = isBolded ? 'bold' : 'normal'; // Apply bold style
-        row.style.display = isVisible ? '' : 'none'; // Toggle visibility
+        row.style.display = isWithinDistance ? '' : 'none'; // Apply distance filter
 
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
@@ -234,6 +234,40 @@ function renderFlightsTable(flights, hideFilter = null) {
     // Highlight rows with close ETAs
     highlightCloseETAs(flights);
 }
+
+// Apply heading-based bolding
+document.getElementById('boldHeadingButton').addEventListener('click', () => {
+    const minHeading = parseFloat(document.getElementById('minHeading').value);
+    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
+
+    if (isNaN(minHeading) || isNaN(maxHeading)) {
+        alert('Please enter valid min and max heading values.');
+        return;
+    }
+
+    boldedHeadings = { minHeading, maxHeading }; // Update the bolded heading range
+    renderFlightsTable(allFlights); // Re-render the table to apply bolding
+});
+
+// Toggle heading-based filtering
+document.getElementById('toggleHeadingButton').addEventListener('click', () => {
+    headingFilterActive = !headingFilterActive;
+    renderFlightsTable(allFlights);
+});
+
+// Toggle distance-based filtering
+document.getElementById('toggleDistanceButton').addEventListener('click', () => {
+    const maxDistanceInput = parseFloat(document.getElementById('maxDistance').value);
+
+    if (isNaN(maxDistanceInput)) {
+        alert('Please enter a valid maximum distance.');
+        return;
+    }
+
+    distanceFilterActive = !distanceFilterActive;
+    maxDistance = maxDistanceInput;
+    renderFlightsTable(allFlights);
+});
 
 // Fetch and update the flights
 async function fetchAndUpdateFlights(icao) {
