@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Infinite Flight Tools</title>
+---
+layout: page
+---
+
+
   <style>
     table { width: 100%; border-collapse: collapse; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
@@ -11,8 +10,8 @@
     input { margin: 0 10px; padding: 5px; }
     button { padding: 5px 10px; cursor: pointer; }
   </style>
-</head>
-<body>
+
+
   <div>
     <label for="icaoCode">ICAO Code:</label>
     <input type="text" id="icaoCode" placeholder="e.g., KATL">
@@ -100,5 +99,3 @@
       });
     }
   </script>
-</body>
-</html>
