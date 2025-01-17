@@ -47,7 +47,7 @@ button {
 <script>
 const sessionId = "9bdfef34-f03b-4413-b8fa-c29949bb18f8"; // Replace with your session ID
 const apiBaseUrl = "https://api.infiniteflight.com/public/v2";
-const apiKey = "${{ secrets.IF_API_KEY }}"; // Replace with your API key
+const apiKey = "kqcfcn5ors95bzrdhzezbm9n9hnxq0qk"; // Replace with your API key
 
 document.getElementById("fetchButton").addEventListener("click", async () => {
   const icaoCode = document.getElementById("icaoCode").value.trim().toUpperCase();
