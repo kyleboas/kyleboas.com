@@ -4,32 +4,93 @@ layout: page
 
 <style>
 body {
-    font-family: Arial, sans-serif;
+    font-family: Helvetica, sans-serif;
     margin: 20px;
+    line-height: 1.6;
 }
+
 .container {
     max-width: 800px;
     margin: auto;
+    background: #fff;
 }
-.table-container {
-    width: 100%;
+
+pre {
+    font-family: Helvetica, sans-serif;
+    font-size: 16px;
     overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+form input[type="text"], 
+form input[type="number"], 
+form button {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #45a049;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 20px;
 }
 
 th, td {
-    white-space: nowrap; /* Prevent text from wrapping in table cells */
-    padding: 8px;
-    text-align: center;
     border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
 }
 
 th {
     background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+td {
+    background-color: #fff;
+}
+
+tr:nth-child(even) td {
+    background-color: #f9f9f9;
+}
+
+tr:hover td {
+    background-color: #f1f1f1;
+}
+
+.highlight {
+    background-color: #fffa9f;
+    font-weight: bold;
+}
+
+#atisMessage, #controllersList {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #eef;
+    border-left: 4px solid #4CAF50;
+    border-radius: 4px;
+    font-size: 14px;
 }
 </style>
 
