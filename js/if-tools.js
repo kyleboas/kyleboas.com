@@ -313,27 +313,24 @@ async function fetchAndUpdateFlights(icao) {
     }
 }
 
-// Handle the form submission to prevent page reload
-document.getElementById('searchForm').addEventListener('submit', async (event) => {
-    event.preventDefault(); // Prevent the default form submission behavior
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('searchForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent the default form submission behavior
 
-    const icao = document.getElementById('icao').value.trim().toUpperCase();
-    if (!icao) {
-        alert('Please enter a valid ICAO code.');
-        return;
-    }
+        const icao = document.getElementById('icao').value.trim().toUpperCase();
+        if (!icao) {
+            alert('Please enter a valid ICAO code.');
+            return;
+        }
 
-    try {
-        // Stop any ongoing auto-update when a new search is initiated
-        stopAutoUpdate();
-
-        // Fetch and update the flights
-        await fetchAndUpdateFlights(icao);
-
-    } catch (error) {
-        console.error('Error during search:', error.message);
-        alert('An error occurred while processing your request.');
-    }
+        try {
+            stopAutoUpdate(); // Stop any ongoing auto-update when a new search is initiated
+            await fetchAndUpdateFlights(icao); // Fetch and update the flights
+        } catch (error) {
+            console.error('Error during search:', error.message);
+            alert('An error occurred while processing your request.');
+        }
+    });
 });
 
 let updateInterval = null; // To store the update interval ID
