@@ -12,6 +12,37 @@ let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
 
+const cache = {
+    airportCoordinates: {}, // Stores airport coordinates
+    inboundFlightIds: {},   // Stores inbound flight IDs
+    flightDetails: {},      // Stores flight details (checked dynamically)
+};
+
+const cacheExpiration = {
+    airportCoordinates: 90 * 24 * 60 * 60 * 1000, // 90 days in milliseconds
+    inboundFlightIds: 5 * 60 * 1000, // 5 minutes in milliseconds
+};
+
+function setCache(key, value, type) {
+    cache[type][key] = { value, timestamp: Date.now() };
+}
+
+function getCache(key, type, expiration) {
+    const entry = cache[type][key];
+    if (!entry) return null;
+
+    // Check expiration
+    if (Date.now() - entry.timestamp > expiration) {
+        delete cache[type][key]; // Remove expired entry
+        return null;
+    }
+    return entry.value;
+}
+
+function getUncachedIds(ids, type) {
+    return ids.filter(id => !cache[type][id]);
+}
+
 // Fetch data using the proxy
 async function fetchWithProxy(endpoint) {
     try {
@@ -30,9 +61,17 @@ async function fetchWithProxy(endpoint) {
 
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
+    const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);
+    if (cached) {
+        console.log('Using cached coordinates for', icao);
+        return cached;
+    }
+
     try {
         const data = await fetchWithProxy(`/airport/${icao}`);
-        return { latitude: data.result.latitude, longitude: data.result.longitude };
+        const coordinates = { latitude: data.result.latitude, longitude: data.result.longitude };
+        setCache(icao, coordinates, 'airportCoordinates');
+        return coordinates;
     } catch (error) {
         console.error('Error fetching airport coordinates:', error.message);
         alert('Failed to fetch airport coordinates.');
@@ -42,9 +81,17 @@ async function fetchAirportCoordinates(icao) {
 
 // Fetch inbound flight IDs
 async function fetchInboundFlightIds(icao) {
+    const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
+    if (cached) {
+        console.log('Using cached inbound flight IDs for', icao);
+        return cached;
+    }
+
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
-        return data.result.inboundFlights || [];
+        const inboundFlights = data.result.inboundFlights || [];
+        setCache(icao, inboundFlights, 'inboundFlightIds');
+        return inboundFlights;
     } catch (error) {
         console.error('Error fetching inbound flight IDs:', error.message);
         alert('Failed to fetch inbound flight IDs.');
@@ -54,9 +101,26 @@ async function fetchInboundFlightIds(icao) {
 
 // Fetch inbound flight details
 async function fetchInboundFlightDetails(inboundFlightIds) {
+    const uncachedIds = getUncachedIds(inboundFlightIds, 'flightDetails');
+    if (uncachedIds.length === 0) {
+        console.log('Using cached flight details for all flights');
+        return inboundFlightIds.map(id => cache.flightDetails[id].value);
+    }
+
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
-        return data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
+        const flights = data.result.filter(flight => uncachedIds.includes(flight.flightId));
+
+        // Add new details to cache
+        flights.forEach(flight => {
+            setCache(flight.flightId, flight, 'flightDetails');
+        });
+
+        // Return both cached and newly fetched flights
+        return [
+            ...inboundFlightIds.map(id => cache.flightDetails[id]?.value).filter(Boolean),
+            ...flights,
+        ];
     } catch (error) {
         console.error('Error fetching flight details:', error.message);
         alert('Failed to fetch flight details.');
