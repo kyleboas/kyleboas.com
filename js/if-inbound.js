@@ -257,36 +257,19 @@ async function fetchInboundFlightIds(icao) {
 
 // Fetch inbound flight details
 async function fetchInboundFlightDetails(inboundFlightIds) {
-    const uncachedIds = getUncachedIds(inboundFlightIds, 'flightDetails');
-    const flightsFromCache = inboundFlightIds
-        .map(id => cache.flightDetails[id]?.value)
-        .filter(Boolean);
-
     try {
-        const data = uncachedIds.length
-            ? await fetchWithProxy(`/sessions/${SESSION_ID}/flights`)
-            : { result: [] };
+        // Fetch fresh data for all flight IDs
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
 
-        const flightsFromApi = data.result.filter(flight => uncachedIds.includes(flight.flightId));
+        // Ensure only unique flight details are returned
+        const uniqueFlights = [...new Map(flightsFromApi.map(flight => [flight.flightId, flight])).values()];
 
-        // Add new details to cache
-        flightsFromApi.forEach(flight => {
-            setCache(flight.flightId, flight, 'flightDetails');
-        });
-
-        // Combine cached and new data, ensuring no duplicates
-        const combinedFlights = [
-            ...flightsFromCache,
-            ...flightsFromApi,
-        ].filter((flight, index, self) =>
-            index === self.findIndex(f => f.flightId === flight.flightId)
-        );
-
-        return combinedFlights;
+        return uniqueFlights;
     } catch (error) {
         console.error('Error fetching flight details:', error.message);
         alert('Failed to fetch flight details.');
-        return flightsFromCache; // Return cached flights even if API fails
+        return [];
     }
 }
 
