@@ -86,7 +86,7 @@ async function fetchActiveATCAirports() {
                 inboundCount: airport.inboundFlightsCount,
             }))
             .sort((a, b) => b.inboundCount - a.inboundCount) // Sort by inbound count (descending)
-            .slice(0, 50); // Limit to the top 50 airports
+            .slice(0, 10; // Limit to the top 50 airports
 
         // Create a 5-column grid
         const rows = [];
