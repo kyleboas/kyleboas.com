@@ -79,11 +79,6 @@ tr:hover td {
     background-color: #f1f1f1;
 }
 
-.highlight {
-    background-color: #fffa9f;
-    font-weight: bold;
-}
-
 #atisMessage, #controllersList {
     margin-top: 15px;
     padding: 10px;
