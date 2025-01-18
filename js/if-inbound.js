@@ -78,14 +78,14 @@ async function fetchActiveATCAirports() {
         // Fetch data from the world endpoint
         const data = await fetchWithProxy(endpoint);
 
-        // Extract ATC airports and sort by inbound flight count (descending)
-        const activeAtcAirports = (data.result?.atcFacilities || [])
-            .filter(facility => facility.inboundFlightsCount > 0)
-            .map(facility => ({
-                icao: facility.airportIcao,
-                inboundCount: facility.inboundFlightsCount,
+        // Extract airports with active ATC and inbound flight counts
+        const activeAtcAirports = (data.result || [])
+            .filter(airport => airport.inboundFlightsCount > 0) // Only include airports with inbound flights
+            .map(airport => ({
+                icao: airport.airportIcao,
+                inboundCount: airport.inboundFlightsCount,
             }))
-            .sort((a, b) => b.inboundCount - a.inboundCount);
+            .sort((a, b) => b.inboundCount - a.inboundCount); // Sort by inbound count (descending)
 
         // Format the list for display
         const listContent = activeAtcAirports.map(
