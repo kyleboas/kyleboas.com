@@ -369,4 +369,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error during search:', error.message);
             alert('An error occurred while fetching data.');
         }
-    });
+});
