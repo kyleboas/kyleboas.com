@@ -72,7 +72,7 @@ th {
     background-color: #eef;
     border-left: 4px solid #4CAF50;
     border-radius: 4px;
-    font-size: 16px;
+    font-size: 15px;
 }
 </style>
 
@@ -111,7 +111,7 @@ th {
     <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
     </form>
     
-    <div id="atisMessage" style="display: none; font-size: 13px; margin-top: 10px;">ATIS: Not fetched yet</div>
+    <div id="atisMessage" style="display: none; margin-top: 10px;">ATIS: Not fetched yet</div>
 
 <div>
     <pre id="controllersList" style="display: none;">No active ATC.</pre>
@@ -120,7 +120,7 @@ th {
     <table id="flightsTable">
         <thead>
             <tr>
-                <th></th>
+                <th>Callsign</th>
                 <th>DIR</th>
                 <th>GS</th>
                 <th>MACH</th>
