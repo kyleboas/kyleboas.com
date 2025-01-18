@@ -112,6 +112,7 @@ th {
     <input type="number" id="maxDistance" min="0" placeholder="e.g., 500">
     <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
     <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
+    <button type="button" id="filterHeadingHighlightButton">Filter Highlight by Heading</button>
     </form>
     
     <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>

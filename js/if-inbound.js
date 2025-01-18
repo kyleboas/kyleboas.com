@@ -331,17 +331,39 @@ function highlightCloseETAs(flights) {
                 const eta2 = parseETAInSeconds(flight2.etaMinutes);
 
                 const timeDiff = Math.abs(eta1 - eta2);
-                if (timeDiff <= 30) {
-                    rows[i].style.backgroundColor = '#fffa9f'; // Yellow
-                    rows[j].style.backgroundColor = '#fffa9f'; // Yellow
-                } else if (timeDiff <= 60) {
-                    rows[i].style.backgroundColor = rows[i].style.backgroundColor || '#daceca'; // Beige
-                    rows[j].style.backgroundColor = rows[j].style.backgroundColor || '#daceca'; // Beige
+
+                // Check heading filter if enabled
+                const isWithinHeadingRange = filterHighlightByHeading
+                    ? (flight1.headingFromAirport >= boldedHeadings.minHeading &&
+                       flight1.headingFromAirport <= boldedHeadings.maxHeading &&
+                       flight2.headingFromAirport >= boldedHeadings.minHeading &&
+                       flight2.headingFromAirport <= boldedHeadings.maxHeading)
+                    : true;
+
+                if (timeDiff <= 30 && isWithinHeadingRange) {
+                    rows[i].style.backgroundColor = '#fffa9f';
+                    rows[j].style.backgroundColor = '#fffa9f';
+                } else if (timeDiff <= 60 && isWithinHeadingRange) {
+                    rows[i].style.backgroundColor = rows[i].style.backgroundColor || '#daceca';
+                    rows[j].style.backgroundColor = rows[j].style.backgroundColor || '#daceca';
                 }
             }
         });
     });
 }
+
+// Filter Highlight Event Listener
+let filterHighlightByHeading = false;
+
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    filterHighlightByHeading = !filterHighlightByHeading;
+
+    document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
+        ? 'Disable Highlight Filter by Heading'
+        : 'Enable Highlight Filter by Heading';
+
+    renderFlightsTable(allFlights); // Re-render the table with the updated filter
+});
 
 // Filter Listener
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
