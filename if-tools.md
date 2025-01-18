@@ -111,5 +111,5 @@ layout: page
             <!-- Dynamic rows -->
         </tbody>
     </table>
-</div>
+ 
 <script src="/js/if-tools.js"></script>
