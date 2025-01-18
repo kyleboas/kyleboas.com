@@ -3,38 +3,81 @@ layout: page
 ---
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-}
-.container {
-    max-width: 800px;
-    margin: auto;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
-}
-th {
-    background-color: #f4f4f4;
-}
-</style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
 
-<body>
-<div class="container">
-    <h1>Search Inbound Flights</h1>
-    <!-- Search Form -->
-     <div id=“searchContainer”>
-        <input type=“text” id=“icao” placeholder=“Enter ICAO code” maxlength=“4”>
-        <button id=“searchButton”>Search</button>
-        <div id=“countdownTimer” style=“display: none;”>Next update in: 60 seconds</div>
-    </div>
+        #searchContainer {
+            margin-bottom: 20px;
+        }
+
+        input[type=“text”] {
+            padding: 8px;
+            font-size: 14px;
+            width: 180px;
+            margin-right: 5px;
+        }
+
+        button {
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        #countdownTimer {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .filter-container {
+            margin-bottom: 20px;
+        }
+
+        .filter-container input {
+            width: 60px;
+            margin-right: 5px;
+            padding: 5px;
+            font-size: 12px;
+        }
+
+        .filter-container button {
+            padding: 6px 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        #stopUpdateButton {
+            margin-top: 10px;
+            padding: 8px 12px;
+            display: none;
+            cursor: pointer;
+        }
+</style>
+<div id=“searchContainer”>
+   <input type=“text” id=“icao” placeholder=“Enter ICAO code” maxlength=“4”>
+   <button id=“searchButton”>Search</button>
+   <div id=“countdownTimer” style=“display: none;”>Next update in: 60 seconds</div>
+</div>
+
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
@@ -70,4 +113,3 @@ th {
     </table>
 </div>
 <script src="/js/if-tools.js"></script>
-</body>
