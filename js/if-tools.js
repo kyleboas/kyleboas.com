@@ -310,12 +310,22 @@ document.getElementById('updateButton').addEventListener('click', () => {
 
     let countdown = 60; // Initial countdown value in seconds
     const countdownTimer = document.getElementById('countdownTimer');
+// Handle input search via Enter key or button click
+document.addEventListener('DOMContentLoaded', () => {
+    const searchButton = document.getElementById('searchButton');
+    const icaoInput = document.getElementById('icao');
 
     // Start auto-update every 60 seconds
     updateInterval = setInterval(() => {
         fetchAndUpdateFlights(icao);
         countdown = 60; // Reset countdown after each update
     }, 60000); // 1-minute interval
+    const handleSearch = async () => {
+        const icao = icaoInput.value.trim().toUpperCase();
+        if (!icao) {
+            alert('Please enter a valid ICAO code.');
+            return;
+        }
 
     // Start countdown timer
     countdownInterval = setInterval(() => {
@@ -333,11 +343,29 @@ document.getElementById('updateButton').addEventListener('click', () => {
     document.getElementById('stopUpdateButton').style.display = 'inline'; // Show "Stop Update" button
     countdownTimer.style.display = 'inline'; // Show the countdown timer
 });
+        try {
+            stopAutoUpdate(); // Stop existing updates
+            await fetchAndUpdateFlights(icao); // Fetch and render flights
+        } catch (error) {
+            console.error('Error during search:', error.message);
+            alert('An error occurred while fetching data.');
+        }
+    };
 
 // Handle the "Stop Update" button
 document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
+    // Trigger search on button click
+    searchButton.addEventListener('click', handleSearch);
 
-// Stop the auto-update process
+    // Trigger search on pressing Enter
+    icaoInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            handleSearch();
+        }
+    });
+});
+
+// Stop auto-update function (existing functionality maintained)
 function stopAutoUpdate() {
     if (updateInterval) clearInterval(updateInterval); // Clear the interval
     if (updateTimeout) clearTimeout(updateTimeout); // Clear the timeout
@@ -350,23 +378,3 @@ function stopAutoUpdate() {
     document.getElementById('stopUpdateButton').style.display = 'none'; // Hide "Stop Update" button
     document.getElementById('countdownTimer').style.display = 'none'; // Hide the countdown timer
 }
-
-// Handle form submission to prevent page reload
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('searchForm').addEventListener('submit', async (event) => {
-        event.preventDefault(); // Prevent default form submission
-
-        const icao = document.getElementById('icao').value.trim().toUpperCase();
-        if (!icao) {
-            alert('Please enter a valid ICAO code.');
-            return;
-        }
-
-        try {
-            stopAutoUpdate(); // Stop existing updates
-            await fetchAndUpdateFlights(icao); // Fetch and render flights
-        } catch (error) {
-            console.error('Error during search:', error.message);
-            alert('An error occurred while fetching data.');
-        }
-});

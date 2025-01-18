@@ -30,14 +30,11 @@ th {
 <div class="container">
     <h1>Search Inbound Flights</h1>
     <!-- Search Form -->
-    <form id="searchForm" novalidate>
-        <label for="icao">Enter Airport ICAO:</label>
-        <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
-        <button type="submit">Search</button>
-    </form>
-    <button type="button" id="updateButton">Update</button>
-    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-    <span id="countdownTimer" style="display: none;">Next update in: 60 seconds</span>
+     <div id=“searchContainer”>
+        <input type=“text” id=“icao” placeholder=“Enter ICAO code” maxlength=“4”>
+        <button id=“searchButton”>Search</button>
+        <div id=“countdownTimer” style=“display: none;”>Next update in: 60 seconds</div>
+    </div>
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
