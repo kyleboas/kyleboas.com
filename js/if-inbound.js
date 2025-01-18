@@ -102,29 +102,35 @@ async function fetchInboundFlightIds(icao) {
 // Fetch inbound flight details
 async function fetchInboundFlightDetails(inboundFlightIds) {
     const uncachedIds = getUncachedIds(inboundFlightIds, 'flightDetails');
-    if (uncachedIds.length === 0) {
-        console.log('Using cached flight details for all flights');
-        return inboundFlightIds.map(id => cache.flightDetails[id].value);
-    }
+    const flightsFromCache = inboundFlightIds
+        .map(id => cache.flightDetails[id]?.value)
+        .filter(Boolean);
 
     try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
-        const flights = data.result.filter(flight => uncachedIds.includes(flight.flightId));
+        const data = uncachedIds.length
+            ? await fetchWithProxy(`/sessions/${SESSION_ID}/flights`)
+            : { result: [] };
+
+        const flightsFromApi = data.result.filter(flight => uncachedIds.includes(flight.flightId));
 
         // Add new details to cache
-        flights.forEach(flight => {
+        flightsFromApi.forEach(flight => {
             setCache(flight.flightId, flight, 'flightDetails');
         });
 
-        // Return both cached and newly fetched flights
-        return [
-            ...inboundFlightIds.map(id => cache.flightDetails[id]?.value).filter(Boolean),
-            ...flights,
-        ];
+        // Combine cached and new data, ensuring no duplicates
+        const combinedFlights = [
+            ...flightsFromCache,
+            ...flightsFromApi,
+        ].filter((flight, index, self) =>
+            index === self.findIndex(f => f.flightId === flight.flightId)
+        );
+
+        return combinedFlights;
     } catch (error) {
         console.error('Error fetching flight details:', error.message);
         alert('Failed to fetch flight details.');
-        return [];
+        return flightsFromCache; // Return cached flights even if API fails
     }
 }
 
@@ -221,31 +227,31 @@ function renderFlightsTable(flights, hideFilter = false) {
     const tableBody = document.querySelector('#flightsTable tbody');
     tableBody.innerHTML = '';
 
-    if (!flights.length) {
+    // Use a Set to ensure unique flight IDs
+    const uniqueFlights = [...new Map(flights.map(f => [f.flightId, f])).values()];
+
+    if (!uniqueFlights.length) {
         tableBody.innerHTML = '<tr><td colspan="8">No inbound flights found.</td></tr>';
         return;
     }
 
-    flights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+    uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-    flights.forEach(flight => {
+    uniqueFlights.forEach(flight => {
         const row = document.createElement('tr');
 
-        // Check if the flight is within the heading range
         const isWithinHeadingRange = boldedHeadings.minHeading !== null &&
                                      boldedHeadings.maxHeading !== null &&
                                      typeof flight.headingFromAirport === 'number' &&
                                      flight.headingFromAirport >= boldedHeadings.minHeading &&
                                      flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-        // Check if the flight is within the distance range
         const isWithinDistanceRange = minDistance !== null &&
                                       maxDistance !== null &&
                                       typeof flight.distanceToDestination === 'number' &&
                                       flight.distanceToDestination >= minDistance &&
                                       flight.distanceToDestination <= maxDistance;
 
-        // Combine filters
         const isVisible = (!hideFilter || isWithinHeadingRange) && isWithinDistanceRange;
 
         row.style.fontWeight = isWithinHeadingRange ? 'bold' : 'normal';
@@ -263,7 +269,7 @@ function renderFlightsTable(flights, hideFilter = false) {
         tableBody.appendChild(row);
     });
 
-    highlightCloseETAs(flights);
+    highlightCloseETAs(uniqueFlights);
 }
 
 document.getElementById('boldHeadingButton').addEventListener('click', () => {
