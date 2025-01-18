@@ -109,7 +109,7 @@ th {
     <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
     </form>
     
-    <div id="atisMessage" style="display: none; margin-top: 10px;">ATIS: Not fetched yet</div>
+    <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
 
 <div>
     <pre id="controllersList" style="display: none;">No active ATC.</pre>
@@ -119,11 +119,9 @@ th {
         <thead>
             <tr>
                 <th>Callsign</th>
-                <th>DIR</th>
-                <th>GS</th>
-                <th>MACH</th>
+                <th>GS/MACH</th>
                 <th>ALT</th>
-                <th>NM</th>
+                <th>HDG/NM</th>
                 <th>ETA</th>
             </tr>
         </thead>
