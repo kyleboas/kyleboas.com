@@ -30,7 +30,7 @@ th {
 <div class="container">
     <h1>Search Inbound Flights</h1>
     
-    <div id="activeAtcAirports" style="margin-top: 20px; display: none;">
+    <div id="activeAtcAirports" style="display: none;">
     <table style="width: 100%; text-align: left; border-collapse: collapse;">
         <thead>
             <tr>
