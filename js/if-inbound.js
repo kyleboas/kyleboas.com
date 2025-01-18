@@ -556,35 +556,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('updateButton').addEventListener('click', () => {
-        const icao = document.getElementById('icao').value.trim().toUpperCase();
-        if (!icao) {
-            alert('Please enter a valid ICAO code before updating.');
-            return;
-        }
+    const icao = document.getElementById('icao').value.trim().toUpperCase();
+    if (!icao) {
+        alert('Please enter a valid ICAO code before updating.');
+        return;
+    }
 
+    stopAutoUpdate();
+    let countdown = 15; // Update countdown for 15 seconds
+    const countdownTimer = document.getElementById('countdownTimer');
+
+    // Set interval for 15 seconds
+    updateInterval = setInterval(async () => {
+        await fetchAndUpdateFlights(icao);
+        await fetchControllers(icao); // Update controllers on auto-update
+        countdown = 15; // Reset countdown
+    }, 15000); // 15 seconds interval
+
+    // Countdown display logic
+    countdownInterval = setInterval(() => {
+        countdown--;
+        countdownTimer.textContent = `Next update in: ${countdown} seconds`;
+    }, 1000);
+
+    // Auto-stop the update after 15 minutes
+    updateTimeout = setTimeout(() => {
         stopAutoUpdate();
-        let countdown = 60;
-        const countdownTimer = document.getElementById('countdownTimer');
+        alert('Auto-update stopped after 15 minutes.');
+    }, 15 * 60 * 1000); // 15 minutes
 
-        updateInterval = setInterval(async () => {
-    await fetchAndUpdateFlights(icao);
-    await fetchControllers(icao); // Update controllers on auto-update
-    countdown = 60;
-}, 60000);
-
-        countdownInterval = setInterval(() => {
-            countdown--;
-            countdownTimer.textContent = `Next update in: ${countdown} seconds`;
-        }, 1000);
-
-        updateTimeout = setTimeout(() => {
-            stopAutoUpdate();
-            alert('Auto-update stopped after 15 minutes.');
-        }, 15 * 60 * 1000);
-
-        document.getElementById('stopUpdateButton').style.display = 'inline';
-        countdownTimer.style.display = 'inline';
-    });
+    document.getElementById('stopUpdateButton').style.display = 'inline';
+    countdownTimer.style.display = 'inline';
+});
 
     document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
 });
