@@ -113,9 +113,67 @@ async function fetchActiveATCAirports() {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         await fetchActiveATCAirports(); // Fetch and display active ATC airports on load
+
+        // Set default values for heading and distance
+        document.getElementById('minHeading').value = 90;
+        document.getElementById('maxHeading').value = 270;
+        boldedHeadings.minHeading = 90;
+        boldedHeadings.maxHeading = 270;
+
+        document.getElementById('minDistance').value = 50;
+        document.getElementById('maxDistance').value = 500;
+        minDistance = 50;
+        maxDistance = 500;
+
+        // Enable Bold Aircraft, Apply Distance Filter, and Filter Highlight by Heading
+        boldHeadingEnabled = true;
+        applyDistanceFilterEnabled = true;
+        filterHighlightByHeading = true;
+
+        document.getElementById('boldHeadingButton').textContent = 'Disable Bold Aircraft';
+        document.getElementById('applyDistanceFilterButton').textContent = 'Reset Distance Filter';
+        document.getElementById('filterHeadingHighlightButton').textContent = 'Disable Highlight Filter by Heading';
+
+        // Render flights table with default filters applied
+        renderFlightsTable(allFlights, hideOtherAircraft);
     } catch (error) {
         console.error('Error initializing page:', error.message);
     }
+});
+
+// Toggle Bold Aircraft
+let boldHeadingEnabled = false;
+document.getElementById('boldHeadingButton').addEventListener('click', () => {
+    boldHeadingEnabled = !boldHeadingEnabled;
+
+    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
+        ? 'Disable Bold Aircraft'
+        : 'Enable Bold Aircraft';
+
+    renderFlightsTable(allFlights); // Re-render the table with updated bold styling
+});
+
+// Toggle Apply Distance Filter
+let applyDistanceFilterEnabled = false;
+document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+    applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
+
+    document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
+        ? 'Reset Distance Filter'
+        : 'Apply Distance Filter';
+
+    renderFlightsTable(allFlights, hideOtherAircraft); // Re-render the table with distance filter applied/removed
+});
+
+// Toggle Filter Highlight by Heading
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    filterHighlightByHeading = !filterHighlightByHeading;
+
+    document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
+        ? 'Disable Highlight Filter by Heading'
+        : 'Enable Highlight Filter by Heading';
+
+    renderFlightsTable(allFlights); // Re-render the table with highlight filter updated
 });
 
 // Fetch airport latitude and longitude
