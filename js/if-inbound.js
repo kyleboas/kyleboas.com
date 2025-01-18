@@ -70,7 +70,7 @@ async function fetchWithProxy(endpoint) {
     }
 }
 
-// Fetch and display active ATC airports with inbound flight counts
+// Fetch and display the top 10 active ATC airports with inbound flight counts
 async function fetchActiveATCAirports() {
     const endpoint = `/sessions/${SESSION_ID}/world`;
 
@@ -90,8 +90,11 @@ async function fetchActiveATCAirports() {
         // Remove duplicates by ensuring unique ICAO codes
         const uniqueAirports = Array.from(new Map(activeAtcAirports.map(airport => [airport.icao, airport])).values());
 
+        // Limit the list to the top 10 airports
+        const topAirports = uniqueAirports.slice(0, 10);
+
         // Format the list for display
-        const listContent = uniqueAirports.map(
+        const listContent = topAirports.map(
             airport => `${airport.icao}: ${airport.inboundCount}`
         ).join('\n');
 
