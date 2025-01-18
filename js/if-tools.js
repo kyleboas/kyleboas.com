@@ -706,6 +706,28 @@ async function fetchAndUpdateFlights(icao) {
     }
 }
 
+// Handle form submission to prevent page reload
+document.addEventListener('DOMContentLoaded', () => {
+
+document.getElementById('searchForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const icao = document.getElementById('icao').value.trim().toUpperCase();
+        if (!icao) {
+            alert('Please enter a valid ICAO code.');
+            return;
+        }
+
+        try {
+            stopAutoUpdate(); // Stop existing updates
+            await fetchAndUpdateFlights(icao); // Fetch and render flights
+        } catch (error) {
+            console.error('Error during search:', error.message);
+            alert('An error occurred while fetching data.');
+        }
+    });
+});
+
 let updateInterval = null; // To store the update interval ID
 let updateTimeout = null; // To store the 15-minute timeout
 let countdownInterval = null; // To store the countdown interval
@@ -762,25 +784,3 @@ function stopAutoUpdate() {
     document.getElementById('stopUpdateButton').style.display = 'none'; // Hide "Stop Update" button
     document.getElementById('countdownTimer').style.display = 'none'; // Hide the countdown timer
 }
-
-// Handle form submission to prevent page reload
-document.addEventListener('DOMContentLoaded', () => {
-
-document.getElementById('searchForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const icao = document.getElementById('icao').value.trim().toUpperCase();
-        if (!icao) {
-            alert('Please enter a valid ICAO code.');
-            return;
-        }
-
-        try {
-            stopAutoUpdate(); // Stop existing updates
-            await fetchAndUpdateFlights(icao); // Fetch and render flights
-        } catch (error) {
-            console.error('Error during search:', error.message);
-            alert('An error occurred while fetching data.');
-        }
-    });
-});
