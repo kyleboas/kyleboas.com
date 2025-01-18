@@ -67,18 +67,6 @@ th {
     font-weight: bold;
 }
 
-td {
-    background-color: #fff;
-}
-
-tr:nth-child(even) td {
-    background-color: #f9f9f9;
-}
-
-tr:hover td {
-    background-color: #f1f1f1;
-}
-
 #atisMessage, #controllersList {
     margin-top: 15px;
     padding: 10px;
