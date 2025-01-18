@@ -137,28 +137,37 @@ async function fetchControllers(icao) {
 
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
-        const controllers = (data.result.atcFacilities || []).map(facility => {
-            const frequencyTypes = {
-                0: "Ground",
-                1: "Tower",
-                2: "Unicom",
-                3: "Clearance",
-                4: "Approach",
-                5: "Departure",
-                6: "Center",
-                7: "ATIS",
-                8: "Aircraft",
-                9: "Recorded",
-                10: "Unknown",
-                11: "Unused",
-            };
-            const frequencyName = frequencyTypes[facility.type] || "Unknown Frequency";
-            return `${frequencyName}: ${facility.username}`;
-        });
+        const controllers = (data.result.atcFacilities || [])
+            .map(facility => {
+                const frequencyTypes = {
+                    0: "Ground",
+                    1: "Tower",
+                    2: "Unicom",
+                    3: "Clearance",
+                    4: "Approach",
+                    5: "Departure",
+                    6: "Center",
+                    7: "ATIS",
+                    8: "Aircraft",
+                    9: "Recorded",
+                    10: "Unknown",
+                    11: "Unused",
+                };
+                const frequencyName = frequencyTypes[facility.type] || "Unknown";
+                return { frequencyName, username: facility.username, type: facility.type };
+            });
 
-        setCache(icao, controllers, 'controllers');
-        displayControllers(controllers); // Display fetched controllers
-        return controllers;
+        // Sort controllers based on the specified order
+        const sortedControllers = controllers.sort((a, b) => {
+            const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
+            const indexA = order.indexOf(a.frequencyName);
+            const indexB = order.indexOf(b.frequencyName);
+            return indexA - indexB;
+        }).map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
+
+        setCache(icao, sortedControllers, 'controllers');
+        displayControllers(sortedControllers); // Display sorted controllers
+        return sortedControllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
         displayControllers(['No active controllers available']);
@@ -174,7 +183,7 @@ function displayControllers(controllers) {
         return;
     }
     controllersElement.textContent = controllers.length
-        ? `Active Controllers:\n${controllers.join('\n')}`
+        ? `${controllers.join('\n')}`
         : 'No active controllers available';
 }
 
@@ -438,6 +447,11 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
 // Fetch and update flights
 async function fetchAndUpdateFlights(icao) {
     try {
+        // Unhide the ATIS and controllers elements
+        document.getElementById('atisMessage').style.display = 'block';
+        document.getElementById('controllersList').style.display = 'block';
+
+        // Fetch flights, ATIS, and controllers
         const inboundFlightIds = await fetchInboundFlightIds(icao);
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
         const airportCoordinates = await fetchAirportCoordinates(icao);
@@ -447,10 +461,8 @@ async function fetchAndUpdateFlights(icao) {
 
         renderFlightsTable(allFlights);
 
-        // Fetch ATIS
+        // Fetch ATIS and controllers
         await fetchAirportATIS(icao);
-
-        // Fetch controllers
         await fetchControllers(icao);
     } catch (error) {
         console.error('Error fetching flights or controllers:', error.message);

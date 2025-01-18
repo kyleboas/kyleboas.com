@@ -56,11 +56,10 @@ th {
     <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
     </form>
     
-    <div id="atisMessage" style="font-size: 13px;margin-top: 10px;">ATIS: Not fetched yet</div>
-    
-    <div>
-    <h3>Active Controllers</h3>
-    <pre id="controllersList">No active ATC.</pre>
+    <div id="atisMessage" style="display: none; font-size: 13px; margin-top: 10px;">ATIS: Not fetched yet</div>
+
+<div>
+    <pre id="controllersList" style="display: none;">No active ATC.</pre>
 </div>
 
     <table id="flightsTable">
