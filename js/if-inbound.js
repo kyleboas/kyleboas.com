@@ -340,12 +340,16 @@ function highlightCloseETAs(flights) {
                        flight2.headingFromAirport <= boldedHeadings.maxHeading)
                     : true;
 
+                // Highlight based on time difference and heading range
                 if (timeDiff <= 30 && isWithinHeadingRange) {
-                    rows[i].style.backgroundColor = '#fffa9f';
+                    rows[i].style.backgroundColor = '#fffa9f'; // Yellow for <= 30 seconds
                     rows[j].style.backgroundColor = '#fffa9f';
                 } else if (timeDiff <= 60 && isWithinHeadingRange) {
-                    rows[i].style.backgroundColor = rows[i].style.backgroundColor || '#daceca';
+                    rows[i].style.backgroundColor = rows[i].style.backgroundColor || '#daceca'; // Beige for <= 60 seconds
                     rows[j].style.backgroundColor = rows[j].style.backgroundColor || '#daceca';
+                } else if (timeDiff <= 120 && isWithinHeadingRange) {
+                    rows[i].style.backgroundColor = rows[i].style.backgroundColor || '#eaeaea'; // Light gray for <= 120 seconds
+                    rows[j].style.backgroundColor = rows[j].style.backgroundColor || '#eaeaea';
                 }
             }
         });
