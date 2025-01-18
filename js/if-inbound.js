@@ -14,7 +14,7 @@ let countdownInterval = null;
 async function fetchWithProxy(endpoint, method = 'GET', body = null) {
     try {
         const response = await fetch(PROXY_URL, {
-            method: 'POST',
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ endpoint, method, body }),
         });

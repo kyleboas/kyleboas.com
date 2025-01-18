@@ -14,39 +14,65 @@ function respondWithError(message: string, status = 500) {
 
 // Proxy handler
 async function proxyHandler(req: Request): Promise<Response> {
-  if (req.method !== "POST") {
-    return respondWithError("Only POST requests are allowed", 405);
-  }
-
   try {
-    const { endpoint, method = "GET", body } = await req.json();
+    const url = new URL(req.url);
+    const { pathname, search } = url; // Extract path and query parameters
 
-    if (!endpoint) {
-      return respondWithError("Endpoint is required", 400);
-    }
+    if (req.method === "GET") {
+      // Forward GET request directly to the Infinite Flight API
+      const response = await fetch(`${API_BASE_URL}${pathname}${search}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+        },
+      });
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method,
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: method === "POST" ? JSON.stringify(body) : undefined,
-    });
+      const data = await response.json();
 
-    const data = await response.json();
+      if (!response.ok) {
+        return new Response(JSON.stringify(data), {
+          status: response.status,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
 
-    if (!response.ok) {
       return new Response(JSON.stringify(data), {
-        status: response.status,
+        status: 200,
         headers: { "Content-Type": "application/json" },
       });
-    }
+    } else if (req.method === "POST") {
+      // Handle POST requests with a body
+      const { endpoint, method = "GET", body } = await req.json();
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+      if (!endpoint) {
+        return respondWithError("Endpoint is required", 400);
+      }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: method === "POST" ? JSON.stringify(body) : undefined,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return new Response(JSON.stringify(data), {
+          status: response.status,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } else {
+      return respondWithError("Only GET and POST requests are allowed", 405);
+    }
   } catch (error) {
     console.error("Proxy error:", error);
     return respondWithError("An error occurred while processing the request");
