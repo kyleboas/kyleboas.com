@@ -279,23 +279,24 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
 }
 
 // Handle form submission to prevent page reload
-document.getElementById('searchForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('searchForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent default form submission
 
-    const icao = document.getElementById('icao').value.trim().toUpperCase();
-    if (!icao) {
-        alert('Please enter a valid ICAO code.');
-        return;
-    }
+        const icao = document.getElementById('icao').value.trim().toUpperCase();
+        if (!icao) {
+            alert('Please enter a valid ICAO code.');
+            return;
+        }
 
-    try {
-        stopAutoUpdate();
-        await fetchAndUpdateFlights(icao);
-        startAutoUpdate(icao);
-    } catch (error) {
-        console.error('Error during search:', error.message);
-    }
-});
+        try {
+            stopAutoUpdate(); // Stop existing updates
+            await fetchAndUpdateFlights(icao); // Fetch and render flights
+        } catch (error) {
+            console.error('Error during search:', error.message);
+            alert('An error occurred while fetching data.');
+        }
+    });
 
 // Fetch and update flights
 async function fetchAndUpdateFlights(icao) {
@@ -312,22 +313,6 @@ async function fetchAndUpdateFlights(icao) {
         console.error('Error fetching flights:', error.message);
     }
 }
-
-document.getElementById('searchButton').addEventListener('click', async () => {
-    const icao = document.getElementById('icao').value.trim().toUpperCase();
-    if (!icao) {
-        alert('Please enter a valid ICAO code.');
-        return;
-    }
-
-    try {
-        stopAutoUpdate();
-        await fetchAndUpdateFlights(icao);
-    } catch (error) {
-        console.error('Error during search:', error.message);
-        alert('An error occurred while processing your request.');
-    }
-});
 
 let updateInterval = null; // To store the update interval ID
 let updateTimeout = null; // To store the 15-minute timeout

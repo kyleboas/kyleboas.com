@@ -30,33 +30,31 @@ th {
 <div class="container">
     <h1>Search Inbound Flights</h1>
     <!-- Search Form -->
-    <div id="searchForm">
-    <input type="text" id="icao" placeholder="Enter ICAO">
-    <button id="searchButton">Search</button>
-</div>
+    <form id="searchForm" novalidate>
+        <label for="icao">Enter Airport ICAO:</label>
+        <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
+        <button type="submit">Search</button>
+    </form>
     <button type="button" id="updateButton">Update</button>
     <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-    <span id="countdownTimer">Next update in: 60 seconds</span>
+    <span id="countdownTimer" style="display: none;">Next update in: 60 seconds</span>
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
-        <!-- Heading Filter -->
         <label for="minHeading">Min Heading:</label>
-        <input type="number" id="minHeading" name="minHeading" min="0" max="360" placeholder="e.g., 0">
+        <input type="number" id="minHeading" min="0" max="360" placeholder="e.g., 0">
         <label for="maxHeading">Max Heading:</label>
-        <input type="number" id="maxHeading" name="maxHeading" min="0" max="360" placeholder="e.g., 90">
+        <input type="number" id="maxHeading" min="0" max="360" placeholder="e.g., 90">
         <button type="button" id="boldHeadingButton">Bold Aircraft</button>
         <button type="button" id="toggleHeadingButton">Hide/Show Other Aircraft</button>
 
-        <!-- Distance Filter -->
         <label for="minDistance">Min Distance:</label>
-        <input type="number" id="minDistance" name="minDistance" min="0" placeholder="e.g., 50">
+        <input type="number" id="minDistance" min="0" placeholder="e.g., 50">
         <label for="maxDistance">Max Distance:</label>
-        <input type="number" id="maxDistance" name="maxDistance" min="0" placeholder="e.g., 500">
+        <input type="number" id="maxDistance" min="0" placeholder="e.g., 500">
         <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
     </form>
 
-    <!-- Flights Table -->
     <table id="flightsTable">
         <thead>
             <tr>
@@ -70,7 +68,7 @@ th {
             </tr>
         </thead>
         <tbody>
-            <!-- Rows will be inserted dynamically -->
+            <!-- Dynamic rows -->
         </tbody>
     </table>
 </div>
