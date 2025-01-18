@@ -18,8 +18,8 @@ async function proxyHandler(req: Request): Promise<Response> {
     const url = new URL(req.url);
     const { pathname, search } = url; // Extract path and query parameters
 
+    // Handle GET requests
     if (req.method === "GET") {
-      // Forward GET request directly to the Infinite Flight API
       const response = await fetch(`${API_BASE_URL}${pathname}${search}`, {
         method: "GET",
         headers: {
@@ -40,22 +40,30 @@ async function proxyHandler(req: Request): Promise<Response> {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-    } else if (req.method === "POST") {
-      // Handle POST requests with a body
+    }
+
+    // Handle POST requests
+    else if (req.method === "POST") {
       const { endpoint, method = "GET", body } = await req.json();
 
       if (!endpoint) {
         return respondWithError("Endpoint is required", 400);
       }
 
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const options: RequestInit = {
         method,
         headers: {
           Authorization: `Bearer ${API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: method === "POST" ? JSON.stringify(body) : undefined,
-      });
+      };
+
+      // Add body if it's a POST request
+      if (method === "POST" && body) {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
 
       const data = await response.json();
 
@@ -70,7 +78,10 @@ async function proxyHandler(req: Request): Promise<Response> {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-    } else {
+    }
+
+    // Unsupported HTTP methods
+    else {
       return respondWithError("Only GET and POST requests are allowed", 405);
     }
   } catch (error) {

@@ -11,7 +11,7 @@ let updateTimeout = null;
 let countdownInterval = null;
 
 // Fetch data using the proxy
-async function fetchWithProxy(endpoint, method = 'GET', body = null) {
+async function fetchWithProxy(endpoint, method = 'POST', body = null) {
     try {
         const response = await fetch(PROXY_URL, {
             method: 'GET',
