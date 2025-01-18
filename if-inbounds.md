@@ -30,18 +30,15 @@ th {
 <div class="container">
     <h1>Search Inbound Flights</h1>
     
-    <div id="activeAtcAirports" style="display: none;">
+    <div id="activeAtcAirports">
     <table style="width: 100%; text-align: left; border-collapse: collapse;">
-        <thead>
-            <tr>
-                <th colspan="5" style="text-align: center;">Top 50 Active ATC Airports</th>
-            </tr>
-        </thead>
         <tbody id="atcAirportsTable">
-            <tr><td colspan="5">No data fetched yet.</td></tr>
+            <tr>
+                <td colspan="5" style="text-align: center;">Fetching data...</td>
+            </tr>
         </tbody>
     </table>
-    </div>
+</div>
 
     <!-- Search Form -->
     <form id="searchForm" novalidate>
