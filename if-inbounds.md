@@ -117,6 +117,8 @@ th {
     <button type="button" id="filterHeadingHighlightButton">Filter Highlight by Heading</button>
     </form>
     
+    <button id="manualUpdateButton">Update ATIS and Controllers</button>
+    
     <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
 
 <div>

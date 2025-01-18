@@ -544,6 +544,25 @@ function stopAutoUpdate() {
     document.getElementById('countdownTimer').style.display = 'none';
 }
 
+// Manual update ATIS and Controllers
+document.getElementById('manualUpdateButton').addEventListener('click', async () => {
+    const icao = document.getElementById('icao').value.trim().toUpperCase();
+    if (!icao) {
+        alert('Please enter a valid ICAO code.');
+        return;
+    }
+
+    try {
+        // Fetch ATIS and controllers manually
+        await fetchAirportATIS(icao);
+        await fetchControllers(icao);
+        alert('ATIS and Controllers updated successfully!');
+    } catch (error) {
+        console.error('Error during manual update:', error.message);
+        alert('Failed to update ATIS and Controllers. Check console for details.');
+    }
+});
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchForm').addEventListener('submit', async (event) => {
