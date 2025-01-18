@@ -271,3 +271,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
 });
+
+
+fetch('https://infiniteflightapi.deno.dev', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ endpoint: '/airport/KATL', method: 'GET' })
+})
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => console.log('Response:', data))
+    .catch(error => console.error('Error:', error));
