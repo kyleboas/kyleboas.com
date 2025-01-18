@@ -70,3 +70,5 @@ document.documentElement.onclick = function(e) {
   }
 };
 
+require('dotenv').config();
+
