@@ -47,12 +47,13 @@ th {
         <input type="number" id="maxHeading" min="0" max="360" placeholder="e.g., 90">
         <button type="button" id="boldHeadingButton">Bold Aircraft</button>
         <button type="button" id="toggleHeadingButton">Hide/Show Other Aircraft</button>
-
-        <label for="minDistance">Min Distance:</label>
-        <input type="number" id="minDistance" min="0" placeholder="e.g., 50">
-        <label for="maxDistance">Max Distance:</label>
-        <input type="number" id="maxDistance" min="0" placeholder="e.g., 500">
-        <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
+        
+    <label for="minDistance">Min Distance:</label>
+    <input type="number" id="minDistance" min="0" placeholder="e.g., 50">
+    <label for="maxDistance">Max Distance:</label>
+    <input type="number" id="maxDistance" min="0" placeholder="e.g., 500">
+    <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
+    <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
     </form>
 
     <table id="flightsTable">
