@@ -121,12 +121,12 @@ th {
         <thead>
             <tr>
                 <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
+                <th>DIR</th>
+                <th>GS</th>
+                <th>MACH</th>
+                <th>ALT</th>
+                <th>NM</th>
+                <th>ETA</th>
             </tr>
         </thead>
         <tbody>
