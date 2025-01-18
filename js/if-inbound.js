@@ -91,7 +91,7 @@ async function fetchActiveATCAirports() {
         const uniqueAirports = Array.from(new Map(activeAtcAirports.map(airport => [airport.icao, airport])).values());
 
         // Limit the list to the top 10 airports
-        const topAirports = uniqueAirports.slice(0, 10);
+        const topAirports = uniqueAirports.slice(0, 5);
 
         // Format the list for display
         const listContent = topAirports.map(
