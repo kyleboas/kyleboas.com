@@ -302,9 +302,16 @@ function calculateBearing(lat1, lon1, lat2, lon2) {
 }
 
 // Calculate ETA
+// Calculate ETA
 function calculateETA(distance, groundSpeed) {
     if (groundSpeed > 0) {
         const totalSeconds = Math.round((distance / groundSpeed) * 3600);
+        const totalMinutes = Math.floor(totalSeconds / 60);
+
+        if (totalMinutes > 720) {
+            return '>12hrs'; // Show ">12hrs" for ETAs above 720 minutes
+        }
+
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
