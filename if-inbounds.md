@@ -55,6 +55,10 @@ table {
     margin-top: 20px;
 }
 
+tbody td {
+    padding: 5px;
+}
+
 th, td {
     border: 1px solid #ddd;
     padding: 10px;
