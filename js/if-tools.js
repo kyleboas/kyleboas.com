@@ -85,18 +85,26 @@ function parseETAInSeconds(eta) {
 // Highlight rows based on ETA proximity
 function highlightCloseETAs(flights) {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
+
+    // Reset background color for all rows
     rows.forEach(row => (row.style.backgroundColor = ''));
 
-    for (let i = 0; i < flights.length - 1; i++) {
+    // Iterate through flights to compare ETAs
+    for (let i = 0; i < flights.length; i++) {
         const eta1 = parseETAInSeconds(flights[i].etaMinutes);
-        const eta2 = parseETAInSeconds(flights[i + 1].etaMinutes);
 
-        if (Math.abs(eta1 - eta2) <= 30) {
-            rows[i].style.backgroundColor = '#fffa9f';
-            rows[i + 1].style.backgroundColor = '#fffa9f';
-        } else if (Math.abs(eta1 - eta2) <= 60) {
-            rows[i].style.backgroundColor = '#daceca';
-            rows[i + 1].style.backgroundColor = '#daceca';
+        for (let j = i + 1; j < flights.length; j++) {
+            const eta2 = parseETAInSeconds(flights[j].etaMinutes);
+
+            const timeDiff = Math.abs(eta1 - eta2);
+
+            if (timeDiff <= 30) {
+                rows[i].style.backgroundColor = '#fffa9f'; // Yellow
+                rows[j].style.backgroundColor = '#fffa9f'; // Yellow
+            } else if (timeDiff <= 60) {
+                rows[i].style.backgroundColor = rows[i].style.backgroundColor || '#daceca'; // Beige
+                rows[j].style.backgroundColor = rows[j].style.backgroundColor || '#daceca'; // Beige
+            }
         }
     }
 }
