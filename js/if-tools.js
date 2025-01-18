@@ -354,7 +354,7 @@ function stopAutoUpdate() {
 // Handle form submission to prevent page reload
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchForm').addEventListener('submit', async (event) => {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault();
 
         const icao = document.getElementById('icao').value.trim().toUpperCase();
         if (!icao) {
@@ -370,3 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('An error occurred while fetching data.');
         }
     });
+});
+
+
+
