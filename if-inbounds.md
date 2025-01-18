@@ -86,7 +86,6 @@ th {
 
     <!-- Search Form -->
     <form id="searchForm" novalidate>
-        <label for="icao">Enter Airport ICAO:</label>
         <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
         <button type="submit">Search</button>
     </form>
