@@ -17,12 +17,14 @@ const cache = {
     inboundFlightIds: {},
     flightDetails: {},
     atis: {},
+    controllers: {},
 };
 
 const cacheExpiration = {
-    airportCoordinates: 90 * 24 * 60 * 60 * 1000, // 90 days in milliseconds
-    inboundFlightIds: 5 * 60 * 1000, // 5 minutes in milliseconds
-    atis: 30 * 60 * 1000, // 30 minutes in milliseconds
+    airportCoordinates: 90 * 24 * 60 * 60 * 1000, // 90 days
+    inboundFlightIds: 5 * 60 * 1000, // 5 minutes
+    atis: 30 * 60 * 1000, // 30 minutes
+    controllers: 10 * 60 * 1000, // 10 minutes
 };
 
 function setCache(key, value, type) {
@@ -122,6 +124,58 @@ function displayATIS(atis) {
     }
     console.log('Displaying ATIS:', atis); // Debug log
     atisElement.textContent = `ATIS: ${atis}`;
+}
+
+// Fetch Controllers
+async function fetchControllers(icao) {
+    const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
+    if (cached) {
+        console.log('Using cached controllers for', icao);
+        displayControllers(cached); // Display cached controllers
+        return cached;
+    }
+
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const controllers = (data.result.atcFacilities || []).map(facility => {
+            const frequencyTypes = {
+                0: "Ground",
+                1: "Tower",
+                2: "Unicom",
+                3: "Clearance",
+                4: "Approach",
+                5: "Departure",
+                6: "Center",
+                7: "ATIS",
+                8: "Aircraft",
+                9: "Recorded",
+                10: "Unknown",
+                11: "Unused",
+            };
+            const frequencyName = frequencyTypes[facility.type] || "Unknown Frequency";
+            return `${frequencyName}: ${facility.username}`;
+        });
+
+        setCache(icao, controllers, 'controllers');
+        displayControllers(controllers); // Display fetched controllers
+        return controllers;
+    } catch (error) {
+        console.error('Error fetching controllers:', error.message);
+        displayControllers(['No active controllers available']);
+        return [];
+    }
+}
+
+// Display Controllers
+function displayControllers(controllers) {
+    const controllersElement = document.getElementById('controllersList');
+    if (!controllersElement) {
+        console.error('Controller display element not found.');
+        return;
+    }
+    controllersElement.textContent = controllers.length
+        ? `Active Controllers:\n${controllers.join('\n')}`
+        : 'No active controllers available';
 }
 
 // Fetch inbound flight IDs
@@ -395,8 +449,11 @@ async function fetchAndUpdateFlights(icao) {
 
         // Fetch ATIS
         await fetchAirportATIS(icao);
+
+        // Fetch controllers
+        await fetchControllers(icao);
     } catch (error) {
-        console.error('Error fetching flights:', error.message);
+        console.error('Error fetching flights or controllers:', error.message);
     }
 }
 
@@ -440,10 +497,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let countdown = 60;
         const countdownTimer = document.getElementById('countdownTimer');
 
-        updateInterval = setInterval(() => {
-            fetchAndUpdateFlights(icao);
-            countdown = 60;
-        }, 60000);
+        updateInterval = setInterval(async () => {
+    await fetchAndUpdateFlights(icao);
+    await fetchControllers(icao); // Update controllers on auto-update
+    countdown = 60;
+}, 60000);
 
         countdownInterval = setInterval(() => {
             countdown--;
