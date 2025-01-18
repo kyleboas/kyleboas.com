@@ -72,7 +72,7 @@ th {
     background-color: #eef;
     border-left: 4px solid #4CAF50;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 16px;
 }
 </style>
 
