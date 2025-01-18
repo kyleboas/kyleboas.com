@@ -11,20 +11,14 @@ let updateTimeout = null;
 let countdownInterval = null;
 
 // Fetch data using the proxy
-async function fetchWithProxy(endpoint, method = 'POST', body = null) {
+async function fetchWithProxy(endpoint) {
     try {
-        const response = await fetch(PROXY_URL, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ endpoint, method, body }),
-        });
-
+        const response = await fetch(`${PROXY_URL}${endpoint}`);
         if (!response.ok) {
             const errorData = await response.json();
             console.error('Error from proxy:', errorData);
             throw new Error(`Error fetching data: ${response.status}`);
         }
-
         return await response.json();
     } catch (error) {
         console.error('Error communicating with proxy:', error.message);
@@ -35,12 +29,36 @@ async function fetchWithProxy(endpoint, method = 'POST', body = null) {
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
     try {
-        const data = await fetchWithProxy(`/airport/${icao}`, 'GET');
+        const data = await fetchWithProxy(`/airport/${icao}`);
         return { latitude: data.result.latitude, longitude: data.result.longitude };
     } catch (error) {
         console.error('Error fetching airport coordinates:', error.message);
         alert('Failed to fetch airport coordinates.');
         return null;
+    }
+}
+
+// Fetch inbound flight IDs
+async function fetchInboundFlightIds(icao) {
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        return data.result.inboundFlights || [];
+    } catch (error) {
+        console.error('Error fetching inbound flight IDs:', error.message);
+        alert('Failed to fetch inbound flight IDs.');
+        return [];
+    }
+}
+
+// Fetch inbound flight details
+async function fetchInboundFlightDetails(inboundFlightIds) {
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        return data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
+    } catch (error) {
+        console.error('Error fetching flight details:', error.message);
+        alert('Failed to fetch flight details.');
+        return [];
     }
 }
 
@@ -151,30 +169,6 @@ function renderFlightsTable(flights, hideFilter = false) {
     highlightCloseETAs(flights);
 }
 
-// Fetch inbound flight IDs
-async function fetchInboundFlightIds(icao) {
-    try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`, 'GET');
-        return data.result.inboundFlights || [];
-    } catch (error) {
-        console.error('Error fetching inbound flight IDs:', error.message);
-        alert('Failed to fetch inbound flight IDs.');
-        return [];
-    }
-}
-
-// Fetch inbound flight details
-async function fetchInboundFlightDetails(inboundFlightIds) {
-    try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`, 'GET');
-        return data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
-    } catch (error) {
-        console.error('Error fetching flight details:', error.message);
-        alert('Failed to fetch flight details.');
-        return [];
-    }
-}
-
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
     flights.forEach(flight => {
@@ -210,7 +204,7 @@ async function fetchAndUpdateFlights(icao) {
     }
 }
 
-// Start and stop auto-update
+// Stop auto-update
 function stopAutoUpdate() {
     if (updateInterval) clearInterval(updateInterval);
     if (updateTimeout) clearTimeout(updateTimeout);
@@ -271,18 +265,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
 });
-
-
-fetch('https://infiniteflightapi.deno.dev', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ endpoint: '/airport/KATL', method: 'GET' })
-})
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => console.log('Response:', data))
-    .catch(error => console.error('Error:', error));
