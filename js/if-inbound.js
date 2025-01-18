@@ -16,11 +16,13 @@ const cache = {
     airportCoordinates: {}, // Stores airport coordinates
     inboundFlightIds: {},   // Stores inbound flight IDs
     flightDetails: {},      // Stores flight details (checked dynamically)
+    atis: {},
 };
 
 const cacheExpiration = {
     airportCoordinates: 90 * 24 * 60 * 60 * 1000, // 90 days in milliseconds
     inboundFlightIds: 5 * 60 * 1000, // 5 minutes in milliseconds
+    atis: 30 * 60 * 1000, // 30 minutes in milliseconds
 };
 
 function setCache(key, value, type) {
@@ -77,6 +79,38 @@ async function fetchAirportCoordinates(icao) {
         alert('Failed to fetch airport coordinates.');
         return null;
     }
+}
+
+// Fetch ATIS
+async function fetchAirportATIS(icao) {
+    const cached = getCache(icao, 'atis', cacheExpiration.atis);
+    if (cached) {
+        console.log('Using cached ATIS for', icao);
+        displayATIS(cached); // Display cached ATIS
+        return cached;
+    }
+
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`);
+        const atis = data.result.atisMessage || 'ATIS not available';
+        setCache(icao, atis, 'atis');
+        displayATIS(atis); // Display fetched ATIS
+        return atis;
+    } catch (error) {
+        console.error('Error fetching ATIS:', error.message);
+        alert('Failed to fetch ATIS information.');
+        return 'ATIS not available';
+    }
+}
+
+// Display ATIS
+function displayATIS(atis) {
+    const atisElement = document.getElementById('atisMessage');
+    if (!atisElement) {
+        console.error('ATIS display element not found.');
+        return;
+    }
+    atisElement.textContent = `ATIS: ${atis}`;
 }
 
 // Fetch inbound flight IDs
@@ -347,6 +381,9 @@ async function fetchAndUpdateFlights(icao) {
         allFlights = flights;
 
         renderFlightsTable(allFlights);
+
+        // Fetch ATIS
+        await fetchAirportATIS(icao);
     } catch (error) {
         console.error('Error fetching flights:', error.message);
     }
