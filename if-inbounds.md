@@ -30,14 +30,8 @@ th {
 <div class="container">
     <h1>Search Inbound Flights</h1>
     
-    <div id="activeAtcAirports">
-    <table style="width: 100%; text-align: left; border-collapse: collapse;">
-        <tbody id="atcAirportsTable">
-            <tr>
-                <td colspan="5" style="text-align: center;">Fetching data...</td>
-            </tr>
-        </tbody>
-    </table>
+    <div id="activeAtcAirports" style="margin-bottom: 10px;">
+    <pre id="atcAirportsList">Fetching data...</pre>
 </div>
 
     <!-- Search Form -->

@@ -70,7 +70,7 @@ async function fetchWithProxy(endpoint) {
     }
 }
 
-// Fetch and display active ATC airports with inbound flight counts
+// Fetch and display top 5 active ATC airports and any other airports with active ATC frequencies
 async function fetchActiveATCAirports() {
     const endpoint = `/sessions/${SESSION_ID}/world`;
 
@@ -84,32 +84,40 @@ async function fetchActiveATCAirports() {
             .map(airport => ({
                 icao: airport.airportIcao,
                 inboundCount: airport.inboundFlightsCount,
+                hasATC: airport.atcFacilities && airport.atcFacilities.length > 0
             }))
-            .sort((a, b) => b.inboundCount - a.inboundCount) // Sort by inbound count (descending)
-            .slice(0, 10; // Limit to the top 50 airports
+            .sort((a, b) => b.inboundCount - a.inboundCount); // Sort by inbound count (descending)
 
-        // Create a 5-column grid
-        const rows = [];
-        for (let i = 0; i < activeAtcAirports.length; i += 5) {
-            const row = activeAtcAirports.slice(i, i + 5)
-                .map(airport => `<td>${airport.icao}: ${airport.inboundCount}</td>`)
-                .join('');
-            rows.push(`<tr>${row}</tr>`);
-        }
+        // Separate the top 5 airports
+        const top5Airports = activeAtcAirports.slice(0, 5);
+        const top5ICAOs = new Set(top5Airports.map(airport => airport.icao));
 
-        // Update the table content
-        const atcAirportsTableElement = document.getElementById('atcAirportsTable');
-        atcAirportsTableElement.innerHTML = rows.join('');
+        // Filter additional ATC airports, excluding those already in the top 5
+        const otherATCAirports = activeAtcAirports
+            .filter(airport => airport.hasATC && !top5ICAOs.has(airport.icao));
+
+        // Format the top 5 list
+        const top5List = top5Airports.map(
+            airport => `${airport.icao}: ${airport.inboundCount}`
+        ).join('\n');
+
+        // Format the additional ATC airports list
+        const otherATCList = otherATCAirports.map(
+            airport => `${airport.icao} (active ATC)`
+        ).join('\n');
+
+        // Combine both lists
+        const finalDisplay = `${top5List}\n\nOther Airports with Active ATC:\n${otherATCList || 'None'}`;
+
+        // Display the list in the HTML container
+        const atcAirportsListElement = document.getElementById('atcAirportsList');
+        atcAirportsListElement.textContent = finalDisplay || 'No active ATC airports found.';
     } catch (error) {
         console.error('Error fetching active ATC airports:', error.message);
 
-        // Display error message in the table
-        const atcAirportsTableElement = document.getElementById('atcAirportsTable');
-        atcAirportsTableElement.innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align: center;">Failed to fetch active ATC airports.</td>
-            </tr>
-        `;
+        // Display error message
+        const atcAirportsListElement = document.getElementById('atcAirportsList');
+        atcAirportsListElement.textContent = 'Failed to fetch active ATC airports.';
     }
 }
 
@@ -120,11 +128,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Error initializing page:', error.message);
     }
-});
-
-// Example: Fetch and display active ATC airports when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    fetchActiveATCAirports();
 });
 
 // Fetch airport latitude and longitude
