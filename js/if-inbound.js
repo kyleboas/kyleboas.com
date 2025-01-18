@@ -11,8 +11,6 @@ let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
-let atisUpdateInterval = null;
-let controllersUpdateInterval = null;
 
 const cache = {
     airportCoordinates: {},
@@ -236,27 +234,6 @@ function displayControllers(controllers) {
         ? `${controllers.join('\n')}`
         : 'No active controllers available';
 }
-
-
-
-// Manual update button for ATIS and Controllers
-document.getElementById('manualUpdateButton').addEventListener('click', async () => {
-    const icao = document.getElementById('icao').value.trim().toUpperCase();
-    if (!icao) {
-        alert('Please enter a valid ICAO code.');
-        return;
-    }
-
-    try {
-        // Fetch ATIS and controllers manually
-        await fetchAirportATIS(icao);
-        await fetchControllers(icao);
-        alert('ATIS and Controllers updated successfully!');
-    } catch (error) {
-        console.error('Error during manual update:', error.message);
-        alert('Failed to update ATIS and Controllers. Check console for details.');
-    }
-});
 
 // Fetch inbound flight IDs
 async function fetchInboundFlightIds(icao) {
@@ -567,7 +544,7 @@ function stopAutoUpdate() {
     document.getElementById('countdownTimer').style.display = 'none';
 }
 
-// Update Event Listeners
+// Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchForm').addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -583,68 +560,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('updateButton').addEventListener('click', () => {
-        const icao = document.getElementById('icao').value.trim().toUpperCase();
-        if (!icao) {
-            alert('Please enter a valid ICAO code before updating.');
-            return;
-        }
+    const icao = document.getElementById('icao').value.trim().toUpperCase();
+    if (!icao) {
+        alert('Please enter a valid ICAO code before updating.');
+        return;
+    }
 
+    stopAutoUpdate();
+    let countdown = 15; // Update countdown for 15 seconds
+    const countdownTimer = document.getElementById('countdownTimer');
+
+    // Set interval for 15 seconds
+    updateInterval = setInterval(async () => {
+        await fetchAndUpdateFlights(icao);
+        await fetchControllers(icao); // Update controllers on auto-update
+        countdown = 15; // Reset countdown
+    }, 15000); // 15 seconds interval
+
+    // Countdown display logic
+    countdownInterval = setInterval(() => {
+        countdown--;
+        countdownTimer.textContent = `Next update in: ${countdown} seconds`;
+    }, 1000);
+
+    // Auto-stop the update after 15 minutes
+    updateTimeout = setTimeout(() => {
         stopAutoUpdate();
-        let countdown = 15; // Update countdown for 15 seconds
-        const countdownTimer = document.getElementById('countdownTimer');
+        alert('Auto-update stopped after 15 minutes.');
+    }, 15 * 60 * 1000); // 15 minutes
 
-        // Set interval for flight updates every 15 seconds
-        updateInterval = setInterval(async () => {
-            await fetchAndUpdateFlights(icao);
-            countdown = 15; // Reset countdown
-        }, 15000); // 15 seconds interval
-
-        // Update ATIS every 30 minutes
-        atisUpdateInterval = setInterval(async () => {
-            await fetchAirportATIS(icao);
-        }, 30 * 60 * 1000); // 30 minutes
-
-        // Update controllers every 30 minutes
-        controllersUpdateInterval = setInterval(async () => {
-            await fetchControllers(icao);
-        }, 30 * 60 * 1000); // 30 minutes
-
-        // Countdown display logic
-        countdownInterval = setInterval(() => {
-            countdown--;
-            countdownTimer.textContent = `Next update in: ${countdown} seconds`;
-        }, 1000);
-
-        // Auto-stop the update after 15 minutes
-        updateTimeout = setTimeout(() => {
-            stopAutoUpdate();
-            alert('Auto-update stopped after 15 minutes.');
-        }, 15 * 60 * 1000); // 15 minutes
-
-        document.getElementById('stopUpdateButton').style.display = 'inline';
-        countdownTimer.style.display = 'inline';
-    });
-
-    document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
+    document.getElementById('stopUpdateButton').style.display = 'inline';
+    countdownTimer.style.display = 'inline';
 });
-
-// Stop auto-update and clear all intervals
-function stopAutoUpdate() {
-    if (updateInterval) clearInterval(updateInterval);
-    if (atisUpdateInterval) clearInterval(atisUpdateInterval);
-    if (controllersUpdateInterval) clearInterval(controllersUpdateInterval);
-    if (updateTimeout) clearTimeout(updateTimeout);
-    if (countdownInterval) clearInterval(countdownInterval);
-
-    updateInterval = null;
-    atisUpdateInterval = null;
-    controllersUpdateInterval = null;
-    updateTimeout = null;
-    countdownInterval = null;
-
-    document.getElementById('stopUpdateButton').style.display = 'none';
-    document.getElementById('countdownTimer').style.display = 'none';
-}
 
     document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
 });
