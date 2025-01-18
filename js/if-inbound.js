@@ -1,4 +1,4 @@
-const PROXY_URL = 'https://infiniteflightapi.deno.dev';
+const PROXY_URL = 'https://infiniteflightapi.deno.dev/';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8';
 
 let allFlights = [];
