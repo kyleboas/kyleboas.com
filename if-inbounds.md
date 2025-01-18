@@ -16,9 +16,6 @@ body {
 
 pre {
     font-family: Helvetica, sans-serif;
-    font-size: 16px;
-    overflow-x: auto;
-    margin-bottom: 20px;
 }
 
 form {
@@ -56,6 +53,10 @@ table {
     text-align: center;
 }
 
+tbody {
+    font-size: 12px; 
+}
+
 tbody td {
     padding: 5px;
 }
@@ -64,6 +65,7 @@ th, td {
     border: 1px solid #ddd;
     padding: 10px;
     text-align: center;
+    font-size: 12px;
 }
 
 th {
@@ -84,7 +86,7 @@ th {
 <div class="container">
     <h1>Search Inbound Flights</h1>
     
-    <div id="activeAtcAirports" style="font-size: 15px; margin-bottom: 10px;">
+    <div id="activeAtcAirports" style="font-size: 15px;">
     <pre id="atcAirportsList">Fetching data...</pre>
 </div>
 
