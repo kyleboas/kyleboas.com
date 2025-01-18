@@ -11,16 +11,24 @@ body {
     max-width: 800px;
     margin: auto;
 }
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    font-size: 12px;
 }
+
 th, td {
-    border: 1px solid #ddd;
+    white-space: nowrap; /* Prevent text from wrapping in table cells */
     padding: 8px;
     text-align: center;
+    border: 1px solid #ddd;
 }
+
 th {
     background-color: #f4f4f4;
 }
@@ -72,11 +80,11 @@ th {
             <tr>
                 <th>Callsign</th>
                 <th>Heading</th>
-                <th>Ground Speed (kts)</th>
-                <th>Mach Speed</th>
-                <th>Altitude (ft)</th>
-                <th>Distance to Destination (nm)</th>
-                <th>ETA (minutes)</th>
+                <th>GS</th>
+                <th>Mach</th>
+                <th>Alt</th>
+                <th>nm</th>
+                <th>ETA</th>
             </tr>
         </thead>
         <tbody>
