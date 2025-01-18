@@ -1,6 +1,5 @@
-const API_BASE_URL = 'https://api.infiniteflight.com/public/v2';
+const PROXY_URL = 'https://infiniteflightapi.deno.dev';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8'; // Replace with the correct session ID
-const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk';
 
 let allFlights = [];
 let headingFilterActive = false;
@@ -10,61 +9,37 @@ let maxDistance = null;
 let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
-let currentPage = 1;
-const pageSize = 10;
 
-// Debounce function to throttle API requests
-function debounce(func, delay) {
-    let timeoutId;
-    return function (...args) {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func.apply(this, args), delay);
-    };
-}
+// Fetch data using the proxy
+async function fetchWithProxy(endpoint, method = 'GET', body = null) {
+    try {
+        const response = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint, method, body }),
+        });
 
-// Toggle loading spinner
-function toggleLoading(show) {
-    const spinner = document.getElementById('loadingSpinner');
-    spinner.style.display = show ? 'block' : 'none';
-}
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error from proxy:', errorData);
+            throw new Error(`Error fetching data: ${response.status}`);
+        }
 
-// Toggle button state
-function toggleButtons(disable) {
-    document.getElementById('searchForm').querySelector('button').disabled = disable;
-    document.getElementById('updateButton').disabled = disable;
-}
-
-// Show notifications
-function showNotification(message, type = 'error') {
-    const container = document.getElementById('notificationContainer');
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-
-    container.appendChild(notification);
-
-    setTimeout(() => {
-        container.removeChild(notification);
-    }, 3000);
+        return await response.json();
+    } catch (error) {
+        console.error('Error communicating with proxy:', error.message);
+        throw error;
+    }
 }
 
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
     try {
-        const response = await fetch(`${API_BASE_URL}/airport/${icao}`, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) throw new Error(`Error fetching airport data: ${response.status}`);
-        const data = await response.json();
+        const data = await fetchWithProxy(`/airport/${icao}`, 'GET');
         return { latitude: data.result.latitude, longitude: data.result.longitude };
     } catch (error) {
         console.error('Error fetching airport coordinates:', error.message);
-        showNotification('Failed to fetch airport coordinates.', 'error');
+        alert('Failed to fetch airport coordinates.');
         return null;
     }
 }
@@ -132,20 +107,15 @@ function highlightCloseETAs(flights) {
                     rows[j].style.backgroundColor = '#fffa9f'; // Yellow
                 } else if (timeDiff <= 60) {
                     rows[i].style.backgroundColor = rows[i].style.backgroundColor || '#daceca'; // Beige
-                    rows[j].style.backgroundColor = rows[j].style.backgroundColor || '#daceca';
+                    rows[j].style.backgroundColor = rows[j].style.backgroundColor || '#daceca'; // Beige
                 }
             }
         });
     });
 }
 
-// Paginate array
-function paginate(array, page, pageSize) {
-    return array.slice((page - 1) * pageSize, page * pageSize);
-}
-
-// Render flight details with pagination
-function renderFlightsTable(flights) {
+// Render flight details
+function renderFlightsTable(flights, hideFilter = false) {
     const tableBody = document.querySelector('#flightsTable tbody');
     tableBody.innerHTML = '';
 
@@ -154,10 +124,18 @@ function renderFlightsTable(flights) {
         return;
     }
 
-    const paginatedFlights = paginate(flights, currentPage, pageSize);
+    flights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-    paginatedFlights.forEach(flight => {
+    flights.forEach(flight => {
         const row = document.createElement('tr');
+        const isBolded = boldedHeadings.minHeading !== null &&
+                         flight.headingFromAirport >= boldedHeadings.minHeading &&
+                         flight.headingFromAirport <= boldedHeadings.maxHeading;
+
+        const isVisible = !hideFilter || isBolded;
+        row.style.fontWeight = isBolded ? 'bold' : 'normal';
+        row.style.display = isVisible ? '' : 'none';
+
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
             <td>${Math.round(flight.headingFromAirport) || 'N/A'}</td>
@@ -170,30 +148,126 @@ function renderFlightsTable(flights) {
         tableBody.appendChild(row);
     });
 
-    highlightCloseETAs(paginatedFlights);
-
-    document.getElementById('paginationControls').innerHTML = `
-        <button onclick="navigatePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
-        <button onclick="navigatePage(1)" ${currentPage * pageSize >= flights.length ? 'disabled' : ''}>Next</button>
-    `;
+    highlightCloseETAs(flights);
 }
 
-function navigatePage(direction) {
-    currentPage += direction;
-    renderFlightsTable(allFlights);
+// Fetch inbound flight IDs
+async function fetchInboundFlightIds(icao) {
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`, 'GET');
+        return data.result.inboundFlights || [];
+    } catch (error) {
+        console.error('Error fetching inbound flight IDs:', error.message);
+        alert('Failed to fetch inbound flight IDs.');
+        return [];
+    }
 }
 
-// Main fetch logic
+// Fetch inbound flight details
+async function fetchInboundFlightDetails(inboundFlightIds) {
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`, 'GET');
+        return data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
+    } catch (error) {
+        console.error('Error fetching flight details:', error.message);
+        alert('Failed to fetch flight details.');
+        return [];
+    }
+}
+
+// Update distances, ETA, and headings
+async function updateDistancesAndETAs(flights, airportCoordinates) {
+    flights.forEach(flight => {
+        flight.distanceToDestination = calculateDistance(
+            flight.latitude,
+            flight.longitude,
+            airportCoordinates.latitude,
+            airportCoordinates.longitude
+        );
+        flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
+        flight.headingFromAirport = calculateBearing(
+            airportCoordinates.latitude,
+            airportCoordinates.longitude,
+            flight.latitude,
+            flight.longitude
+        );
+    });
+}
+
+// Fetch and update flights
 async function fetchAndUpdateFlights(icao) {
     try {
-        toggleButtons(true);
-        toggleLoading(true);
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
         const airportCoordinates = await fetchAirportCoordinates(icao);
-        const flights = []; // Simulate flight fetch here
-        allFlights = flights.map(flight => ({
-            ...flight,
-            distanceToDestination: calculateDistance(flight.lat, flight.lon, airportCoordinates.lat, airportCoordinates.lon),
-        }));
+
+        await updateDistancesAndETAs(flights, airportCoordinates);
+        allFlights = flights;
+
         renderFlightsTable(allFlights);
-    } catch (e) { showNotification(e.message); }
+    } catch (error) {
+        console.error('Error fetching flights:', error.message);
+    }
 }
+
+// Start and stop auto-update
+function stopAutoUpdate() {
+    if (updateInterval) clearInterval(updateInterval);
+    if (updateTimeout) clearTimeout(updateTimeout);
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    updateInterval = null;
+    updateTimeout = null;
+    countdownInterval = null;
+
+    document.getElementById('stopUpdateButton').style.display = 'none';
+    document.getElementById('countdownTimer').style.display = 'none';
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('searchForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const icao = document.getElementById('icao').value.trim().toUpperCase();
+
+        if (!icao) {
+            alert('Please enter a valid ICAO code.');
+            return;
+        }
+
+        stopAutoUpdate();
+        await fetchAndUpdateFlights(icao);
+    });
+
+    document.getElementById('updateButton').addEventListener('click', () => {
+        const icao = document.getElementById('icao').value.trim().toUpperCase();
+        if (!icao) {
+            alert('Please enter a valid ICAO code before updating.');
+            return;
+        }
+
+        stopAutoUpdate();
+        let countdown = 60;
+        const countdownTimer = document.getElementById('countdownTimer');
+
+        updateInterval = setInterval(() => {
+            fetchAndUpdateFlights(icao);
+            countdown = 60;
+        }, 60000);
+
+        countdownInterval = setInterval(() => {
+            countdown--;
+            countdownTimer.textContent = `Next update in: ${countdown} seconds`;
+        }, 1000);
+
+        updateTimeout = setTimeout(() => {
+            stopAutoUpdate();
+            alert('Auto-update stopped after 15 minutes.');
+        }, 15 * 60 * 1000);
+
+        document.getElementById('stopUpdateButton').style.display = 'inline';
+        countdownTimer.style.display = 'inline';
+    });
+
+    document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
+});
