@@ -209,15 +209,19 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     const minInput = parseFloat(document.getElementById('minDistance').value);
     const maxInput = parseFloat(document.getElementById('maxDistance').value);
 
-    if (isNaN(minInput) || isNaN(maxInput) || minInput > maxInput) {
-        alert('Please enter valid min and max distance values.');
-        return;
+    if (!isNaN(minInput)) {
+        minDistance = minInput;
+    } else {
+        minDistance = null; // Clear the filter if input is invalid or empty
     }
 
-    minDistance = minInput;
-    maxDistance = maxInput;
+    if (!isNaN(maxInput)) {
+        maxDistance = maxInput;
+    } else {
+        maxDistance = null; // Clear the filter if input is invalid or empty
+    }
 
-    // Re-render the table to apply the distance filter
+    // Re-render the table with the updated distance filter
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
@@ -235,23 +239,27 @@ function renderFlightsTable(flights, hideFilter = false) {
         return;
     }
 
+    // Sort flights by ETA
     uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
     uniqueFlights.forEach(flight => {
         const row = document.createElement('tr');
 
+        // Check if the flight is within the heading range
         const isWithinHeadingRange = boldedHeadings.minHeading !== null &&
                                      boldedHeadings.maxHeading !== null &&
                                      typeof flight.headingFromAirport === 'number' &&
                                      flight.headingFromAirport >= boldedHeadings.minHeading &&
                                      flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-        const isWithinDistanceRange = minDistance !== null &&
-                                      maxDistance !== null &&
-                                      typeof flight.distanceToDestination === 'number' &&
-                                      flight.distanceToDestination >= minDistance &&
-                                      flight.distanceToDestination <= maxDistance;
+        // Check if the flight is within the distance range
+        const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
+            typeof flight.distanceToDestination === 'number' &&
+            flight.distanceToDestination >= (minDistance ?? 0) &&
+            flight.distanceToDestination <= (maxDistance ?? Infinity)
+        );
 
+        // Combine filters
         const isVisible = (!hideFilter || isWithinHeadingRange) && isWithinDistanceRange;
 
         row.style.fontWeight = isWithinHeadingRange ? 'bold' : 'normal';
