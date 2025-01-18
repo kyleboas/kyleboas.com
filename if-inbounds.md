@@ -34,6 +34,18 @@ form button {
     border-radius: 4px;
 }
 
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
 form button {
     background-color: #4CAF50;
     color: white;
@@ -116,6 +128,8 @@ th {
     <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
     <button type="button" id="filterHeadingHighlightButton">Filter Highlight by Heading</button>
     </form>
+    
+    <button id="manualUpdateButton">Update ATIS and Controllers</button>
     
     <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
 
