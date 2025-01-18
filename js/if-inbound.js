@@ -13,9 +13,9 @@ let countdownInterval = null;
 let hideOtherAircraft = false;
 
 const cache = {
-    airportCoordinates: {}, // Stores airport coordinates
-    inboundFlightIds: {},   // Stores inbound flight IDs
-    flightDetails: {},      // Stores flight details (checked dynamically)
+    airportCoordinates: {},
+    inboundFlightIds: {},
+    flightDetails: {},
     atis: {},
 };
 
@@ -50,11 +50,18 @@ async function fetchWithProxy(endpoint) {
     try {
         const response = await fetch(`${PROXY_URL}${endpoint}`);
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.text(); // Use `text` instead of `json`
             console.error('Error from proxy:', errorData);
             throw new Error(`Error fetching data: ${response.status}`);
         }
-        return await response.json();
+
+        const textResponse = await response.text(); // Get the response as text
+        try {
+            // Attempt to parse it as JSON
+            return JSON.parse(textResponse);
+        } catch {
+            throw new Error('Invalid JSON response');
+        }
     } catch (error) {
         console.error('Error communicating with proxy:', error.message);
         throw error;
@@ -83,6 +90,9 @@ async function fetchAirportCoordinates(icao) {
 
 // Fetch ATIS
 async function fetchAirportATIS(icao) {
+    const atisElement = document.getElementById('atisMessage');
+    if (atisElement) atisElement.textContent = 'Fetching ATIS...';
+
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
     if (cached) {
         console.log('Using cached ATIS for', icao);
@@ -92,13 +102,13 @@ async function fetchAirportATIS(icao) {
 
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`);
-        const atis = data.result.atisMessage || 'ATIS not available';
+        const atis = data.result || 'ATIS not available'; // Use `data.result`
         setCache(icao, atis, 'atis');
         displayATIS(atis); // Display fetched ATIS
         return atis;
     } catch (error) {
         console.error('Error fetching ATIS:', error.message);
-        alert('Failed to fetch ATIS information.');
+        displayATIS('ATIS not available');
         return 'ATIS not available';
     }
 }
@@ -110,6 +120,7 @@ function displayATIS(atis) {
         console.error('ATIS display element not found.');
         return;
     }
+    console.log('Displaying ATIS:', atis); // Debug log
     atisElement.textContent = `ATIS: ${atis}`;
 }
 
