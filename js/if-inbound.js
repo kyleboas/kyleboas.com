@@ -97,17 +97,19 @@ async function fetchActiveATCAirports() {
             rows.push(`<tr>${row}</tr>`);
         }
 
-        // Display the list in the HTML container
+        // Update the table content
         const atcAirportsTableElement = document.getElementById('atcAirportsTable');
-        const activeAtcAirportsContainer = document.getElementById('activeAtcAirports');
         atcAirportsTableElement.innerHTML = rows.join('');
-        activeAtcAirportsContainer.style.display = 'block';
     } catch (error) {
         console.error('Error fetching active ATC airports:', error.message);
+
+        // Display error message in the table
         const atcAirportsTableElement = document.getElementById('atcAirportsTable');
-        const activeAtcAirportsContainer = document.getElementById('activeAtcAirports');
-        atcAirportsTableElement.innerHTML = '<tr><td colspan="5">Failed to fetch active ATC airports.</td></tr>';
-        activeAtcAirportsContainer.style.display = 'block';
+        atcAirportsTableElement.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center;">Failed to fetch active ATC airports.</td>
+            </tr>
+        `;
     }
 }
 
