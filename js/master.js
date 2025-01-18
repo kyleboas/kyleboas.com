@@ -69,6 +69,3 @@ document.documentElement.onclick = function(e) {
     return false;
   }
 };
-
-require('dotenv').config();
-
