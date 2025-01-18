@@ -30,13 +30,12 @@ th {
 <div class="container">
     <h1>Search Inbound Flights</h1>
     <!-- Search Form -->
-    <form id="searchForm">
-    <label for="icao">Enter Airport ICAO:</label>
-    <input type="text" id="icao" name="icao" placeholder="e.g., KLAX" required>
-    <button type="submit">Search</button>
+    <div id="searchForm">
+    <input type="text" id="icao" placeholder="Enter ICAO">
+    <button id="searchButton">Search</button>
+</div>
     <button type="button" id="updateButton">Update</button>
     <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-</form>
     <span id="countdownTimer">Next update in: 60 seconds</span>
 
     <!-- Filter Form -->
