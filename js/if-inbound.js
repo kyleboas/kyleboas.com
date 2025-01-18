@@ -132,28 +132,37 @@ function highlightCloseETAs(flights) {
     });
 }
 
-// Render flight details
 function renderFlightsTable(flights, hideFilter = false) {
     const tableBody = document.querySelector('#flightsTable tbody');
     tableBody.innerHTML = '';
 
+    // Handle case where no flights are found
     if (!flights.length) {
         tableBody.innerHTML = '<tr><td colspan="8">No inbound flights found.</td></tr>';
         return;
     }
 
+    // Sort flights by ETA
     flights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
+    // Loop through flights and build rows
     flights.forEach(flight => {
         const row = document.createElement('tr');
+
+        // Ensure heading and boldedHeadings values are valid
         const isBolded = boldedHeadings.minHeading !== null &&
+                         boldedHeadings.maxHeading !== null &&
+                         typeof flight.headingFromAirport === 'number' &&
                          flight.headingFromAirport >= boldedHeadings.minHeading &&
                          flight.headingFromAirport <= boldedHeadings.maxHeading;
 
         const isVisible = !hideFilter || isBolded;
+
+        // Apply styles for bolding and visibility
         row.style.fontWeight = isBolded ? 'bold' : 'normal';
         row.style.display = isVisible ? '' : 'none';
 
+        // Build row content
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
             <td>${Math.round(flight.headingFromAirport) || 'N/A'}</td>
@@ -163,11 +172,29 @@ function renderFlightsTable(flights, hideFilter = false) {
             <td>${flight.distanceToDestination?.toFixed(2) || 'N/A'}</td>
             <td>${flight.etaMinutes || 'N/A'}</td>
         `;
+
         tableBody.appendChild(row);
     });
 
+    // Highlight flights with close ETAs
     highlightCloseETAs(flights);
 }
+
+document.getElementById('boldHeadingButton').addEventListener('click', () => {
+    const minHeading = parseFloat(document.getElementById('minHeading').value);
+    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
+
+    if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
+        alert('Please enter valid min and max headings.');
+        return;
+    }
+
+    boldedHeadings.minHeading = minHeading;
+    boldedHeadings.maxHeading = maxHeading;
+
+    // Re-render the table to apply the bolding
+    renderFlightsTable(allFlights);
+});
 
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
