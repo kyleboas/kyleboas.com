@@ -69,7 +69,6 @@ th {
 #atisMessage, #controllersList {
     margin-top: 15px;
     padding: 10px;
-    background-color: #eef;
     border-left: 4px solid #4CAF50;
     border-radius: 4px;
     font-size: 15px;
