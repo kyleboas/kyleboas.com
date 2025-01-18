@@ -56,7 +56,7 @@ th {
     <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
     </form>
     
-    <div id="atisMessage" style="margin-top: 10px; font-weight: bold;">ATIS: Not fetched yet</div>
+    <div id="atisMessage" style="margin-top: 10px;">ATIS: Not fetched yet</div>
 
     <table id="flightsTable">
         <thead>
