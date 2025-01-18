@@ -29,6 +29,9 @@ th {
 <body>
 <div class="container">
     <h1>Search Inbound Flights</h1>
+    <div id="activeAtcAirports" style="display: none; margin-top: 20px;">
+    <pre id="atcAirportsList">No data fetched yet.</pre>
+</div>
     <!-- Search Form -->
     <form id="searchForm" novalidate>
         <label for="icao">Enter Airport ICAO:</label>

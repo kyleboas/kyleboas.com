@@ -70,6 +70,47 @@ async function fetchWithProxy(endpoint) {
     }
 }
 
+// Fetch and display active ATC airports with inbound flight counts
+async function fetchActiveATCAirports() {
+    const endpoint = `/sessions/${SESSION_ID}/world`;
+
+    try {
+        // Fetch data from the world endpoint
+        const data = await fetchWithProxy(endpoint);
+
+        // Extract ATC airports and sort by inbound flight count (descending)
+        const activeAtcAirports = (data.result?.atcFacilities || [])
+            .filter(facility => facility.inboundFlightsCount > 0)
+            .map(facility => ({
+                icao: facility.airportIcao,
+                inboundCount: facility.inboundFlightsCount,
+            }))
+            .sort((a, b) => b.inboundCount - a.inboundCount);
+
+        // Format the list for display
+        const listContent = activeAtcAirports.map(
+            airport => `${airport.icao}: ${airport.inboundCount}`
+        ).join('\n');
+
+        // Display the list in the HTML container
+        const atcAirportsListElement = document.getElementById('atcAirportsList');
+        const activeAtcAirportsContainer = document.getElementById('activeAtcAirports');
+        atcAirportsListElement.textContent = listContent || 'No active ATC airports found.';
+        activeAtcAirportsContainer.style.display = 'block';
+    } catch (error) {
+        console.error('Error fetching active ATC airports:', error.message);
+        const atcAirportsListElement = document.getElementById('atcAirportsList');
+        const activeAtcAirportsContainer = document.getElementById('activeAtcAirports');
+        atcAirportsListElement.textContent = 'Failed to fetch active ATC airports.';
+        activeAtcAirportsContainer.style.display = 'block';
+    }
+}
+
+// Example: Fetch and display active ATC airports when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    fetchActiveATCAirports();
+});
+
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
     const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);
