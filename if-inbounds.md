@@ -133,13 +133,13 @@ tr:hover td {
     <table id="flightsTable">
         <thead>
             <tr>
-                <th>Callsign</th>
-                <th>Heading</th>
-                <th>GS</th>
-                <th>Mach</th>
-                <th>Alt</th>
-                <th>nm</th>
-                <th>ETA</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
