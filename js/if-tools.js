@@ -1,6 +1,6 @@
 const API_BASE_URL = 'https://api.infiniteflight.com/public/v2';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8'; // Replace with the correct session ID
-const API_KEY = 'kqcfcn5ors95bzrdhzezbm9n9hnxq0qk'; // Replace with your Infinite Flight API Key
+const API_KEY = 'process.env.IF_API_KEY';
 
 let allFlights = []; // Store all flights globally
 let headingFilterActive = false; // Track if heading-based hide/show filter is active
