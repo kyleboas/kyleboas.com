@@ -32,7 +32,7 @@ th {
     <!-- Search Form -->
     <div id="searchForm">
     <input type="text" id="icao" placeholder="Enter ICAO">
-    <button id="searchButton">Search</button>
+    <button id="submit">Search</button>
 </div>
     <button type="button" id="updateButton">Update</button>
     <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
