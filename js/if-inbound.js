@@ -477,12 +477,14 @@ document.getElementById('minDistance').value = '';
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
     flights.forEach(flight => {
-        flight.distanceToDestination = calculateDistance(
-            flight.latitude,
-            flight.longitude,
-            airportCoordinates.latitude,
-            airportCoordinates.longitude
-        );
+        flight.distanceToDestination = Math.round(
+            calculateDistance(
+                flight.latitude,
+                flight.longitude,
+                airportCoordinates.latitude,
+                airportCoordinates.longitude
+            )
+        ); // Round the distance to the nearest whole number
         flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
         flight.headingFromAirport = calculateBearing(
             airportCoordinates.latitude,
