@@ -761,12 +761,12 @@ function stopAutoUpdate() {
 
     document.getElementById('stopUpdateButton').style.display = 'none'; // Hide "Stop Update" button
     document.getElementById('countdownTimer').style.display = 'none'; // Hide the countdown timer
-<<<<<<< master
 }
 
 // Handle form submission to prevent page reload
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('searchForm').addEventListener('submit', async (event) => {
+
+document.getElementById('searchForm').addEventListener('submit', async (event) => {
         event.preventDefault();
 
         const icao = document.getElementById('icao').value.trim().toUpperCase();
