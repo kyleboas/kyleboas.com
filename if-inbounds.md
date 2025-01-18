@@ -80,7 +80,7 @@ th {
 <div class="container">
     <h1>Search Inbound Flights</h1>
     
-    <div id="activeAtcAirports" style="margin-bottom: 10px;">
+    <div id="activeAtcAirports" style="font-size: 15px; margin-bottom: 10px;">
     <pre id="atcAirportsList">Fetching data...</pre>
 </div>
 
