@@ -106,6 +106,11 @@ async function fetchActiveATCAirports() {
     }
 }
 
+// Run on page load
+document.addEventListener('DOMContentLoaded', () => {
+    fetchActiveATCAirports();
+});
+
 // Example: Fetch and display active ATC airports when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     fetchActiveATCAirports();
