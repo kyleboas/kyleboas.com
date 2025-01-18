@@ -29,9 +29,20 @@ th {
 <body>
 <div class="container">
     <h1>Search Inbound Flights</h1>
-    <div id="activeAtcAirports" style="margin-top: 20px;">
-    <pre id="atcAirportsList">No data fetched yet.</pre>
-</div>
+    
+    <div id="activeAtcAirports" style="margin-top: 20px; display: none;">
+    <table style="width: 100%; text-align: left; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th colspan="5" style="text-align: center;">Top 50 Active ATC Airports</th>
+            </tr>
+        </thead>
+        <tbody id="atcAirportsTable">
+            <tr><td colspan="5">No data fetched yet.</td></tr>
+        </tbody>
+    </table>
+    </div>
+
     <!-- Search Form -->
     <form id="searchForm" novalidate>
         <label for="icao">Enter Airport ICAO:</label>
