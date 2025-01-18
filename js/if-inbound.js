@@ -15,7 +15,6 @@ let hideOtherAircraft = false;
 const cache = {
     airportCoordinates: {},
     inboundFlightIds: {},
-    flightDetails: {},
     atis: {},
     controllers: {},
 };
