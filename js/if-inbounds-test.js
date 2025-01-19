@@ -438,32 +438,9 @@ function highlightCloseETAs(flights) {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
-    let boldFlights = [];
-    let nonBoldFlights = flights;
-
-    // Handle bold filtering
-    if (filterHighlightByHeading && boldHeadingEnabled) {
-        boldFlights = flights.filter(
-            flight =>
-                flight.headingFromAirport >= boldedHeadings.minHeading &&
-                flight.headingFromAirport <= boldedHeadings.maxHeading
-        );
-        nonBoldFlights = flights.filter(
-            flight =>
-                flight.headingFromAirport < boldedHeadings.minHeading ||
-                flight.headingFromAirport > boldedHeadings.maxHeading
-        );
-    }
-
-    // Use appropriate groups: either bold flights or all flights
-    const groups = filterHighlightByHeading && boldHeadingEnabled ? [boldFlights] : [flights];
-
-    // Compare flights within each group
-    groups.forEach(group => {
-        group.forEach((flight1, i) => {
-            group.forEach((flight2, j) => {
-                if (i !== j) highlightPair(flight1, flight2, rows, flights);
-            });
+    flights.forEach((flight1, i) => {
+        flights.forEach((flight2, j) => {
+            if (i !== j) highlightPair(flight1, flight2, rows, flights);
         });
     });
 }
@@ -479,21 +456,19 @@ function highlightPair(flight1, flight2, rows, flights) {
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
-    // Determine priority-based colors
-    const colors = [
-        { limit: 10, color: '#fffa9f' }, // Yellow for ≤ 10 seconds
-        { limit: 30, color: '#8BABF1' }, // Blue for ≤ 30 seconds
-        { limit: 60, color: '#daceca' }, // Beige for ≤ 60 seconds
-        { limit: 120, color: '#eaeaea' } // Gray for ≤ 120 seconds
-    ];
-
-    // Apply the first valid color based on priority
-    for (const { limit, color } of colors) {
-        if (timeDiff <= limit) {
-            if (!row1.style.backgroundColor) row1.style.backgroundColor = color;
-            if (!row2.style.backgroundColor) row2.style.backgroundColor = color;
-            break; // Exit once a color is applied
-        }
+    // Only apply the first valid highlight color
+    if (timeDiff <= 10) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
+    } else if (timeDiff <= 30) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#8BABF1'; // Blue for ≤ 30 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#8BABF1';
+    } else if (timeDiff <= 60) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for ≤ 60 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
+    } else if (timeDiff <= 120) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Gray for ≤ 120 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
     }
 }
 
@@ -568,24 +543,24 @@ function renderFlightsTable(flights, hideFilter = false) {
         return;
     }
 
-        // Sort flights by ETA (ascending order)
-uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+    // Sort flights by ETA (ascending order)
+    uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
     uniqueFlights.forEach(flight => {
         const row = document.createElement('tr');
 
-        // Check if the flight is within the heading range
-        const isWithinHeadingRange = boldHeadingEnabled &&
-    filterHighlightByHeading &&
-    flight.headingFromAirport >= boldedHeadings.minHeading &&
-    flight.headingFromAirport <= boldedHeadings.maxHeading;
+        // Check if the flight should be bold (decoupled from highlight)
+        const isWithinHeadingRange =
+            boldHeadingEnabled &&
+            flight.headingFromAirport >= boldedHeadings.minHeading &&
+            flight.headingFromAirport <= boldedHeadings.maxHeading;
 
         // Check if the flight is within the distance range
-        const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
-            typeof flight.distanceToDestination === 'number' &&
-            flight.distanceToDestination >= (minDistance ?? 0) &&
-            flight.distanceToDestination <= (maxDistance ?? Infinity)
-        );
+        const isWithinDistanceRange =
+            (minDistance === null && maxDistance === null) ||
+            (typeof flight.distanceToDestination === 'number' &&
+                flight.distanceToDestination >= (minDistance ?? 0) &&
+                flight.distanceToDestination <= (maxDistance ?? Infinity));
 
         // Combine filters to determine visibility
         const isVisible = (!hideFilter || isWithinHeadingRange) && isWithinDistanceRange;
@@ -604,7 +579,7 @@ uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds
         tableBody.appendChild(row);
     });
 
-    // Highlight rows with close ETAs
+    // Highlight rows with close ETAs (independent of bold logic)
     highlightCloseETAs(uniqueFlights);
 }
 
