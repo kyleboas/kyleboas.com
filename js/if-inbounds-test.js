@@ -455,8 +455,10 @@ function highlightCloseETAs(flights) {
         );
     }
 
-    // Compare groups
+    // Use appropriate groups: either bold flights or all flights
     const groups = filterHighlightByHeading && boldHeadingEnabled ? [boldFlights] : [flights];
+
+    // Compare flights within each group
     groups.forEach(group => {
         group.forEach((flight1, i) => {
             group.forEach((flight2, j) => {
@@ -479,17 +481,17 @@ function highlightPair(flight1, flight2, rows, flights) {
 
     // Apply color highlights with locking priority
     if (timeDiff <= 10) {
-        if (row1.style.backgroundColor !== '#fffa9f') row1.style.backgroundColor = '#fffa9f'; // Yellow
-        if (row2.style.backgroundColor !== '#fffa9f') row2.style.backgroundColor = '#fffa9f'; fffa9f
+        row1.style.backgroundColor = '#fffa9f'; // Yellow for ≤ 10 seconds
+        row2.style.backgroundColor = '#fffa9f';
     } else if (timeDiff <= 30) {
-        if (row1.style.backgroundColor === '') row1.style.backgroundColor = '#8BABF1'; // Blue
-        if (row2.style.backgroundColor === '') row2.style.backgroundColor = '#8BABF1';
+        if (row1.style.backgroundColor !== '#fffa9f') row1.style.backgroundColor = '#8BABF1'; // Blue for ≤ 30 seconds
+        if (row2.style.backgroundColor !== '#fffa9f') row2.style.backgroundColor = '#8BABF1';
     } else if (timeDiff <= 60) {
-        if (!['#8BABF1', '#fffa9f'].includes(row1.style.backgroundColor)) row1.style.backgroundColor = '#daceca'; // Beige
-        if (!['#8BABF1', '#fffa9f'].includes(row2.style.backgroundColor)) row2.style.backgroundColor = '#daceca';
+        if (!['#fffa9f', '#8BABF1'].includes(row1.style.backgroundColor)) row1.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
+        if (!['#fffa9f', '#8BABF1'].includes(row2.style.backgroundColor)) row2.style.backgroundColor = '#daceca';
     } else if (timeDiff <= 120) {
-        if (!['#8BABF1', '#fffa9f', '#daceca'].includes(row1.style.backgroundColor)) row1.style.backgroundColor = '#eaeaea'; // Gray
-        if (!['#8BABF1', '#fffa9f', '#daceca'].includes(row2.style.backgroundColor)) row2.style.backgroundColor = '#eaeaea';
+        if (!['#fffa9f', '#8BABF1', '#daceca'].includes(row1.style.backgroundColor)) row1.style.backgroundColor = '#eaeaea'; // Gray for ≤ 120 seconds
+        if (!['#fffa9f', '#8BABF1', '#daceca'].includes(row2.style.backgroundColor)) row2.style.backgroundColor = '#eaeaea';
     }
 }
 
