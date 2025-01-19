@@ -129,7 +129,7 @@ th {
     <table id="flightsTable">
     <thead>
         <tr>
-            <th>Callsign/Type</th>
+            <th></th>
             <th>MIN/MAX</th>
             <th>GS/MACH</th>
             <th>HDG/ALT</th>
