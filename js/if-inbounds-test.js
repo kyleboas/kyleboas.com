@@ -387,6 +387,11 @@ async function fetchAndUpdateFlights(icao) {
         }
 
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
+        if (!flights || !flights.length) {
+            console.error("Failed to fetch inbound flight details.");
+            throw new Error("No flight details available.");
+        }
+
         const airportCoordinates = await fetchAirportCoordinates(icao);
 
         if (!airportCoordinates) {
@@ -398,8 +403,8 @@ async function fetchAndUpdateFlights(icao) {
         await updateDistancesAndETAs(flights, airportCoordinates);
 
         // Update global state and render table
-        allFlights = flights;
-        renderFlightsTable(allFlights);
+        allFlights = flights; // Save to global state
+        renderFlightsTable(allFlights); // Pass `allFlights` directly to the table renderer
 
         // Fetch and display ATIS and controllers
         await fetchAirportATIS(icao);
@@ -645,7 +650,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
 
 // renderFlightsTable
-async function renderFlightsTable(flights, hideFilter = false) {
+async function renderFlightsTable(allflights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     tableBody.innerHTML = "";
 
