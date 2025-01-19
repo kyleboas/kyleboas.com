@@ -106,26 +106,48 @@ async function fetchActiveATCAirports() {
 async function fetchAndUpdateFlights(icao) {
     try {
         console.log(`Fetching flights for ICAO: ${icao}`);
-        const inboundFlightIds = await fetchInboundFlightIds(icao);
-        const flights = await fetchInboundFlightDetails(inboundFlightIds);
-        const airportCoordinates = await fetchAirportCoordinates(icao);
-
-        if (!flights.length) {
-            console.warn('No flights found for this ICAO.');
-            allFlights = [];
-            renderFlightsTable(allFlights);
-            return;
+        
+        // Validate ICAO input
+        if (!icao || icao.length !== 4) {
+            throw new Error("Invalid ICAO code. Please ensure it's 4 characters long.");
         }
 
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        console.log(`Inbound flight IDs:`, inboundFlightIds);
+
+        if (!inboundFlightIds.length) {
+            throw new Error("No inbound flight IDs found for this ICAO.");
+        }
+
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
+        console.log(`Fetched flight details:`, flights);
+
+        if (!flights.length) {
+            throw new Error("No flights found for the provided ICAO.");
+        }
+
+        const airportCoordinates = await fetchAirportCoordinates(icao);
+        console.log(`Fetched airport coordinates:`, airportCoordinates);
+
+        if (!airportCoordinates) {
+            throw new Error("Failed to fetch airport coordinates.");
+        }
+
+        // Update distances and ETAs
         await updateDistancesAndETAs(flights, airportCoordinates);
         allFlights = flights;
 
+        // Render the flight table
         renderFlightsTable(allFlights);
+        console.log("Rendered flight table successfully.");
+
+        // Fetch and display ATIS and controllers
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
+        console.log("Fetched ATIS and controllers successfully.");
     } catch (error) {
-        console.error('Error fetching flights or controllers:', error.message);
-        alert('Failed to fetch data. Please check the ICAO or try again later.');
+        console.error("Error in fetchAndUpdateFlights:", error.message);
+        alert(`Failed to fetch data. ${error.message}`);
     }
 }
 
