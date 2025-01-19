@@ -629,7 +629,7 @@ async function renderFlightsTable(flights, hideFilter = false) {
 
     try {
         // Fetch aircraft Mach details and dynamically fetch aircraft names
-        const aircraftMachDetails = await fetchAircraftMachDetails();
+        const aircraftMachDetails = await fetchpairAircraftData();
         const aircraftNames = {};
 
         // Fetch aircraft names dynamically for each unique aircraftId
