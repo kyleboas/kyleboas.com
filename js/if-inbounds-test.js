@@ -539,7 +539,7 @@ function renderFlightsTable(flights, hideFilter = false) {
     const uniqueFlights = [...new Map(flights.map(f => [f.flightId, f])).values()];
 
     if (!uniqueFlights.length) {
-        tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4">No inbound flights found.</td></tr>';
         return;
     }
 
@@ -575,8 +575,10 @@ function renderFlightsTable(flights, hideFilter = false) {
                 ${flight.speed?.toFixed(0) || 'N/A'}<br>
                 ${(flight.speed / 666.739).toFixed(2) || 'N/A'}
             </td>
-            <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
-            <td>${Math.round(flight.headingFromAirport) || 'N/A'}</td>
+            <td>
+                ${Math.round(flight.headingFromAirport) || 'N/A'}<br>
+                ${flight.altitude?.toFixed(0) || 'N/A'}
+            </td>
             <td>
                 ${Math.ceil(flight.distanceToDestination) || 'N/A'}<br>
                 ${flight.etaMinutes || 'N/A'}

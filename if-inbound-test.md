@@ -131,8 +131,7 @@ th {
         <tr>
             <th>Callsign</th>
             <th>GS/MACH</th>
-            <th>ALT</th>
-            <th>HDG</th>
+            <th>HDG/ALT</th>
             <th>NM/ETA</th>
         </tr>
     </thead>
