@@ -439,19 +439,28 @@ function highlightCloseETAs(flights) {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
+    // If heading filter is disabled, compare all flights to all flights
     if (!filterHighlightByHeading) {
-        // If filter by heading is disabled, compare all flights to all flights
         flights.forEach((flight1, i) => {
             const row1 = rows[flights.indexOf(flight1)];
             if (row1.style.display === 'none') return; // Skip hidden rows
 
             // Compare with every other flight
+            let minTimeDiff = Infinity; // Track the minimum time difference
             flights.forEach((flight2, j) => {
-                if (i !== j) highlightPair(flight1, flight2, rows, flights);
+                if (i !== j) {
+                    const eta1 = parseETAInSeconds(flight1.etaMinutes);
+                    const eta2 = parseETAInSeconds(flight2.etaMinutes);
+                    const timeDiff = Math.abs(eta1 - eta2);
+                    minTimeDiff = Math.min(minTimeDiff, timeDiff);
+                }
             });
+
+            // Apply color based on the minimum time difference
+            applyHighlight(row1, minTimeDiff);
         });
     } else {
-        // If filter by heading is enabled, split into bold and non-bold groups
+        // If heading filter is enabled, split into bold and non-bold groups
         let boldFlights = [];
         let nonBoldFlights = flights;
 
@@ -468,47 +477,42 @@ function highlightCloseETAs(flights) {
             );
         }
 
-        // Highlight rows for each group separately
+        // Highlight rows for bold and non-bold groups separately
         [boldFlights, nonBoldFlights].forEach(group => {
             group.forEach((flight1, i) => {
                 const row1 = rows[flights.indexOf(flight1)];
                 if (row1.style.display === 'none') return; // Skip hidden rows
 
-                // Compare with the flights directly before and after in the group
-                if (i > 0) highlightPair(flight1, group[i - 1], rows, flights);
-                if (i < group.length - 1) highlightPair(flight1, group[i + 1], rows, flights);
+                // Find the closest ETA difference within the group
+                let minTimeDiff = Infinity;
+                group.forEach((flight2, j) => {
+                    if (i !== j) {
+                        const eta1 = parseETAInSeconds(flight1.etaMinutes);
+                        const eta2 = parseETAInSeconds(flight2.etaMinutes);
+                        const timeDiff = Math.abs(eta1 - eta2);
+                        minTimeDiff = Math.min(minTimeDiff, timeDiff);
+                    }
+                });
+
+                // Apply color based on the minimum time difference
+                applyHighlight(row1, minTimeDiff);
             });
         });
     }
 }
 
-function highlightPair(flight1, flight2, rows, flights) {
-    const row1 = rows[flights.indexOf(flight1)];
-    const row2 = rows[flights.indexOf(flight2)];
-
-    // Skip hidden rows
-    if (row1.style.display === 'none' || row2.style.display === 'none') return;
-
-    const eta1 = parseETAInSeconds(flight1.etaMinutes);
-    const eta2 = parseETAInSeconds(flight2.etaMinutes);
-    const timeDiff = Math.abs(eta1 - eta2);
-
-    // Apply color highlights based on ETA difference
+// Helper function to apply highlight based on time difference
+function applyHighlight(row, timeDiff) {
     if (timeDiff <= 10) {
-        row1.style.backgroundColor = '#8BABF1'; // Blue for ≤ 10 seconds
-        row2.style.backgroundColor = '#8BABF1';
+        row.style.backgroundColor = '#fffa9f'; // Blue for ≤ 10 seconds
     } else if (timeDiff <= 30) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Light Yellow for ≤ 30 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
+        row.style.backgroundColor = '#8BABF1'; // Yellow for ≤ 30 seconds
     } else if (timeDiff <= 60) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for ≤ 60 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
+        row.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
     } else if (timeDiff <= 120) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Light Gray for ≤ 120 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
+        row.style.backgroundColor = '#eaeaea'; // Light Gray for ≤ 120 seconds
     }
 }
-
 
 // ============================
 // Event Listeners
