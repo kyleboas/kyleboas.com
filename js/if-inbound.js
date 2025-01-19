@@ -209,11 +209,16 @@ async function fetchInboundFlightIds(icao) {
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
         const inboundFlights = data.result.inboundFlights || [];
+        if (data.errorCode !== 0 || !data.result || !data.result.inboundFlights) {
+            console.error('Invalid inbound flights response:', data);
+            return [];
+        }
+
+        const inboundFlights = data.result.inboundFlights;
         setCache(icao, inboundFlights, 'inboundFlightIds');
         return inboundFlights;
     } catch (error) {
         console.error('Error fetching inbound flight IDs:', error.message);
-        alert('Failed to fetch inbound flight IDs.');
         return [];
     }
 }
@@ -221,14 +226,20 @@ async function fetchInboundFlightIds(icao) {
 async function fetchInboundFlightDetails(inboundFlightIds) {
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        if (data.errorCode !== 0 || !data.result) {
+            console.error('Invalid flights response:', data);
+            return [];
+        }
+
         const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
+
+        console.log('Filtered Inbound Flights:', flightsFromApi);
 
         const uniqueFlights = [...new Map(flightsFromApi.map(flight => [flight.flightId, flight])).values()];
 
         return uniqueFlights;
     } catch (error) {
         console.error('Error fetching flight details:', error.message);
-        alert('Failed to fetch flight details.');
         return [];
     }
 }
@@ -421,20 +432,35 @@ async function fetchAndUpdateFlights(icao) {
     try {
         document.getElementById('atisMessage').style.display = 'block';
         document.getElementById('controllersList').style.display = 'block';
+        console.log(`Fetching flights for ICAO: ${icao}`);
 
         const inboundFlightIds = await fetchInboundFlightIds(icao);
+        if (!inboundFlightIds || inboundFlightIds.length === 0) {
+            console.warn('No inbound flight IDs found.');
+            renderFlightsTable([]);
+            return;
+        }
+
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
         const airportCoordinates = await fetchAirportCoordinates(icao);
+        if (!flights || flights.length === 0) {
+            console.warn('No matching flights found for the IDs.');
+            renderFlightsTable([]);
+            return;
+        }
 
+        // Update distances, ETA, and other calculations
+        const airportCoordinates = await fetchAirportCoordinates(icao);
         await updateDistancesAndETAs(flights, airportCoordinates);
-        allFlights = flights;
 
+        // Render flights
+        allFlights = flights;
         renderFlightsTable(allFlights);
 
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
     } catch (error) {
-        console.error('Error fetching flights or controllers:', error.message);
+        console.error('Error fetching and updating flights:', error.message);
     }
 }
 
