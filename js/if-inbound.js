@@ -360,7 +360,6 @@ function calculateBearing(lat1, lon1, lat2, lon2) {
 }
 
 // Calculate ETA
-// Calculate ETA
 function calculateETA(distance, groundSpeed) {
     if (groundSpeed > 0) {
         const totalSeconds = Math.round((distance / groundSpeed) * 3600);
@@ -374,12 +373,13 @@ function calculateETA(distance, groundSpeed) {
         const seconds = totalSeconds % 60;
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
-    return null;
+    return 'N/A';
 }
 
 // Parse ETA to seconds
 function parseETAInSeconds(eta) {
     if (!eta || eta === 'N/A') return Infinity;
+    if (eta === '>12hrs') return 720 * 60; // Represent >12hrs as the maximum value
     const [minutes, seconds] = eta.split(':').map(Number);
     return minutes * 60 + seconds;
 }
@@ -470,7 +470,7 @@ function renderFlightsTable(flights, hideFilter = false) {
     }
 
     // Sort flights by ETA (ascending order)
-    uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
     uniqueFlights.forEach(flight => {
         const row = document.createElement('tr');
