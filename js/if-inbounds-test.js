@@ -650,7 +650,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
 
 // renderFlightsTable
-async function renderFlightsTable(allflights, hideFilter = false) {
+async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     tableBody.innerHTML = "";
 
