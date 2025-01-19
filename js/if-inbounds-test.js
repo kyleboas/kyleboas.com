@@ -104,17 +104,17 @@ async function pairAircraftData(aircraftIds) {
 
     const pairedData = {};
 
-    for (const flight of flights) {
-        const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
+    for (const flight of allFlights) {
+    const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-        pairedData[flight.flightId] = {
-            name: flight.aircraftName, // Aircraft name is taken from `fetchInboundFlightDetails`
-            minMach: machDetails.minMach,
-            maxMach: machDetails.maxMach,
+    pairedData[flight.flightId] = {
+        name: flight.aircraftName,
+        minMach: machDetails.minMach,
+        maxMach: machDetails.maxMach,
         };
     }
 
-    return pairedData;
+  return pairedData; 
 }
 
 
@@ -251,7 +251,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
         const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
 
         // Ensure only unique flight details are returned
-        const uniqueFlights = [...new Map(flightsFromApi.map(flight => [flight.flightId, flight])).values()];
+        const uniqueFlights = [...new Map(flightsFromApi.map(f => [f.flightId, f])).values()];
 
         // Map relevant details, including the aircraftName
         return uniqueFlights.map(flight => ({
@@ -387,10 +387,6 @@ async function fetchAndUpdateFlights(icao) {
         }
 
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
-        if (!flights || !flights.length) {
-            console.error("Failed to fetch inbound flight details.");
-            throw new Error("No flight details available.");
-        }
 
         const airportCoordinates = await fetchAirportCoordinates(icao);
 
@@ -551,20 +547,20 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
 // Highlight
 // ============================
 
-function highlightCloseETAs(flights) {
+function highlightCloseETAs() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
-    flights.forEach((flight1, i) => {
-        flights.forEach((flight2, j) => {
-            if (i !== j) highlightPair(flight1, flight2, rows, flights);
+    allFlights.forEach((flight1, i) => {
+        allFlights.forEach((flight2, j) => {
+            if (i !== j) highlightPair(flight1, flight2, rows, allFlights);
         });
     });
 }
 
-function highlightPair(flight1, flight2, rows, flights) {
-    const row1 = rows[flights.indexOf(flight1)];
-    const row2 = rows[flights.indexOf(flight2)];
+function highlightPair(flight1, flight2, rows) {
+    const row1 = rows[allFlights.indexOf(flight1)];
+    const row2 = rows[allFlights.indexOf(flight2)];
 
     // Skip hidden rows
     if (row1.style.display === 'none' || row2.style.display === 'none') return;
@@ -573,7 +569,7 @@ function highlightPair(flight1, flight2, rows, flights) {
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
-    // Only apply the first valid highlight color
+    // Apply highlights
     if (timeDiff <= 10) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
@@ -652,29 +648,28 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 // renderFlightsTable
 async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
-    tableBody.innerHTML = "";
+    tableBody.innerHTML = ""; // Clear the table before rendering
 
-    const uniqueFlights = [...new Map(allFlights.map(f => [f.flightId, f])).values()];
-
-    if (!uniqueFlights.length) {
+    // If there are no flights, display a message
+    if (!allFlights || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
-        return;
+        return; // Exit the function since there's nothing to display
     }
 
     try {
         // Fetch aircraft Mach details
-        const aircraftIds = uniqueFlights.map(flight => flight.aircraftId);
+        const aircraftIds = allFlights.map(flight => flight.aircraftId);
         const aircraftMachDetails = await pairAircraftData(aircraftIds);
 
         // Sort flights by ETA (ascending order)
-        uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+        allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        // Populate table
-        uniqueFlights.forEach(flight => {
+        // Populate the table
+        allFlights.forEach(flight => {
             const row = document.createElement("tr");
 
             // Get aircraft details
-            const aircraftName = flight.aircraftName || "Unknown Aircraft"; // Use aircraftName directly from flight data
+            const aircraftName = flight.aircraftName || "Unknown Aircraft";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
             // Check if the flight is visible based on filters
@@ -689,7 +684,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                     flight.distanceToDestination >= (minDistance ?? 0) &&
                     flight.distanceToDestination <= (maxDistance ?? Infinity));
 
-            const isVisible = (!hideFilter || isWithinHeadingRange) && isWithinDistanceRange;
+            const isVisible = (!hideFilter || (isWithinHeadingRange && isWithinDistanceRange));
 
             // Apply bold styling for heading range
             row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
@@ -697,25 +692,16 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br>${aircraftName}</td>
-                <td>${machDetails.minMach} - ${machDetails.maxMach}</td>
-                <td>
-                    ${flight.speed?.toFixed(0) || "N/A"}<br>
-                    ${(flight.speed / 666.739).toFixed(2) || "N/A"}
-                </td>
-                <td>
-                    ${Math.round(flight.headingFromAirport) || "N/A"}<br>
-                    ${flight.altitude?.toFixed(0) || "N/A"}
-                </td>
-                <td>
-                    ${Math.ceil(flight.distanceToDestination) || "N/A"}<br>
-                    ${flight.etaMinutes || "N/A"}
-                </td>
+                <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
+                <td>${flight.speed?.toFixed(0) || "N/A"}<br>${(flight.speed / 666.739).toFixed(2) || "N/A"}</td>
+                <td>${Math.round(flight.headingFromAirport) || "N/A"}<br>${flight.altitude?.toFixed(0) || "N/A"}</td>
+                <td>${Math.ceil(flight.distanceToDestination) || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
             `;
             tableBody.appendChild(row);
         });
 
         // Highlight rows with close ETAs
-        highlightCloseETAs(uniqueFlights);
+        highlightCloseETAs(allFlights);
     } catch (error) {
         console.error("Error rendering the flights table:", error.message);
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
