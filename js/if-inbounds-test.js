@@ -654,7 +654,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     tableBody.innerHTML = "";
 
-    const uniqueFlights = [...new Map(flights.map(f => [f.flightId, f])).values()];
+    const uniqueFlights = [...new Map(allFlights.map(f => [f.flightId, f])).values()];
 
     if (!uniqueFlights.length) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
