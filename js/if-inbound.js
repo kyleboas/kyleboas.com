@@ -1,3 +1,7 @@
+// ============================
+// Constants and Global State
+// ============================
+
 const PROXY_URL = 'https://infiniteflightapi.deno.dev/';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8';
 
@@ -11,6 +15,11 @@ let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
+
+
+// ============================
+// Utility Functions
+// ============================
 
 const cache = {
     airportCoordinates: {},
@@ -45,6 +54,11 @@ function getCache(key, type, expiration) {
 function getUncachedIds(ids, type) {
     return ids.filter(id => !cache[type][id]);
 }
+
+
+// ============================
+// Fetch Functions
+// ============================
 
 // Fetch data using the proxy
 async function fetchWithProxy(endpoint) {
@@ -109,73 +123,6 @@ async function fetchActiveATCAirports() {
     }
 }
 
-// Main Page Load Initialization
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        await fetchActiveATCAirports(); // Fetch and display active ATC airports on load
-
-        // Set default values for heading and distance
-        document.getElementById('minHeading').value = 90;
-        document.getElementById('maxHeading').value = 270;
-        boldedHeadings.minHeading = 90;
-        boldedHeadings.maxHeading = 270;
-
-        document.getElementById('minDistance').value = 50;
-        document.getElementById('maxDistance').value = 500;
-        minDistance = 50;
-        maxDistance = 500;
-
-        // Enable Bold Aircraft, Apply Distance Filter, and Filter Highlight by Heading
-        boldHeadingEnabled = true;
-        applyDistanceFilterEnabled = true;
-        filterHighlightByHeading = true;
-
-        document.getElementById('boldHeadingButton').textContent = 'Disable Bold Aircraft';
-        document.getElementById('applyDistanceFilterButton').textContent = 'Reset Distance Filter';
-        document.getElementById('filterHeadingHighlightButton').textContent = 'Disable Highlight Filter by Heading';
-
-        // Render flights table with default filters applied
-        renderFlightsTable(allFlights, hideOtherAircraft);
-    } catch (error) {
-        console.error('Error initializing page:', error.message);
-    }
-});
-
-// Toggle Bold Aircraft
-let boldHeadingEnabled = false;
-document.getElementById('boldHeadingButton').addEventListener('click', () => {
-    boldHeadingEnabled = !boldHeadingEnabled;
-
-    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-        ? 'Disable Bold Aircraft'
-        : 'Enable Bold Aircraft';
-
-    renderFlightsTable(allFlights); // Re-render the table with updated bold styling
-});
-
-// Toggle Apply Distance Filter
-let applyDistanceFilterEnabled = false;
-document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
-    applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
-
-    document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
-        ? 'Reset Distance Filter'
-        : 'Apply Distance Filter';
-
-    renderFlightsTable(allFlights, hideOtherAircraft); // Re-render the table with distance filter applied/removed
-});
-
-// Toggle Filter Highlight by Heading
-document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
-    filterHighlightByHeading = !filterHighlightByHeading;
-
-    document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
-        ? 'Disable Highlight Filter by Heading'
-        : 'Enable Highlight Filter by Heading';
-
-    renderFlightsTable(allFlights); // Re-render the table with highlight filter updated
-});
-
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
     const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);
@@ -193,6 +140,44 @@ async function fetchAirportCoordinates(icao) {
         console.error('Error fetching airport coordinates:', error.message);
         alert('Failed to fetch airport coordinates.');
         return null;
+    }
+}
+
+// Fetch inbound flight IDs
+async function fetchInboundFlightIds(icao) {
+    const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
+    if (cached) {
+        console.log('Using cached inbound flight IDs for', icao);
+        return cached;
+    }
+
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const inboundFlights = data.result.inboundFlights || [];
+        setCache(icao, inboundFlights, 'inboundFlightIds');
+        return inboundFlights;
+    } catch (error) {
+        console.error('Error fetching inbound flight IDs:', error.message);
+        alert('Failed to fetch inbound flight IDs.');
+        return [];
+    }
+}
+
+// Fetch inbound flight details
+async function fetchInboundFlightDetails(inboundFlightIds) {
+    try {
+        // Fetch fresh data for all flight IDs
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
+
+        // Ensure only unique flight details are returned
+        const uniqueFlights = [...new Map(flightsFromApi.map(flight => [flight.flightId, flight])).values()];
+
+        return uniqueFlights;
+    } catch (error) {
+        console.error('Error fetching flight details:', error.message);
+        alert('Failed to fetch flight details.');
+        return [];
     }
 }
 
@@ -219,17 +204,6 @@ async function fetchAirportATIS(icao) {
         displayATIS('ATIS not available');
         return 'ATIS not available';
     }
-}
-
-// Display ATIS
-function displayATIS(atis) {
-    const atisElement = document.getElementById('atisMessage');
-    if (!atisElement) {
-        console.error('ATIS display element not found.');
-        return;
-    }
-    console.log('Displaying ATIS:', atis); // Debug log
-    atisElement.textContent = `ATIS: ${atis}`;
 }
 
 // Fetch Controllers
@@ -281,55 +255,57 @@ async function fetchControllers(icao) {
     }
 }
 
-// Display Controllers
-function displayControllers(controllers) {
-    const controllersElement = document.getElementById('controllersList');
-    if (!controllersElement) {
-        console.error('Controller display element not found.');
-        return;
-    }
-    controllersElement.textContent = controllers.length
-        ? `${controllers.join('\n')}`
-        : 'No active controllers available';
+
+// Update distances, ETA, and headings
+async function updateDistancesAndETAs(flights, airportCoordinates) {
+    flights.forEach(flight => {
+        // Calculate and update distance, heading, and ETA
+        flight.distanceToDestination = Math.ceil( 
+            calculateDistance(
+                flight.latitude,
+                flight.longitude,
+                airportCoordinates.latitude,
+                airportCoordinates.longitude
+            )
+        );
+        flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
+        flight.headingFromAirport = calculateBearing(
+            airportCoordinates.latitude,
+            airportCoordinates.longitude,
+            flight.latitude,
+            flight.longitude
+        );
+    });
 }
 
-// Fetch inbound flight IDs
-async function fetchInboundFlightIds(icao) {
-    const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
-    if (cached) {
-        console.log('Using cached inbound flight IDs for', icao);
-        return cached;
-    }
-
+// Fetch and update flights
+async function fetchAndUpdateFlights(icao) {
     try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
-        const inboundFlights = data.result.inboundFlights || [];
-        setCache(icao, inboundFlights, 'inboundFlightIds');
-        return inboundFlights;
+        // Unhide the ATIS and controllers elements
+        document.getElementById('atisMessage').style.display = 'block';
+        document.getElementById('controllersList').style.display = 'block';
+
+        // Fetch flights, ATIS, and controllers
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
+        const airportCoordinates = await fetchAirportCoordinates(icao);
+
+        await updateDistancesAndETAs(flights, airportCoordinates);
+        allFlights = flights;
+
+        renderFlightsTable(allFlights);
+
+        // Fetch ATIS and controllers
+        await fetchAirportATIS(icao);
+        await fetchControllers(icao);
     } catch (error) {
-        console.error('Error fetching inbound flight IDs:', error.message);
-        alert('Failed to fetch inbound flight IDs.');
-        return [];
+        console.error('Error fetching flights or controllers:', error.message);
     }
 }
 
-// Fetch inbound flight details
-async function fetchInboundFlightDetails(inboundFlightIds) {
-    try {
-        // Fetch fresh data for all flight IDs
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
-        const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
-
-        // Ensure only unique flight details are returned
-        const uniqueFlights = [...new Map(flightsFromApi.map(flight => [flight.flightId, flight])).values()];
-
-        return uniqueFlights;
-    } catch (error) {
-        console.error('Error fetching flight details:', error.message);
-        alert('Failed to fetch flight details.');
-        return [];
-    }
-}
+// ============================
+// Calculations
+// ============================
 
 // Calculate distance using the Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -383,6 +359,80 @@ function parseETAInSeconds(eta) {
     const [minutes, seconds] = eta.split(':').map(Number);
     return minutes * 60 + seconds;
 }
+
+
+// ============================
+// Display Functions
+// ============================
+
+
+// Display ATIS
+function displayATIS(atis) {
+    const atisElement = document.getElementById('atisMessage');
+    if (!atisElement) {
+        console.error('ATIS display element not found.');
+        return;
+    }
+    console.log('Displaying ATIS:', atis); // Debug log
+    atisElement.textContent = `ATIS: ${atis}`;
+}
+
+// Display Controllers
+function displayControllers(controllers) {
+    const controllersElement = document.getElementById('controllersList');
+    if (!controllersElement) {
+        console.error('Controller display element not found.');
+        return;
+    }
+    controllersElement.textContent = controllers.length
+        ? `${controllers.join('\n')}`
+        : 'No active controllers available';
+}
+
+
+// ============================
+// Organize
+// ============================
+
+// Toggle Bold Aircraft
+let boldHeadingEnabled = false;
+document.getElementById('boldHeadingButton').addEventListener('click', () => {
+    boldHeadingEnabled = !boldHeadingEnabled;
+
+    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
+        ? 'Disable Bold Aircraft'
+        : 'Enable Bold Aircraft';
+
+    renderFlightsTable(allFlights); // Re-render the table with updated bold styling
+});
+
+// Toggle Apply Distance Filter
+let applyDistanceFilterEnabled = false;
+document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+    applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
+
+    document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
+        ? 'Reset Distance Filter'
+        : 'Apply Distance Filter';
+
+    renderFlightsTable(allFlights, hideOtherAircraft); // Re-render the table with distance filter applied/removed
+});
+
+// Toggle Filter Highlight by Heading
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    filterHighlightByHeading = !filterHighlightByHeading;
+
+    document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
+        ? 'Disable Highlight Filter by Heading'
+        : 'Enable Highlight Filter by Heading';
+
+    renderFlightsTable(allFlights); // Re-render the table with highlight filter updated
+});
+
+
+// ============================
+// Highlight
+// ============================
 
 // Highlight rows based on ETA proximity
 function highlightCloseETAs(flights) {
@@ -455,6 +505,46 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
     // Re-render the table to reflect changes
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
+
+
+
+// ============================
+// Event Listeners
+// ============================
+
+
+// Main Page Load Initialization
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await fetchActiveATCAirports(); // Fetch and display active ATC airports on load
+
+        // Set default values for heading and distance
+        document.getElementById('minHeading').value = 90;
+        document.getElementById('maxHeading').value = 270;
+        boldedHeadings.minHeading = 90;
+        boldedHeadings.maxHeading = 270;
+
+        document.getElementById('minDistance').value = 50;
+        document.getElementById('maxDistance').value = 500;
+        minDistance = 50;
+        maxDistance = 500;
+
+        // Enable Bold Aircraft, Apply Distance Filter, and Filter Highlight by Heading
+        boldHeadingEnabled = true;
+        applyDistanceFilterEnabled = true;
+        filterHighlightByHeading = true;
+
+        document.getElementById('boldHeadingButton').textContent = 'Disable Bold Aircraft';
+        document.getElementById('applyDistanceFilterButton').textContent = 'Reset Distance Filter';
+        document.getElementById('filterHeadingHighlightButton').textContent = 'Disable Highlight Filter by Heading';
+
+        // Render flights table with default filters applied
+        renderFlightsTable(allFlights, hideOtherAircraft);
+    } catch (error) {
+        console.error('Error initializing page:', error.message);
+    }
+});
+
 
 // Filter Listener
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
@@ -565,53 +655,6 @@ document.getElementById('minDistance').value = '';
 
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
-
-// Update distances, ETA, and headings
-async function updateDistancesAndETAs(flights, airportCoordinates) {
-    flights.forEach(flight => {
-        // Calculate and update distance, heading, and ETA
-        flight.distanceToDestination = Math.ceil( 
-            calculateDistance(
-                flight.latitude,
-                flight.longitude,
-                airportCoordinates.latitude,
-                airportCoordinates.longitude
-            )
-        );
-        flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
-        flight.headingFromAirport = calculateBearing(
-            airportCoordinates.latitude,
-            airportCoordinates.longitude,
-            flight.latitude,
-            flight.longitude
-        );
-    });
-}
-
-// Fetch and update flights
-async function fetchAndUpdateFlights(icao) {
-    try {
-        // Unhide the ATIS and controllers elements
-        document.getElementById('atisMessage').style.display = 'block';
-        document.getElementById('controllersList').style.display = 'block';
-
-        // Fetch flights, ATIS, and controllers
-        const inboundFlightIds = await fetchInboundFlightIds(icao);
-        const flights = await fetchInboundFlightDetails(inboundFlightIds);
-        const airportCoordinates = await fetchAirportCoordinates(icao);
-
-        await updateDistancesAndETAs(flights, airportCoordinates);
-        allFlights = flights;
-
-        renderFlightsTable(allFlights);
-
-        // Fetch ATIS and controllers
-        await fetchAirportATIS(icao);
-        await fetchControllers(icao);
-    } catch (error) {
-        console.error('Error fetching flights or controllers:', error.message);
-    }
-}
 
 // Stop auto-update
 function stopAutoUpdate() {
