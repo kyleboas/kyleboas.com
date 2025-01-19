@@ -689,11 +689,9 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.forEach(flight => {
             const row = document.createElement("tr");
 
-            // Get aircraft details
             const aircraftName = flight.aircraftName || "Unknown Aircraft";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-            // Check if the flight is visible based on filters
             const isWithinHeadingRange =
                 boldHeadingEnabled &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
@@ -702,19 +700,21 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const isWithinDistanceRange =
                 (minDistance === null && maxDistance === null) ||
                 (typeof flight.distanceToDestination === "number" &&
-                    flight.distanceToDestination >= (minDistance ?? 0) &&
-                    flight.distanceToDestination <= (maxDistance ?? Infinity));
+                 flight.distanceToDestination >= (minDistance ?? 0) &&
+                 flight.distanceToDestination <= (maxDistance ?? Infinity));
 
             const isVisible = (!hideFilter || (isWithinHeadingRange && isWithinDistanceRange));
 
-            // Apply bold styling for heading range
             row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
             row.style.display = isVisible ? "" : "none";
+
+            const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
+            const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
 
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br>${aircraftName}</td>
                 <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
-                <td>${flight.speed ? flight.speed.toFixed(0) : "N/A"}<br>${flight.speed ? (flight.speed / 666.739).toFixed(2) : "N/A"}</td>
+                <td>${speedValue}<br>${machValue}</td>
                 <td>${flight.headingFromAirport || "N/A"}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
                 <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
             `;
