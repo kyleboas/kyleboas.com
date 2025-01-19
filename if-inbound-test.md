@@ -95,9 +95,6 @@ th {
         <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
         <button type="submit">Search</button>
     </form>
-    <button type="button" id="updateButton">Update</button>
-    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-    <span id="countdownTimer" style="display: none;">Next update in: 15 seconds</span>
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
@@ -125,6 +122,10 @@ th {
     <pre id="controllersList" style="display: none;">No active ATC.</pre>
 </div>
 
+    <button type="button" id="updateButton">Update</button>
+    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
+    <span id="countdownTimer" style="display: none;">Next update in: 15 seconds</span>
+    
     <table id="flightsTable">
         <thead>
             <tr>
