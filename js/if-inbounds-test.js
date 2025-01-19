@@ -104,15 +104,13 @@ async function pairAircraftData(aircraftIds) {
 
     const pairedData = {};
 
-    // Fetch aircraft type for each ID
-    for (const aircraftId of aircraftIds) {
-        const aircraftName = await fetchAircraftType(aircraftId);
-        const machDetails = aircraftMachDetails[aircraftId] || { minMach: "N/A", maxMach: "N/A" };
+    for (const flight of flights) {
+        const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-        pairedData[aircraftId] = {
-            name: aircraftName,
+        pairedData[flight.flightId] = {
+            name: flight.aircraftName, // Aircraft name is taken from `fetchInboundFlightDetails`
             minMach: machDetails.minMach,
-            maxMach: machDetails.maxMach
+            maxMach: machDetails.maxMach,
         };
     }
 
@@ -249,17 +247,26 @@ async function fetchInboundFlightIds(icao) {
 // Fetch inbound flight details
 async function fetchInboundFlightDetails(inboundFlightIds) {
     try {
-        // Fetch fresh data for all flight IDs
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
         const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
 
         // Ensure only unique flight details are returned
         const uniqueFlights = [...new Map(flightsFromApi.map(flight => [flight.flightId, flight])).values()];
 
-        return uniqueFlights;
+        // Map relevant details, including the aircraftName
+        return uniqueFlights.map(flight => ({
+            flightId: flight.flightId,
+            callsign: flight.callsign || "N/A",
+            aircraftId: flight.aircraftId,
+            aircraftName: flight.aircraftName || "Unknown Aircraft", // Aircraft name included directly
+            latitude: flight.latitude,
+            longitude: flight.longitude,
+            altitude: flight.altitude,
+            speed: flight.groundSpeed,
+        }));
     } catch (error) {
-        console.error('Error fetching flight details:', error.message);
-        alert('Failed to fetch flight details.');
+        console.error("Error fetching flight details:", error.message);
+        alert("Failed to fetch flight details.");
         return [];
     }
 }
@@ -628,17 +635,9 @@ async function renderFlightsTable(flights, hideFilter = false) {
     }
 
     try {
-        // Fetch aircraft Mach details and dynamically fetch aircraft names
+        // Fetch aircraft Mach details
         const aircraftIds = uniqueFlights.map(flight => flight.aircraftId);
         const aircraftMachDetails = await pairAircraftData(aircraftIds);
-        const aircraftNames = {};
-
-        // Fetch aircraft names dynamically for each unique aircraftId
-        for (const flight of uniqueFlights) {
-            if (!aircraftNames[flight.aircraftId]) {
-                aircraftNames[flight.aircraftId] = await fetchAircraftType(flight.aircraftId);
-            }
-        }
 
         // Sort flights by ETA (ascending order)
         uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
@@ -648,7 +647,7 @@ async function renderFlightsTable(flights, hideFilter = false) {
             const row = document.createElement('tr');
 
             // Get aircraft details
-            const aircraftName = aircraftNames[flight.aircraftId] || "Unknown Aircraft";
+            const aircraftName = flight.aircraftName || "Unknown Aircraft"; // Use aircraftName directly from flight data
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
             // Check if the flight is visible based on filters
