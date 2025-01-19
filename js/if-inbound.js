@@ -176,6 +176,28 @@ function highlightRowPair(flight1, flight2, rows, flights) {
 
 /** Event Listeners */
 document.addEventListener('DOMContentLoaded', () => {
+    // Handle the form submission for ICAO search
+    document.getElementById('searchForm').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent the default form submission (page reload)
+        
+        const icao = document.getElementById('icao').value.trim().toUpperCase();
+        if (!icao) {
+            alert('Please enter a valid ICAO code.');
+            return;
+        }
+
+        // Stop any ongoing auto-update
+        stopAutoUpdate();
+
+        // Fetch and update flights for the provided ICAO
+        try {
+            await fetchAndUpdateFlights(icao);
+        } catch (error) {
+            console.error('Error fetching ICAO data:', error.message);
+            alert('Failed to fetch data for the provided ICAO. Check the console for details.');
+        }
+    });
+
     document.getElementById('boldHeadingButton').addEventListener('click', () => {
         boldHeadingEnabled = !boldHeadingEnabled;
         updateButtonText('boldHeadingButton', 'Disable Bold Aircraft', 'Enable Bold Aircraft', boldHeadingEnabled);
@@ -200,10 +222,90 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-/** Utility Functions */
-function parseETAInSeconds(eta) {
-    if (!eta || eta === 'N/A') return Infinity;
-    if (eta === '>12hrs') return 720 * 60;
-    const [minutes, seconds] = eta.split(':').map(Number);
-    return minutes * 60 + seconds;
+/** Stop Auto-Update Function */
+function stopAutoUpdate() {
+    if (updateInterval) clearInterval(updateInterval);
+    if (updateTimeout) clearTimeout(updateTimeout);
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    updateInterval = null;
+    updateTimeout = null;
+    countdownInterval = null;
+
+    document.getElementById('stopUpdateButton').style.display = 'none';
+    document.getElementById('countdownTimer').style.display = 'none';
+}
+
+/** Fetch and Update Flights */
+async function fetchAndUpdateFlights(icao) {
+    try {
+        const airportCoordinates = await fetchAirportCoordinates(icao);
+        if (!airportCoordinates) throw new Error('Failed to fetch airport coordinates.');
+
+        const flights = await fetchInboundFlightDetails(icao);
+        flights.forEach(flight => {
+            flight.distanceToDestination = calculateDistance(
+                flight.latitude,
+                flight.longitude,
+                airportCoordinates.latitude,
+                airportCoordinates.longitude
+            );
+            flight.headingFromAirport = calculateBearing(
+                airportCoordinates.latitude,
+                airportCoordinates.longitude,
+                flight.latitude,
+                flight.longitude
+            );
+            flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
+        });
+
+        allFlights = flights;
+        renderFlightsTable(allFlights);
+    } catch (error) {
+        console.error('Error fetching or updating flights:', error.message);
+        alert('Failed to fetch flight data. Please check the console for details.');
+    }
+}
+
+/** Utility: Calculate Distance */
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 3440; // Radius of Earth in nautical miles
+    const toRadians = (degrees) => (degrees * Math.PI) / 180;
+
+    const φ1 = toRadians(lat1);
+    const φ2 = toRadians(lat2);
+    const Δφ = toRadians(lat2 - lat1);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const a =
+        Math.sin(Δφ / 2) ** 2 +
+        Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/** Utility: Calculate Bearing */
+function calculateBearing(lat1, lon1, lat2, lon2) {
+    const toRadians = (degrees) => (degrees * Math.PI) / 180;
+    const toDegrees = (radians) => (radians * 180) / Math.PI;
+
+    const φ1 = toRadians(lat1);
+    const φ2 = toRadians(lat2);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x =
+        Math.cos(φ1) * Math.sin(φ2) -
+        Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+    return (toDegrees(Math.atan2(y, x)) + 360) % 360;
+}
+
+/** Utility: Calculate ETA */
+function calculateETA(distance, speed) {
+    if (speed <= 0) return 'N/A';
+    const hours = distance / speed;
+    const minutes = Math.floor(hours * 60);
+    const seconds = Math.floor((hours * 60 - minutes) * 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
