@@ -470,13 +470,13 @@ function renderFlightsTable(flights, hideFilter = false) {
     }
 
     // Sort flights by ETA (ascending order)
-uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+    uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
     uniqueFlights.forEach(flight => {
         const row = document.createElement('tr');
 
         // Check if the flight is within the heading range
-        const isWithinHeadingRange = boldedHeadings.minHeading !== null &&
+        const isWithinHeadingRange = boldHeadingEnabled && boldedHeadings.minHeading !== null &&
             boldedHeadings.maxHeading !== null &&
             typeof flight.headingFromAirport === 'number' &&
             flight.headingFromAirport >= boldedHeadings.minHeading &&
@@ -492,7 +492,7 @@ uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds
         // Combine filters to determine visibility
         const isVisible = (!hideFilter || isWithinHeadingRange) && isWithinDistanceRange;
 
-        // Apply bold styling for heading range
+        // Apply bold styling only if boldHeadingEnabled is true and within the heading range
         row.style.fontWeight = isWithinHeadingRange ? 'bold' : 'normal';
         row.style.display = isVisible ? '' : 'none';
 
