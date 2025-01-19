@@ -434,33 +434,23 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
 // Highlight
 // ============================
 
-// Highlight rows based on ETA proximity
 function highlightCloseETAs(flights) {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
-    // If heading filter is disabled, compare all flights to all flights
     if (!filterHighlightByHeading) {
+        // If filter by heading is disabled, compare all flights to all flights
         flights.forEach((flight1, i) => {
             const row1 = rows[flights.indexOf(flight1)];
             if (row1.style.display === 'none') return; // Skip hidden rows
 
             // Compare with every other flight
-            let minTimeDiff = Infinity; // Track the minimum time difference
             flights.forEach((flight2, j) => {
-                if (i !== j) {
-                    const eta1 = parseETAInSeconds(flight1.etaMinutes);
-                    const eta2 = parseETAInSeconds(flight2.etaMinutes);
-                    const timeDiff = Math.abs(eta1 - eta2);
-                    minTimeDiff = Math.min(minTimeDiff, timeDiff);
-                }
+                if (i !== j) highlightPair(flight1, flight2, rows, flights);
             });
-
-            // Apply color based on the minimum time difference
-            applyHighlight(row1, minTimeDiff);
         });
     } else {
-        // If heading filter is enabled, split into bold and non-bold groups
+        // If filter by heading is enabled, split into bold and non-bold groups
         let boldFlights = [];
         let nonBoldFlights = flights;
 
@@ -477,40 +467,45 @@ function highlightCloseETAs(flights) {
             );
         }
 
-        // Highlight rows for bold and non-bold groups separately
+        // Highlight rows for each group separately
         [boldFlights, nonBoldFlights].forEach(group => {
             group.forEach((flight1, i) => {
                 const row1 = rows[flights.indexOf(flight1)];
                 if (row1.style.display === 'none') return; // Skip hidden rows
 
-                // Find the closest ETA difference within the group
-                let minTimeDiff = Infinity;
+                // Compare with every other flight in the group
                 group.forEach((flight2, j) => {
-                    if (i !== j) {
-                        const eta1 = parseETAInSeconds(flight1.etaMinutes);
-                        const eta2 = parseETAInSeconds(flight2.etaMinutes);
-                        const timeDiff = Math.abs(eta1 - eta2);
-                        minTimeDiff = Math.min(minTimeDiff, timeDiff);
-                    }
+                    if (i !== j) highlightPair(flight1, flight2, rows, flights);
                 });
-
-                // Apply color based on the minimum time difference
-                applyHighlight(row1, minTimeDiff);
             });
         });
     }
 }
 
-// Helper function to apply highlight based on time difference
-function applyHighlight(row, timeDiff) {
+function highlightPair(flight1, flight2, rows, flights) {
+    const row1 = rows[flights.indexOf(flight1)];
+    const row2 = rows[flights.indexOf(flight2)];
+
+    // Skip hidden rows
+    if (row1.style.display === 'none' || row2.style.display === 'none') return;
+
+    const eta1 = parseETAInSeconds(flight1.etaMinutes);
+    const eta2 = parseETAInSeconds(flight2.etaMinutes);
+    const timeDiff = Math.abs(eta1 - eta2);
+
+    // Prioritize highlighting: Blue > Yellow > Beige > Gray
     if (timeDiff <= 10) {
-        row.style.backgroundColor = '#fffa9f'; // Blue for ≤ 10 seconds
-    } else if (timeDiff <= 30) {
-        row.style.backgroundColor = '#8BABF1'; // Yellow for ≤ 30 seconds
-    } else if (timeDiff <= 60) {
-        row.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
-    } else if (timeDiff <= 120) {
-        row.style.backgroundColor = '#eaeaea'; // Light Gray for ≤ 120 seconds
+        row1.style.backgroundColor = '#8BABF1'; // Blue for ≤ 10 seconds
+        row2.style.backgroundColor = '#8BABF1';
+    } else if (timeDiff <= 30 && row1.style.backgroundColor !== '#8BABF1') {
+        row1.style.backgroundColor = '#fffa9f'; // Yellow for ≤ 30 seconds
+        row2.style.backgroundColor = '#fffa9f';
+    } else if (timeDiff <= 60 && !['#8BABF1', '#fffa9f'].includes(row1.style.backgroundColor)) {
+        row1.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
+        row2.style.backgroundColor = '#daceca';
+    } else if (timeDiff <= 120 && !['#8BABF1', '#fffa9f', '#daceca'].includes(row1.style.backgroundColor)) {
+        row1.style.backgroundColor = '#eaeaea'; // Gray for ≤ 120 seconds
+        row2.style.backgroundColor = '#eaeaea';
     }
 }
 
