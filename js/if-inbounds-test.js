@@ -375,21 +375,43 @@ async function fetchAndUpdateFlights(icao) {
         document.getElementById('atisMessage').style.display = 'block';
         document.getElementById('controllersList').style.display = 'block';
 
-        // Fetch flights, ATIS, and controllers
+        // Fetch required data
         const inboundFlightIds = await fetchInboundFlightIds(icao);
+        if (!inboundFlightIds.length) {
+            console.warn("No inbound flights found for ICAO:", icao);
+            allFlights = []; // Reset global state
+            renderFlightsTable(allFlights); // Clear table
+            document.getElementById('atisMessage').textContent = "No ATIS available.";
+            document.getElementById('controllersList').textContent = "No controllers available.";
+            return;
+        }
+
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
         const airportCoordinates = await fetchAirportCoordinates(icao);
 
-        await updateDistancesAndETAs(flights, airportCoordinates);
-        allFlights = flights;
+        if (!airportCoordinates) {
+            console.warn("No coordinates found for airport ICAO:", icao);
+            throw new Error("Failed to fetch airport coordinates.");
+        }
 
+        // Update distances, ETAs, and headings
+        await updateDistancesAndETAs(flights, airportCoordinates);
+
+        // Update global state and render table
+        allFlights = flights;
         renderFlightsTable(allFlights);
 
-        // Fetch ATIS and controllers
+        // Fetch and display ATIS and controllers
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
     } catch (error) {
-        console.error('Error fetching flights or controllers:', error.message);
+        console.error("Error fetching flights or controllers:", error.message);
+
+        // Provide fallback for rendering the table and messages
+        allFlights = [];
+        renderFlightsTable(allFlights); // Clear table
+        document.getElementById('atisMessage').textContent = "ATIS not available.";
+        document.getElementById('controllersList').textContent = "No controllers available.";
     }
 }
 
