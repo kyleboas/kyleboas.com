@@ -15,7 +15,10 @@ let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
+let boldHeadingEnabled = false;
+let filterHighlightByHeading = false;
 
+// Caching system
 const cache = {
     airportCoordinates: {},
     inboundFlightIds: {},
@@ -43,7 +46,7 @@ function getCache(key, type, expiration) {
     if (!entry) return null;
 
     if (Date.now() - entry.timestamp > expiration) {
-        delete cache[type][key]; // Remove expired entry
+        delete cache[type][key];
         return null;
     }
     return entry.value;
@@ -65,9 +68,7 @@ async function fetchWithProxy(endpoint) {
             console.error('Error from proxy:', errorData);
             throw new Error(`Error fetching data: ${response.status}`);
         }
-
-        const textResponse = await response.text();
-        return JSON.parse(textResponse); // Attempt to parse as JSON
+        return await response.json(); // Parse JSON response
     } catch (error) {
         console.error('Error communicating with proxy:', error.message);
         throw error;
@@ -102,6 +103,48 @@ async function fetchActiveATCAirports() {
     }
 }
 
+async function fetchAndUpdateFlights(icao) {
+    try {
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
+        const airportCoordinates = await fetchAirportCoordinates(icao);
+
+        await updateDistancesAndETAs(flights, airportCoordinates);
+        allFlights = flights;
+
+        renderFlightsTable(allFlights);
+        await fetchAirportATIS(icao);
+        await fetchControllers(icao);
+    } catch (error) {
+        console.error('Error fetching flights or controllers:', error.message);
+    }
+}
+
+async function fetchInboundFlightIds(icao) {
+    const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
+    if (cached) return cached;
+
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const inboundFlights = data.result.inboundFlights || [];
+        setCache(icao, inboundFlights, 'inboundFlightIds');
+        return inboundFlights;
+    } catch (error) {
+        console.error('Error fetching inbound flight IDs:', error.message);
+        return [];
+    }
+}
+
+async function fetchInboundFlightDetails(inboundFlightIds) {
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        return data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
+    } catch (error) {
+        console.error('Error fetching flight details:', error.message);
+        return [];
+    }
+}
+
 async function fetchAirportCoordinates(icao) {
     const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);
     if (cached) return cached;
@@ -113,73 +156,38 @@ async function fetchAirportCoordinates(icao) {
         return coordinates;
     } catch (error) {
         console.error('Error fetching airport coordinates:', error.message);
-        alert('Failed to fetch airport coordinates.');
         return null;
     }
 }
 
 async function fetchAirportATIS(icao) {
-    const atisElement = document.getElementById('atisMessage');
-    atisElement.textContent = 'Fetching ATIS...';
-
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
-    if (cached) {
-        displayATIS(cached);
-        return cached;
-    }
+    if (cached) return cached;
 
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`);
-        const atis = data.result || 'ATIS not available';
-        setCache(icao, atis, 'atis');
-        displayATIS(atis);
-        return atis;
+        setCache(icao, data.result, 'atis');
+        displayATIS(data.result);
+        return data.result;
     } catch (error) {
         console.error('Error fetching ATIS:', error.message);
-        displayATIS('ATIS not available');
-        return 'ATIS not available';
+        return null;
     }
 }
 
 async function fetchControllers(icao) {
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
-    if (cached) {
-        displayControllers(cached);
-        return cached;
-    }
+    if (cached) return cached;
 
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
         const controllers = (data.result.atcFacilities || [])
-            .map(facility => ({
-                frequencyName: {
-                    0: "Ground",
-                    1: "Tower",
-                    2: "Unicom",
-                    3: "Clearance",
-                    4: "Approach",
-                    5: "Departure",
-                    6: "Center",
-                    7: "ATIS",
-                    8: "Aircraft",
-                    9: "Recorded",
-                    10: "Unknown",
-                    11: "Unused",
-                }[facility.type] || "Unknown",
-                username: facility.username,
-            }))
-            .sort((a, b) => {
-                const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
-                return order.indexOf(a.frequencyName) - order.indexOf(b.frequencyName);
-            })
-            .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
-
+            .map(facility => `${facility.type}: ${facility.username}`);
         setCache(icao, controllers, 'controllers');
         displayControllers(controllers);
         return controllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
-        displayControllers(['No active controllers available']);
         return [];
     }
 }
@@ -190,19 +198,11 @@ async function fetchControllers(icao) {
 
 function displayATIS(atis) {
     const atisElement = document.getElementById('atisMessage');
-    if (!atisElement) {
-        console.error('ATIS display element not found.');
-        return;
-    }
-    atisElement.textContent = `ATIS: ${atis}`;
+    atisElement.textContent = atis || 'ATIS not available';
 }
 
 function displayControllers(controllers) {
     const controllersElement = document.getElementById('controllersList');
-    if (!controllersElement) {
-        console.error('Controller display element not found.');
-        return;
-    }
     controllersElement.textContent = controllers.length
         ? controllers.join('\n')
         : 'No active controllers available';
@@ -213,44 +213,45 @@ function displayControllers(controllers) {
 // ============================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        await fetchActiveATCAirports();
+    await fetchActiveATCAirports();
 
-        document.getElementById('boldHeadingButton').addEventListener('click', () => {
-            boldHeadingEnabled = !boldHeadingEnabled;
-            document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-                ? 'Disable Bold Aircraft'
-                : 'Enable Bold Aircraft';
-            renderFlightsTable(allFlights); // Update table
-        });
+    // Button: Bold Heading
+    document.getElementById('boldHeadingButton').addEventListener('click', () => {
+        boldHeadingEnabled = !boldHeadingEnabled;
+        document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
+            ? 'Disable Bold Aircraft'
+            : 'Enable Bold Aircraft';
+        renderFlightsTable(allFlights);
+    });
 
-        document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
-            minDistance = parseFloat(document.getElementById('minDistance').value) || null;
-            maxDistance = parseFloat(document.getElementById('maxDistance').value) || null;
-            renderFlightsTable(allFlights); // Apply distance filter
-        });
+    // Button: Distance Filter
+    document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+        minDistance = parseFloat(document.getElementById('minDistance').value) || null;
+        maxDistance = parseFloat(document.getElementById('maxDistance').value) || null;
+        renderFlightsTable(allFlights);
+    });
 
-        document.getElementById('resetDistanceFilterButton').addEventListener('click', () => {
-            minDistance = maxDistance = null;
-            document.getElementById('minDistance').value = '';
-            document.getElementById('maxDistance').value = '';
-            renderFlightsTable(allFlights); // Reset filters
-        });
+    // Button: Reset Distance Filter
+    document.getElementById('resetDistanceFilterButton').addEventListener('click', () => {
+        minDistance = maxDistance = null;
+        document.getElementById('minDistance').value = '';
+        document.getElementById('maxDistance').value = '';
+        renderFlightsTable(allFlights);
+    });
 
-        document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
-            filterHighlightByHeading = !filterHighlightByHeading;
-            document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
-                ? 'Disable Highlight Filter by Heading'
-                : 'Enable Highlight Filter by Heading';
-            renderFlightsTable(allFlights); // Toggle highlight filter
-        });
- 
-        document.getElementById('searchForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const icao = document.getElementById('icao').value.trim().toUpperCase();
-            if (icao) await fetchAndUpdateFlights(icao);
-        });
-    } catch (error) {
-        console.error('Initialization error:', error.message);
-    }
+    // Button: Heading Filter
+    document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+        filterHighlightByHeading = !filterHighlightByHeading;
+        document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
+            ? 'Disable Highlight Filter by Heading'
+            : 'Enable Highlight Filter by Heading';
+        renderFlightsTable(allFlights);
+    });
+
+    // Search Form
+    document.getElementById('searchForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const icao = document.getElementById('icao').value.trim().toUpperCase();
+        if (icao) await fetchAndUpdateFlights(icao);
+    });
 });
