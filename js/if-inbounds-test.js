@@ -624,8 +624,8 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
 // renderFlightsTable
 async function renderFlightsTable(flights, hideFilter = false) {
-    const tableBody = document.querySelector('#flightsTable tbody');
-    tableBody.innerHTML = '';
+    const tableBody = document.querySelector("#flightsTable tbody");
+    tableBody.innerHTML = "";
 
     const uniqueFlights = [...new Map(flights.map(f => [f.flightId, f])).values()];
 
@@ -644,7 +644,7 @@ async function renderFlightsTable(flights, hideFilter = false) {
 
         // Populate table
         uniqueFlights.forEach(flight => {
-            const row = document.createElement('tr');
+            const row = document.createElement("tr");
 
             // Get aircraft details
             const aircraftName = flight.aircraftName || "Unknown Aircraft"; // Use aircraftName directly from flight data
@@ -658,30 +658,30 @@ async function renderFlightsTable(flights, hideFilter = false) {
 
             const isWithinDistanceRange =
                 (minDistance === null && maxDistance === null) ||
-                (typeof flight.distanceToDestination === 'number' &&
+                (typeof flight.distanceToDestination === "number" &&
                     flight.distanceToDestination >= (minDistance ?? 0) &&
                     flight.distanceToDestination <= (maxDistance ?? Infinity));
 
             const isVisible = (!hideFilter || isWithinHeadingRange) && isWithinDistanceRange;
 
             // Apply bold styling for heading range
-            row.style.fontWeight = isWithinHeadingRange ? 'bold' : 'normal';
-            row.style.display = isVisible ? '' : 'none';
+            row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
+            row.style.display = isVisible ? "" : "none";
 
             row.innerHTML = `
-                <td>${flight.callsign || 'N/A'}<br>${aircraftName}</td>
+                <td>${flight.callsign || "N/A"}<br>${aircraftName}</td>
                 <td>${machDetails.minMach} - ${machDetails.maxMach}</td>
                 <td>
-                    ${flight.speed?.toFixed(0) || 'N/A'}<br>
-                    ${(flight.speed / 666.739).toFixed(2) || 'N/A'}
+                    ${flight.speed?.toFixed(0) || "N/A"}<br>
+                    ${(flight.speed / 666.739).toFixed(2) || "N/A"}
                 </td>
                 <td>
-                    ${Math.round(flight.headingFromAirport) || 'N/A'}<br>
-                    ${flight.altitude?.toFixed(0) || 'N/A'}
+                    ${Math.round(flight.headingFromAirport) || "N/A"}<br>
+                    ${flight.altitude?.toFixed(0) || "N/A"}
                 </td>
                 <td>
-                    ${Math.ceil(flight.distanceToDestination) || 'N/A'}<br>
-                    ${flight.etaMinutes || 'N/A'}
+                    ${Math.ceil(flight.distanceToDestination) || "N/A"}<br>
+                    ${flight.etaMinutes || "N/A"}
                 </td>
             `;
             tableBody.appendChild(row);
