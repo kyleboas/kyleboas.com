@@ -710,12 +710,13 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
             const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
+            const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
 
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br>${aircraftName}</td>
                 <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
                 <td>${speedValue}<br>${machValue}</td>
-                <td>${flight.headingFromAirport || "N/A"}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
+                <td>${headingValue}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
                 <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
             `;
             tableBody.appendChild(row);
