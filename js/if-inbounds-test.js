@@ -59,8 +59,7 @@ function getUncachedIds(ids, type) {
 // Aircraft
 // ============================
 
-async function pairAircraftData(aircraftIds) {
-    const aircraftMachDetails = {
+const aircraftMachDetails = {
         "81d9ccd4-9c03-493a-811e-8fad3e57bd05": { name: "A-10", minMach: 0.4, maxMach: 0.56 },
         "876b428a-3ee2-46cd-9d8c-2c59424dfcb5": { name: "AC-130", minMach: 0.4, maxMach: 0.6 },
         "710c84ae-6fdc-4c4a-ac3b-4031c3036e98": { name: "A220-300", minMach: 0.72, maxMach: 0.82 },
@@ -100,22 +99,31 @@ async function pairAircraftData(aircraftIds) {
         "b3907f6b-c8cf-427b-94fb-1f9365d990df": { name: "CRJ-1000", minMach: 0.70, maxMach: 0.82 },
         "e59fa7b4-b708-4480-aebd-26659a4f312b": { name: "DC-10", minMach: 0.78, maxMach: 0.88 },
         "e92bc6db-a9e6-4137-a93c-a7423715b799": { name: "SR22", minMach: 0.40, maxMach: 0.60 }
-    };
+};
 
+async function pairAircraftData(aircraftIds) {
     const pairedData = {};
 
     for (const flight of allFlights) {
-    const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
+        const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-    pairedData[flight.flightId] = {
-        name: flight.aircraftName,
-        minMach: machDetails.minMach,
-        maxMach: machDetails.maxMach,
+        pairedData[flight.flightId] = {
+            name: flight.aircraftName || "Unknown Aircraft",
+            minMach: machDetails.minMach,
+            maxMach: machDetails.maxMach,
         };
     }
 
-  return pairedData; 
+    return pairedData;
 }
+
+// Get the aircraft IDs from `allFlights`
+const aircraftIds = allFlights.map(flight => flight.aircraftId);
+
+// Pair the aircraft data
+pairAircraftData(aircraftIds).then(pairedData => {
+    console.log("Paired Aircraft Data:", pairedData);
+});
 
 
 // ============================
@@ -248,21 +256,26 @@ async function fetchInboundFlightIds(icao) {
 async function fetchInboundFlightDetails(inboundFlightIds) {
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        
+        // Filter flights based on the provided IDs
         const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
 
         // Ensure only unique flight details are returned
         const uniqueFlights = [...new Map(flightsFromApi.map(f => [f.flightId, f])).values()];
 
-        // Map relevant details, including the aircraftName
+        // Map relevant details
         return uniqueFlights.map(flight => ({
             flightId: flight.flightId,
             callsign: flight.callsign || "N/A",
-            aircraftId: flight.aircraftId,
-            aircraftName: flight.aircraftName || "Unknown Aircraft", // Aircraft name included directly
-            latitude: flight.latitude,
-            longitude: flight.longitude,
-            altitude: flight.altitude,
-            speed: flight.groundSpeed,
+            aircraftId: flight.aircraftId || "N/A",
+            aircraftName: aircraftMachDetails[flight.aircraftId]?.name || "Unknown Aircraft",
+            latitude: flight.latitude || null,
+            longitude: flight.longitude || null,
+            altitude: Math.round(flight.altitude) || "N/A",
+            speed: Math.round(flight.speed) || "N/A",
+            heading: Math.round(flight.heading) || "N/A",
+            lastReport: flight.lastReport || "N/A",
+            virtualOrganization: flight.virtualOrganization || "N/A",
         }));
     } catch (error) {
         console.error("Error fetching flight details:", error.message);
@@ -349,8 +362,14 @@ async function fetchControllers(icao) {
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
     flights.forEach(flight => {
-        // Calculate and update distance, heading, and ETA
-        flight.distanceToDestination = Math.ceil( 
+        if (!airportCoordinates || !flight.latitude || !flight.longitude) {
+            flight.distanceToDestination = "N/A";
+            flight.etaMinutes = "N/A";
+            flight.headingFromAirport = "N/A";
+            return;
+        }
+
+        flight.distanceToDestination = Math.ceil(
             calculateDistance(
                 flight.latitude,
                 flight.longitude,
@@ -358,7 +377,9 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
                 airportCoordinates.longitude
             )
         );
-        flight.etaMinutes = calculateETA(flight.distanceToDestination, flight.speed);
+
+        flight.etaMinutes = flight.speed ? calculateETA(flight.distanceToDestination, flight.speed) : "N/A";
+
         flight.headingFromAirport = calculateBearing(
             airportCoordinates.latitude,
             airportCoordinates.longitude,
@@ -692,10 +713,10 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br>${aircraftName}</td>
-                <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
-                <td>${flight.speed?.toFixed(0) || "N/A"}<br>${(flight.speed / 666.739).toFixed(2) || "N/A"}</td>
-                <td>${Math.round(flight.headingFromAirport) || "N/A"}<br>${flight.altitude?.toFixed(0) || "N/A"}</td>
-                <td>${Math.ceil(flight.distanceToDestination) || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
+                <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
+                <td>${flight.speed ? flight.speed.toFixed(0) : "N/A"}<br>${flight.speed ? (flight.speed / 666.739).toFixed(2) : "N/A"}</td>
+                <td>${flight.headingFromAirport || "N/A"}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
+                <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
             `;
             tableBody.appendChild(row);
         });
