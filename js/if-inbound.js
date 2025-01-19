@@ -105,9 +105,17 @@ async function fetchActiveATCAirports() {
 
 async function fetchAndUpdateFlights(icao) {
     try {
+        console.log(`Fetching flights for ICAO: ${icao}`);
         const inboundFlightIds = await fetchInboundFlightIds(icao);
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
         const airportCoordinates = await fetchAirportCoordinates(icao);
+
+        if (!flights.length) {
+            console.warn('No flights found for this ICAO.');
+            allFlights = [];
+            renderFlightsTable(allFlights);
+            return;
+        }
 
         await updateDistancesAndETAs(flights, airportCoordinates);
         allFlights = flights;
@@ -117,6 +125,7 @@ async function fetchAndUpdateFlights(icao) {
         await fetchControllers(icao);
     } catch (error) {
         console.error('Error fetching flights or controllers:', error.message);
+        alert('Failed to fetch data. Please check the ICAO or try again later.');
     }
 }
 
@@ -196,6 +205,28 @@ async function fetchControllers(icao) {
 // Display Functions
 // ============================
 
+function renderFlightsTable(flights) {
+    const tableBody = document.querySelector('#flightsTable tbody');
+    tableBody.innerHTML = '';
+
+    if (!flights.length) {
+        tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
+        return;
+    }
+
+    flights.forEach(flight => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${flight.callsign || 'N/A'}</td>
+            <td>${flight.speed?.toFixed(0) || 'N/A'}</td>
+            <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
+            <td>${Math.round(flight.headingFromAirport) || 'N/A'}</td>
+            <td>${flight.etaMinutes || 'N/A'}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
 function displayATIS(atis) {
     const atisElement = document.getElementById('atisMessage');
     atisElement.textContent = atis || 'ATIS not available';
@@ -215,7 +246,19 @@ function displayControllers(controllers) {
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchActiveATCAirports();
 
-    // Button: Bold Heading
+    document.getElementById('searchForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const icao = document.getElementById('icao').value.trim().toUpperCase();
+
+        if (!icao) {
+            alert('Please enter a valid ICAO code.');
+            return;
+        }
+
+        console.log(`Search submitted for ICAO: ${icao}`);
+        await fetchAndUpdateFlights(icao);
+    });
+
     document.getElementById('boldHeadingButton').addEventListener('click', () => {
         boldHeadingEnabled = !boldHeadingEnabled;
         document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
@@ -224,14 +267,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderFlightsTable(allFlights);
     });
 
-    // Button: Distance Filter
     document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
         minDistance = parseFloat(document.getElementById('minDistance').value) || null;
         maxDistance = parseFloat(document.getElementById('maxDistance').value) || null;
         renderFlightsTable(allFlights);
     });
 
-    // Button: Reset Distance Filter
     document.getElementById('resetDistanceFilterButton').addEventListener('click', () => {
         minDistance = maxDistance = null;
         document.getElementById('minDistance').value = '';
@@ -239,19 +280,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderFlightsTable(allFlights);
     });
 
-    // Button: Heading Filter
     document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
         filterHighlightByHeading = !filterHighlightByHeading;
         document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
             ? 'Disable Highlight Filter by Heading'
             : 'Enable Highlight Filter by Heading';
         renderFlightsTable(allFlights);
-    });
-
-    // Search Form
-    document.getElementById('searchForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const icao = document.getElementById('icao').value.trim().toUpperCase();
-        if (icao) await fetchAndUpdateFlights(icao);
     });
 });
