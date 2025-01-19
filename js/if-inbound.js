@@ -132,6 +132,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.getElementById('boldHeadingButton').textContent = 'Disable Bold Aircraft';
         document.getElementById('applyDistanceFilterButton').textContent = 'Reset Distance Filter';
+        document.getElementById('filterHeadingHighlightButton').textContent = 'Disable Highlight Filter by Heading';
+
+        // Render flights table with default filters applied
+        renderFlightsTable(allFlights, hideOtherAircraft);
+    } catch (error) {
+        console.error('Error initializing page:', error.message);
+    }
+});
 
 // Toggle Bold Aircraft
 let boldHeadingEnabled = false;
@@ -155,6 +163,17 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
         : 'Apply Distance Filter';
 
     renderFlightsTable(allFlights, hideOtherAircraft); // Re-render the table with distance filter applied/removed
+});
+
+// Toggle Filter Highlight by Heading
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    filterHighlightByHeading = !filterHighlightByHeading;
+
+    document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
+        ? 'Disable Highlight Filter by Heading'
+        : 'Enable Highlight Filter by Heading';
+
+    renderFlightsTable(allFlights); // Re-render the table with highlight filter updated
 });
 
 // Fetch airport latitude and longitude
@@ -402,17 +421,17 @@ function highlightCloseETAs(flights) {
     });
 }
 
-// Filter Heading Highlight Listener
-const button = document.getElementById('filterHeadingHighlightButton');
+// Filter Highlight Event Listener
+let filterHighlightByHeading = false;
 
-button.addEventListener('click', () => {
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
     filterHighlightByHeading = !filterHighlightByHeading;
 
-    button.textContent = filterHighlightByHeading
+    document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
         ? 'Disable Highlight Filter by Heading'
         : 'Enable Highlight Filter by Heading';
 
-    renderFlightsTable(allFlights, hideOtherAircraft);
+    renderFlightsTable(allFlights); // Re-render the table with the updated filter
 });
 
 // Filter Listener
