@@ -509,22 +509,6 @@ function highlightPair(flight1, flight2, rows, flights) {
     }
 }
 
-// Filter Highlight Event Listener
-let filterHighlightByHeading = false;
-
-document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
-    filterHighlightByHeading = !filterHighlightByHeading;
-
-    // Update the button text
-    document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
-        ? 'Disable Highlight Filter by Heading'
-        : 'Enable Highlight Filter by Heading';
-
-    // Re-render the table to reflect changes
-    renderFlightsTable(allFlights, hideOtherAircraft);
-});
-
-
 
 // ============================
 // Event Listeners
