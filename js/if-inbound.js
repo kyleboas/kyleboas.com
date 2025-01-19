@@ -11,6 +11,8 @@ let boldedHeadings = { minHeading: null, maxHeading: null };
 let distanceFilterActive = false;
 let minDistance = null;
 let maxDistance = null;
+let boldedHeadings = { minHeading: null, maxHeading: null };
+let minDistance = null, maxDistance = null;
 let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
@@ -18,14 +20,13 @@ let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
 let filterHighlightByHeading = false;
 
-// Caching system
+// Cache and expiration configuration
 const cache = {
     airportCoordinates: {},
     inboundFlightIds: {},
     atis: {},
     controllers: {},
 };
-
 const cacheExpiration = {
     airportCoordinates: 90 * 24 * 60 * 60 * 1000, // 90 days
     inboundFlightIds: 5 * 60 * 1000, // 5 minutes
@@ -56,19 +57,27 @@ function getUncachedIds(ids, type) {
     return ids.filter(id => !cache[type][id]);
 }
 
+function parseETAInSeconds(eta) {
+    if (!eta || eta === 'N/A') return Infinity;
+    if (eta === '>12hrs') return 720 * 60; // Represent ">12hrs" as the maximum value
+    const [minutes, seconds] = eta.split(':').map(Number);
+    return minutes * 60 + seconds;
+}
+
 // ============================
-// Fetch Functions
+// API Fetch Functions
 // ============================
 
 async function fetchWithProxy(endpoint) {
     try {
-        const response = await fetch(`${PROXY_URL}${endpoint}`);
+        const sanitizedEndpoint = endpoint.replace(/\/{2,}/g, '/');
+        const response = await fetch(`${PROXY_URL}${sanitizedEndpoint}`);
         if (!response.ok) {
             const errorData = await response.text();
             console.error('Error from proxy:', errorData);
             throw new Error(`Error fetching data: ${response.status}`);
         }
-        return await response.json(); // Parse JSON response
+        return await response.json();
     } catch (error) {
         console.error('Error communicating with proxy:', error.message);
         throw error;
@@ -224,7 +233,7 @@ async function fetchControllers(icao) {
 }
 
 // ============================
-// Display Functions
+// Table and UI Updates
 // ============================
 
 function renderFlightsTable(flights) {
