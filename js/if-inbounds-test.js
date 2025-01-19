@@ -411,7 +411,7 @@ async function fetchAndUpdateFlights(icao) {
         allFlights = [];
         renderFlightsTable(allFlights); // Clear table
         document.getElementById('atisMessage').textContent = "ATIS not available.";
-        document.getElementById('controllersList').textContent = "No controllers available.";
+        document.getElementById('controllersList').textContent = "No controllers online.";
     }
 }
 
