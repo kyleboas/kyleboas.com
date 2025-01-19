@@ -439,34 +439,47 @@ function highlightCloseETAs(flights) {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
-    // Split flights into bold and non-bold groups if bold heading is enabled
-    let boldFlights = [];
-    let nonBoldFlights = flights;
-
-    if (boldHeadingEnabled) {
-        boldFlights = flights.filter(
-            flight =>
-                flight.headingFromAirport >= boldedHeadings.minHeading &&
-                flight.headingFromAirport <= boldedHeadings.maxHeading
-        );
-        nonBoldFlights = flights.filter(
-            flight =>
-                flight.headingFromAirport < boldedHeadings.minHeading ||
-                flight.headingFromAirport > boldedHeadings.maxHeading
-        );
-    }
-
-    // Highlight rows for each group
-    [boldFlights, nonBoldFlights].forEach(group => {
-        group.forEach((flight1, i) => {
+    if (!filterHighlightByHeading) {
+        // If filter by heading is disabled, compare all flights to all flights
+        flights.forEach((flight1, i) => {
             const row1 = rows[flights.indexOf(flight1)];
             if (row1.style.display === 'none') return; // Skip hidden rows
 
-            // Compare with the flights directly before and after in the group
-            if (i > 0) highlightPair(flight1, group[i - 1], rows, flights);
-            if (i < group.length - 1) highlightPair(flight1, group[i + 1], rows, flights);
+            // Compare with every other flight
+            flights.forEach((flight2, j) => {
+                if (i !== j) highlightPair(flight1, flight2, rows, flights);
+            });
         });
-    });
+    } else {
+        // If filter by heading is enabled, split into bold and non-bold groups
+        let boldFlights = [];
+        let nonBoldFlights = flights;
+
+        if (boldHeadingEnabled) {
+            boldFlights = flights.filter(
+                flight =>
+                    flight.headingFromAirport >= boldedHeadings.minHeading &&
+                    flight.headingFromAirport <= boldedHeadings.maxHeading
+            );
+            nonBoldFlights = flights.filter(
+                flight =>
+                    flight.headingFromAirport < boldedHeadings.minHeading ||
+                    flight.headingFromAirport > boldedHeadings.maxHeading
+            );
+        }
+
+        // Highlight rows for each group separately
+        [boldFlights, nonBoldFlights].forEach(group => {
+            group.forEach((flight1, i) => {
+                const row1 = rows[flights.indexOf(flight1)];
+                if (row1.style.display === 'none') return; // Skip hidden rows
+
+                // Compare with the flights directly before and after in the group
+                if (i > 0) highlightPair(flight1, group[i - 1], rows, flights);
+                if (i < group.length - 1) highlightPair(flight1, group[i + 1], rows, flights);
+            });
+        });
+    }
 }
 
 function highlightPair(flight1, flight2, rows, flights) {
