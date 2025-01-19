@@ -387,38 +387,58 @@ function parseETAInSeconds(eta) {
 // Highlight rows based on ETA proximity
 function highlightCloseETAs(flights) {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
-    rows.forEach(row => (row.style.backgroundColor = ''));
+    rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
-    flights.forEach((flight1, i) => {
-        flights.forEach((flight2, j) => {
-            if (i !== j) {
-                const eta1 = parseETAInSeconds(flight1.etaMinutes);
-                const eta2 = parseETAInSeconds(flight2.etaMinutes);
+    // Split aircraft into groups if bold is enabled
+    let group1 = flights;
+    let group2 = [];
 
-                const timeDiff = Math.abs(eta1 - eta2);
+    if (boldHeadingEnabled) {
+        group1 = flights.filter(flight =>
+            flight.headingFromAirport >= boldedHeadings.minHeading &&
+            flight.headingFromAirport <= boldedHeadings.maxHeading
+        );
 
-                // Check heading filter if enabled
-                const isWithinHeadingRange = filterHighlightByHeading
-                    ? (flight1.headingFromAirport >= boldedHeadings.minHeading &&
-                       flight1.headingFromAirport <= boldedHeadings.maxHeading &&
-                       flight2.headingFromAirport >= boldedHeadings.minHeading &&
-                       flight2.headingFromAirport <= boldedHeadings.maxHeading)
-                    : true;
+        group2 = flights.filter(flight =>
+            flight.headingFromAirport < boldedHeadings.minHeading ||
+            flight.headingFromAirport > boldedHeadings.maxHeading
+        );
+    }
 
-                // Highlight based on time difference and heading range
-                if (timeDiff <= 30 && isWithinHeadingRange) {
-                    rows[i].style.backgroundColor = '#fffa9f'; // Yellow for <= 30 seconds
-                    rows[j].style.backgroundColor = '#fffa9f';
-                } else if (timeDiff <= 60 && isWithinHeadingRange) {
-                    rows[i].style.backgroundColor = rows[i].style.backgroundColor || '#daceca'; // Beige for <= 60 seconds
-                    rows[j].style.backgroundColor = rows[j].style.backgroundColor || '#daceca';
-                } else if (timeDiff <= 120 && isWithinHeadingRange) {
-                    rows[i].style.backgroundColor = rows[i].style.backgroundColor || '#eaeaea'; // Light gray for <= 120 seconds
-                    rows[j].style.backgroundColor = rows[j].style.backgroundColor || '#eaeaea';
-                }
-            }
+    // Compare and highlight aircraft within each group
+    [group1, group2].forEach(group => {
+        group.forEach((flight1, i) => {
+            const row1 = rows[flights.indexOf(flight1)];
+            if (row1.style.display === 'none') return; // Skip hidden rows
+
+            // Compare with the aircraft directly before and after in the sorted list
+            if (i > 0) highlightPair(flight1, group[i - 1], rows, flights);
+            if (i < group.length - 1) highlightPair(flight1, group[i + 1], rows, flights);
         });
     });
+}
+
+function highlightPair(flight1, flight2, rows, flights) {
+    const row1 = rows[flights.indexOf(flight1)];
+    const row2 = rows[flights.indexOf(flight2)];
+
+    // Skip hidden rows
+    if (row1.style.display === 'none' || row2.style.display === 'none') return;
+
+    const eta1 = parseETAInSeconds(flight1.etaMinutes);
+    const eta2 = parseETAInSeconds(flight2.etaMinutes);
+    const timeDiff = Math.abs(eta1 - eta2);
+
+    if (timeDiff <= 30) {
+        row1.style.backgroundColor = '#fffa9f'; // Yellow for <= 30 seconds
+        row2.style.backgroundColor = '#fffa9f';
+    } else if (timeDiff <= 60) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for <= 60 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
+    } else if (timeDiff <= 120) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Light gray for <= 120 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
+    }
 }
 
 // Filter Highlight Event Listener
@@ -460,25 +480,21 @@ function renderFlightsTable(flights, hideFilter = false) {
     const tableBody = document.querySelector('#flightsTable tbody');
     tableBody.innerHTML = '';
 
-    // Use a Set to ensure unique flight IDs
     const uniqueFlights = [...new Map(flights.map(f => [f.flightId, f])).values()];
 
-    // If no flights are found, display a message
     if (!uniqueFlights.length) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
         return;
     }
 
-    // Sort flights by ETA (ascending order)
+        // Sort flights by ETA (ascending order)
 uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
     uniqueFlights.forEach(flight => {
         const row = document.createElement('tr');
 
         // Check if the flight is within the heading range
-        const isWithinHeadingRange = boldedHeadings.minHeading !== null &&
-            boldedHeadings.maxHeading !== null &&
-            typeof flight.headingFromAirport === 'number' &&
+        const isWithinHeadingRange = boldHeadingEnabled &&
             flight.headingFromAirport >= boldedHeadings.minHeading &&
             flight.headingFromAirport <= boldedHeadings.maxHeading;
 
@@ -496,7 +512,6 @@ uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds
         row.style.fontWeight = isWithinHeadingRange ? 'bold' : 'normal';
         row.style.display = isVisible ? '' : 'none';
 
-        // Populate the row with the new layout
         row.innerHTML = `
             <td>${flight.callsign || 'N/A'}</td>
             <td>${flight.speed?.toFixed(0) || 'N/A'} / ${(flight.speed / 666.739).toFixed(2) || 'N/A'}</td>
