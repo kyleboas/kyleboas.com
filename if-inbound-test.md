@@ -127,18 +127,18 @@ th {
     <span id="countdownTimer" style="display: none;">Next update in: 15 seconds</span>
     
     <table id="flightsTable">
-        <thead>
-            <tr>
-                <th>Callsign</th>
-                <th>GS/MACH</th>
-                <th>ALT</th>
-                <th>HDG/NM</th>
-                <th>ETA</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Dynamic rows -->
-        </tbody>
+    <thead>
+        <tr>
+            <th>Callsign</th>
+            <th>GS/MACH</th>
+            <th>ALT</th>
+            <th>HDG</th>
+            <th>NM/ETA</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Dynamic rows -->
+    </tbody>
     </table>
 </div>
 <script src="/js/if-inbounds-test.js"></script>

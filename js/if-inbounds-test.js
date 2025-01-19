@@ -573,13 +573,12 @@ function renderFlightsTable(flights, hideFilter = false) {
             <td>${flight.callsign || 'N/A'}</td>
             <td>${flight.speed?.toFixed(0) || 'N/A'} / ${(flight.speed / 666.739).toFixed(2) || 'N/A'}</td>
             <td>${flight.altitude?.toFixed(0) || 'N/A'}</td>
-            <td>${Math.round(flight.headingFromAirport) || 'N/A'} / ${Math.ceil(flight.distanceToDestination) || 'N/A'}</td>
-            <td>${flight.etaMinutes || 'N/A'}</td>
+            <td>${Math.round(flight.headingFromAirport) || 'N/A'}</td>
+            <td>${Math.ceil(flight.distanceToDestination) || 'N/A'} / ${flight.etaMinutes || 'N/A'}</td>
         `;
         tableBody.appendChild(row);
     });
 
-    // Highlight rows with close ETAs (independent of bold logic)
     highlightCloseETAs(uniqueFlights);
 }
 
