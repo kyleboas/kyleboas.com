@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : 'Enable Highlight Filter by Heading';
             renderFlightsTable(allFlights); // Toggle highlight filter
         });
-
+ 
         document.getElementById('searchForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const icao = document.getElementById('icao').value.trim().toUpperCase();
