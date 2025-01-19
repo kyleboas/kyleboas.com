@@ -479,19 +479,21 @@ function highlightPair(flight1, flight2, rows, flights) {
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
-    // Apply color highlights with locking priority
-    if (timeDiff <= 10) {
-        row1.style.backgroundColor = '#fffa9f'; // Yellow for ≤ 10 seconds
-        row2.style.backgroundColor = '#fffa9f';
-    } else if (timeDiff <= 30) {
-        if (row1.style.backgroundColor !== '#fffa9f') row1.style.backgroundColor = '#8BABF1'; // Blue for ≤ 30 seconds
-        if (row2.style.backgroundColor !== '#fffa9f') row2.style.backgroundColor = '#8BABF1';
-    } else if (timeDiff <= 60) {
-        if (!['#fffa9f', '#8BABF1'].includes(row1.style.backgroundColor)) row1.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
-        if (!['#fffa9f', '#8BABF1'].includes(row2.style.backgroundColor)) row2.style.backgroundColor = '#daceca';
-    } else if (timeDiff <= 120) {
-        if (!['#fffa9f', '#8BABF1', '#daceca'].includes(row1.style.backgroundColor)) row1.style.backgroundColor = '#eaeaea'; // Gray for ≤ 120 seconds
-        if (!['#fffa9f', '#8BABF1', '#daceca'].includes(row2.style.backgroundColor)) row2.style.backgroundColor = '#eaeaea';
+    // Determine priority-based colors
+    const colors = [
+        { limit: 10, color: '#fffa9f' }, // Yellow for ≤ 10 seconds
+        { limit: 30, color: '#8BABF1' }, // Blue for ≤ 30 seconds
+        { limit: 60, color: '#daceca' }, // Beige for ≤ 60 seconds
+        { limit: 120, color: '#eaeaea' } // Gray for ≤ 120 seconds
+    ];
+
+    // Apply the first valid color based on priority
+    for (const { limit, color } of colors) {
+        if (timeDiff <= limit) {
+            if (!row1.style.backgroundColor) row1.style.backgroundColor = color;
+            if (!row2.style.backgroundColor) row2.style.backgroundColor = color;
+            break; // Exit once a color is applied
+        }
     }
 }
 
