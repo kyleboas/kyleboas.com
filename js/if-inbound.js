@@ -405,7 +405,6 @@ function highlightCloseETAs(flights) {
 // Filter Heading Highlight Listener
 const button = document.getElementById('filterHeadingHighlightButton');
 
-// Add a single event listener
 button.addEventListener('click', () => {
     filterHighlightByHeading = !filterHighlightByHeading;
 
