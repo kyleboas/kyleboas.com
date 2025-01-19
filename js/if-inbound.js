@@ -447,11 +447,13 @@ let filterHighlightByHeading = false;
 document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
     filterHighlightByHeading = !filterHighlightByHeading;
 
+    // Update the button text
     document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
         ? 'Disable Highlight Filter by Heading'
         : 'Enable Highlight Filter by Heading';
 
-    renderFlightsTable(allFlights); // Re-render the table with the updated filter
+    // Re-render the table to reflect changes
+    renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
 // Filter Listener
@@ -495,8 +497,9 @@ uniqueFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds
 
         // Check if the flight is within the heading range
         const isWithinHeadingRange = boldHeadingEnabled &&
-            flight.headingFromAirport >= boldedHeadings.minHeading &&
-            flight.headingFromAirport <= boldedHeadings.maxHeading;
+    filterHighlightByHeading &&
+    flight.headingFromAirport >= boldedHeadings.minHeading &&
+    flight.headingFromAirport <= boldedHeadings.maxHeading;
 
         // Check if the flight is within the distance range
         const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
