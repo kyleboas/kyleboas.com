@@ -479,9 +479,12 @@ function highlightPair(flight1, flight2, rows, flights) {
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
-    if (timeDiff <= 30) {
-        row1.style.backgroundColor = '#fffa9f'; // Yellow for <= 30 seconds
+    if (timeDiff <= 10) {
+        row1.style.backgroundColor = '#fffa9f'; // Yellow for <= 10 seconds
         row2.style.backgroundColor = '#fffa9f';
+    } else if (timeDiff <= 30) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#8BABF1'; // Light Blue for <= 30 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#8BABF1';
     } else if (timeDiff <= 60) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for <= 60 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
