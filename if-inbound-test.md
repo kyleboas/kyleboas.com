@@ -129,14 +129,15 @@ th {
     <table id="flightsTable">
     <thead>
         <tr>
-            <th>Callsign</th>
+            <th>Callsign/Type</th>
+            <th>MIN/MAX</th>
             <th>GS/MACH</th>
             <th>HDG/ALT</th>
             <th>NM/ETA</th>
         </tr>
     </thead>
     <tbody>
-        <!-- Dynamic rows -->
+        <!-- Dynamic rows will be added here -->
     </tbody>
     </table>
 </div>
