@@ -97,7 +97,7 @@ th {
     </form>
     <button type="button" id="updateButton">Update</button>
     <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-    <span id="countdownTimer" style="display: none;">Next update in: 60 seconds</span>
+    <span id="countdownTimer" style="display: none;">Next update in: 15 seconds</span>
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
