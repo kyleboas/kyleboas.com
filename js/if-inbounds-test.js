@@ -149,7 +149,7 @@ async function fetchWithProxy(endpoint) {
 
 // Fetch Aircraft Type
 async function fetchAircraftType(aircraftId) {
-    const endpoint = `aircraft/${aircraftId}/liveries`;
+    const endpoint = `/aircraft/${aircraftId}/liveries`;
     try {
         const response = await fetchWithProxy(endpoint);
         const result = response.result;
