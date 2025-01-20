@@ -125,6 +125,17 @@ function getHighlightColor(timeDiff) {
     return null; // No highlight
 }
 
+// Compare and return the higher-priority color
+function getHigherPriorityColor(color1, color2) {
+    const colorPriority = ['#fffa9f', '#80daeb', '#daceca', '#eaeaea']; // Define priority order
+    const index1 = colorPriority.indexOf(color1);
+    const index2 = colorPriority.indexOf(color2);
+
+    if (index1 === -1) return color2; // If color1 has no priority, use color2
+    if (index2 === -1) return color1; // If color2 has no priority, use color1
+    return index1 < index2 ? color1 : color2; // Return the higher-priority color
+}
+
 // ============================
 // Aircraft
 // ============================
