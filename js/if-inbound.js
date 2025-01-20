@@ -660,9 +660,14 @@ function highlightCloseETAs() {
             flight.headingFromAirport > boldedHeadings.maxHeading
         );
 
-        // Compare within groups
-        compareFlightsWithinGroup(boldFlights, rows); // Highlight bold flights
-        compareFlightsWithinGroup(nonBoldFlights, rows); // Highlight non-bold flights
+        // Compare within bold group
+        compareFlightsWithinGroup(boldFlights, rows);
+
+        // Compare within non-bold group
+        compareFlightsWithinGroup(nonBoldFlights, rows);
+
+        // Compare between groups
+        compareBetweenGroups(boldFlights, nonBoldFlights, rows);
     } else {
         // Compare all flights together
         compareAllFlights(rows);
@@ -680,6 +685,15 @@ function compareFlightsWithinGroup(group, rows) {
 
         if (previousFlight) highlightPair(flight, previousFlight, rows); // Compare to previous
         if (nextFlight) highlightPair(flight, nextFlight, rows); // Compare to next
+    });
+}
+
+// Compare flights between bold and non-bold groups
+function compareBetweenGroups(boldGroup, nonBoldGroup, rows) {
+    boldGroup.forEach(boldFlight => {
+        nonBoldGroup.forEach(nonBoldFlight => {
+            highlightPair(boldFlight, nonBoldFlight, rows);
+        });
     });
 }
 
