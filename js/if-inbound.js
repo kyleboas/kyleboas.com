@@ -650,11 +650,14 @@ function highlightCloseETAs() {
 
     const rows = document.querySelectorAll('#flightsTable tbody tr');
 
-    // Apply new highlights
-    allFlights.forEach((flight1, i) => {
-        allFlights.forEach((flight2, j) => {
-            if (i !== j) highlightPair(flight1, flight2, rows, allFlights);
-        });
+    // Apply new highlights by comparing each flight with its neighbors
+    allFlights.forEach((flight, index) => {
+        const currentFlight = flight;
+        const previousFlight = allFlights[index - 1] || null;
+        const nextFlight = allFlights[index + 1] || null;
+
+        if (previousFlight) highlightPair(currentFlight, previousFlight, rows);
+        if (nextFlight) highlightPair(currentFlight, nextFlight, rows);
     });
 }
 
