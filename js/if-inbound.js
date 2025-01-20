@@ -717,6 +717,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.forEach(flight => {
             const row = document.createElement("tr");
 
+            // Extract flight details
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
@@ -734,7 +735,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
             // Determine visibility based only on the distance filter
-            const isVisible = (!hideFilter || isWithinDistanceRange);
+            const isVisible = !hideFilter || (hideFilter && isWithinDistanceRange);
 
             // Debugging visibility
             console.log(`Flight ${flight.callsign || "N/A"} is visible: ${isVisible}`, {
@@ -746,17 +747,18 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
             row.style.display = isVisible ? "" : "none";
 
-            // Format values
+            // Format values for display
             const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
             const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
+            const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
 
             // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${flight.aircraftName || "UNKN"}</small></td>
                 <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
                 <td>${speedValue}<br>${machValue}</td>
-                <td>${headingValue}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
+                <td>${headingValue}<br>${altitudeValue}</td>
                 <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
             `;
             tableBody.appendChild(row);
