@@ -30,7 +30,7 @@ pre {
     background-color: #4CAF50;
     color: white;
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: 14px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -44,6 +44,7 @@ pre {
     border-radius: 4px;
     padding: 15px;
     z-index: 1;
+    width: 260px;
 }
 
 .dropdown:hover .dropdown-menu {
@@ -53,11 +54,13 @@ pre {
 .dropdown-menu input,
 .dropdown-menu button {
     margin-top: 10px;
+    margin-bottom: 10px;
     padding: 8px;
     width: 100%;
     font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    width: 240px;
 }
 
 .dropdown-menu button {
