@@ -136,6 +136,30 @@ function getHigherPriorityColor(color1, color2) {
     return index1 < index2 ? color1 : color2; // Return the higher-priority color
 }
 
+// Apply highlights to a row
+function applyHighlight(row, color) {
+    const currentColor = rgbToHex(row.style.backgroundColor); // Convert current color to hex
+
+    // Apply the new color only if it has higher priority
+    if (!currentColor || getHigherPriorityColor(color, currentColor) === color) {
+        row.style.backgroundColor = color;
+    }
+}
+
+// Utility function to convert RGB color to HEX
+function rgbToHex(rgb) {
+    if (!rgb || rgb === 'transparent') return null; // Handle unset or transparent colors
+
+    const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (!match) return null;
+
+    const r = parseInt(match[1]).toString(16).padStart(2, '0');
+    const g = parseInt(match[2]).toString(16).padStart(2, '0');
+    const b = parseInt(match[3]).toString(16).padStart(2, '0');
+
+    return `#${r}${g}${b}`;
+}
+
 // ============================
 // Aircraft
 // ============================
