@@ -705,27 +705,29 @@ function compareBetweenGroups(boldGroup, nonBoldGroup, rows) {
     });
 }
 
-// Compare all flights together (no bold filtering)
+// Compare all flights together (sorting and comparing neighbors)
 function compareAllFlights(rows) {
     // Sort flights by ETA
     allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
+    // Compare each flight to its previous and next neighbors
     allFlights.forEach((flight, index) => {
-        const previousFlight = allFlights[index - 1] || null; // Aircraft ahead
-        const nextFlight = allFlights[index + 1] || null; // Aircraft behind
+        const previousFlight = allFlights[index - 1] || null;
+        const nextFlight = allFlights[index + 1] || null;
 
-        if (previousFlight) highlightPair(flight, previousFlight, rows); // Compare to previous
-        if (nextFlight) highlightPair(flight, nextFlight, rows); // Compare to next
+        if (previousFlight) highlightPair(flight, previousFlight, rows);
+        if (nextFlight) highlightPair(flight, nextFlight, rows);
     });
 }
 
+// Highlight a pair of flights based on ETA difference
 // Highlight a pair of flights based on ETA difference
 function highlightPair(flight1, flight2, rows) {
     const row1 = rows[allFlights.indexOf(flight1)];
     const row2 = rows[allFlights.indexOf(flight2)];
 
     // Skip hidden rows
-    if (row1.style.display === 'none' || row2.style.display === 'none') return;
+    if (!row1 || !row2 || row1.style.display === 'none' || row2.style.display === 'none') return;
 
     const eta1 = parseETAInSeconds(flight1.etaMinutes);
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
@@ -733,17 +735,17 @@ function highlightPair(flight1, flight2, rows) {
 
     // Apply highlights based on time difference
     if (timeDiff < 10) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
+        row1.style.backgroundColor = '#fffa9f'; // Yellow for ≤ 10 seconds
+        row2.style.backgroundColor = '#fffa9f';
     } else if (timeDiff < 30) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#80daeb'; // Blue for ≤ 30 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#80daeb';
+        row1.style.backgroundColor = '#80daeb'; // Blue for ≤ 30 seconds
+        row2.style.backgroundColor = '#80daeb';
     } else if (timeDiff < 60) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for ≤ 60 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
+        row1.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
+        row2.style.backgroundColor = '#daceca';
     } else if (timeDiff < 120) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Gray for ≤ 120 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
+        row1.style.backgroundColor = '#eaeaea'; // Gray for ≤ 120 seconds
+        row2.style.backgroundColor = '#eaeaea';
     }
 }
 
