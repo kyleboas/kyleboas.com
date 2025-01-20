@@ -635,18 +635,17 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // Highlight
 // ============================
 
-// Function to clear all highlights
-function clearHighlights() {
-    const rows = document.querySelectorAll('#flightsTable tbody tr');
-    rows.forEach(row => {
-        row.style.backgroundColor = ''; // Reset background color
-    });
-}
+let headingHighlightFilterEnabled = false; // Toggle for bold filter
+
+// Toggle bold filter on button click
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    headingHighlightFilterEnabled = !headingHighlightFilterEnabled;
+    highlightCloseETAs();
+});
 
 // Highlight filtered ETAs
 function highlightCloseETAs() {
-    // Clear existing highlights
-    clearHighlights();
+    clearHighlights(); // Clear existing highlights
 
     const rows = document.querySelectorAll('#flightsTable tbody tr');
 
@@ -661,13 +660,11 @@ function highlightCloseETAs() {
             flight.headingFromAirport > boldedHeadings.maxHeading
         );
 
-        // Apply highlighting to bold flights
-        compareFlightsWithinGroup(boldFlights, rows);
-
-        // Apply highlighting to non-bold flights
-        compareFlightsWithinGroup(nonBoldFlights, rows);
+        // Compare within groups
+        compareFlightsWithinGroup(boldFlights, rows); // Highlight bold flights
+        compareFlightsWithinGroup(nonBoldFlights, rows); // Highlight non-bold flights
     } else {
-        // Compare all flights to each other
+        // Compare all flights together
         compareFlightsWithinGroup(allFlights, rows);
     }
 }
@@ -678,7 +675,6 @@ function compareFlightsWithinGroup(group, rows) {
     group.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
     group.forEach((flight, index) => {
-        const currentRow = rows[allFlights.indexOf(flight)];
         const previousFlight = group[index - 1] || null; // Aircraft ahead
         const nextFlight = group[index + 1] || null; // Aircraft behind
 
@@ -715,32 +711,19 @@ function highlightPair(flight1, flight2, rows) {
     }
 }
 
-// Call highlightCloseETAs during auto-update
-async function autoUpdateFlights() {
-    try {
-        // Fetch updated flight data
-        await fetchAndUpdateFlights();
+// Utility function to parse ETA in "minutes:seconds" format to total seconds
+function parseETAInSeconds(eta) {
+    if (typeof eta !== 'string' || eta === 'N/A') return Number.MAX_SAFE_INTEGER;
 
-        // Re-render table
-        renderFlightsTable(allFlights);
-
-        // Apply new highlights
-        highlightCloseETAs();
-    } catch (error) {
-        console.error('Error during auto-update:', error.message);
-    }
+    const [minutes, seconds] = eta.split(':').map(Number);
+    return minutes * 60 + seconds;
 }
 
-let headingHighlightFilterEnabled = false; 
-
-document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
-    headingHighlightFilterEnabled = !headingHighlightFilterEnabled;
-
-    document.getElementById('filterHeadingHighlightButton').textContent = 
-        headingHighlightFilterEnabled ? 'Disable Bold Filtering' : 'Enable Bold Filtering';
-
-    highlightCloseETAs(); // Reapply highlighting with the new filter state
-});
+// Clear all highlights
+function clearHighlights() {
+    const rows = document.querySelectorAll('#flightsTable tbody tr');
+    rows.forEach(row => (row.style.backgroundColor = ''));
+}
 
 
 
