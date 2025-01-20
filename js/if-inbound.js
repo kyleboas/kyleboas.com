@@ -635,35 +635,24 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // Highlight
 // ============================
 
-// Observe the table for dynamic updates
-const tableBody = document.querySelector('#flightsTable tbody');
-const observer = new MutationObserver(() => {
-    highlightCloseETAs(); // Trigger highlight when rows change
-});
+// ============================
+// Highlight with Time Difference
+// ============================
 
-// Start observing the table body for child node additions
-observer.observe(tableBody, { childList: true });
-
-// Highlight filtered ETAs with tooltip for debugging
 function highlightCloseETAs() {
-    clearHighlights(); // Clear existing highlights
+    clearHighlights(); // Clear any existing highlights
 
     const rows = document.querySelectorAll('#flightsTable tbody tr');
 
-    if (rows.length === 0) {
-        console.warn("No rows to highlight.");
-        return;
-    }
+    if (!rows.length) return; // Exit if no rows are available
 
-    // Sort flights by ETA in ascending order
+    // Sort flights by ETA
     allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-    // Iterate through all flights
     allFlights.forEach((flight, index) => {
         const currentRow = rows[index];
         let closestTimeDiff = Number.MAX_SAFE_INTEGER; // Track the smallest time difference
-        let highlightColor = null; // Track the highest-priority color
-        let tooltipMessage = ''; // Track tooltip message
+        let highlightColor = null; // Track the highlight color for this flight
 
         // Check the flight ahead
         if (index + 1 < allFlights.length) {
@@ -673,42 +662,38 @@ function highlightCloseETAs() {
             const color = getHighlightColor(timeDiff);
 
             if (color) {
-                closestTimeDiff = timeDiff < closestTimeDiff ? timeDiff : closestTimeDiff;
+                closestTimeDiff = Math.min(closestTimeDiff, timeDiff); // Update the closest time difference
                 highlightColor = getHigherPriorityColor(highlightColor, color); // Ensure priority
-                tooltipMessage = `Closest to ${nextFlight.flightId} (Ahead), Diff: ${timeDiff}s, Color: ${color}`;
                 applyHighlight(nextRow, color); // Highlight the next row
             }
         }
 
         // Check the flight behind
-        if (index - 1 >= 0) {
+        if (index > 0) {
             const prevFlight = allFlights[index - 1];
             const prevRow = rows[index - 1];
             const timeDiff = Math.abs(parseETAInSeconds(flight.etaMinutes) - parseETAInSeconds(prevFlight.etaMinutes));
             const color = getHighlightColor(timeDiff);
 
             if (color) {
-                closestTimeDiff = timeDiff < closestTimeDiff ? timeDiff : closestTimeDiff;
+                closestTimeDiff = Math.min(closestTimeDiff, timeDiff); // Update the closest time difference
                 highlightColor = getHigherPriorityColor(highlightColor, color); // Ensure priority
-                tooltipMessage = `Closest to ${prevFlight.flightId} (Behind), Diff: ${timeDiff}s, Color: ${color}`;
                 applyHighlight(prevRow, color); // Highlight the previous row
             }
         }
 
-        // Apply the highest-priority color to the current row
-        if (highlightColor) {
-            applyHighlight(currentRow, highlightColor);
-            tooltipMessage += ` | Final: ${highlightColor}`;
+        // Update the current row's ETA to include the closest time difference
+        const etaCell = currentRow.querySelector('td:nth-child(5)'); // Assuming ETA is in the 5th column
+        if (etaCell && flight.etaMinutes !== 'N/A') {
+            etaCell.innerHTML = `${flight.etaMinutes} (${closestTimeDiff}s)`;
         }
 
-        // Add the tooltip with debugging info
-        if (tooltipMessage) {
-            currentRow.setAttribute('title', tooltipMessage);
-        }
+        // Apply the highlight color to the current row
+        if (highlightColor) applyHighlight(currentRow, highlightColor);
     });
 }
 
-// Determine highlight color based on time difference
+// Determine the highlight color based on the time difference
 function getHighlightColor(timeDiff) {
     if (timeDiff <= 10) return '#fffa9f'; // Yellow for ≤ 10 seconds
     if (timeDiff <= 30) return '#80daeb'; // Blue for ≤ 30 seconds
@@ -719,21 +704,20 @@ function getHighlightColor(timeDiff) {
 
 // Compare and return the higher-priority color
 function getHigherPriorityColor(color1, color2) {
-    const colorPriority = ['#fffa9f', '#80daeb', '#daceca', '#eaeaea']; // Priority order
+    const colorPriority = ['#fffa9f', '#80daeb', '#daceca', '#eaeaea']; // Define priority order
     const index1 = colorPriority.indexOf(color1);
     const index2 = colorPriority.indexOf(color2);
 
-    // Return the higher-priority color
-    if (index1 === -1) return color2;
-    if (index2 === -1) return color1;
-    return index1 < index2 ? color1 : color2;
+    if (index1 === -1) return color2; // If color1 has no priority, use color2
+    if (index2 === -1) return color1; // If color2 has no priority, use color1
+    return index1 < index2 ? color1 : color2; // Return the higher-priority color
 }
 
 // Apply highlights to a row
 function applyHighlight(row, color) {
     const currentColor = row.style.backgroundColor;
 
-    // Only apply the new color if it has a higher priority
+    // Apply the new color only if it has higher priority
     if (!currentColor || getHigherPriorityColor(color, currentColor) === color) {
         row.style.backgroundColor = color;
     }
@@ -743,8 +727,9 @@ function applyHighlight(row, color) {
 function clearHighlights() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => {
-        row.style.backgroundColor = '';
-        row.removeAttribute('title'); // Remove tooltips
+        row.style.backgroundColor = ''; // Reset background color
+        const etaCell = row.querySelector('td:nth-child(5)'); // Assuming ETA is in the 5th column
+        if (etaCell) etaCell.textContent = ''; // Reset ETA modifications
     });
 }
 
@@ -754,12 +739,6 @@ function parseETAInSeconds(eta) {
 
     const [minutes, seconds] = eta.split(':').map(Number);
     return minutes * 60 + seconds;
-}
-
-// Clear all highlights
-function clearHighlights() {
-    const rows = document.querySelectorAll('#flightsTable tbody tr');
-    rows.forEach(row => (row.style.backgroundColor = ''));
 }
 
 // ============================
@@ -861,7 +840,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        allFlights.forEach(flight => {
+        allFlights.forEach((flight, index) => {
             const row = document.createElement("tr");
 
             // Extract flight details
@@ -878,19 +857,11 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Check if flight is within the distance range
             const isWithinDistanceRange =
-        (minDistance === null || flight.distanceToDestination >= minDistance) &&
-        (maxDistance === null || flight.distanceToDestination <= maxDistance);
+                (minDistance === null || flight.distanceToDestination >= minDistance) &&
+                (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
             // Determine visibility based on the hide filter and distance range
             const isVisible = !hideFilter || isWithinDistanceRange;
-
-            // Debugging visibility
-            console.log(`Flight ${flight.callsign || 'N/A'} - Distance: ${flight.distanceToDestination}, Visible: ${isWithinDistanceRange}`);
-
-            // Styling and visibility
-            row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
-            row.style.display = isVisible ? "" : "none";
-            row.style.display = isWithinDistanceRange ? '' : 'none';
 
             // Skip adding rows that should be hidden
             if (!isVisible) return;
