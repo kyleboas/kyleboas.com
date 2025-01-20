@@ -16,6 +16,9 @@ body {
 
 pre {
     font-family: Helvetica, sans-serif;
+    font-size: 12px;
+    padding-top: 0px;
+    padding-top: 0px;
 }
 
 form {
