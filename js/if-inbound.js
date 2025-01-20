@@ -637,13 +637,27 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 
 function highlightCloseETAs() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
+
+    // Clear any previously applied background color
     rows.forEach(row => {
-        row.style.backgroundColor = ''; // Clear any previously applied background color
+        row.style.backgroundColor = '';
     });
 
     allFlights.forEach((flight1, i) => {
         allFlights.forEach((flight2, j) => {
-            if (i !== j) highlightPair(flight1, flight2, rows, allFlights);
+            if (i !== j) {
+                // Apply highlight only if bold-to-bold or non-bold-to-non-bold when filterHeadingHighlight is enabled
+                const row1 = rows[allFlights.indexOf(flight1)];
+                const row2 = rows[allFlights.indexOf(flight2)];
+
+                // Check boldness match if filterHeadingHighlight is enabled
+                if (
+                    !filterHeadingHighlight || // Skip boldness check if filter is off
+                    row1.style.fontWeight === row2.style.fontWeight // Compare bold-to-bold or non-bold-to-non-bold
+                ) {
+                    highlightPair(flight1, flight2, rows); // Retain the original logic here
+                }
+            }
         });
     });
 }
@@ -674,6 +688,19 @@ function highlightPair(flight1, flight2, rows) {
         row2.style.backgroundColor = '#eaeaea';
     }
 }
+
+
+let filterHeadingHighlight = false;
+
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    filterHeadingHighlight = !filterHeadingHighlight;
+
+    document.getElementById('filterHeadingHighlightButton').textContent = filterHeadingHighlight
+        ? 'Disable Heading Filter Highlight'
+        : 'Enable Heading Filter Highlight';
+
+    highlightCloseETAs(); // Reapply highlights based on the updated filter state
+});
 
 // ============================
 // Event Listeners
