@@ -635,41 +635,81 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // Highlight
 // ============================
 
-function highlightCloseETAs() {
+// State to track if the filter is active
+let isHeadingFilterActive = false;
+
+// Filter Heading Highlight Button Event Listener
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    isHeadingFilterActive = !isHeadingFilterActive; // Toggle the state
+
+    // Update the button text based on the filter state
+    document.getElementById('filterHeadingHighlightButton').textContent = isHeadingFilterActive
+        ? 'Filtering Highlight by Heading'
+        : 'Filter Highlight by Heading';
+
+    // Call highlightCloseETAs with the current filter state
+    highlightCloseETAs(isHeadingFilterActive);
+});
+
+// Highlight Close ETAs with Bold Filter
+function highlightCloseETAs(filterByBold = false) {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
-    allFlights.forEach((flight1, i) => {
-        allFlights.forEach((flight2, j) => {
-            if (i !== j) highlightPair(flight1, flight2, rows, allFlights);
+    // Separate flights into bold and non-bold groups if filterByBold is true
+    const boldFlights = [];
+    const nonBoldFlights = [];
+    allFlights.forEach((flight, index) => {
+        const isBold = boldHeadingEnabled &&
+            boldedHeadings.minHeading !== null &&
+            boldedHeadings.maxHeading !== null &&
+            flight.headingFromAirport >= boldedHeadings.minHeading &&
+            flight.headingFromAirport <= boldedHeadings.maxHeading;
+
+        if (filterByBold) {
+            if (isBold) {
+                boldFlights.push({ flight, row: rows[index] });
+            } else {
+                nonBoldFlights.push({ flight, row: rows[index] });
+            }
+        } else {
+            // If no filter, treat all flights the same
+            boldFlights.push({ flight, row: rows[index] });
+        }
+    });
+
+    // Highlight bold flights with bold flights
+    if (filterByBold) {
+        highlightGroup(boldFlights, '#ffd700', '#ff4500'); // Yellow and Orange for bold
+        highlightGroup(nonBoldFlights, '#add8e6', '#4682b4'); // Light blue and Steel blue for non-bold
+    } else {
+        highlightGroup([...boldFlights, ...nonBoldFlights], '#fffa9f', '#ff4500'); // Yellow for all
+    }
+}
+
+// Highlight a group of flights
+function highlightGroup(group, closeColor, closerColor) {
+    group.forEach(({ flight: flight1, row: row1 }, i) => {
+        group.forEach(({ flight: flight2, row: row2 }, j) => {
+            if (i !== j) highlightPair(flight1, flight2, row1, row2, closeColor, closerColor);
         });
     });
 }
 
-function highlightPair(flight1, flight2, rows) {
-    const row1 = rows[allFlights.indexOf(flight1)];
-    const row2 = rows[allFlights.indexOf(flight2)];
-
-    // Skip hidden rows
+// Highlight Pair Logic
+function highlightPair(flight1, flight2, row1, row2, closeColor, closerColor) {
     if (row1.style.display === 'none' || row2.style.display === 'none') return;
 
     const eta1 = parseETAInSeconds(flight1.etaMinutes);
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
-    // Apply highlights
     if (timeDiff <= 10) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
+        row1.style.backgroundColor = closerColor; // Closer time difference
+        row2.style.backgroundColor = closerColor;
     } else if (timeDiff <= 30) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#80daeb'; // Blue for ≤ 30 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#80daeb';
-    } else if (timeDiff <= 60) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for ≤ 60 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
-    } else if (timeDiff <= 120) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Gray for ≤ 120 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
+        row1.style.backgroundColor = closeColor; // Close time difference
+        row2.style.backgroundColor = closeColor;
     }
 }
 
