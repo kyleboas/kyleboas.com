@@ -635,10 +635,22 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // Highlight
 // ============================
 
-function highlightCloseETAs() {
+// Function to clear all highlights
+function clearHighlights() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
-    rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
+    rows.forEach(row => {
+        row.style.backgroundColor = ''; // Reset background color
+    });
+}
 
+// Highlight close ETAs
+function highlightCloseETAs() {
+    // Clear existing highlights
+    clearHighlights();
+
+    const rows = document.querySelectorAll('#flightsTable tbody tr');
+
+    // Apply new highlights
     allFlights.forEach((flight1, i) => {
         allFlights.forEach((flight2, j) => {
             if (i !== j) highlightPair(flight1, flight2, rows, allFlights);
@@ -646,6 +658,7 @@ function highlightCloseETAs() {
     });
 }
 
+// Highlight a pair of flights based on ETA difference
 function highlightPair(flight1, flight2, rows) {
     const row1 = rows[allFlights.indexOf(flight1)];
     const row2 = rows[allFlights.indexOf(flight2)];
@@ -657,7 +670,7 @@ function highlightPair(flight1, flight2, rows) {
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
-    // Apply highlights
+    // Apply highlights based on time difference
     if (timeDiff <= 10) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
@@ -670,6 +683,22 @@ function highlightPair(flight1, flight2, rows) {
     } else if (timeDiff <= 120) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Gray for ≤ 120 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
+    }
+}
+
+// Call highlightCloseETAs during auto-update
+async function autoUpdateFlights() {
+    try {
+        // Fetch updated flight data
+        await fetchAndUpdateFlights();
+
+        // Re-render table
+        renderFlightsTable(allFlights);
+
+        // Apply new highlights
+        highlightCloseETAs();
+    } catch (error) {
+        console.error('Error during auto-update:', error.message);
     }
 }
 
