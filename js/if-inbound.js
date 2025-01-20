@@ -18,6 +18,84 @@ let hideOtherAircraft = false;
 
 
 // ============================
+// Toggle Dropdown Visibility
+// ============================
+
+document.getElementById('toggleDefaultsButton').addEventListener('click', () => {
+    const form = document.getElementById('defaultSettingsForm');
+    const button = document.getElementById('toggleDefaultsButton');
+
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+        button.textContent = '▲ Set Defaults';
+    } else {
+        form.style.display = 'none';
+        button.textContent = '▼ Set Defaults';
+    }
+});
+
+// ============================
+// Cookie Utility Functions
+// ============================
+
+function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+}
+
+function getCookie(name) {
+    const cookies = document.cookie.split('; ');
+    const cookie = cookies.find((c) => c.startsWith(`${name}=`));
+    return cookie ? cookie.split('=')[1] : null;
+}
+
+// ============================
+// Default Settings
+// ============================
+
+function applyDefaults() {
+    const defaultMinHeading = parseFloat(getCookie('defaultMinHeading'));
+    const defaultMaxHeading = parseFloat(getCookie('defaultMaxHeading'));
+    const defaultMinDistance = parseFloat(getCookie('defaultMinDistance'));
+    const defaultMaxDistance = parseFloat(getCookie('defaultMaxDistance'));
+
+    if (!isNaN(defaultMinHeading) && !isNaN(defaultMaxHeading)) {
+        document.getElementById('minHeading').value = defaultMinHeading;
+        document.getElementById('maxHeading').value = defaultMaxHeading;
+        boldHeadingEnabled = true;
+        boldedHeadings.minHeading = defaultMinHeading;
+        boldedHeadings.maxHeading = defaultMaxHeading;
+        document.getElementById('boldHeadingButton').textContent = 'Disable Bold Aircraft';
+    }
+
+    if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
+        document.getElementById('minDistance').value = defaultMinDistance;
+        document.getElementById('maxDistance').value = defaultMaxDistance;
+        minDistance = defaultMinDistance;
+        maxDistance = defaultMaxDistance;
+    }
+
+    renderFlightsTable(allFlights); // Re-render the table with applied defaults
+}
+
+// Save default settings to cookies
+document.getElementById('saveDefaultsButton').addEventListener('click', () => {
+    const defaultMinHeading = document.getElementById('defaultMinHeading').value.trim();
+    const defaultMaxHeading = document.getElementById('defaultMaxHeading').value.trim();
+    const defaultMinDistance = document.getElementById('defaultMinDistance').value.trim();
+    const defaultMaxDistance = document.getElementById('defaultMaxDistance').value.trim();
+
+    if (defaultMinHeading !== '') setCookie('defaultMinHeading', defaultMinHeading, 30);
+    if (defaultMaxHeading !== '') setCookie('defaultMaxHeading', defaultMaxHeading, 30);
+    if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 30);
+    if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 30);
+
+    alert('Defaults saved!');
+});
+
+
+// ============================
 // Utility Functions
 // ============================
 
@@ -773,6 +851,26 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 // ============================
 // End Table Rendering
 // ============================
+
+// ============================
+// Apply Defaults on Page Load
+// ============================
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyDefaults();
+
+    // Set dropdown button text if defaults exist
+    const hasDefaults =
+        getCookie('defaultMinHeading') ||
+        getCookie('defaultMaxHeading') ||
+        getCookie('defaultMinDistance') ||
+        getCookie('defaultMaxDistance');
+
+    if (hasDefaults) {
+        document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
+        document.getElementById('defaultSettingsForm').style.display = 'block';
+    }
+});
 
 document.getElementById('boldHeadingButton').addEventListener('click', () => {
     const minHeading = parseFloat(document.getElementById('minHeading').value);

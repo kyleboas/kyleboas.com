@@ -102,6 +102,25 @@ th {
     <pre id="atcAirportsList">Fetching data...</pre>
 </div>
 
+    <div id="defaultSettingsDropdown" style="margin-top: 20px;">
+    <button id="toggleDefaultsButton" style="cursor: pointer;">▼ Set Defaults</button>
+    <div id="defaultSettingsForm" style="display: none; margin-top: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+        <label for="defaultMinHeading">Default Min Heading:</label>
+        <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="e.g., 0">
+        <br>
+        <label for="defaultMaxHeading">Default Max Heading:</label>
+        <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="e.g., 90">
+        <br>
+        <label for="defaultMinDistance">Default Min Distance:</label>
+        <input type="number" id="defaultMinDistance" min="0" placeholder="e.g., 50">
+        <br>
+        <label for="defaultMaxDistance">Default Max Distance:</label>
+        <input type="number" id="defaultMaxDistance" min="0" placeholder="e.g., 500">
+        <br>
+        <button type="button" id="saveDefaultsButton" style="margin-top: 10px;">Save Defaults</button>
+    </div>
+</div>
+
     <!-- Search Form -->
     <form id="searchForm" novalidate>
         <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
