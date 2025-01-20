@@ -749,7 +749,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${flight.aircraftName || "UNKN"}</small></td>
-                <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
                 <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
