@@ -654,6 +654,9 @@ function highlightCloseETAs() {
         let closestTimeDiff = Number.MAX_SAFE_INTEGER; // Track the smallest time difference
         let highlightColor = null; // Track the highlight color for this flight
 
+        // Initialize tooltip message for debugging
+        let tooltipMessage = `Flight: ${flight.callsign}, ETA: ${flight.etaMinutes}`;
+
         // Check the flight ahead
         if (index + 1 < allFlights.length) {
             const nextFlight = allFlights[index + 1];
@@ -665,6 +668,7 @@ function highlightCloseETAs() {
                 closestTimeDiff = Math.min(closestTimeDiff, timeDiff); // Update the closest time difference
                 highlightColor = getHigherPriorityColor(highlightColor, color); // Ensure priority
                 applyHighlight(nextRow, color); // Highlight the next row
+                tooltipMessage += ` | Next: ${nextFlight.callsign}, Diff: ${timeDiff}s, Color: ${color}`;
             }
         }
 
@@ -679,6 +683,7 @@ function highlightCloseETAs() {
                 closestTimeDiff = Math.min(closestTimeDiff, timeDiff); // Update the closest time difference
                 highlightColor = getHigherPriorityColor(highlightColor, color); // Ensure priority
                 applyHighlight(prevRow, color); // Highlight the previous row
+                tooltipMessage += ` | Prev: ${prevFlight.callsign}, Diff: ${timeDiff}s, Color: ${color}`;
             }
         }
 
@@ -689,7 +694,13 @@ function highlightCloseETAs() {
         }
 
         // Apply the highlight color to the current row
-        if (highlightColor) applyHighlight(currentRow, highlightColor);
+        if (highlightColor) {
+            applyHighlight(currentRow, highlightColor);
+            tooltipMessage += ` | Final: ${highlightColor}`;
+        }
+
+        // Add tooltip for debugging
+        currentRow.setAttribute('title', tooltipMessage);
     });
 }
 
@@ -728,8 +739,7 @@ function clearHighlights() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => {
         row.style.backgroundColor = ''; // Reset background color
-        const etaCell = row.querySelector('td:nth-child(5)'); // Assuming ETA is in the 5th column
-        if (etaCell) etaCell.textContent = ''; // Reset ETA modifications
+        row.removeAttribute('title'); // Remove tooltips
     });
 }
 
@@ -872,13 +882,20 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
 
+            // Format ETA with distance above and seconds next to ETA
+            const etaSeconds = parseETAInSeconds(flight.etaMinutes);
+            const etaFormatted = etaSeconds !== Number.MAX_SAFE_INTEGER ? `${flight.etaMinutes} (${etaSeconds}s)` : 'N/A';
+            const distanceAndEta = flight.distanceToDestination !== 'N/A' && flight.etaMinutes !== 'N/A'
+                ? `${flight.distanceToDestination}<br>${etaFormatted}`
+                : 'N/A';
+
             // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
                 <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${altitudeValue}</td>
-                <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
+                <td>${distanceAndEta}</td>
             `;
             tableBody.appendChild(row);
         });
