@@ -962,8 +962,6 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetchActiveATCAirports(); // Update active airports dynamically
         countdown = 5; // Reset countdown
     }, 5000); // 5 seconds interval
-        countdown = 15; // Reset countdown
-    }, 15000); // 15 seconds interval 
 
     // Countdown display logic
     countdownInterval = setInterval(() => {
