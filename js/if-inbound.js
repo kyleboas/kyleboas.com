@@ -359,14 +359,20 @@ async function fetchControllers(icao) {
 
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
-    flights.forEach(flight => {
-        if (!airportCoordinates || !flight.latitude || !flight.longitude) {
-            flight.distanceToDestination = "N/A";
-            flight.etaMinutes = "N/A";
-            flight.headingFromAirport = "N/A";
+    flights.forEach((flight) => {
+        if (
+            !airportCoordinates ||
+            !flight.latitude ||
+            !flight.longitude ||
+            flight.speed <= 0
+        ) {
+            flight.distanceToDestination = 'N/A';
+            flight.etaMinutes = 'N/A';
+            flight.headingFromAirport = 'N/A';
             return;
         }
 
+        // Calculate distance to destination
         flight.distanceToDestination = Math.ceil(
             calculateDistance(
                 flight.latitude,
@@ -376,8 +382,17 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
             )
         );
 
-        flight.etaMinutes = flight.speed ? calculateETA(flight.distanceToDestination, flight.speed) : "N/A";
+        // Calculate ETA using dead reckoning
+        flight.etaMinutes = calculateETA(
+            flight.latitude,
+            flight.longitude,
+            airportCoordinates.latitude,
+            airportCoordinates.longitude,
+            flight.speed, 
+            flight.heading
+        );
 
+        // Calculate heading from airport to aircraft
         flight.headingFromAirport = calculateBearing(
             airportCoordinates.latitude,
             airportCoordinates.longitude,
@@ -468,28 +483,32 @@ function calculateBearing(lat1, lon1, lat2, lon2) {
 }
 
 // Calculate ETA
-function calculateETA(distance, groundSpeed) {
-    if (groundSpeed > 0) {
-        const totalSeconds = Math.round((distance / groundSpeed) * 3600);
-        const totalMinutes = Math.floor(totalSeconds / 60);
-
-        if (totalMinutes > 720) {
-            return '>12hrs'; // Show ">12hrs" for ETAs above 720 minutes
-        }
-
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
+    if (!groundSpeed || groundSpeed <= 0 || heading == null) {
+        return 'N/A'; // Cannot calculate ETA without valid inputs
     }
-    return 'N/A';
-}
 
-// Parse ETA to seconds
-function parseETAInSeconds(eta) {
-    if (!eta || eta === 'N/A') return Infinity;
-    if (eta === '>12hrs') return 720 * 60; // Represent >12hrs as the maximum value
-    const [minutes, seconds] = eta.split(':').map(Number);
-    return minutes * 60 + seconds;
+    // Calculate the distance to the destination
+    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
+    if (!distance || distance <= 0) {
+        return 'N/A'; // Cannot calculate ETA with invalid distance
+    }
+
+    // Calculate ETA in hours
+    const timeInHours = distance / groundSpeed;
+
+    // Convert hours to minutes and seconds
+    const totalSeconds = Math.round(timeInHours * 3600);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+
+    // Represent ETA above 12 hours
+    if (totalMinutes > 720) {
+        return '>12hrs';
+    }
+
+    // Format ETA as "minutes:seconds"
+    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
 
