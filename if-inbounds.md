@@ -118,7 +118,6 @@ thead th {
     text-align: center;
     position: sticky;
     top: 0; 
-    background-color: #f2f2f2;
     z-index: 1;
 } 
 

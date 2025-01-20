@@ -636,7 +636,7 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // ============================
 
 // ============================
-// Highlight with Time Difference
+// Highlight Close ETAs
 // ============================
 
 function highlightCloseETAs() {
@@ -704,13 +704,17 @@ function highlightCloseETAs() {
     });
 }
 
+// ============================
+// Utility Functions for Highlighting
+// ============================
+
 // Determine the highlight color based on the time difference
 function getHighlightColor(timeDiff) {
-    if (timeDiff <= 10) return '#fffa9f'; // Yellow for ≤ 10 seconds
-    if (timeDiff <= 30) return '#80daeb'; // Blue for ≤ 30 seconds
-    if (timeDiff <= 60) return '#daceca'; // Beige for ≤ 60 seconds
-    if (timeDiff <= 120) return '#eaeaea'; // Gray for ≤ 120 seconds
-    return null;
+    if (timeDiff <= 10) return '#fffa9f'; // Yellow
+    if (timeDiff <= 30) return '#80daeb'; // Blue
+    if (timeDiff <= 60) return '#daceca'; // Beige
+    if (timeDiff <= 120) return '#eaeaea'; // Gray
+    return null; // No highlight
 }
 
 // Compare and return the higher-priority color
@@ -724,9 +728,23 @@ function getHigherPriorityColor(color1, color2) {
     return index1 < index2 ? color1 : color2; // Return the higher-priority color
 }
 
+// Utility function to convert RGB color to HEX
+function rgbToHex(rgb) {
+    if (!rgb || rgb === 'transparent') return null; // Handle unset or transparent colors
+
+    const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (!match) return null;
+
+    const r = parseInt(match[1]).toString(16).padStart(2, '0');
+    const g = parseInt(match[2]).toString(16).padStart(2, '0');
+    const b = parseInt(match[3]).toString(16).padStart(2, '0');
+
+    return `#${r}${g}${b}`;
+}
+
 // Apply highlights to a row
 function applyHighlight(row, color) {
-    const currentColor = row.style.backgroundColor;
+    const currentColor = rgbToHex(row.style.backgroundColor); // Convert current color to hex
 
     // Apply the new color only if it has higher priority
     if (!currentColor || getHigherPriorityColor(color, currentColor) === color) {
