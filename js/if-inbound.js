@@ -547,14 +547,16 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     if (!isNaN(minInput)) {
         minDistance = minInput;
     } else {
-        minDistance = null; // Clear filter if invalid
+        minDistance = null;
     }
 
     if (!isNaN(maxInput)) {
         maxDistance = maxInput;
     } else {
-        maxDistance = null; // Clear filter if invalid
+        maxDistance = null;
     }
+
+    console.log('Applying Distance Filter:', { minDistance, maxDistance });
 
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
@@ -678,23 +680,25 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach(flight => {
+            console.log(`Rendering Flight: ${flight.callsign}, Distance: ${flight.distanceToDestination}`);
+
             const row = document.createElement("tr");
 
             const aircraftName = flight.aircraftName || "Unknown Aircraft";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
             const isWithinHeadingRange =
-            boldHeadingEnabled &&
-            boldedHeadings.minHeading !== null &&
-            boldedHeadings.maxHeading !== null &&
-            flight.headingFromAirport >= boldedHeadings.minHeading &&
-            flight.headingFromAirport <= boldedHeadings.maxHeading;
+                boldHeadingEnabled &&
+                boldedHeadings.minHeading !== null &&
+                boldedHeadings.maxHeading !== null &&
+                flight.headingFromAirport >= boldedHeadings.minHeading &&
+                flight.headingFromAirport <= boldedHeadings.maxHeading;
 
             const isWithinDistanceRange =
-            (minDistance === null && maxDistance === null) ||
-            (typeof flight.distanceToDestination === "number" &&
-             flight.distanceToDestination >= (minDistance ?? 0) &&
-             flight.distanceToDestination <= (maxDistance ?? Infinity));
+                (minDistance === null || flight.distanceToDestination >= minDistance) &&
+                (maxDistance === null || flight.distanceToDestination <= maxDistance);
+
+            console.log(`Flight ${flight.callsign} is within distance range: ${isWithinDistanceRange}`);
 
             const isVisible = (!hideFilter || (isWithinHeadingRange && isWithinDistanceRange));
 
@@ -715,8 +719,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             tableBody.appendChild(row);
         });
 
-        // Highlight rows with close ETAs
-        highlightCloseETAs(allFlights);
+        highlightCloseETAs(); // Highlight rows with close ETAs
     } catch (error) {
         console.error("Error rendering the flights table:", error.message);
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
