@@ -266,7 +266,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
             flightId: flight.flightId,
             callsign: flight.callsign || "N/A",
             aircraftId: flight.aircraftId || "N/A",
-            aircraftName: aircraftMachDetails[flight.aircraftId]?.name || "Unknown Aircraft",
+            aircraftName: aircraftMachDetails[flight.aircraftId]?.name || "UNKN",
             latitude: flight.latitude || null,
             longitude: flight.longitude || null,
             altitude: Math.round(flight.altitude) || "N/A",
@@ -717,7 +717,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             const row = document.createElement("tr");
 
-            const aircraftName = flight.aircraftName || "Unknown Aircraft";
+            const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
             const isWithinHeadingRange =
@@ -743,7 +743,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
 
             row.innerHTML = `
-                <td>${flight.callsign || "N/A"}<br>${flight.aircraftName || "Unknown Aircraft"}</td>
+                <td>${flight.callsign || "N/A"}<br>${flight.aircraftName || "UNKN"}</td>
                 <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
