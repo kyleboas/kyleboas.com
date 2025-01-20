@@ -603,8 +603,8 @@ function highlightPair(flight1, flight2, rows) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
     } else if (timeDiff <= 30) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#8BABF1'; // Blue for ≤ 30 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#8BABF1';
+        row1.style.backgroundColor = row1.style.backgroundColor || '#80daeb'; // Blue for ≤ 30 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#80daeb';
     } else if (timeDiff <= 60) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for ≤ 60 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
