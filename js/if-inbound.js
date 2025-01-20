@@ -591,7 +591,8 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
     console.log('Applying Distance Filter:', { minDistance, maxDistance });
 
-    renderFlightsTable(allFlights, hideOtherAircraft);
+    // Re-render the table with updated filters
+    renderFlightsTable(allFlights);
 });
 
 
@@ -713,13 +714,12 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach(flight => {
-            console.log(`Rendering Flight: ${flight.callsign}, Distance: ${flight.distanceToDestination}`);
-
             const row = document.createElement("tr");
 
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
+            // Bold flights within heading range
             const isWithinHeadingRange =
                 boldHeadingEnabled &&
                 boldedHeadings.minHeading !== null &&
@@ -727,23 +727,29 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
 
+            // Check if flight is within the distance range
             const isWithinDistanceRange =
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
             console.log(`Flight ${flight.callsign} is within distance range: ${isWithinDistanceRange}`);
 
+            // Combine filters to determine visibility
             const isVisible = (!hideFilter || (isWithinHeadingRange && isWithinDistanceRange));
 
+            // Styling and visibility
             row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
             row.style.display = isVisible ? "" : "none";
 
+            // Format values
             const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
             const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
 
+            // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${flight.aircraftName || "UNKN"}</small></td>
+                <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
                 <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
@@ -752,7 +758,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             tableBody.appendChild(row);
         });
 
-        highlightCloseETAs(); // Highlight rows with close ETAs
+        highlightCloseETAs(); // Highlight flights with close ETAs
     } catch (error) {
         console.error("Error rendering the flights table:", error.message);
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
@@ -795,10 +801,11 @@ document.getElementById('resetDistanceFilterButton').addEventListener('click', (
     minDistance = null;
     maxDistance = null;
 
-document.getElementById('minDistance').value = '';
+    document.getElementById('minDistance').value = '';
     document.getElementById('maxDistance').value = '';
 
-    renderFlightsTable(allFlights, hideOtherAircraft);
+    // Re-render the table without any filters
+    renderFlightsTable(allFlights);
 });
 
 // Stop auto-update
