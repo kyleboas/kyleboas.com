@@ -115,6 +115,16 @@ function getUncachedIds(ids, type) {
     return ids.filter(id => !cache[type][id]);
 }
 
+// Determine the highlight color based on the time difference
+function getHighlightColor(timeDiff) {
+    if (timeDiff > 120) return null; // No highlight for > 120 seconds
+    if (timeDiff <= 10) return '#fffa9f'; // Yellow
+    if (timeDiff <= 30) return '#80daeb'; // Blue
+    if (timeDiff <= 60) return '#daceca'; // Beige
+    if (timeDiff <= 120) return '#eaeaea'; // Gray
+    return null; // No highlight
+}
+
 // ============================
 // Aircraft
 // ============================
