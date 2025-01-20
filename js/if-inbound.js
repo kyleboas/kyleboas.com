@@ -190,15 +190,15 @@ async function fetchActiveATCAirports() {
         // Remove duplicates by ensuring unique ICAO codes
         const uniqueAirports = Array.from(new Map(activeAtcAirports.map(airport => [airport.icao, airport])).values());
 
-        // Limit the list to the top 10 airports
+        // Limit the list to the top 5 airports
         const topAirports = uniqueAirports.slice(0, 5);
 
         // Format the list for display
         const listContent = topAirports.map(
             airport => `${airport.icao}: ${airport.inboundCount}`
-        ).join('\n');
+        ).join(', '); // Join the entries with commas
 
-        // Display the list in the HTML container
+        // Set the content inside the <pre> element
         const atcAirportsListElement = document.getElementById('atcAirportsList');
         atcAirportsListElement.textContent = listContent || 'No active ATC airports found.';
     } catch (error) {
@@ -831,6 +831,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateInterval = setInterval(async () => {
         await fetchAndUpdateFlights(icao);
         await fetchControllers(icao); // Update controllers on auto-update
+        await fetchActiveATCAirports(); // Update active airports dynamically
         countdown = 15; // Reset countdown
     }, 15000); // 15 seconds interval
 
