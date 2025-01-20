@@ -651,6 +651,15 @@ function highlightCloseETAs() {
 
     allFlights.forEach((flight, index) => {
         const currentRow = rows[index];
+
+        // Skip flights with NaN:NaN ETA or ETA > 12hrs
+        if (!isValidETA(flight.etaMinutes)) {
+            currentRow.style.display = 'none'; // Hide the row
+            return;
+        } else {
+            currentRow.style.display = ''; // Ensure row is visible
+        }
+
         let closestTimeDiff = Number.MAX_SAFE_INTEGER; // Track the smallest time difference
         let highlightColor = null; // Track the highlight color for this flight
 
@@ -690,7 +699,7 @@ function highlightCloseETAs() {
         // Update the current row's ETA to include the closest time difference
         const etaCell = currentRow.querySelector('td:nth-child(5)'); // Assuming ETA is in the 5th column
         if (etaCell && flight.etaMinutes !== 'N/A') {
-            etaCell.innerHTML = `${flight.etaMinutes} (${closestTimeDiff}s)`;
+            etaCell.innerHTML = `${flight.etaMinutes} (${closestTimeDiff > 120 ? '>120s' : `${closestTimeDiff}s`})`;
         }
 
         // Apply the highlight color to the current row
@@ -710,6 +719,7 @@ function highlightCloseETAs() {
 
 // Determine the highlight color based on the time difference
 function getHighlightColor(timeDiff) {
+    if (timeDiff > 120) return null; // No highlight for > 120 seconds
     if (timeDiff <= 10) return '#fffa9f'; // Yellow
     if (timeDiff <= 30) return '#80daeb'; // Blue
     if (timeDiff <= 60) return '#daceca'; // Beige
@@ -761,9 +771,20 @@ function clearHighlights() {
     });
 }
 
+// ============================
+// Validation and Parsing
+// ============================
+
+// Validate ETA string
+function isValidETA(eta) {
+    if (eta === 'N/A' || !eta || eta.startsWith('>')) return false; // Invalid if N/A or >12hrs
+    const [minutes, seconds] = eta.split(':').map(Number);
+    return !(isNaN(minutes) || isNaN(seconds)); // Valid if both minutes and seconds are numbers
+}
+
 // Parse ETA in "minutes:seconds" format to total seconds
 function parseETAInSeconds(eta) {
-    if (typeof eta !== 'string' || eta === 'N/A') return Number.MAX_SAFE_INTEGER;
+    if (!isValidETA(eta)) return Number.MAX_SAFE_INTEGER;
 
     const [minutes, seconds] = eta.split(':').map(Number);
     return minutes * 60 + seconds;
@@ -902,9 +923,10 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Format ETA with distance above and seconds next to ETA
             const etaSeconds = parseETAInSeconds(flight.etaMinutes);
-            const etaFormatted = etaSeconds !== Number.MAX_SAFE_INTEGER ? `${flight.etaMinutes} (${etaSeconds}s)` : 'N/A';
+            const secondsFormatted = etaSeconds > 120 ? '>120s' : `${etaSeconds}s`; // Format seconds as ">120s" if above 120
+            const etaFormatted = etaSeconds !== Number.MAX_SAFE_INTEGER ? `${flight.etaMinutes} (${secondsFormatted})` : 'N/A';
             const distanceAndEta = flight.distanceToDestination !== 'N/A' && flight.etaMinutes !== 'N/A'
-                ? `${flight.distanceToDestination}<br>${etaFormatted}`
+                ? `${flight.distanceToDestination}<br>${etaFormatted}` // Distance above, ETA below
                 : 'N/A';
 
             // Populate row HTML
@@ -916,7 +938,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 <td>${distanceAndEta}</td>
             `;
             tableBody.appendChild(row);
-        });
 
         highlightCloseETAs(); // Highlight flights with close ETAs
     } catch (error) {
