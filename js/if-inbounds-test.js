@@ -16,6 +16,66 @@ let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
 
+// ============================
+// Cookie Utility Functions
+// ============================
+
+function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+}
+
+function getCookie(name) {
+    const cookies = document.cookie.split('; ');
+    const cookie = cookies.find((c) => c.startsWith(`${name}=`));
+    return cookie ? cookie.split('=')[1] : null;
+}
+
+// ============================
+// Default Settings
+// ============================
+
+function applyDefaults() {
+    const defaultMinHeading = parseFloat(getCookie('defaultMinHeading'));
+    const defaultMaxHeading = parseFloat(getCookie('defaultMaxHeading'));
+    const defaultMinDistance = parseFloat(getCookie('defaultMinDistance'));
+    const defaultMaxDistance = parseFloat(getCookie('defaultMaxDistance'));
+
+    if (!isNaN(defaultMinHeading) && !isNaN(defaultMaxHeading)) {
+        document.getElementById('minHeading').value = defaultMinHeading;
+        document.getElementById('maxHeading').value = defaultMaxHeading;
+        boldHeadingEnabled = true;
+        boldedHeadings.minHeading = defaultMinHeading;
+        boldedHeadings.maxHeading = defaultMaxHeading;
+        document.getElementById('boldHeadingButton').textContent = 'Disable Bold Aircraft';
+    }
+
+    if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
+        document.getElementById('minDistance').value = defaultMinDistance;
+        document.getElementById('maxDistance').value = defaultMaxDistance;
+        minDistance = defaultMinDistance;
+        maxDistance = defaultMaxDistance;
+    }
+
+    renderFlightsTable(allFlights); // Re-render the table with applied defaults
+}
+
+// Save default settings to cookies
+document.getElementById('saveDefaultsButton').addEventListener('click', () => {
+    const defaultMinHeading = document.getElementById('defaultMinHeading').value.trim();
+    const defaultMaxHeading = document.getElementById('defaultMaxHeading').value.trim();
+    const defaultMinDistance = document.getElementById('defaultMinDistance').value.trim();
+    const defaultMaxDistance = document.getElementById('defaultMaxDistance').value.trim();
+
+    if (defaultMinHeading !== '') setCookie('defaultMinHeading', defaultMinHeading, 30);
+    if (defaultMaxHeading !== '') setCookie('defaultMaxHeading', defaultMaxHeading, 30);
+    if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 30);
+    if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 30);
+
+    alert('Defaults saved!');
+});
+
 
 // ============================
 // Utility Functions
@@ -77,7 +137,7 @@ const aircraftMachDetails = {
         "64568366-b72c-47bd-8bf6-6fdb81b683f9": { name: "B737-900", minMach: 0.72, maxMach: 0.82 },
         "c82da702-ea61-4399-921c-34f35f3ca5c4": { name: "B747-200", minMach: 0.78, maxMach: 0.85 },
         "de510d3d-04f8-46e0-8d65-55b888f33129": { name: "B747-400", minMach: 0.78, maxMach: 0.92 },
-        "9759c19f-8f18-40f5-80d1-03a272f98a3b": { name: "B747-8", minMach: 0.78, maxMach: 0.9 },
+        "9759c19f-8f18-40f5-80d1-03a272f98a3b": { name: "B747-8", minMach: 0.78, maxMach: 0.90 },
         "0d49ce9e-446a-4d12-b651-6983afdeeb40": { name: "B747-SCA", minMach: 0.55, maxMach: 0.60 },
         "3ee45d20-1984-4d95-a753-3696e35cdf77": { name: "B747-SOFIA", minMach: 0.75, maxMach: 0.85 },
         "ed29f26b-774e-471e-a23a-ecb9b6f5da74": { name: "B757-200", minMach: 0.70, maxMach: 0.86 },
@@ -190,15 +250,15 @@ async function fetchActiveATCAirports() {
         // Remove duplicates by ensuring unique ICAO codes
         const uniqueAirports = Array.from(new Map(activeAtcAirports.map(airport => [airport.icao, airport])).values());
 
-        // Limit the list to the top 10 airports
+        // Limit the list to the top 5 airports
         const topAirports = uniqueAirports.slice(0, 5);
 
         // Format the list for display
         const listContent = topAirports.map(
             airport => `${airport.icao}: ${airport.inboundCount}`
-        ).join('\n');
+        ).join(', '); // Join the entries with commas
 
-        // Display the list in the HTML container
+        // Set the content inside the <pre> element
         const atcAirportsListElement = document.getElementById('atcAirportsList');
         atcAirportsListElement.textContent = listContent || 'No active ATC airports found.';
     } catch (error) {
@@ -266,7 +326,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
             flightId: flight.flightId,
             callsign: flight.callsign || "N/A",
             aircraftId: flight.aircraftId || "N/A",
-            aircraftName: aircraftMachDetails[flight.aircraftId]?.name || "Unknown Aircraft",
+            aircraftName: aircraftMachDetails[flight.aircraftId]?.name || "UNKN",
             latitude: flight.latitude || null,
             longitude: flight.longitude || null,
             altitude: Math.round(flight.altitude) || "N/A",
@@ -359,14 +419,20 @@ async function fetchControllers(icao) {
 
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
-    flights.forEach(flight => {
-        if (!airportCoordinates || !flight.latitude || !flight.longitude) {
-            flight.distanceToDestination = "N/A";
-            flight.etaMinutes = "N/A";
-            flight.headingFromAirport = "N/A";
+    flights.forEach((flight) => {
+        if (
+            !airportCoordinates ||
+            !flight.latitude ||
+            !flight.longitude ||
+            flight.speed <= 0
+        ) {
+            flight.distanceToDestination = 'N/A';
+            flight.etaMinutes = 'N/A';
+            flight.headingFromAirport = 'N/A';
             return;
         }
 
+        // Calculate distance to destination
         flight.distanceToDestination = Math.ceil(
             calculateDistance(
                 flight.latitude,
@@ -376,8 +442,17 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
             )
         );
 
-        flight.etaMinutes = flight.speed ? calculateETA(flight.distanceToDestination, flight.speed) : "N/A";
+        // Calculate ETA using dead reckoning
+        flight.etaMinutes = calculateETA(
+            flight.latitude,
+            flight.longitude,
+            airportCoordinates.latitude,
+            airportCoordinates.longitude,
+            flight.speed, 
+            flight.heading
+        );
 
+        // Calculate heading from airport to aircraft
         flight.headingFromAirport = calculateBearing(
             airportCoordinates.latitude,
             airportCoordinates.longitude,
@@ -468,27 +543,45 @@ function calculateBearing(lat1, lon1, lat2, lon2) {
 }
 
 // Calculate ETA
-function calculateETA(distance, groundSpeed) {
-    if (groundSpeed > 0) {
-        const totalSeconds = Math.round((distance / groundSpeed) * 3600);
-        const totalMinutes = Math.floor(totalSeconds / 60);
-
-        if (totalMinutes > 720) {
-            return '>12hrs'; // Show ">12hrs" for ETAs above 720 minutes
-        }
-
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
+    if (!groundSpeed || groundSpeed <= 0 || heading == null) {
+        return 'N/A'; // Cannot calculate ETA without valid inputs
     }
-    return 'N/A';
+
+    // Calculate the distance to the destination
+    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
+    if (!distance || distance <= 0) {
+        return 'N/A'; // Cannot calculate ETA with invalid distance
+    }
+
+    // Calculate ETA in hours
+    const timeInHours = distance / groundSpeed;
+
+    // Convert hours to minutes and seconds
+    const totalSeconds = Math.round(timeInHours * 3600);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+
+    // Represent ETA above 12 hours
+    if (totalMinutes > 720) {
+        return '>12hrs';
+    }
+
+    // Format ETA as "minutes:seconds"
+    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-// Parse ETA to seconds
+// Parses ETA string in "minutes:seconds" format to total seconds
 function parseETAInSeconds(eta) {
-    if (!eta || eta === 'N/A') return Infinity;
-    if (eta === '>12hrs') return 720 * 60; // Represent >12hrs as the maximum value
+    if (typeof eta !== 'string' || eta === 'N/A' || eta.startsWith('>')) {
+        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid or undefined ETAs
+    }
+
     const [minutes, seconds] = eta.split(':').map(Number);
+    if (isNaN(minutes) || isNaN(seconds)) {
+        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid formats
+    }
+
     return minutes * 60 + seconds;
 }
 
@@ -505,7 +598,6 @@ function displayATIS(atis) {
         console.error('ATIS display element not found.');
         return;
     }
-    console.log('Displaying ATIS:', atis); // Debug log
     atisElement.textContent = `ATIS: ${atis}`;
 }
 
@@ -538,69 +630,88 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
     renderFlightsTable(allFlights); // Re-render the table with updated bold styling
 });
 
-// Toggle Apply Distance Filter
-let applyDistanceFilterEnabled = false;
-document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
-    applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
-
-    document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
-        ? 'Reset Distance Filter'
-        : 'Apply Distance Filter';
-
-    renderFlightsTable(allFlights, hideOtherAircraft); // Re-render the table with distance filter applied/removed
-});
-
-// Toggle Filter Highlight by Heading
-document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
-    filterHighlightByHeading = !filterHighlightByHeading;
-
-    document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
-        ? 'Disable Highlight Filter by Heading'
-        : 'Enable Highlight Filter by Heading';
-
-    renderFlightsTable(allFlights); // Re-render the table with highlight filter updated
-});
-
 
 // ============================
 // Highlight
 // ============================
 
-function highlightCloseETAs() {
+let isFilteringByHeading = false;
+
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    // Toggle the filter state
+    isFilteringByHeading = !isFilteringByHeading;
+
+    // Update button text
+    document.getElementById('filterHeadingHighlightButton').textContent = isFilteringByHeading
+        ? 'Filtering Highlight by Heading'
+        : 'Filter Highlight by Heading';
+
+    // Reapply the highlight logic with the updated filter state
+    highlightCloseETAs(isFilteringByHeading);
+});
+
+
+// highlightCloseETAs
+function highlightCloseETAs(filterByBold = false) {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
-    allFlights.forEach((flight1, i) => {
-        allFlights.forEach((flight2, j) => {
-            if (i !== j) highlightPair(flight1, flight2, rows, allFlights);
+    const boldFlights = [];
+    const nonBoldFlights = [];
+
+    // Separate bold and non-bold flights
+    allFlights.forEach((flight, index) => {
+        const isBold = boldHeadingEnabled &&
+            boldedHeadings.minHeading !== null &&
+            boldedHeadings.maxHeading !== null &&
+            flight.headingFromAirport >= boldedHeadings.minHeading &&
+            flight.headingFromAirport <= boldedHeadings.maxHeading;
+
+        if (isBold) {
+            boldFlights.push({ flight, row: rows[index] });
+        } else {
+            nonBoldFlights.push({ flight, row: rows[index] });
+        }
+    });
+
+    // Highlight only within respective groups
+    if (filterByBold) {
+        highlightGroup(boldFlights, '#fffa9f', '#80daeb', '#daceca', '#eaeaea');
+        highlightGroup(nonBoldFlights, '#fffa9f', '#80daeb', '#daceca', '#eaeaea');
+    } else {
+        highlightGroup([...boldFlights, ...nonBoldFlights], '#fffa9f', '#80daeb', '#daceca', '#eaeaea');
+    }
+}
+
+function highlightGroup(group, color10s, color30s, color60s, color120s) {
+    group.forEach(({ flight: flight1, row: row1 }, i) => {
+        group.forEach(({ flight: flight2, row: row2 }, j) => {
+            if (i !== j) {
+                highlightPair(flight1, flight2, row1, row2, color10s, color30s, color60s, color120s);
+            }
         });
     });
 }
 
-function highlightPair(flight1, flight2, rows) {
-    const row1 = rows[allFlights.indexOf(flight1)];
-    const row2 = rows[allFlights.indexOf(flight2)];
-
-    // Skip hidden rows
+function highlightPair(flight1, flight2, row1, row2, color10s, color30s, color60s, color120s) {
     if (row1.style.display === 'none' || row2.style.display === 'none') return;
 
     const eta1 = parseETAInSeconds(flight1.etaMinutes);
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
-    // Apply highlights
     if (timeDiff <= 10) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
+        row1.style.backgroundColor = color10s;
+        row2.style.backgroundColor = color10s;
     } else if (timeDiff <= 30) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#8BABF1'; // Blue for ≤ 30 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#8BABF1';
+        row1.style.backgroundColor = color30s;
+        row2.style.backgroundColor = color30s;
     } else if (timeDiff <= 60) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for ≤ 60 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
+        row1.style.backgroundColor = color60s;
+        row2.style.backgroundColor = color60s;
     } else if (timeDiff <= 120) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Gray for ≤ 120 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
+        row1.style.backgroundColor = color120s;
+        row2.style.backgroundColor = color120s;
     }
 }
 
@@ -639,7 +750,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 try {
                     await fetchAirportATIS(icao);
                     await fetchControllers(icao);
-                    alert('ATIS and Controllers updated successfully!');
                 } catch (error) {
                     console.error('Error during manual update:', error.message);
                     alert('Failed to update ATIS and Controllers.');
@@ -653,6 +763,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Error initializing page:', error.message);
     }
+});
+
+
+// Toggle Apply Distance Filter
+document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+    const minInput = parseFloat(document.getElementById('minDistance').value);
+    const maxInput = parseFloat(document.getElementById('maxDistance').value);
+
+    if (!isNaN(minInput)) {
+        minDistance = minInput;
+    } else {
+        minDistance = null;
+    }
+
+    if (!isNaN(maxInput)) {
+        maxDistance = maxInput;
+    } else {
+        maxDistance = null;
+    }
+
+    console.log('Applying Distance Filter:', { minDistance, maxDistance });
+
+    // Re-render the table with updated filters
+    renderFlightsTable(allFlights);
 });
 
 // ============================
@@ -677,51 +811,90 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         const aircraftIds = allFlights.map(flight => flight.aircraftId);
         const aircraftMachDetails = await pairAircraftData(aircraftIds);
 
+        // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach(flight => {
             const row = document.createElement("tr");
 
-            const aircraftName = flight.aircraftName || "Unknown Aircraft";
+            // Extract flight details
+            const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
+            // Check if flight is within the heading range
             const isWithinHeadingRange =
                 boldHeadingEnabled &&
+                boldedHeadings.minHeading !== null &&
+                boldedHeadings.maxHeading !== null &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
 
+            // Check if flight is within the distance range
             const isWithinDistanceRange =
-                (minDistance === null && maxDistance === null) ||
-                (typeof flight.distanceToDestination === "number" &&
-                 flight.distanceToDestination >= (minDistance ?? 0) &&
-                 flight.distanceToDestination <= (maxDistance ?? Infinity));
+        (minDistance === null || flight.distanceToDestination >= minDistance) &&
+        (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
-            const isVisible = (!hideFilter || (isWithinHeadingRange && isWithinDistanceRange));
+            // Determine visibility based on the hide filter and distance range
+            const isVisible = !hideFilter || isWithinDistanceRange;
 
+            // Debugging visibility
+            console.log(`Flight ${flight.callsign || 'N/A'} - Distance: ${flight.distanceToDestination}, Visible: ${isWithinDistanceRange}`);
+
+            // Styling and visibility
             row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
             row.style.display = isVisible ? "" : "none";
+            row.style.display = isWithinDistanceRange ? '' : 'none';
 
+            // Skip adding rows that should be hidden
+            if (!isVisible) return;
+
+            // Format values for display
             const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
             const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
+            const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
 
+            // Populate row HTML
             row.innerHTML = `
-                <td>${flight.callsign || "N/A"}<br>${flight.aircraftName || "Unknown Aircraft"}</td>
-                <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
+                <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
+                <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
                 <td>${speedValue}<br>${machValue}</td>
-                <td>${headingValue}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
+                <td>${headingValue}<br>${altitudeValue}</td>
                 <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
             `;
             tableBody.appendChild(row);
         });
 
-        // Highlight rows with close ETAs
-        highlightCloseETAs(allFlights);
+        highlightCloseETAs(); // Highlight flights with close ETAs
     } catch (error) {
         console.error("Error rendering the flights table:", error.message);
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
     }
 }
+
+// ============================
+// End Table Rendering
+// ============================
+
+// ============================
+// Apply Defaults on Page Load
+// ============================
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyDefaults();
+
+    // Set dropdown button text if defaults exist
+    const hasDefaults =
+        getCookie('defaultMinHeading') ||
+        getCookie('defaultMaxHeading') ||
+        getCookie('defaultMinDistance') ||
+        getCookie('defaultMaxDistance');
+
+    if (hasDefaults) {
+        document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
+        document.getElementById('defaultSettingsForm').style.display = 'block';
+    }
+});
 
 document.getElementById('boldHeadingButton').addEventListener('click', () => {
     const minHeading = parseFloat(document.getElementById('minHeading').value);
@@ -731,6 +904,11 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
         alert('Please enter valid min and max headings.');
         return;
     }
+
+    boldHeadingEnabled = !boldHeadingEnabled;
+    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
+        ? 'Disable Bold Aircraft'
+        : 'Enable Bold Aircraft';
 
     boldedHeadings.minHeading = minHeading;
     boldedHeadings.maxHeading = maxHeading;
@@ -754,10 +932,11 @@ document.getElementById('resetDistanceFilterButton').addEventListener('click', (
     minDistance = null;
     maxDistance = null;
 
-document.getElementById('minDistance').value = '';
+    document.getElementById('minDistance').value = '';
     document.getElementById('maxDistance').value = '';
 
-    renderFlightsTable(allFlights, hideOtherAircraft);
+    // Re-render the table without any filters
+    renderFlightsTable(allFlights);
 });
 
 // Stop auto-update
@@ -786,7 +965,6 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
         // Fetch ATIS and controllers manually
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
-        alert('ATIS and Controllers updated successfully!');
     } catch (error) {
         console.error('Error during manual update:', error.message);
         alert('Failed to update ATIS and Controllers. Check console for details.');
@@ -823,13 +1001,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateInterval = setInterval(async () => {
         await fetchAndUpdateFlights(icao);
         await fetchControllers(icao); // Update controllers on auto-update
+        await fetchActiveATCAirports(); // Update active airports dynamically
         countdown = 15; // Reset countdown
     }, 15000); // 15 seconds interval
 
     // Countdown display logic
     countdownInterval = setInterval(() => {
         countdown--;
-        countdownTimer.textContent = `Next update in: ${countdown} seconds`;
+        countdownTimer.textContent = `${countdown}`;
     }, 1000);
 
     // Auto-stop the update after 15 minutes

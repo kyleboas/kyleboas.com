@@ -16,6 +16,62 @@ body {
 
 pre {
     font-family: Helvetica, sans-serif;
+    font-size: 12px;
+    padding-top: 0px;
+    padding-top: 0px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    z-index: 1;
+    width: 260px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu input,
+.dropdown-menu button {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 8px;
+    width: 100%;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 240px;
+}
+
+.dropdown-menu button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.dropdown-menu button:hover {
+    background-color: #45a049;
 }
 
 form {
@@ -57,6 +113,15 @@ tbody {
     font-size: 12px; 
 }
 
+thead th {
+    padding: 5px;
+    text-align: center;
+    position: sticky;
+    top: 0; 
+    background-color: #f2f2f2;
+    z-index: 1;
+} 
+
 tbody td {
     padding: 5px;
 }
@@ -95,6 +160,26 @@ th {
         <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
         <button type="submit">Search</button>
     </form>
+    
+    <div class="dropdown">
+    <button class="dropdown-toggle">Set Defaults ▼</button>
+    <div class="dropdown-menu">
+        <h2>Set Defaults</h2>
+        <label for="defaultMinHeading">Default Min Heading:</label>
+        <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="e.g., 0">
+        <br>
+        <label for="defaultMaxHeading">Default Max Heading:</label>
+        <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="e.g., 90">
+        <br>
+        <label for="defaultMinDistance">Default Min Distance:</label>
+        <input type="number" id="defaultMinDistance" min="0" placeholder="e.g., 50">
+        <br>
+        <label for="defaultMaxDistance">Default Max Distance:</label>
+        <input type="number" id="defaultMaxDistance" min="0" placeholder="e.g., 500">
+        <br>
+        <button type="button" id="saveDefaultsButton">Save Defaults</button>
+    </div>
+</div>
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
@@ -124,7 +209,7 @@ th {
 
     <button type="button" id="updateButton">Update</button>
     <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-    <span id="countdownTimer" style="display: none;">Next update in: 15 seconds</span>
+    <span id="countdownTimer" style="display: none;"></span>
     
     <table id="flightsTable">
     <thead>
