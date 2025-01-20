@@ -791,6 +791,121 @@ function parseETAInSeconds(eta) {
 }
 
 // ============================
+// Filter Highlight by Heading
+// ============================
+
+let headingHighlightEnabled = false; // Tracks if the heading highlight filter is active
+
+// Filter and highlight based on heading criteria
+function filterHeadingHighlight() {
+    const button = document.getElementById('filterHeadingHighlightButton');
+
+    if (headingHighlightEnabled) {
+        // Disable the highlight by heading
+        headingHighlightEnabled = false;
+        button.textContent = 'Enable Highlight by Heading';
+        clearHighlights(); // Clear all highlights
+        return;
+    }
+
+    const minHeading = parseFloat(document.getElementById('minHeading').value);
+    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
+
+    if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
+        alert('Please enter valid min and max headings.');
+        return;
+    }
+
+    // Enable the highlight by heading
+    headingHighlightEnabled = true;
+    button.textContent = 'Disable Highlight by Heading';
+
+    clearHighlights(); // Clear previous highlights
+
+    // Split into bold and non-bold groups
+    const boldGroup = allFlights.filter(flight =>
+        flight.headingFromAirport >= minHeading && flight.headingFromAirport <= maxHeading
+    );
+
+    const nonBoldGroup = allFlights.filter(flight =>
+        flight.headingFromAirport < minHeading || flight.headingFromAirport > maxHeading
+    );
+
+    // Apply highlighting to each group separately
+    highlightGroup(boldGroup, '#fffa9f'); // Yellow for bold group
+    highlightGroup(nonBoldGroup, '#80daeb'); // Blue for non-bold group
+}
+
+// Highlight a specific group of flights
+function highlightGroup(group, baseColor) {
+    const rows = document.querySelectorAll('#flightsTable tbody tr');
+
+    if (!rows.length) return; // Exit if no rows are available
+
+    // Sort group by ETA
+    group.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+
+    group.forEach((flight, index) => {
+        const currentRow = rows[allFlights.indexOf(flight)];
+
+        // Skip flights with invalid ETA
+        if (!isValidETA(flight.etaMinutes)) {
+            currentRow.style.display = 'none';
+            return;
+        } else {
+            currentRow.style.display = '';
+        }
+
+        let closestTimeDiff = Number.MAX_SAFE_INTEGER; // Track closest time difference
+        let highlightColor = null; // Track highlight color for this flight
+
+        // Check the flight ahead within the group
+        if (index + 1 < group.length) {
+            const nextFlight = group[index + 1];
+            const nextRow = rows[allFlights.indexOf(nextFlight)];
+            const timeDiff = Math.abs(parseETAInSeconds(flight.etaMinutes) - parseETAInSeconds(nextFlight.etaMinutes));
+            const color = getHighlightColor(timeDiff);
+
+            if (color) {
+                closestTimeDiff = Math.min(closestTimeDiff, timeDiff);
+                highlightColor = getHigherPriorityColor(highlightColor, color);
+                applyHighlight(nextRow, color);
+            }
+        }
+
+        // Check the flight behind within the group
+        if (index > 0) {
+            const prevFlight = group[index - 1];
+            const prevRow = rows[allFlights.indexOf(prevFlight)];
+            const timeDiff = Math.abs(parseETAInSeconds(flight.etaMinutes) - parseETAInSeconds(prevFlight.etaMinutes));
+            const color = getHighlightColor(timeDiff);
+
+            if (color) {
+                closestTimeDiff = Math.min(closestTimeDiff, timeDiff);
+                highlightColor = getHigherPriorityColor(highlightColor, color);
+                applyHighlight(prevRow, color);
+            }
+        }
+
+        // Update the current row's ETA with the closest time difference
+        const etaCell = currentRow.querySelector('td:nth-child(5)');
+        if (etaCell && flight.etaMinutes !== 'N/A') {
+            etaCell.innerHTML = `${flight.etaMinutes} (${closestTimeDiff > 120 ? '>120s' : `${closestTimeDiff}s`})`;
+        }
+
+        // Apply the highlight color to the current row
+        if (highlightColor) {
+            applyHighlight(currentRow, highlightColor);
+        }
+    });
+}
+
+// Add event listener for the filterHeadingHighlightButton
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    filterHeadingHighlight();
+});
+
+// ============================
 // Event Listeners
 // ============================
 
