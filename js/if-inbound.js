@@ -230,7 +230,7 @@ async function fetchAircraftType(aircraftId) {
     }
 }
 
-// Fetch and display the top 10 active ATC airports with inbound flight counts
+// Fetch and display the top 5 active ATC airports with inbound flight counts
 async function fetchActiveATCAirports() {
     const endpoint = `/sessions/${SESSION_ID}/world`;
 
@@ -240,27 +240,32 @@ async function fetchActiveATCAirports() {
 
         // Extract airports with active ATC and inbound flight counts
         const activeAtcAirports = (data.result || [])
-            .filter(airport => airport.inboundFlightsCount > 0 || (airport.atcFacilities && airport.atcFacilities.length > 0)) // Include airports with inbound flights or active ATC
             .map(airport => ({
                 icao: airport.airportIcao,
-                inboundCount: airport.inboundFlightsCount || 0 // Default to 0 if no inbound flights
+                inboundCount: airport.inboundFlightsCount || 0, // Default to 0 if no inbound flights
+                hasATC: airport.atcFacilities && airport.atcFacilities.length > 0 // Boolean flag for ATC presence
             }))
             .sort((a, b) => b.inboundCount - a.inboundCount); // Sort by inbound count (descending)
 
-        // Remove duplicates by ensuring unique ICAO codes
-        const uniqueAirports = Array.from(new Map(activeAtcAirports.map(airport => [airport.icao, airport])).values());
+        // Extract the top 5 airports by inbound count
+        const topAirports = activeAtcAirports.slice(0, 5);
 
-        // Limit the list to the top 5 airports
-        const topAirports = uniqueAirports.slice(0, 5);
+        // Find additional airports with ATC (excluding those already in top 5)
+        const additionalAtcAirports = activeAtcAirports
+            .filter(airport => airport.hasATC && !topAirports.includes(airport));
 
-        // Format the list for display
-        const listContent = topAirports.map(
-            airport => `${airport.icao}: ${airport.inboundCount}`
-        ).join(', '); // Join the entries with commas
+        // Combine top 5 and additional ATC airports
+        const combinedAirports = [...topAirports, ...additionalAtcAirports];
 
-        // Set the content inside the <pre> element
+        // Format the list for display, bolding airports with ATC
+        const listContent = combinedAirports.map(airport => {
+            const airportText = `${airport.icao}: ${airport.inboundCount}`;
+            return airport.hasATC ? `<strong>${airportText}</strong>` : airportText;
+        }).join(', '); // Join the entries with commas
+
+        // Set the content inside the <pre> element with bold styling
         const atcAirportsListElement = document.getElementById('atcAirportsList');
-        atcAirportsListElement.textContent = listContent || 'No active ATC airports found.';
+        atcAirportsListElement.innerHTML = listContent || 'No active ATC airports found.';
     } catch (error) {
         console.error('Error fetching active ATC airports:', error.message);
 
