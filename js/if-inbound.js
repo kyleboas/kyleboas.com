@@ -572,7 +572,6 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 });
 
 // Toggle Apply Distance Filter
-let applyDistanceFilterEnabled = false;
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
     const minInput = parseFloat(document.getElementById('minDistance').value);
     const maxInput = parseFloat(document.getElementById('maxDistance').value);
