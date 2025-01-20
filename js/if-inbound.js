@@ -644,20 +644,42 @@ function clearHighlights() {
 }
 
 // Highlight close ETAs
-function highlightCloseETAs() {
+// Highlight filtered ETAs
+function highlightFilteredETAs() {
     // Clear existing highlights
     clearHighlights();
 
     const rows = document.querySelectorAll('#flightsTable tbody tr');
 
-    // Apply new highlights by comparing each flight with its neighbors
-    allFlights.forEach((flight, index) => {
-        const currentFlight = flight;
-        const previousFlight = allFlights[index - 1] || null;
-        const nextFlight = allFlights[index + 1] || null;
+    // Separate flights into bold and non-bold groups
+    const boldFlights = allFlights.filter(flight =>
+        flight.headingFromAirport >= boldedHeadings.minHeading &&
+        flight.headingFromAirport <= boldedHeadings.maxHeading
+    );
+    const nonBoldFlights = allFlights.filter(flight =>
+        flight.headingFromAirport < boldedHeadings.minHeading ||
+        flight.headingFromAirport > boldedHeadings.maxHeading
+    );
 
-        if (previousFlight) highlightPair(currentFlight, previousFlight, rows);
-        if (nextFlight) highlightPair(currentFlight, nextFlight, rows);
+    // Apply highlighting to bold flights
+    compareFlightsWithinGroup(boldFlights, rows);
+
+    // Apply highlighting to non-bold flights
+    compareFlightsWithinGroup(nonBoldFlights, rows);
+}
+
+// Compare flights within a group and apply highlights
+function compareFlightsWithinGroup(group, rows) {
+    // Sort flights by ETA
+    group.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+
+    group.forEach((flight, index) => {
+        const currentRow = rows[allFlights.indexOf(flight)];
+        const previousFlight = group[index - 1] || null; // Aircraft ahead
+        const nextFlight = group[index + 1] || null; // Aircraft behind
+
+        if (previousFlight) highlightPair(flight, previousFlight, rows); // Compare to previous
+        if (nextFlight) highlightPair(flight, nextFlight, rows); // Compare to next
     });
 }
 
