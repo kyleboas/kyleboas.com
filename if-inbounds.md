@@ -57,6 +57,10 @@ tbody {
     font-size: 12px; 
 }
 
+thead th {
+    padding: 5px;
+} 
+
 tbody td {
     padding: 5px;
 }
