@@ -61,23 +61,6 @@ function applyDefaults() {
     renderFlightsTable(allFlights); // Re-render the table with applied defaults
 }
 
-// Save default settings to cookies
-// Save default settings to cookies and apply them immediately
-document.getElementById('saveDefaultsButton').addEventListener('click', () => {
-    const defaultMinHeading = document.getElementById('defaultMinHeading').value.trim();
-    const defaultMaxHeading = document.getElementById('defaultMaxHeading').value.trim();
-    const defaultMinDistance = document.getElementById('defaultMinDistance').value.trim();
-    const defaultMaxDistance = document.getElementById('defaultMaxDistance').value.trim();
-
-    if (defaultMinHeading !== '') setCookie('defaultMinHeading', defaultMinHeading, 30);
-    if (defaultMaxHeading !== '') setCookie('defaultMaxHeading', defaultMaxHeading, 30);
-    if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 30);
-    if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 30);
-
-    // Apply the defaults immediately
-    applyDefaults();
-});
-
 
 // ============================
 // Utility Functions
@@ -890,18 +873,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for "Save Defaults" button to apply immediately
     document.getElementById('saveDefaultsButton').addEventListener('click', () => {
-        const defaultMinHeading = document.getElementById('defaultMinHeading').value.trim();
-        const defaultMaxHeading = document.getElementById('defaultMaxHeading').value.trim();
-        const defaultMinDistance = document.getElementById('defaultMinDistance').value.trim();
-        const defaultMaxDistance = document.getElementById('defaultMaxDistance').value.trim();
+    const defaultMinHeading = document.getElementById('defaultMinHeading').value.trim();
+    const defaultMaxHeading = document.getElementById('defaultMaxHeading').value.trim();
+    const defaultMinDistance = document.getElementById('defaultMinDistance').value.trim();
+    const defaultMaxDistance = document.getElementById('defaultMaxDistance').value.trim();
 
-        if (defaultMinHeading !== '') setCookie('defaultMinHeading', defaultMinHeading, 90);
-        if (defaultMaxHeading !== '') setCookie('defaultMaxHeading', defaultMaxHeading, 270);
-        if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 50);
-        if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 500);
+    if (defaultMinHeading !== '') setCookie('defaultMinHeading', defaultMinHeading, 30);
+    if (defaultMaxHeading !== '') setCookie('defaultMaxHeading', defaultMaxHeading, 30);
+    if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 30);
+    if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 30);
 
-        applyDefaults(); // Apply the defaults immediately
-    });
+    applyDefaults(); // Apply immediately after saving
 });
 
 // Function to apply defaults
@@ -950,20 +932,6 @@ document.getElementById('resetDistanceFilterButton').addEventListener('click', (
     // Re-render the table without any filters
     renderFlightsTable(allFlights);
 });
-
-// Stop auto-update
-function stopAutoUpdate() {
-    if (updateInterval) clearInterval(updateInterval);
-    if (updateTimeout) clearTimeout(updateTimeout);
-    if (countdownInterval) clearInterval(countdownInterval);
-
-    updateInterval = null;
-    updateTimeout = null;
-    countdownInterval = null;
-
-    document.getElementById('stopUpdateButton').style.display = 'none';
-    document.getElementById('countdownTimer').style.display = 'none';
-}
 
 // Manual update ATIS and Controllers
 document.getElementById('manualUpdateButton').addEventListener('click', async () => {
@@ -1075,7 +1043,8 @@ function resetAutoUpdateTimeout() {
 
 // Display Popup with Resume Button
 function showResumePopup(onResume) {
-    // Create the popup elements
+    if (document.getElementById('resumePopup')) return; // Prevent duplicate popups
+
     const popup = document.createElement('div');
     popup.id = 'resumePopup';
     popup.style.position = 'fixed';
@@ -1102,14 +1071,12 @@ function showResumePopup(onResume) {
     resumeButton.style.cursor = 'pointer';
 
     resumeButton.addEventListener('click', () => {
-        popup.remove(); // Remove the popup
-        onResume(); // Resume auto-update
+        popup.remove();
+        onResume();
     });
 
-    // Append elements to the popup
     popup.appendChild(message);
     popup.appendChild(resumeButton);
 
-    // Add the popup to the document body
     document.body.appendChild(popup);
 }
