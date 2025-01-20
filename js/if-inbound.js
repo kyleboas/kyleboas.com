@@ -839,9 +839,10 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 // ============================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Apply default settings on page load
     applyDefaults();
 
-    // Set dropdown button text if defaults exist
+    // Check if any defaults exist and update the dropdown UI
     const hasDefaults =
         getCookie('defaultMinHeading') ||
         getCookie('defaultMaxHeading') ||
@@ -852,37 +853,88 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
         document.getElementById('defaultSettingsForm').style.display = 'block';
     }
+
+    // Event listener for the "Bold Heading" button
+    document.getElementById('boldHeadingButton').addEventListener('click', () => {
+        const minHeading = parseFloat(document.getElementById('minHeading').value);
+        const maxHeading = parseFloat(document.getElementById('maxHeading').value);
+
+        if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
+            alert('Please enter valid min and max headings.');
+            return;
+        }
+
+        boldHeadingEnabled = !boldHeadingEnabled;
+        document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
+            ? 'Disable Bold Aircraft'
+            : 'Enable Bold Aircraft';
+
+        boldedHeadings.minHeading = minHeading;
+        boldedHeadings.maxHeading = maxHeading;
+
+        renderFlightsTable(allFlights);
+    });
+
+    // Event listener for the "Toggle Heading" button
+    document.getElementById('toggleHeadingButton').addEventListener('click', () => {
+        hideOtherAircraft = !hideOtherAircraft;
+
+        document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
+            ? 'Show All Aircraft'
+            : 'Hide Other Aircraft';
+
+        renderFlightsTable(allFlights, hideOtherAircraft);
+    });
+
+    // Event listener for "Save Defaults" button to apply immediately
+    document.getElementById('saveDefaultsButton').addEventListener('click', () => {
+        const defaultMinHeading = document.getElementById('defaultMinHeading').value.trim();
+        const defaultMaxHeading = document.getElementById('defaultMaxHeading').value.trim();
+        const defaultMinDistance = document.getElementById('defaultMinDistance').value.trim();
+        const defaultMaxDistance = document.getElementById('defaultMaxDistance').value.trim();
+
+        if (defaultMinHeading !== '') setCookie('defaultMinHeading', defaultMinHeading, 90);
+        if (defaultMaxHeading !== '') setCookie('defaultMaxHeading', defaultMaxHeading, 270);
+        if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 50);
+        if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 500);
+
+        applyDefaults(); // Apply the defaults immediately
+    });
 });
 
-document.getElementById('boldHeadingButton').addEventListener('click', () => {
-    const minHeading = parseFloat(document.getElementById('minHeading').value);
-    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
+// Function to apply defaults
+function applyDefaults() {
+    const defaultMinHeading = parseFloat(getCookie('defaultMinHeading'));
+    const defaultMaxHeading = parseFloat(getCookie('defaultMaxHeading'));
+    const defaultMinDistance = parseFloat(getCookie('defaultMinDistance'));
+    const defaultMaxDistance = parseFloat(getCookie('defaultMaxDistance'));
 
-    if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
-        alert('Please enter valid min and max headings.');
-        return;
+    // Apply heading filters if valid values are present
+    if (!isNaN(defaultMinHeading) && !isNaN(defaultMaxHeading)) {
+        document.getElementById('minHeading').value = defaultMinHeading;
+        document.getElementById('maxHeading').value = defaultMaxHeading;
+        boldHeadingEnabled = true;
+        boldedHeadings.minHeading = defaultMinHeading;
+        boldedHeadings.maxHeading = defaultMaxHeading;
+        document.getElementById('boldHeadingButton').textContent = 'Disable Bold Aircraft';
+    } else {
+        boldHeadingEnabled = false;
     }
 
-    boldHeadingEnabled = !boldHeadingEnabled;
-    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-        ? 'Disable Bold Aircraft'
-        : 'Enable Bold Aircraft';
+    // Apply distance filters if valid values are present
+    if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
+        document.getElementById('minDistance').value = defaultMinDistance;
+        document.getElementById('maxDistance').value = defaultMaxDistance;
+        minDistance = defaultMinDistance;
+        maxDistance = defaultMaxDistance;
+    } else {
+        minDistance = null;
+        maxDistance = null;
+    }
 
-    boldedHeadings.minHeading = minHeading;
-    boldedHeadings.maxHeading = maxHeading;
-
+    // Re-render the table with the updated filters
     renderFlightsTable(allFlights);
-});
-
-document.getElementById('toggleHeadingButton').addEventListener('click', () => {
-    hideOtherAircraft = !hideOtherAircraft;
-
-    document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft 
-        ? 'Show All Aircraft' 
-        : 'Hide Other Aircraft';
-
-    renderFlightsTable(allFlights, hideOtherAircraft);
-});
+}
 
 // Reset Range Filter
 
@@ -944,22 +996,35 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetchAndUpdateFlights(icao);
     });
 
-    document.getElementById('updateButton').addEventListener('click', () => {
+let updateInterval = null;
+let countdownInterval = null;
+let updateTimeout = null;
+
+// Start Auto-Update
+document.getElementById('updateButton').addEventListener('click', () => {
     const icao = document.getElementById('icao').value.trim().toUpperCase();
     if (!icao) {
         alert('Please enter a valid ICAO code before updating.');
         return;
     }
 
-    stopAutoUpdate();
+    startAutoUpdate(icao); // Start auto-update with the provided ICAO code
+});
+
+// Stop Auto-Update
+document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
+
+function startAutoUpdate(icao) {
+    stopAutoUpdate(); // Clear any existing intervals before starting a new one
+
     let countdown = 15; // Update countdown for 15 seconds
     const countdownTimer = document.getElementById('countdownTimer');
 
-    // Set interval for 15 seconds
+    // Auto-update every 15 seconds
     updateInterval = setInterval(async () => {
         await fetchAndUpdateFlights(icao);
-        await fetchControllers(icao); // Update controllers on auto-update
-        await fetchActiveATCAirports(); // Update active airports dynamically
+        await fetchControllers(icao);
+        await fetchActiveATCAirports();
         countdown = 15; // Reset countdown
     }, 15000); // 15 seconds interval
 
@@ -972,12 +1037,77 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-stop the update after 15 minutes
     updateTimeout = setTimeout(() => {
         stopAutoUpdate();
-        alert('Auto-update stopped after 15 minutes.');
+        showResumePopup(() => startAutoUpdate(icao)); // Show popup with resume button
     }, 15 * 60 * 1000); // 15 minutes
 
     document.getElementById('stopUpdateButton').style.display = 'inline';
     countdownTimer.style.display = 'inline';
-});
+}
 
-    document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
-});
+function stopAutoUpdate() {
+    if (updateInterval) clearInterval(updateInterval);
+    if (countdownInterval) clearInterval(countdownInterval);
+    if (updateTimeout) clearTimeout(updateTimeout);
+
+    updateInterval = null;
+    countdownInterval = null;
+    updateTimeout = null;
+
+    document.getElementById('stopUpdateButton').style.display = 'none';
+    document.getElementById('countdownTimer').style.display = 'none';
+}
+
+// Detect User Interaction to Reset Timeout
+document.addEventListener('click', resetAutoUpdateTimeout);
+document.addEventListener('keydown', resetAutoUpdateTimeout);
+
+function resetAutoUpdateTimeout() {
+    if (updateTimeout) {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => {
+            stopAutoUpdate();
+            showResumePopup(() => startAutoUpdate(document.getElementById('icao').value.trim().toUpperCase()));
+        }, 15 * 60 * 1000); // Reset the 15-minute timeout
+    }
+}
+
+// Display Popup with Resume Button
+function showResumePopup(onResume) {
+    // Create the popup elements
+    const popup = document.createElement('div');
+    popup.id = 'resumePopup';
+    popup.style.position = 'fixed';
+    popup.style.top = '50%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%, -50%)';
+    popup.style.backgroundColor = 'white';
+    popup.style.padding = '20px';
+    popup.style.border = '1px solid #ddd';
+    popup.style.borderRadius = '8px';
+    popup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+    popup.style.zIndex = '1000';
+
+    const message = document.createElement('p');
+    message.textContent = 'Auto-update has stopped. Do you want to resume?';
+
+    const resumeButton = document.createElement('button');
+    resumeButton.textContent = 'Resume Auto-Update';
+    resumeButton.style.padding = '10px 20px';
+    resumeButton.style.backgroundColor = '#4CAF50';
+    resumeButton.style.color = 'white';
+    resumeButton.style.border = 'none';
+    resumeButton.style.borderRadius = '4px';
+    resumeButton.style.cursor = 'pointer';
+
+    resumeButton.addEventListener('click', () => {
+        popup.remove(); // Remove the popup
+        onResume(); // Resume auto-update
+    });
+
+    // Append elements to the popup
+    popup.appendChild(message);
+    popup.appendChild(resumeButton);
+
+    // Add the popup to the document body
+    document.body.appendChild(popup);
+}

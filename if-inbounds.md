@@ -206,7 +206,7 @@ th {
 
     <button type="button" id="updateButton">Update</button>
     <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-    <span id="countdownTimer" style="display: none;">15</span>
+    <span id="countdownTimer" style="display: none;"></span>
     
     <table id="flightsTable">
     <thead>
