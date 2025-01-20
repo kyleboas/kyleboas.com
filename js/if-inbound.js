@@ -720,7 +720,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-            // Bold flights within heading range
+            // Check if flight is within the heading range
             const isWithinHeadingRange =
                 boldHeadingEnabled &&
                 boldedHeadings.minHeading !== null &&
@@ -733,8 +733,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
-            // Combine filters to determine visibility
-            const isVisible = (!hideFilter || (isWithinHeadingRange && isWithinDistanceRange));
+            // Determine visibility based only on the distance filter
+            const isVisible = (!hideFilter || isWithinDistanceRange);
 
             // Debugging visibility
             console.log(`Flight ${flight.callsign || "N/A"} is visible: ${isVisible}`, {
