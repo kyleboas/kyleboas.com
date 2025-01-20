@@ -95,9 +95,6 @@ th {
         <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
         <button type="submit">Search</button>
     </form>
-    <button type="button" id="updateButton">Update</button>
-    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-    <span id="countdownTimer" style="display: none;">Next update in: 15 seconds</span>
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
@@ -125,19 +122,23 @@ th {
     <pre id="controllersList" style="display: none;">No active ATC.</pre>
 </div>
 
+    <button type="button" id="updateButton">Update</button>
+    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
+    <span id="countdownTimer" style="display: none;">Next update in: 15 seconds</span>
+    
     <table id="flightsTable">
-        <thead>
-            <tr>
-                <th>Callsign</th>
-                <th>GS/MACH</th>
-                <th>ALT</th>
-                <th>HDG/NM</th>
-                <th>ETA</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Dynamic rows -->
-        </tbody>
+    <thead>
+        <tr>
+            <th>Aircraft</th>
+            <th>MIN/MAX</th>
+            <th>GS/MACH</th>
+            <th>HDG/ALT</th>
+            <th>NM/ETA</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Dynamic rows will be added here -->
+    </tbody>
     </table>
 </div>
 <script src="/js/if-inbound.js"></script>
