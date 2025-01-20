@@ -734,8 +734,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
-            // Determine visibility based only on the distance filter
-            const isVisible = !hideFilter || (hideFilter && isWithinDistanceRange);
+            // Determine visibility based on the hide filter and distance range
+            const isVisible = !hideFilter || isWithinDistanceRange;
 
             // Debugging visibility
             console.log(`Flight ${flight.callsign || "N/A"} is visible: ${isVisible}`, {
@@ -747,6 +747,9 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
             row.style.display = isVisible ? "" : "none";
 
+            // Skip adding rows that should be hidden
+            if (!isVisible) return;
+
             // Format values for display
             const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
             const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
@@ -755,8 +758,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Populate row HTML
             row.innerHTML = `
-                <td>${flight.callsign || "N/A"}<br><small>${flight.aircraftName || "UNKN"}</small></td>
-                <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
+                <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
+                <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${altitudeValue}</td>
                 <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
