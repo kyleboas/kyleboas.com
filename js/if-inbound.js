@@ -648,7 +648,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 try {
                     await fetchAirportATIS(icao);
                     await fetchControllers(icao);
-                    alert('ATIS and Controllers updated successfully!');
                 } catch (error) {
                     console.error('Error during manual update:', error.message);
                     alert('Failed to update ATIS and Controllers.');
@@ -844,7 +843,6 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
         // Fetch ATIS and controllers manually
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
-        alert('ATIS and Controllers updated successfully!');
     } catch (error) {
         console.error('Error during manual update:', error.message);
         alert('Failed to update ATIS and Controllers. Check console for details.');
@@ -888,7 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Countdown display logic
     countdownInterval = setInterval(() => {
         countdown--;
-        countdownTimer.textContent = `Next update in: ${countdown} seconds`;
+        countdownTimer.textContent = `${countdown}`;
     }, 1000);
 
     // Auto-stop the update after 15 minutes
