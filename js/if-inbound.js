@@ -650,21 +650,26 @@ function highlightCloseETAs() {
 
     const rows = document.querySelectorAll('#flightsTable tbody tr');
 
-    // Separate flights into bold and non-bold groups
-    const boldFlights = allFlights.filter(flight =>
-        flight.headingFromAirport >= boldedHeadings.minHeading &&
-        flight.headingFromAirport <= boldedHeadings.maxHeading
-    );
-    const nonBoldFlights = allFlights.filter(flight =>
-        flight.headingFromAirport < boldedHeadings.minHeading ||
-        flight.headingFromAirport > boldedHeadings.maxHeading
-    );
+    if (headingHighlightFilterEnabled) {
+        // Separate flights into bold and non-bold groups
+        const boldFlights = allFlights.filter(flight =>
+            flight.headingFromAirport >= boldedHeadings.minHeading &&
+            flight.headingFromAirport <= boldedHeadings.maxHeading
+        );
+        const nonBoldFlights = allFlights.filter(flight =>
+            flight.headingFromAirport < boldedHeadings.minHeading ||
+            flight.headingFromAirport > boldedHeadings.maxHeading
+        );
 
-    // Apply highlighting to bold flights
-    compareFlightsWithinGroup(boldFlights, rows);
+        // Apply highlighting to bold flights
+        compareFlightsWithinGroup(boldFlights, rows);
 
-    // Apply highlighting to non-bold flights
-    compareFlightsWithinGroup(nonBoldFlights, rows);
+        // Apply highlighting to non-bold flights
+        compareFlightsWithinGroup(nonBoldFlights, rows);
+    } else {
+        // Compare all flights to each other
+        compareFlightsWithinGroup(allFlights, rows);
+    }
 }
 
 // Compare flights within a group and apply highlights
@@ -725,6 +730,19 @@ async function autoUpdateFlights() {
         console.error('Error during auto-update:', error.message);
     }
 }
+
+let headingHighlightFilterEnabled = false; 
+
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    headingHighlightFilterEnabled = !headingHighlightFilterEnabled;
+
+    document.getElementById('filterHeadingHighlightButton').textContent = 
+        headingHighlightFilterEnabled ? 'Disable Bold Filtering' : 'Enable Bold Filtering';
+
+    highlightCloseETAs(); // Reapply highlighting with the new filter state
+});
+
+
 
 // ============================
 // Event Listeners
