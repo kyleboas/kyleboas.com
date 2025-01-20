@@ -963,7 +963,7 @@ document.addEventListener('DOMContentLoaded', () => {
         countdown = 5; // Reset countdown
     }, 5000); // 5 seconds interval
         countdown = 15; // Reset countdown
-    }, 15000); // 15 seconds interval
+    }, 15000); // 15 seconds interval 
 
     // Countdown display logic
     countdownInterval = setInterval(() => {
