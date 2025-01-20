@@ -735,7 +735,6 @@ function compareAllFlights(rows) {
 }
 
 // Highlight a pair of flights based on ETA difference
-// Highlight a pair of flights based on ETA difference
 function highlightPair(flight1, flight2, rows) {
     const row1 = rows[allFlights.indexOf(flight1)];
     const row2 = rows[allFlights.indexOf(flight2)];
@@ -747,19 +746,35 @@ function highlightPair(flight1, flight2, rows) {
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
-    // Apply highlights based on time difference
+    // Apply highlights based on time difference and hierarchy
     if (timeDiff < 10) {
-        row1.style.backgroundColor = '#fffa9f'; // Yellow for ≤ 10 seconds
-        row2.style.backgroundColor = '#fffa9f';
+        applyHighlight(row1, '#fffa9f'); // Yellow for ≤ 10 seconds
+        applyHighlight(row2, '#fffa9f');
     } else if (timeDiff < 30) {
-        row1.style.backgroundColor = '#80daeb'; // Blue for ≤ 30 seconds
-        row2.style.backgroundColor = '#80daeb';
+        applyHighlight(row1, '#80daeb'); // Blue for ≤ 30 seconds
+        applyHighlight(row2, '#80daeb');
     } else if (timeDiff < 60) {
-        row1.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
-        row2.style.backgroundColor = '#daceca';
+        applyHighlight(row1, '#daceca'); // Beige for ≤ 60 seconds
+        applyHighlight(row2, '#daceca');
     } else if (timeDiff < 120) {
-        row1.style.backgroundColor = '#eaeaea'; // Gray for ≤ 120 seconds
-        row2.style.backgroundColor = '#eaeaea';
+        applyHighlight(row1, '#eaeaea'); // Gray for ≤ 120 seconds
+        applyHighlight(row2, '#eaeaea');
+    }
+}
+
+// Apply highlights with priority: Yellow > Blue > Beige > Gray
+function applyHighlight(row, color) {
+    const currentColor = row.style.backgroundColor;
+
+    // Priority order for colors
+    const colorPriority = ['#fffa9f', '#80daeb', '#daceca', '#eaeaea'];
+
+    // Only apply the new color if it has a higher priority
+    if (
+        !currentColor || // No color set
+        colorPriority.indexOf(color) < colorPriority.indexOf(currentColor) // Higher priority
+    ) {
+        row.style.backgroundColor = color;
     }
 }
 
