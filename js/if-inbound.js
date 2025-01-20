@@ -571,29 +571,6 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
     renderFlightsTable(allFlights); // Re-render the table with updated bold styling
 });
 
-// Toggle Apply Distance Filter
-document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
-    const minInput = parseFloat(document.getElementById('minDistance').value);
-    const maxInput = parseFloat(document.getElementById('maxDistance').value);
-
-    if (!isNaN(minInput)) {
-        minDistance = minInput;
-    } else {
-        minDistance = null;
-    }
-
-    if (!isNaN(maxInput)) {
-        maxDistance = maxInput;
-    } else {
-        maxDistance = null;
-    }
-
-    console.log('Applying Distance Filter:', { minDistance, maxDistance });
-
-    // Re-render the table with updated filters
-    renderFlightsTable(allFlights);
-});
-
 
 // ============================
 // Highlight
@@ -688,6 +665,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+
+// Toggle Apply Distance Filter
+document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+    const minInput = parseFloat(document.getElementById('minDistance').value);
+    const maxInput = parseFloat(document.getElementById('maxDistance').value);
+
+    if (!isNaN(minInput)) {
+        minDistance = minInput;
+    } else {
+        minDistance = null;
+    }
+
+    if (!isNaN(maxInput)) {
+        maxDistance = maxInput;
+    } else {
+        maxDistance = null;
+    }
+
+    console.log('Applying Distance Filter:', { minDistance, maxDistance });
+
+    // Re-render the table with updated filters
+    renderFlightsTable(allFlights);
+});
+
 // ============================
 // Table Rendering
 // ============================
@@ -731,8 +732,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
-            console.log(`Flight ${flight.callsign} is within distance range: ${isWithinDistanceRange}`);
-
             // Combine filters to determine visibility
             const isVisible = (!hideFilter || (isWithinHeadingRange && isWithinDistanceRange));
 
@@ -762,6 +761,10 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
     }
 }
+
+// ============================
+// End Table Rendering
+// ============================
 
 document.getElementById('boldHeadingButton').addEventListener('click', () => {
     const minHeading = parseFloat(document.getElementById('minHeading').value);
