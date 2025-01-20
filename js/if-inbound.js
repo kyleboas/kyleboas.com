@@ -689,7 +689,6 @@ function highlightPair(flight1, flight2, rows) {
     }
 }
 
-
 let filterHeadingHighlight = false;
 
 document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
@@ -981,16 +980,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     stopAutoUpdate();
-    let countdown = 15; // Update countdown for 15 seconds
+    let countdown = 5; // Update countdown for 5 seconds
     const countdownTimer = document.getElementById('countdownTimer');
 
-    // Set interval for 15 seconds
+    // Set interval for 5 seconds
     updateInterval = setInterval(async () => {
         await fetchAndUpdateFlights(icao);
         await fetchControllers(icao); // Update controllers on auto-update
         await fetchActiveATCAirports(); // Update active airports dynamically
-        countdown = 15; // Reset countdown
-    }, 15000); // 15 seconds interval
+        countdown = 5; // Reset countdown
+    }, 5000); // 5 seconds interval
 
     // Countdown display logic
     countdownInterval = setInterval(() => {
@@ -1008,5 +1007,4 @@ document.addEventListener('DOMContentLoaded', () => {
     countdownTimer.style.display = 'inline';
 });
 
-    document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
-});
+document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
