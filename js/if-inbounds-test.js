@@ -668,21 +668,17 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
     tableBody.innerHTML = ""; // Clear the table before rendering
 
-    // Handle empty or invalid flight data
     if (!Array.isArray(allFlights) || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
         return;
     }
- 
+
     try {
-        // Fetch aircraft Mach details
         const aircraftIds = allFlights.map(flight => flight.aircraftId);
         const aircraftMachDetails = await pairAircraftData(aircraftIds);
 
-        // Sort flights by ETA (ascending order)
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        // Populate the table
         allFlights.forEach(flight => {
             const row = document.createElement("tr");
 
@@ -708,7 +704,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
             const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
-            const machDetails =         aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br>${flight.aircraftName || "Unknown Aircraft"}</td>
