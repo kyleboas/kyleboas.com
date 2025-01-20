@@ -673,7 +673,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
         return;
     }
-    
+ 
     try {
         // Fetch aircraft Mach details
         const aircraftIds = allFlights.map(flight => flight.aircraftId);
