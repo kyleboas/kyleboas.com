@@ -643,9 +643,8 @@ function clearHighlights() {
     });
 }
 
-// Highlight close ETAs
 // Highlight filtered ETAs
-function highlightFilteredETAs() {
+function highlightCloseETAs() {
     // Clear existing highlights
     clearHighlights();
 
