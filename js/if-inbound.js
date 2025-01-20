@@ -850,7 +850,52 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 
+// ============================
+// Bold Aircraft Rows
+// ============================
+
+// Toggle bold rows based on heading range
+document.getElementById('boldHeadingButton').addEventListener('click', () => {
+    const minHeading = parseFloat(document.getElementById('minHeading').value);
+    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
+
+    // Validate input
+    if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
+        alert('Please enter valid min and max headings.');
+        return;
+    }
+
+    boldHeadingEnabled = !boldHeadingEnabled;
+    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
+        ? 'Disable Bold Aircraft'
+        : 'Enable Bold Aircraft';
+
+    boldedHeadings.minHeading = minHeading;
+    boldedHeadings.maxHeading = maxHeading;
+
+    renderFlightsTable(allFlights); // Re-render table with bold updates
+});
+
+// ============================
+// Toggle Aircraft Visibility
+// ============================
+
+// Toggle visibility of rows outside heading range
+document.getElementById('toggleHeadingButton').addEventListener('click', () => {
+    hideOtherAircraft = !hideOtherAircraft;
+
+    document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
+        ? 'Show All Aircraft'
+        : 'Hide Other Aircraft';
+
+    renderFlightsTable(allFlights, hideOtherAircraft); // Pass filter flag to rendering function
+});
+
+
+// ============================
 // Toggle Apply Distance Filter
+// ============================
+
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
     const minInput = parseFloat(document.getElementById('minDistance').value);
     const maxInput = parseFloat(document.getElementById('maxDistance').value);
@@ -910,7 +955,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Check heading range
             const isWithinHeadingRange =
-                boldHeadingEnabled &&
                 boldedHeadings.minHeading !== null &&
                 boldedHeadings.maxHeading !== null &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
@@ -922,7 +966,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
             // Determine visibility based on filters
-            const isVisible = !hideFilter || isWithinDistanceRange;
+            const isVisible = !hideFilter || isWithinHeadingRange;
             if (!isVisible) return; // Skip hidden rows
 
             // Format values
@@ -942,6 +986,11 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 ? `${distanceValue}<br>${etaFormatted}`
                 : 'N/A';
 
+            // Add bold styling to rows within heading range if enabled
+            if (boldHeadingEnabled && isWithinHeadingRange) {
+                row.style.fontWeight = "bold";
+            }
+
             // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
@@ -950,6 +999,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 <td>${headingValue}<br>${altitudeValue}</td>
                 <td>${distanceAndEta}</td>
             `;
+
             tableBody.appendChild(row);
         });
 
