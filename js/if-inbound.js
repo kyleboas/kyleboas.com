@@ -635,12 +635,20 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // Highlight
 // ============================
 
-let headingHighlightEnabled = false; // Tracks if heading filter is active
+let headingHighlightEnabled = false;
 
-// Highlight flights with close ETAs, optionally filtered by heading
+// Clear all highlights
+function clearHighlights() {
+    const rows = document.querySelectorAll('#flightsTable tbody tr');
+    rows.forEach(row => {
+        row.style.backgroundColor = ''; // Reset background color
+        row.removeAttribute('title'); // Remove tooltips
+    });
+}
+
 function highlightCloseETAs() {
-    clearHighlights(); // Clear previous highlights
-
+    clearHighlights();
+    
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     if (!rows.length) return; // Exit if no rows exist
 
