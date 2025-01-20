@@ -743,7 +743,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
 
             row.innerHTML = `
-                <td>${flight.callsign || "N/A"}<br>${flight.aircraftName || "UNKN"}</td>
+                <td>${flight.callsign || "N/A"}<br><small>${flight.aircraftName || "UNKN"}</small></td>
                 <td>${machDetails.minMach || "N/A"}<br>${machDetails.maxMach || "N/A"}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${flight.altitude ? flight.altitude.toFixed(0) : "N/A"}</td>
