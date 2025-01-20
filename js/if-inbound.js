@@ -637,27 +637,11 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 
 function highlightCloseETAs() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
-
-    // Clear any previously applied background color
-    rows.forEach(row => {
-        row.style.backgroundColor = '';
-    });
+    rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
     allFlights.forEach((flight1, i) => {
         allFlights.forEach((flight2, j) => {
-            if (i !== j) {
-                // Apply highlight only if bold-to-bold or non-bold-to-non-bold when filterHeadingHighlight is enabled
-                const row1 = rows[allFlights.indexOf(flight1)];
-                const row2 = rows[allFlights.indexOf(flight2)];
-
-                // Check boldness match if filterHeadingHighlight is enabled
-                if (
-                    !filterHeadingHighlight || // Skip boldness check if filter is off
-                    row1.style.fontWeight === row2.style.fontWeight // Compare bold-to-bold or non-bold-to-non-bold
-                ) {
-                    highlightPair(flight1, flight2, rows); // Retain the original logic here
-                }
-            }
+            if (i !== j) highlightPair(flight1, flight2, rows, allFlights);
         });
     });
 }
@@ -675,31 +659,19 @@ function highlightPair(flight1, flight2, rows) {
 
     // Apply highlights
     if (timeDiff <= 10) {
-        row1.style.backgroundColor = '#fffa9f'; // Yellow for ≤ 10 seconds
-        row2.style.backgroundColor = '#fffa9f';
-    } else if (timeDiff > 10 && timeDiff <= 30) {
-        row1.style.backgroundColor = '#80daeb'; // Blue for ≤ 30 seconds
-        row2.style.backgroundColor = '#80daeb';
-    } else if (timeDiff > 30 && timeDiff <= 60) {
-        row1.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
-        row2.style.backgroundColor = '#daceca';
-    } else if (timeDiff > 60 && timeDiff <= 120) {
-        row1.style.backgroundColor = '#eaeaea'; // Gray for ≤ 120 seconds
-        row2.style.backgroundColor = '#eaeaea';
+        row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
+    } else if (timeDiff <= 30) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#80daeb'; // Blue for ≤ 30 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#80daeb';
+    } else if (timeDiff <= 60) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for ≤ 60 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
+    } else if (timeDiff <= 120) {
+        row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Gray for ≤ 120 seconds
+        row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
     }
 }
-
-let filterHeadingHighlight = false;
-
-document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
-    filterHeadingHighlight = !filterHeadingHighlight;
-
-    document.getElementById('filterHeadingHighlightButton').textContent = filterHeadingHighlight
-        ? 'Disable Heading Filter Highlight'
-        : 'Enable Heading Filter Highlight';
-
-    highlightCloseETAs(); // Reapply highlights based on the updated filter state
-});
 
 // ============================
 // Event Listeners
@@ -990,6 +962,8 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetchActiveATCAirports(); // Update active airports dynamically
         countdown = 5; // Reset countdown
     }, 5000); // 5 seconds interval
+        countdown = 15; // Reset countdown
+    }, 15000); // 15 seconds interval
 
     // Countdown display logic
     countdownInterval = setInterval(() => {
@@ -1008,4 +982,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
     document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
-}); 
+});

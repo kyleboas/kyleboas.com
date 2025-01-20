@@ -635,85 +635,71 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // Highlight
 // ============================
 
-let isFilteringByHeading = false;
-
-document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
-    // Toggle the filter state
-    isFilteringByHeading = !isFilteringByHeading;
-
-    // Update button text
-    document.getElementById('filterHeadingHighlightButton').textContent = isFilteringByHeading
-        ? 'Filtering Highlight by Heading'
-        : 'Filter Highlight by Heading';
-
-    // Reapply the highlight logic with the updated filter state
-    highlightCloseETAs(isFilteringByHeading);
-});
-
-
-// highlightCloseETAs
-function highlightCloseETAs(filterByBold = false) {
+function highlightCloseETAs() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
-    rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
 
-    const boldFlights = [];
-    const nonBoldFlights = [];
-
-    // Separate bold and non-bold flights
-    allFlights.forEach((flight, index) => {
-        const isBold = boldHeadingEnabled &&
-            boldedHeadings.minHeading !== null &&
-            boldedHeadings.maxHeading !== null &&
-            flight.headingFromAirport >= boldedHeadings.minHeading &&
-            flight.headingFromAirport <= boldedHeadings.maxHeading;
-
-        if (isBold) {
-            boldFlights.push({ flight, row: rows[index] });
-        } else {
-            nonBoldFlights.push({ flight, row: rows[index] });
-        }
+    // Clear any previously applied background color
+    rows.forEach(row => {
+        row.style.backgroundColor = '';
     });
 
-    // Highlight only within respective groups
-    if (filterByBold) {
-        highlightGroup(boldFlights, '#fffa9f', '#80daeb', '#daceca', '#eaeaea');
-        highlightGroup(nonBoldFlights, '#fffa9f', '#80daeb', '#daceca', '#eaeaea');
-    } else {
-        highlightGroup([...boldFlights, ...nonBoldFlights], '#fffa9f', '#80daeb', '#daceca', '#eaeaea');
-    }
-}
-
-function highlightGroup(group, color10s, color30s, color60s, color120s) {
-    group.forEach(({ flight: flight1, row: row1 }, i) => {
-        group.forEach(({ flight: flight2, row: row2 }, j) => {
+    allFlights.forEach((flight1, i) => {
+        allFlights.forEach((flight2, j) => {
             if (i !== j) {
-                highlightPair(flight1, flight2, row1, row2, color10s, color30s, color60s, color120s);
+                // Apply highlight only if bold-to-bold or non-bold-to-non-bold when filterHeadingHighlight is enabled
+                const row1 = rows[allFlights.indexOf(flight1)];
+                const row2 = rows[allFlights.indexOf(flight2)];
+
+                // Check boldness match if filterHeadingHighlight is enabled
+                if (
+                    !filterHeadingHighlight || // Skip boldness check if filter is off
+                    row1.style.fontWeight === row2.style.fontWeight // Compare bold-to-bold or non-bold-to-non-bold
+                ) {
+                    highlightPair(flight1, flight2, rows); // Retain the original logic here
+                }
             }
         });
     });
 }
 
-function highlightPair(flight1, flight2, row1, row2, color10s, color30s, color60s, color120s) {
+function highlightPair(flight1, flight2, rows) {
+    const row1 = rows[allFlights.indexOf(flight1)];
+    const row2 = rows[allFlights.indexOf(flight2)];
+
+    // Skip hidden rows
     if (row1.style.display === 'none' || row2.style.display === 'none') return;
 
     const eta1 = parseETAInSeconds(flight1.etaMinutes);
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
+    // Apply highlights
     if (timeDiff <= 10) {
-        row1.style.backgroundColor = color10s;
-        row2.style.backgroundColor = color10s;
-    } else if (timeDiff <= 30) {
-        row1.style.backgroundColor = color30s;
-        row2.style.backgroundColor = color30s;
-    } else if (timeDiff <= 60) {
-        row1.style.backgroundColor = color60s;
-        row2.style.backgroundColor = color60s;
-    } else if (timeDiff <= 120) {
-        row1.style.backgroundColor = color120s;
-        row2.style.backgroundColor = color120s;
+        row1.style.backgroundColor = '#fffa9f'; // Yellow for ≤ 10 seconds
+        row2.style.backgroundColor = '#fffa9f';
+    } else if (timeDiff > 10 && timeDiff <= 30) {
+        row1.style.backgroundColor = '#80daeb'; // Blue for ≤ 30 seconds
+        row2.style.backgroundColor = '#80daeb';
+    } else if (timeDiff > 30 && timeDiff <= 60) {
+        row1.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
+        row2.style.backgroundColor = '#daceca';
+    } else if (timeDiff > 60 && timeDiff <= 120) {
+        row1.style.backgroundColor = '#eaeaea'; // Gray for ≤ 120 seconds
+        row2.style.backgroundColor = '#eaeaea';
     }
 }
+
+let filterHeadingHighlight = false;
+
+document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    filterHeadingHighlight = !filterHeadingHighlight;
+
+    document.getElementById('filterHeadingHighlightButton').textContent = filterHeadingHighlight
+        ? 'Disable Heading Filter Highlight'
+        : 'Enable Heading Filter Highlight';
+
+    highlightCloseETAs(); // Reapply highlights based on the updated filter state
+});
 
 // ============================
 // Event Listeners
@@ -994,16 +980,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     stopAutoUpdate();
-    let countdown = 15; // Update countdown for 15 seconds
+    let countdown = 5; // Update countdown for 5 seconds
     const countdownTimer = document.getElementById('countdownTimer');
 
-    // Set interval for 15 seconds
+    // Set interval for 5 seconds
     updateInterval = setInterval(async () => {
         await fetchAndUpdateFlights(icao);
         await fetchControllers(icao); // Update controllers on auto-update
         await fetchActiveATCAirports(); // Update active airports dynamically
-        countdown = 15; // Reset countdown
-    }, 15000); // 15 seconds interval
+        countdown = 5; // Reset countdown
+    }, 5000); // 5 seconds interval
 
     // Countdown display logic
     countdownInterval = setInterval(() => {
@@ -1022,4 +1008,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
     document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
-});
+}); 
