@@ -1034,11 +1034,12 @@ document.addEventListener('DOMContentLoaded', () => {
         countdown = 15; // Reset countdown
     }, 15000); // 15 seconds interval
 
-    // Countdown display logic
+    // Countdown display logic (decrements every second)
     countdownInterval = setInterval(() => {
         countdown--;
         countdownTimer.textContent = `${countdown}`;
-    }, 15000);
+        if (countdown <= 0) countdown = 15; // Reset countdown if it reaches 0
+    }, 1000); // 1 second interval for countdown display
 
     // Auto-stop the update after 15 minutes
     updateTimeout = setTimeout(() => {
@@ -1049,6 +1050,5 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('stopUpdateButton').style.display = 'inline';
     countdownTimer.style.display = 'inline';
 });
-
     document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
 });
