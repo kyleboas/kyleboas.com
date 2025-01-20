@@ -711,6 +711,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         const aircraftIds = allFlights.map(flight => flight.aircraftId);
         const aircraftMachDetails = await pairAircraftData(aircraftIds);
 
+        // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach(flight => {
@@ -734,6 +735,12 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Combine filters to determine visibility
             const isVisible = (!hideFilter || (isWithinHeadingRange && isWithinDistanceRange));
+
+            // Debugging visibility
+            console.log(`Flight ${flight.callsign || "N/A"} is visible: ${isVisible}`, {
+                isWithinHeadingRange,
+                isWithinDistanceRange,
+            });
 
             // Styling and visibility
             row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
