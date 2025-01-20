@@ -608,71 +608,70 @@ function highlightPair(flight1, flight2, rows) {
 // Event Listeners
 // ============================
 
-
-// Main Page Load Initialization
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // Add defensive checks for undefined DOM elements
+        const boldHeadingButton = document.getElementById('boldHeadingButton');
+        if (boldHeadingButton) {
+            boldHeadingButton.addEventListener('click', () => {
+                boldHeadingEnabled = !boldHeadingEnabled;
+                boldHeadingButton.textContent = boldHeadingEnabled
+                    ? 'Disable Bold Aircraft'
+                    : 'Enable Bold Aircraft';
+
+                if (Array.isArray(allFlights)) {
+                    renderFlightsTable(allFlights); // Ensure allFlights is an array before passing
+                }
+            });
+        }
+
+        const manualUpdateButton = document.getElementById('manualUpdateButton');
+        if (manualUpdateButton) {
+            manualUpdateButton.addEventListener('click', async () => {
+                const icaoInput = document.getElementById('icao');
+                const icao = icaoInput ? icaoInput.value.trim().toUpperCase() : null;
+
+                if (!icao) {
+                    alert('Please enter a valid ICAO code.');
+                    return;
+                }
+
+                try {
+                    await fetchAirportATIS(icao);
+                    await fetchControllers(icao);
+                    alert('ATIS and Controllers updated successfully!');
+                } catch (error) {
+                    console.error('Error during manual update:', error.message);
+                    alert('Failed to update ATIS and Controllers.');
+                }
+            });
+        }
+
         await fetchActiveATCAirports(); // Fetch and display active ATC airports on load
 
-        // Set default values for heading and distance
-        document.getElementById('minHeading').value = 90;
-        document.getElementById('maxHeading').value = 270;
-        boldedHeadings.minHeading = 90;
-        boldedHeadings.maxHeading = 270;
-
-        document.getElementById('minDistance').value = 50;
-        document.getElementById('maxDistance').value = 500;
-        minDistance = 50;
-        maxDistance = 500;
-
-        // Enable Bold Aircraft, Apply Distance Filter, and Filter Highlight by Heading
-        boldHeadingEnabled = true;
-        applyDistanceFilterEnabled = true;
-        filterHighlightByHeading = true;
-
-        document.getElementById('boldHeadingButton').textContent = 'Disable Bold Aircraft';
-        document.getElementById('applyDistanceFilterButton').textContent = 'Reset Distance Filter';
-        document.getElementById('filterHeadingHighlightButton').textContent = 'Disable Highlight Filter by Heading';
-
-        // Render flights table with default filters applied
-        renderFlightsTable(allFlights, hideOtherAircraft);
+        // Additional initialization code here...
     } catch (error) {
         console.error('Error initializing page:', error.message);
     }
 });
 
+// ============================
+// Table Rendering
+// ============================
 
-// Filter Listener
-document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
-    const minInput = parseFloat(document.getElementById('minDistance').value);
-    const maxInput = parseFloat(document.getElementById('maxDistance').value);
-
-    if (!isNaN(minInput)) {
-        minDistance = minInput;
-    } else {
-        minDistance = null; // Clear the filter if input is invalid or empty
-    }
-
-    if (!isNaN(maxInput)) {
-        maxDistance = maxInput;
-    } else {
-        maxDistance = null; // Clear the filter if input is invalid or empty
-    }
-
-    // Re-render the table with the updated distance filter
-    renderFlightsTable(allFlights, hideOtherAircraft);
-});
-
-
-// renderFlightsTable
 async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
+    if (!tableBody) {
+        console.error("Flights table body not found in DOM.");
+        return;
+    }
+
     tableBody.innerHTML = ""; // Clear the table before rendering
 
-    // If there are no flights, display a message
-    if (!allFlights || allFlights.length === 0) {
+    // Handle empty or invalid flight data
+    if (!Array.isArray(allFlights) || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
-        return; // Exit the function since there's nothing to display
+        return;
     }
 
     try {
