@@ -731,21 +731,19 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Check if flight is within the distance range
             const isWithinDistanceRange =
-                (minDistance === null || flight.distanceToDestination >= minDistance) &&
-                (maxDistance === null || flight.distanceToDestination <= maxDistance);
+        (minDistance === null || flight.distanceToDestination >= minDistance) &&
+        (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
             // Determine visibility based on the hide filter and distance range
             const isVisible = !hideFilter || isWithinDistanceRange;
 
             // Debugging visibility
-            console.log(`Flight ${flight.callsign || "N/A"} is visible: ${isVisible}`, {
-                isWithinHeadingRange,
-                isWithinDistanceRange,
-            });
+            console.log(`Flight ${flight.callsign || 'N/A'} - Distance: ${flight.distanceToDestination}, Visible: ${isWithinDistanceRange}`);
 
             // Styling and visibility
             row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
             row.style.display = isVisible ? "" : "none";
+            row.style.display = isWithinDistanceRange ? '' : 'none';
 
             // Skip adding rows that should be hidden
             if (!isVisible) return;
