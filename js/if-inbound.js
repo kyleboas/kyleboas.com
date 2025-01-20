@@ -1007,4 +1007,5 @@ document.addEventListener('DOMContentLoaded', () => {
     countdownTimer.style.display = 'inline';
 });
 
-document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
+    document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
+}); 
