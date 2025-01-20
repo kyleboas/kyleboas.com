@@ -55,14 +55,6 @@ function getUncachedIds(ids, type) {
     return ids.filter(id => !cache[type][id]);
 }
 
-// Get the aircraft IDs from `allFlights`
-const aircraftIds = allFlights.map(flight => flight.aircraftId);
-
-// Pair the aircraft data
-pairAircraftData(aircraftIds).then(pairedData => {
-    console.log("Paired Aircraft Data:", pairedData);
-});
-
 
 // ============================
 // Fetch Functions
@@ -434,6 +426,14 @@ async function pairAircraftData(aircraftIds) {
 
     return pairedData;
 }
+
+// Get the aircraft IDs from `allFlights`
+const aircraftIds = allFlights.map(flight => flight.aircraftId);
+
+// Pair the aircraft data
+pairAircraftData(aircraftIds).then(pairedData => {
+    console.log("Paired Aircraft Data:", pairedData);
+});
 
 // ============================
 // Calculations
