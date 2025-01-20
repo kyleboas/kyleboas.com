@@ -687,6 +687,13 @@ function highlightCloseETAs() {
 function highlightGroup(group, rows, baseColor) {
     group.forEach((flight, index) => {
         const currentRow = rows[allFlights.indexOf(flight)];
+        
+        // Validate ETA string
+        function isValidETA(eta) {
+            if (eta === 'N/A' || !eta || eta.startsWith('>')) return false; // Invalid if N/A or >12hrs
+            const [minutes, seconds] = eta.split(':').map(Number);
+            return !(isNaN(minutes) || isNaN(seconds)); // Valid if both minutes and seconds are numbers
+        }
 
         // Skip invalid ETAs
         if (!isValidETA(flight.etaMinutes)) {
