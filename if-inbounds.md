@@ -21,6 +21,56 @@ pre {
     padding-top: 0px;
 }
 
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    z-index: 1;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu input,
+.dropdown-menu button {
+    margin-top: 10px;
+    padding: 8px;
+    width: 100%;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.dropdown-menu button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.dropdown-menu button:hover {
+    background-color: #45a049;
+}
+
 form {
     display: flex;
     flex-wrap: wrap;
@@ -102,9 +152,10 @@ th {
     <pre id="atcAirportsList">Fetching data...</pre>
 </div>
 
-    <div id="defaultSettingsDropdown" style="margin-top: 20px;">
-    <button id="toggleDefaultsButton" style="cursor: pointer;">▼ Set Defaults</button>
-    <div id="defaultSettingsForm" style="display: none; margin-top: 10px; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+    <div class="dropdown">
+    <button class="dropdown-toggle">Set Defaults ▼</button>
+    <div class="dropdown-menu">
+        <h2>Set Defaults</h2>
         <label for="defaultMinHeading">Default Min Heading:</label>
         <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="e.g., 0">
         <br>
@@ -117,7 +168,7 @@ th {
         <label for="defaultMaxDistance">Default Max Distance:</label>
         <input type="number" id="defaultMaxDistance" min="0" placeholder="e.g., 500">
         <br>
-        <button type="button" id="saveDefaultsButton" style="margin-top: 10px;">Save Defaults</button>
+        <button type="button" id="saveDefaultsButton">Save Defaults</button>
     </div>
 </div>
 

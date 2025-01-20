@@ -16,24 +16,6 @@ let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
 
-
-// ============================
-// Toggle Dropdown Visibility
-// ============================
-
-document.getElementById('toggleDefaultsButton').addEventListener('click', () => {
-    const form = document.getElementById('defaultSettingsForm');
-    const button = document.getElementById('toggleDefaultsButton');
-
-    if (form.style.display === 'none') {
-        form.style.display = 'block';
-        button.textContent = '▲ Set Defaults';
-    } else {
-        form.style.display = 'none';
-        button.textContent = '▼ Set Defaults';
-    }
-});
-
 // ============================
 // Cookie Utility Functions
 // ============================
