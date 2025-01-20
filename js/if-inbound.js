@@ -637,7 +637,9 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 
 function highlightCloseETAs() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
-    rows.forEach(row => (row.style.backgroundColor = '')); // Reset highlights
+    rows.forEach(row => {
+        row.style.backgroundColor = ''; // Clear any previously applied background color
+    });
 
     allFlights.forEach((flight1, i) => {
         allFlights.forEach((flight2, j) => {
@@ -659,17 +661,17 @@ function highlightPair(flight1, flight2, rows) {
 
     // Apply highlights
     if (timeDiff <= 10) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
-    } else if (timeDiff <= 30) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#80daeb'; // Blue for ≤ 30 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#80daeb';
-    } else if (timeDiff <= 60) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for ≤ 60 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
-    } else if (timeDiff <= 120) {
-        row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Gray for ≤ 120 seconds
-        row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
+        row1.style.backgroundColor = '#fffa9f'; // Yellow for ≤ 10 seconds
+        row2.style.backgroundColor = '#fffa9f';
+    } else if (timeDiff > 10 && timeDiff <= 30) {
+        row1.style.backgroundColor = '#80daeb'; // Blue for ≤ 30 seconds
+        row2.style.backgroundColor = '#80daeb';
+    } else if (timeDiff > 30 && timeDiff <= 60) {
+        row1.style.backgroundColor = '#daceca'; // Beige for ≤ 60 seconds
+        row2.style.backgroundColor = '#daceca';
+    } else if (timeDiff > 60 && timeDiff <= 120) {
+        row1.style.backgroundColor = '#eaeaea'; // Gray for ≤ 120 seconds
+        row2.style.backgroundColor = '#eaeaea';
     }
 }
 
