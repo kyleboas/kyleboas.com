@@ -541,24 +541,22 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // Toggle Apply Distance Filter
 let applyDistanceFilterEnabled = false;
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
-    applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
+    const minInput = parseFloat(document.getElementById('minDistance').value);
+    const maxInput = parseFloat(document.getElementById('maxDistance').value);
 
-    document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
-        ? 'Reset Distance Filter'
-        : 'Apply Distance Filter';
+    if (!isNaN(minInput)) {
+        minDistance = minInput;
+    } else {
+        minDistance = null; // Clear filter if invalid
+    }
 
-    renderFlightsTable(allFlights, hideOtherAircraft); // Re-render the table with distance filter applied/removed
-});
+    if (!isNaN(maxInput)) {
+        maxDistance = maxInput;
+    } else {
+        maxDistance = null; // Clear filter if invalid
+    }
 
-// Toggle Filter Highlight by Heading
-document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
-    filterHighlightByHeading = !filterHighlightByHeading;
-
-    document.getElementById('filterHeadingHighlightButton').textContent = filterHighlightByHeading
-        ? 'Disable Highlight Filter by Heading'
-        : 'Enable Highlight Filter by Heading';
-
-    renderFlightsTable(allFlights); // Re-render the table with highlight filter updated
+    renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
 
@@ -686,15 +684,17 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
             const isWithinHeadingRange =
-                boldHeadingEnabled &&
-                flight.headingFromAirport >= boldedHeadings.minHeading &&
-                flight.headingFromAirport <= boldedHeadings.maxHeading;
+            boldHeadingEnabled &&
+            boldedHeadings.minHeading !== null &&
+            boldedHeadings.maxHeading !== null &&
+            flight.headingFromAirport >= boldedHeadings.minHeading &&
+            flight.headingFromAirport <= boldedHeadings.maxHeading;
 
             const isWithinDistanceRange =
-                (minDistance === null && maxDistance === null) ||
-                (typeof flight.distanceToDestination === "number" &&
-                 flight.distanceToDestination >= (minDistance ?? 0) &&
-                 flight.distanceToDestination <= (maxDistance ?? Infinity));
+            (minDistance === null && maxDistance === null) ||
+            (typeof flight.distanceToDestination === "number" &&
+             flight.distanceToDestination >= (minDistance ?? 0) &&
+             flight.distanceToDestination <= (maxDistance ?? Infinity));
 
             const isVisible = (!hideFilter || (isWithinHeadingRange && isWithinDistanceRange));
 
@@ -731,6 +731,11 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
         alert('Please enter valid min and max headings.');
         return;
     }
+
+    boldHeadingEnabled = !boldHeadingEnabled;
+    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
+        ? 'Disable Bold Aircraft'
+        : 'Enable Bold Aircraft';
 
     boldedHeadings.minHeading = minHeading;
     boldedHeadings.maxHeading = maxHeading;
