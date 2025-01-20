@@ -152,6 +152,12 @@ th {
     <pre id="atcAirportsList">Fetching data...</pre>
 </div>
 
+    <!-- Search Form -->
+    <form id="searchForm" novalidate>
+        <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
+        <button type="submit">Search</button>
+    </form>
+    
     <div class="dropdown">
     <button class="dropdown-toggle">Set Defaults ▼</button>
     <div class="dropdown-menu">
@@ -171,12 +177,6 @@ th {
         <button type="button" id="saveDefaultsButton">Save Defaults</button>
     </div>
 </div>
-
-    <!-- Search Form -->
-    <form id="searchForm" novalidate>
-        <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
-        <button type="submit">Search</button>
-    </form>
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
