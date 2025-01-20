@@ -615,23 +615,6 @@ function displayControllers(controllers) {
 
 
 // ============================
-// Organize
-// ============================
-
-// Toggle Bold Aircraft
-let boldHeadingEnabled = false;
-document.getElementById('boldHeadingButton').addEventListener('click', () => {
-    boldHeadingEnabled = !boldHeadingEnabled;
-
-    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-        ? 'Disable Bold Aircraft'
-        : 'Enable Bold Aircraft';
-
-    renderFlightsTable(allFlights); // Re-render the table with updated bold styling
-});
-
-
-// ============================
 // Highlights
 // ============================
 
@@ -865,15 +848,20 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
         return;
     }
 
+    // Toggle the bolding state
     boldHeadingEnabled = !boldHeadingEnabled;
+
+    // Update button text
     document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
         ? 'Disable Bold Aircraft'
         : 'Enable Bold Aircraft';
 
+    // Store heading range in global state
     boldedHeadings.minHeading = minHeading;
     boldedHeadings.maxHeading = maxHeading;
 
-    renderFlightsTable(allFlights); // Re-render table with bold updates
+    // Re-render the table
+    renderFlightsTable(allFlights);
 });
 
 // ============================
