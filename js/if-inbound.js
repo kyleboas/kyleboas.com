@@ -710,16 +710,16 @@ function highlightPair(flight1, flight2, rows) {
     const timeDiff = Math.abs(eta1 - eta2);
 
     // Apply highlights based on time difference
-    if (timeDiff <= 10) {
+    if (timeDiff < 10) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#fffa9f'; // Yellow for ≤ 10 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#fffa9f';
-    } else if (timeDiff <= 30) {
+    } else if (timeDiff < 30) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#80daeb'; // Blue for ≤ 30 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#80daeb';
-    } else if (timeDiff <= 60) {
+    } else if (timeDiff < 60) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#daceca'; // Beige for ≤ 60 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#daceca';
-    } else if (timeDiff <= 120) {
+    } else if (timeDiff < 120) {
         row1.style.backgroundColor = row1.style.backgroundColor || '#eaeaea'; // Gray for ≤ 120 seconds
         row2.style.backgroundColor = row2.style.backgroundColor || '#eaeaea';
     }
