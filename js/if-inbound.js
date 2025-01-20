@@ -635,31 +635,10 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // Highlight
 // ============================
 
-let headingHighlightFilterEnabled = false; // Toggle for bold filter
-
-// Toggle bold filter on button click
-document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
-    headingHighlightFilterEnabled = !headingHighlightFilterEnabled;
-
-    // Update button text based on the filter state
-    const button = document.getElementById('filterHeadingHighlightButton');
-    button.innerText = headingHighlightFilterEnabled
-        ? "Disable Highlight by Heading"
-        : "Enable Highlight by Heading";
-
-    // Call the highlight function to apply changes
-    highlightCloseETAs();
-});
-
 // Observe the table for dynamic updates
 const tableBody = document.querySelector('#flightsTable tbody');
-const observer = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-        if (mutation.type === 'childList') {
-            // Run highlighting logic when new rows are added
-            highlightCloseETAs();
-        }
-    }
+const observer = new MutationObserver(() => {
+    highlightCloseETAs(); // Trigger highlight when rows change
 });
 
 // Start observing the table body for child node additions
@@ -671,92 +650,49 @@ function highlightCloseETAs() {
 
     const rows = document.querySelectorAll('#flightsTable tbody tr');
 
-    if (headingHighlightFilterEnabled) {
-        // Separate flights into bold and non-bold groups
-        const boldFlights = allFlights.filter(flight =>
-            flight.headingFromAirport >= boldedHeadings.minHeading &&
-            flight.headingFromAirport <= boldedHeadings.maxHeading
-        );
-        const nonBoldFlights = allFlights.filter(flight =>
-            flight.headingFromAirport < boldedHeadings.minHeading ||
-            flight.headingFromAirport > boldedHeadings.maxHeading
-        );
-
-        // Compare within bold group
-        compareFlightsWithinGroup(boldFlights, rows);
-
-        // Compare within non-bold group
-        compareFlightsWithinGroup(nonBoldFlights, rows);
-
-        // Compare between groups
-        compareBetweenGroups(boldFlights, nonBoldFlights, rows);
-    } else {
-        // Compare all flights together
-        compareAllFlights(rows);
+    if (rows.length === 0) {
+        console.warn("No rows to highlight.");
+        return;
     }
-}
 
-// Compare flights within a group and apply highlights
-function compareFlightsWithinGroup(group, rows) {
-    // Sort flights by ETA
-    group.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
-
-    group.forEach((flight, index) => {
-        const previousFlight = group[index - 1] || null; // Aircraft ahead
-        const nextFlight = group[index + 1] || null; // Aircraft behind
-
-        if (previousFlight) highlightPair(flight, previousFlight, rows); // Compare to previous
-        if (nextFlight) highlightPair(flight, nextFlight, rows); // Compare to next
-    });
-}
-
-// Compare flights between bold and non-bold groups
-function compareBetweenGroups(boldGroup, nonBoldGroup, rows) {
-    boldGroup.forEach(boldFlight => {
-        nonBoldGroup.forEach(nonBoldFlight => {
-            highlightPair(boldFlight, nonBoldFlight, rows);
-        });
-    });
-}
-
-// Compare all flights together (sorting and comparing neighbors)
-function compareAllFlights(rows) {
     // Sort flights by ETA
     allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-    // Compare each flight to its previous and next neighbors
+    // Compare each flight with its neighbors
     allFlights.forEach((flight, index) => {
-        const previousFlight = allFlights[index - 1] || null;
-        const nextFlight = allFlights[index + 1] || null;
+        const currentRow = rows[index];
+        const prevFlight = allFlights[index - 1];
+        const nextFlight = allFlights[index + 1];
 
-        if (previousFlight) highlightPair(flight, previousFlight, rows);
-        if (nextFlight) highlightPair(flight, nextFlight, rows);
+        if (prevFlight) {
+            const prevRow = rows[index - 1];
+            highlightPair(flight, prevFlight, currentRow, prevRow);
+        }
+
+        if (nextFlight) {
+            const nextRow = rows[index + 1];
+            highlightPair(flight, nextFlight, currentRow, nextRow);
+        }
     });
 }
 
 // Highlight a pair of flights based on ETA difference
-function highlightPair(flight1, flight2, rows) {
-    const row1 = rows[allFlights.indexOf(flight1)];
-    const row2 = rows[allFlights.indexOf(flight2)];
-
-    // Skip hidden rows
-    if (!row1 || !row2 || row1.style.display === 'none' || row2.style.display === 'none') return;
-
+function highlightPair(flight1, flight2, row1, row2) {
     const eta1 = parseETAInSeconds(flight1.etaMinutes);
     const eta2 = parseETAInSeconds(flight2.etaMinutes);
     const timeDiff = Math.abs(eta1 - eta2);
 
-    // Apply highlights based on time difference and hierarchy
-    if (timeDiff < 10) {
+    // Apply highlights based on time difference
+    if (timeDiff <= 10) {
         applyHighlight(row1, '#fffa9f'); // Yellow for ≤ 10 seconds
         applyHighlight(row2, '#fffa9f');
-    } else if (timeDiff < 30) {
+    } else if (timeDiff <= 30) {
         applyHighlight(row1, '#80daeb'); // Blue for ≤ 30 seconds
         applyHighlight(row2, '#80daeb');
-    } else if (timeDiff < 60) {
+    } else if (timeDiff <= 60) {
         applyHighlight(row1, '#daceca'); // Beige for ≤ 60 seconds
         applyHighlight(row2, '#daceca');
-    } else if (timeDiff < 120) {
+    } else if (timeDiff <= 120) {
         applyHighlight(row1, '#eaeaea'); // Gray for ≤ 120 seconds
         applyHighlight(row2, '#eaeaea');
     }
