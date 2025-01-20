@@ -665,7 +665,7 @@ function highlightCloseETAs() {
         compareFlightsWithinGroup(nonBoldFlights, rows); // Highlight non-bold flights
     } else {
         // Compare all flights together
-        compareFlightsWithinGroup(allFlights, rows);
+        compareAllFlights(rows);
     }
 }
 
@@ -677,6 +677,20 @@ function compareFlightsWithinGroup(group, rows) {
     group.forEach((flight, index) => {
         const previousFlight = group[index - 1] || null; // Aircraft ahead
         const nextFlight = group[index + 1] || null; // Aircraft behind
+
+        if (previousFlight) highlightPair(flight, previousFlight, rows); // Compare to previous
+        if (nextFlight) highlightPair(flight, nextFlight, rows); // Compare to next
+    });
+}
+
+// Compare all flights together (no bold filtering)
+function compareAllFlights(rows) {
+    // Sort flights by ETA
+    allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+
+    allFlights.forEach((flight, index) => {
+        const previousFlight = allFlights[index - 1] || null; // Aircraft ahead
+        const nextFlight = allFlights[index + 1] || null; // Aircraft behind
 
         if (previousFlight) highlightPair(flight, previousFlight, rows); // Compare to previous
         if (nextFlight) highlightPair(flight, nextFlight, rows); // Compare to next
@@ -724,8 +738,6 @@ function clearHighlights() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => (row.style.backgroundColor = ''));
 }
-
-
 
 // ============================
 // Event Listeners
