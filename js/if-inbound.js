@@ -115,51 +115,6 @@ function getUncachedIds(ids, type) {
     return ids.filter(id => !cache[type][id]);
 }
 
-// Determine the highlight color based on the time difference
-function getHighlightColor(timeDiff) {
-    if (timeDiff > 120) return null; // No highlight for > 120 seconds
-    if (timeDiff <= 10) return '#fffa9f'; // Yellow
-    if (timeDiff <= 30) return '#80daeb'; // Blue
-    if (timeDiff <= 60) return '#daceca'; // Beige
-    if (timeDiff <= 120) return '#eaeaea'; // Gray
-    return null; // No highlight
-}
-
-// Compare and return the higher-priority color
-function getHigherPriorityColor(color1, color2) {
-    const colorPriority = ['#fffa9f', '#80daeb', '#daceca', '#eaeaea']; // Define priority order
-    const index1 = colorPriority.indexOf(color1);
-    const index2 = colorPriority.indexOf(color2);
-
-    if (index1 === -1) return color2; // If color1 has no priority, use color2
-    if (index2 === -1) return color1; // If color2 has no priority, use color1
-    return index1 < index2 ? color1 : color2; // Return the higher-priority color
-}
-
-// Apply highlights to a row
-function applyHighlight(row, color) {
-    const currentColor = rgbToHex(row.style.backgroundColor); // Convert current color to hex
-
-    // Apply the new color only if it has higher priority
-    if (!currentColor || getHigherPriorityColor(color, currentColor) === color) {
-        row.style.backgroundColor = color;
-    }
-}
-
-// Utility function to convert RGB color to HEX
-function rgbToHex(rgb) {
-    if (!rgb || rgb === 'transparent') return null; // Handle unset or transparent colors
-
-    const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-    if (!match) return null;
-
-    const r = parseInt(match[1]).toString(16).padStart(2, '0');
-    const g = parseInt(match[2]).toString(16).padStart(2, '0');
-    const b = parseInt(match[3]).toString(16).padStart(2, '0');
-
-    return `#${r}${g}${b}`;
-}
-
 // ============================
 // Aircraft
 // ============================
@@ -677,7 +632,7 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 
 
 // ============================
-// Highlight
+// Highlights
 // ============================
 
 let headingHighlightEnabled = false;
@@ -785,6 +740,51 @@ function highlightGroup(group, rows, baseColor) {
             applyHighlight(currentRow, highlightColor);
         }
     });
+}
+
+// Determine the highlight color based on the time difference
+function getHighlightColor(timeDiff) {
+    if (timeDiff > 120) return null; // No highlight for > 120 seconds
+    if (timeDiff <= 10) return '#fffa9f'; // Yellow
+    if (timeDiff <= 30) return '#80daeb'; // Blue
+    if (timeDiff <= 60) return '#daceca'; // Beige
+    if (timeDiff <= 120) return '#eaeaea'; // Gray
+    return null; // No highlight
+}
+
+// Compare and return the higher-priority color
+function getHigherPriorityColor(color1, color2) {
+    const colorPriority = ['#fffa9f', '#80daeb', '#daceca', '#eaeaea']; // Define priority order
+    const index1 = colorPriority.indexOf(color1);
+    const index2 = colorPriority.indexOf(color2);
+
+    if (index1 === -1) return color2; // If color1 has no priority, use color2
+    if (index2 === -1) return color1; // If color2 has no priority, use color1
+    return index1 < index2 ? color1 : color2; // Return the higher-priority color
+}
+
+// Apply highlights to a row
+function applyHighlight(row, color) {
+    const currentColor = rgbToHex(row.style.backgroundColor); // Convert current color to hex
+
+    // Apply the new color only if it has higher priority
+    if (!currentColor || getHigherPriorityColor(color, currentColor) === color) {
+        row.style.backgroundColor = color;
+    }
+}
+
+// Utility function to convert RGB color to HEX
+function rgbToHex(rgb) {
+    if (!rgb || rgb === 'transparent') return null; // Handle unset or transparent colors
+
+    const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (!match) return null;
+
+    const r = parseInt(match[1]).toString(16).padStart(2, '0');
+    const g = parseInt(match[2]).toString(16).padStart(2, '0');
+    const b = parseInt(match[3]).toString(16).padStart(2, '0');
+
+    return `#${r}${g}${b}`;
 }
 
 // Toggle Heading Highlight and reapply highlights
