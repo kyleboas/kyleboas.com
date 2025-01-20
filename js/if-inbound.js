@@ -481,7 +481,6 @@ async function fetchAndUpdateFlights(icao) {
         }
 
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
-
         const airportCoordinates = await fetchAirportCoordinates(icao);
 
         if (!airportCoordinates) {
@@ -495,6 +494,9 @@ async function fetchAndUpdateFlights(icao) {
         // Update global state and render table
         allFlights = flights; // Save to global state
         renderFlightsTable(allFlights); // Pass `allFlights` directly to the table renderer
+
+        // **Call highlightCloseETAs explicitly**
+        highlightCloseETAs();
 
         // Fetch and display ATIS and controllers
         await fetchAirportATIS(icao);
@@ -773,57 +775,58 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach(flight => {
-            const row = document.createElement("tr");
+    const row = document.createElement("tr");
 
-            // Extract flight details
-            const aircraftName = flight.aircraftName || "UNKN";
-            const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
+    // Extract flight details
+    const aircraftName = flight.aircraftName || "UNKN";
+    const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-            // Check if flight is within the heading range
-            const isWithinHeadingRange =
-                boldHeadingEnabled &&
-                boldedHeadings.minHeading !== null &&
-                boldedHeadings.maxHeading !== null &&
-                flight.headingFromAirport >= boldedHeadings.minHeading &&
-                flight.headingFromAirport <= boldedHeadings.maxHeading;
+    // Check if flight is within the heading range
+    const isWithinHeadingRange =
+        boldHeadingEnabled &&
+        boldedHeadings.minHeading !== null &&
+        boldedHeadings.maxHeading !== null &&
+        flight.headingFromAirport >= boldedHeadings.minHeading &&
+        flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-            // Check if flight is within the distance range
-            const isWithinDistanceRange =
+    // Check if flight is within the distance range
+    const isWithinDistanceRange =
         (minDistance === null || flight.distanceToDestination >= minDistance) &&
         (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
-            // Determine visibility based on the hide filter and distance range
-            const isVisible = !hideFilter || isWithinDistanceRange;
+    // Determine visibility based on the hide filter and distance range
+    const isVisible = !hideFilter || isWithinDistanceRange;
 
-            // Debugging visibility
-            console.log(`Flight ${flight.callsign || 'N/A'} - Distance: ${flight.distanceToDestination}, Visible: ${isWithinDistanceRange}`);
+    // Debugging visibility
+    console.log(`Flight ${flight.callsign || 'N/A'} - Distance: ${flight.distanceToDestination}, Visible: ${isVisible}`);
 
-            // Styling and visibility
-            row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
-            row.style.display = isVisible ? "" : "none";
-            row.style.display = isWithinDistanceRange ? '' : 'none';
+    // Styling and visibility
+    row.style.fontWeight = isWithinHeadingRange ? "bold" : "normal";
+    row.style.display = isVisible ? "" : "none";
 
-            // Skip adding rows that should be hidden
-            if (!isVisible) return;
+    // Skip adding rows that should be hidden
+    if (!isVisible) return;
 
-            // Format values for display
-            const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
-            const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
-            const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
-            const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
+    // Format values for display
+    const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
+    const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
+    const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
+    const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
 
-            // Populate row HTML
-            row.innerHTML = `
-                <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
-                <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
-                <td>${speedValue}<br>${machValue}</td>
-                <td>${headingValue}<br>${altitudeValue}</td>
-                <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
-            `;
-            tableBody.appendChild(row);
-        });
+    // Populate row HTML
+    row.innerHTML = `
+        <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
+        <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
+        <td>${speedValue}<br>${machValue}</td>
+        <td>${headingValue}<br>${altitudeValue}</td>
+        <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
+    `;
+    tableBody.appendChild(row);
+});
 
-        highlightCloseETAs(); // Highlight flights with close ETAs
+        // **Call highlightCloseETAs after rendering**
+        highlightCloseETAs();
+
     } catch (error) {
         console.error("Error rendering the flights table:", error.message);
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
