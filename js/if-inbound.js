@@ -1027,7 +1027,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetchControllers(icao); // Update controllers on auto-update
         await fetchActiveATCAirports(); // Update active airports dynamically
         countdown = 15; // Reset countdown
-    }, 15000); // 15 seconds interval
+    }, 15000); // 15 seconds interval 
 
     // Countdown display logic (decrements every second)
     countdownInterval = setInterval(() => {
