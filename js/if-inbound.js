@@ -651,6 +651,20 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
     highlightCloseETAs();
 });
 
+// Observe the table for dynamic updates
+const tableBody = document.querySelector('#flightsTable tbody');
+const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+        if (mutation.type === 'childList') {
+            // Run highlighting logic when new rows are added
+            highlightCloseETAs();
+        }
+    }
+});
+
+// Start observing the table body for child node additions
+observer.observe(tableBody, { childList: true });
+
 // Highlight filtered ETAs
 function highlightCloseETAs() {
     clearHighlights(); // Clear existing highlights
