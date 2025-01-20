@@ -62,18 +62,20 @@ function applyDefaults() {
 }
 
 // Save default settings to cookies
+// Save default settings to cookies and apply them immediately
 document.getElementById('saveDefaultsButton').addEventListener('click', () => {
     const defaultMinHeading = document.getElementById('defaultMinHeading').value.trim();
     const defaultMaxHeading = document.getElementById('defaultMaxHeading').value.trim();
     const defaultMinDistance = document.getElementById('defaultMinDistance').value.trim();
     const defaultMaxDistance = document.getElementById('defaultMaxDistance').value.trim();
 
-    if (defaultMinHeading !== '') setCookie('defaultMinHeading', defaultMinHeading, 30);
-    if (defaultMaxHeading !== '') setCookie('defaultMaxHeading', defaultMaxHeading, 30);
-    if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 30);
-    if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 30);
+    if (defaultMinHeading !== '') setCookie('defaultMinHeading', defaultMinHeading, 90);
+    if (defaultMaxHeading !== '') setCookie('defaultMaxHeading', defaultMaxHeading, 270);
+    if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 50);
+    if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 500);
 
-    alert('Defaults saved!');
+    // Apply the defaults immediately
+    applyDefaults();
 });
 
 
