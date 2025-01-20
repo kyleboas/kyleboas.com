@@ -655,66 +655,89 @@ function highlightCloseETAs() {
         return;
     }
 
-    // Sort flights by ETA
+    // Sort flights by ETA in ascending order
     allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-    // Compare each flight with its neighbors
+    // Iterate through all flights
     allFlights.forEach((flight, index) => {
         const currentRow = rows[index];
-        const prevFlight = allFlights[index - 1];
-        const nextFlight = allFlights[index + 1];
 
-        if (prevFlight) {
-            const prevRow = rows[index - 1];
-            highlightPair(flight, prevFlight, currentRow, prevRow);
+        let closestTimeDiff = Number.MAX_SAFE_INTEGER; // Track the smallest time difference
+        let highlightColor = null; // Track the highest-priority color
+
+        // Check the flight ahead
+        if (index + 1 < allFlights.length) {
+            const nextFlight = allFlights[index + 1];
+            const nextRow = rows[index + 1];
+            const timeDiff = Math.abs(parseETAInSeconds(flight.etaMinutes) - parseETAInSeconds(nextFlight.etaMinutes));
+            const color = getHighlightColor(timeDiff);
+
+            if (color) {
+                closestTimeDiff = timeDiff < closestTimeDiff ? timeDiff : closestTimeDiff;
+                highlightColor = getHigherPriorityColor(highlightColor, color); // Ensure priority
+                applyHighlight(nextRow, color); // Highlight the next row
+            }
         }
 
-        if (nextFlight) {
-            const nextRow = rows[index + 1];
-            highlightPair(flight, nextFlight, currentRow, nextRow);
+        // Check the flight behind
+        if (index - 1 >= 0) {
+            const prevFlight = allFlights[index - 1];
+            const prevRow = rows[index - 1];
+            const timeDiff = Math.abs(parseETAInSeconds(flight.etaMinutes) - parseETAInSeconds(prevFlight.etaMinutes));
+            const color = getHighlightColor(timeDiff);
+
+            if (color) {
+                closestTimeDiff = timeDiff < closestTimeDiff ? timeDiff : closestTimeDiff;
+                highlightColor = getHigherPriorityColor(highlightColor, color); // Ensure priority
+                applyHighlight(prevRow, color); // Highlight the previous row
+            }
+        }
+
+        // Apply the highest-priority color to the current row
+        if (highlightColor) {
+            applyHighlight(currentRow, highlightColor);
         }
     });
 }
 
-// Highlight a pair of flights based on ETA difference
-function highlightPair(flight1, flight2, row1, row2) {
-    const eta1 = parseETAInSeconds(flight1.etaMinutes);
-    const eta2 = parseETAInSeconds(flight2.etaMinutes);
-    const timeDiff = Math.abs(eta1 - eta2);
-
-    // Apply highlights based on time difference
-    if (timeDiff <= 10) {
-        applyHighlight(row1, '#fffa9f'); // Yellow for ≤ 10 seconds
-        applyHighlight(row2, '#fffa9f');
-    } else if (timeDiff <= 30) {
-        applyHighlight(row1, '#80daeb'); // Blue for ≤ 30 seconds
-        applyHighlight(row2, '#80daeb');
-    } else if (timeDiff <= 60) {
-        applyHighlight(row1, '#daceca'); // Beige for ≤ 60 seconds
-        applyHighlight(row2, '#daceca');
-    } else if (timeDiff <= 120) {
-        applyHighlight(row1, '#eaeaea'); // Gray for ≤ 120 seconds
-        applyHighlight(row2, '#eaeaea');
-    }
+// Determine highlight color based on time difference
+function getHighlightColor(timeDiff) {
+    if (timeDiff <= 10) return '#fffa9f'; // Yellow for ≤ 10 seconds
+    if (timeDiff <= 30) return '#80daeb'; // Blue for ≤ 30 seconds
+    if (timeDiff <= 60) return '#daceca'; // Beige for ≤ 60 seconds
+    if (timeDiff <= 120) return '#eaeaea'; // Gray for ≤ 120 seconds
+    return null;
 }
 
-// Apply highlights with priority: Yellow > Blue > Beige > Gray
+// Compare and return the higher-priority color
+function getHigherPriorityColor(color1, color2) {
+    const colorPriority = ['#fffa9f', '#80daeb', '#daceca', '#eaeaea']; // Priority order
+    const index1 = colorPriority.indexOf(color1);
+    const index2 = colorPriority.indexOf(color2);
+
+    // Return the higher-priority color
+    if (index1 === -1) return color2;
+    if (index2 === -1) return color1;
+    return index1 < index2 ? color1 : color2;
+}
+
+// Apply highlights to a row
 function applyHighlight(row, color) {
     const currentColor = row.style.backgroundColor;
 
-    // Priority order for colors
-    const colorPriority = ['#fffa9f', '#80daeb', '#daceca', '#eaeaea'];
-
     // Only apply the new color if it has a higher priority
-    if (
-        !currentColor || // No color set
-        colorPriority.indexOf(color) < colorPriority.indexOf(currentColor) // Higher priority
-    ) {
+    if (!currentColor || getHigherPriorityColor(color, currentColor) === color) {
         row.style.backgroundColor = color;
     }
 }
 
-// Utility function to parse ETA in "minutes:seconds" format to total seconds
+// Clear all highlights
+function clearHighlights() {
+    const rows = document.querySelectorAll('#flightsTable tbody tr');
+    rows.forEach(row => (row.style.backgroundColor = ''));
+}
+
+// Parse ETA in "minutes:seconds" format to total seconds
 function parseETAInSeconds(eta) {
     if (typeof eta !== 'string' || eta === 'N/A') return Number.MAX_SAFE_INTEGER;
 
