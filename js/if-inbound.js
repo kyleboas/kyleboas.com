@@ -640,6 +640,14 @@ let headingHighlightFilterEnabled = false; // Toggle for bold filter
 // Toggle bold filter on button click
 document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
     headingHighlightFilterEnabled = !headingHighlightFilterEnabled;
+
+    // Update button text based on the filter state
+    const button = document.getElementById('filterHeadingHighlightButton');
+    button.innerText = headingHighlightFilterEnabled
+        ? "Disable Highlight by Heading"
+        : "Enable Highlight by Heading";
+
+    // Call the highlight function to apply changes
     highlightCloseETAs();
 });
 
