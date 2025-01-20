@@ -1074,22 +1074,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     stopAutoUpdate();
-    let countdown = 15; // Update countdown for 15 seconds
+    let countdown = 5; // Update countdown for 15 seconds
     const countdownTimer = document.getElementById('countdownTimer');
 
-    // Set interval for 15 seconds
+    // Set interval for 5 seconds
     updateInterval = setInterval(async () => {
         await fetchAndUpdateFlights(icao);
         await fetchControllers(icao); // Update controllers on auto-update
         await fetchActiveATCAirports(); // Update active airports dynamically
-        countdown = 15; // Reset countdown
-    }, 15000); // 15 seconds interval 
+        countdown = 5; // Reset countdown
+    }, 5000); // 5 seconds interval 
 
     // Countdown display logic (decrements every second)
     countdownInterval = setInterval(() => {
         countdown--;
         countdownTimer.textContent = `${countdown}`;
-        if (countdown <= 0) countdown = 15; // Reset countdown if it reaches 0
+        if (countdown <= 0) countdown = 5; // Reset countdown if it reaches 0
     }, 1000); // 1 second interval for countdown display
 
     // Auto-stop the update after 15 minutes
