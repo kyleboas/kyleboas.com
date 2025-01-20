@@ -196,7 +196,7 @@ th {
     <input type="number" id="maxDistance" min="0" placeholder="e.g., 500">
     <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
     <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
-    <button type="button" id="filterHeadingHighlightButton">Filter Highlight by Heading</button>
+    <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
     </form>
     
     <button id="manualUpdateButton">Update ATIS and Controllers</button>
