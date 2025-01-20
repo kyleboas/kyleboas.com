@@ -919,6 +919,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             // Format values
             const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
             const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
+            const minMachFormatted = typeof machDetails.minMach === "number" ? machDetails.minMach.toFixed(2) : "N/A";
+            const maxMachFormatted = typeof machDetails.maxMach === "number" ? machDetails.maxMach.toFixed(2) : "N/A";
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
 
@@ -926,14 +928,15 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const etaSeconds = parseETAInSeconds(flight.etaMinutes);
             const secondsFormatted = etaSeconds > 120 ? '>120s' : `${etaSeconds}s`;
             const etaFormatted = etaSeconds !== Number.MAX_SAFE_INTEGER ? `${flight.etaMinutes} (${secondsFormatted})` : 'N/A';
-            const distanceAndEta = flight.distanceToDestination !== 'N/A' && flight.etaMinutes !== 'N/A'
-                ? `${flight.distanceToDestination}<br>${etaFormatted}`
+            const distanceValue = flight.distanceToDestination !== 'N/A' ? `${flight.distanceToDestination}` : 'N/A';
+            const distanceAndEta = distanceValue !== 'N/A' && etaFormatted !== 'N/A'
+                ? `${distanceValue}<br>${etaFormatted}`
                 : 'N/A';
 
             // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
-                <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
+                <td>${minMachFormatted}<br>${maxMachFormatted}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${altitudeValue}</td>
                 <td>${distanceAndEta}</td>
