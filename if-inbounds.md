@@ -59,6 +59,7 @@ tbody {
 
 thead th {
     padding: 5px;
+    text-align: center;
 } 
 
 tbody td {
