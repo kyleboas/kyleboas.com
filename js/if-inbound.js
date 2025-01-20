@@ -644,7 +644,7 @@ const observer = new MutationObserver(() => {
 // Start observing the table body for child node additions
 observer.observe(tableBody, { childList: true });
 
-// Highlight filtered ETAs
+// Highlight filtered ETAs with tooltip for debugging
 function highlightCloseETAs() {
     clearHighlights(); // Clear existing highlights
 
@@ -661,9 +661,9 @@ function highlightCloseETAs() {
     // Iterate through all flights
     allFlights.forEach((flight, index) => {
         const currentRow = rows[index];
-
         let closestTimeDiff = Number.MAX_SAFE_INTEGER; // Track the smallest time difference
         let highlightColor = null; // Track the highest-priority color
+        let tooltipMessage = ''; // Track tooltip message
 
         // Check the flight ahead
         if (index + 1 < allFlights.length) {
@@ -675,6 +675,7 @@ function highlightCloseETAs() {
             if (color) {
                 closestTimeDiff = timeDiff < closestTimeDiff ? timeDiff : closestTimeDiff;
                 highlightColor = getHigherPriorityColor(highlightColor, color); // Ensure priority
+                tooltipMessage = `Closest to ${nextFlight.flightId} (Ahead), Diff: ${timeDiff}s, Color: ${color}`;
                 applyHighlight(nextRow, color); // Highlight the next row
             }
         }
@@ -689,6 +690,7 @@ function highlightCloseETAs() {
             if (color) {
                 closestTimeDiff = timeDiff < closestTimeDiff ? timeDiff : closestTimeDiff;
                 highlightColor = getHigherPriorityColor(highlightColor, color); // Ensure priority
+                tooltipMessage = `Closest to ${prevFlight.flightId} (Behind), Diff: ${timeDiff}s, Color: ${color}`;
                 applyHighlight(prevRow, color); // Highlight the previous row
             }
         }
@@ -696,6 +698,12 @@ function highlightCloseETAs() {
         // Apply the highest-priority color to the current row
         if (highlightColor) {
             applyHighlight(currentRow, highlightColor);
+            tooltipMessage += ` | Final: ${highlightColor}`;
+        }
+
+        // Add the tooltip with debugging info
+        if (tooltipMessage) {
+            currentRow.setAttribute('title', tooltipMessage);
         }
     });
 }
@@ -734,7 +742,10 @@ function applyHighlight(row, color) {
 // Clear all highlights
 function clearHighlights() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
-    rows.forEach(row => (row.style.backgroundColor = ''));
+    rows.forEach(row => {
+        row.style.backgroundColor = '';
+        row.removeAttribute('title'); // Remove tooltips
+    });
 }
 
 // Parse ETA in "minutes:seconds" format to total seconds
