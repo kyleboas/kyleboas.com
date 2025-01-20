@@ -63,6 +63,10 @@ tbody {
 thead th {
     padding: 5px;
     text-align: center;
+    position: sticky;
+    top: 0; 
+    background-color: #f2f2f2;
+    z-index: 1;
 } 
 
 tbody td {
