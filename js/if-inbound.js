@@ -538,7 +538,6 @@ function displayATIS(atis) {
         console.error('ATIS display element not found.');
         return;
     }
-    console.log('Displaying ATIS:', atis); // Debug log
     atisElement.textContent = `ATIS: ${atis}`;
 }
 
