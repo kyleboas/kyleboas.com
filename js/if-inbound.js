@@ -755,8 +755,15 @@ function highlightCloseETAs() {
 // Highlight a specific group of flights
 function highlightGroup(group, rows, baseColor) {
     group.forEach((flight, index) => {
-        const currentRow = rows[allFlights.indexOf(flight)];
-        
+        const currentRowIndex = allFlights.indexOf(flight);
+        const currentRow = rows[currentRowIndex];
+
+        // Ensure currentRow exists
+        if (!currentRow) {
+            console.warn(`Row for flight not found: ${flight.callsign || 'N/A'}`);
+            return;
+        }
+
         // Validate ETA string
         function isValidETA(eta) {
             if (eta === 'N/A' || !eta || eta.startsWith('>')) return false; // Invalid if N/A or >12hrs
