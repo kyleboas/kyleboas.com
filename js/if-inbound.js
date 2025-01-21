@@ -904,7 +904,7 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Table Rendering
 // ============================
 
-async function renderFlightsTable(allFlights, hideFilter = false) {
+async function renderFlightsTable(allFlights, hideFilter = false, boldedHeadings = {}, minDistance = null, maxDistance = null, boldHeadingEnabled = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
         console.error("Flights table body not found in DOM.");
@@ -929,7 +929,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        allFlights.forEach((flight, index) => {
+        allFlights.forEach((flight) => {
             const row = document.createElement("tr");
 
             // Extract flight details
@@ -938,8 +938,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Check if the flight is within the heading range
             const isWithinHeadingRange =
-                boldedHeadings.minHeading !== null &&
-                boldedHeadings.maxHeading !== null &&
+                boldedHeadings.minHeading !== undefined &&
+                boldedHeadings.maxHeading !== undefined &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
 
@@ -949,7 +949,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
             // Determine visibility based on filters
-            const isVisible = !hideFilter || isWithinHeadingRange;
+            const isVisible = !hideFilter || (isWithinHeadingRange && isWithinDistanceRange);
             if (!isVisible) return; // Skip hidden rows
 
             // Format values
@@ -959,13 +959,13 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const maxMachFormatted = typeof machDetails.maxMach === "number" ? machDetails.maxMach.toFixed(2) : "N/A";
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
-                
-                 // Format ETA and distance
+
+            // Format ETA and distance
             const etaSeconds = parseETAInSeconds(flight.etaMinutes);
             const secondsFormatted = etaSeconds > 120 ? '>120s' : `${etaSeconds}s`;
             const etaFormatted = etaSeconds !== Number.MAX_SAFE_INTEGER ? `${flight.etaMinutes} (${secondsFormatted})` : 'N/A';
-            const distanceValue = flight.distanceToDestination !== 'N/A' ? `${flight.distanceToDestination}` : 'N/A';
-            const distanceAndEta = distanceValue !== 'N/A' && etaFormatted !== 'N/A'
+            const distanceValue = typeof flight.distanceToDestination === "number" ? flight.distanceToDestination : "N/A";
+            const distanceAndEta = distanceValue !== "N/A" && etaFormatted !== "N/A"
                 ? `${distanceValue}<br>${etaFormatted}`
                 : 'N/A';
 
@@ -984,6 +984,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             `;
 
             tableBody.appendChild(row);
+        });
 
         // Highlight flights with close ETAs
         highlightCloseETAs();
@@ -992,7 +993,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
     }
 }
-
 // ============================
 // End Table Rendering
 // ============================
