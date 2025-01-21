@@ -973,12 +973,12 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Populate row HTML
             row.innerHTML = `
-                <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
-                <td>${minMachFormatted}<br>${maxMachFormatted}</td>
-                <td>${speedValue}<br>${machValue}</td>
-                <td>${headingValue}<br>${altitudeValue}</td>
-                <td>${distanceValue}<br>${flight.etaMinutes}</td>
-            `;
+    <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
+    <td>${minMachFormatted}<br>${maxMachFormatted}</td>
+    <td>${speedValue}<br>${machValue}</td>
+    <td>${headingValue}<br>${altitudeValue}</td>
+    <td>${distanceValue} nm<br>${etaFormatted}</td>
+`;
 
             tableBody.appendChild(row);
 
