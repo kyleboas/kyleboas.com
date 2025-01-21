@@ -1034,7 +1034,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
                 
-                const minDistance = parseFloat(document.getElementById('minDistance').value) || null; 
+                const minDistance = parseFloat(document.getElementById('minDistance').value) || null;
 
             const isWithinDistanceRange =
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
@@ -1047,23 +1047,30 @@ console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToD
             // Determine visibility based on active filters
             let isVisible = true;
 
-            // Check heading filter logic
+            // Apply heading filter
             if (boldHeadingEnabled && hideFilter) {
                 const passesHeadingFilter = isWithinHeadingRange;
-                isVisible = passesHeadingFilter;
-                console.log(`Heading filter applied: ${passesHeadingFilter}`);
+                if (!passesHeadingFilter) {
+                    isVisible = false; // Mark as not visible if heading filter fails
+                    console.log(`Flight failed heading filter.`);
+                }
             }
 
-            // Check distance filter logic
+            // Apply distance filter
             if (distanceFilterActive) {
                 const passesDistanceFilter = isWithinDistanceRange;
-                isVisible = isVisible && passesDistanceFilter;
-                console.log(`Distance filter applied: ${passesDistanceFilter}`);
+                if (!passesDistanceFilter) {
+                    isVisible = false; // Mark as not visible if distance filter fails
+                    console.log(`Flight failed distance filter.`);
+                }
             }
 
             // Final visibility status
-            console.log(`Final visibility: ${isVisible}`);
-
+            if (!isVisible) {
+                console.log(`Flight is not visible.`);
+                return; // Skip further processing for this flight
+            }
+            
             // Format table values
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
             const maxMach = machDetails.maxMach !== "N/A" ? machDetails.maxMach.toFixed(2) : "N/A";
