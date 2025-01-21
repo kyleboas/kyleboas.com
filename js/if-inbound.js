@@ -1033,32 +1033,36 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 boldedHeadings.maxHeading !== undefined &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
+                
+                const minDistance = parseFloat(document.getElementById('minDistance').value) || null; 
 
             const isWithinDistanceRange =
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
+                
+                console.log(`Checking distance for Flight (${flight.callsign || "N/A"})`);
+console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToDestination}`);
+                
 
             // Determine visibility based on active filters
             let isVisible = true;
 
+            // Check heading filter logic
             if (boldHeadingEnabled && hideFilter) {
-                isVisible = isWithinHeadingRange;
+                const passesHeadingFilter = isWithinHeadingRange;
+                isVisible = passesHeadingFilter;
+                console.log(`Heading filter applied: ${passesHeadingFilter}`);
             }
 
+            // Check distance filter logic
             if (distanceFilterActive) {
-                isVisible = isVisible && isWithinDistanceRange;
+                const passesDistanceFilter = isWithinDistanceRange;
+                isVisible = isVisible && passesDistanceFilter;
+                console.log(`Distance filter applied: ${passesDistanceFilter}`);
             }
 
-            // Log visibility status
-console.log(`Flight ${index + 1} (${flight.callsign || "N/A"}): Distance = ${flight.distanceToDestination || "N/A"}, isWithinDistanceRange = ${isWithinDistanceRange}, isVisible = ${isVisible}`);
-
-            // Skip rendering this row if it's not visible
-            if (!isVisible) {
-                console.log(`Skipping Flight ${index + 1} (${flight.callsign || "N/A"}) - Not Visible`);
-                return;
-            }
-
-            console.log(`Rendering Flight ${index + 1} (${flight.callsign || "N/A"})`);
+            // Final visibility status
+            console.log(`Final visibility: ${isVisible}`);
 
             // Format table values
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
