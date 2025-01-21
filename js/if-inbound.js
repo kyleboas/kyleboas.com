@@ -787,6 +787,7 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // Bind the manual update button to ATIS and controller fetch
         const manualUpdateButton = document.getElementById('manualUpdateButton');
         if (manualUpdateButton) {
             manualUpdateButton.addEventListener('click', async () => {
@@ -799,6 +800,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 try {
+                    // Fetch ATIS and controllers for the given ICAO
                     await fetchAirportATIS(icao);
                     await fetchControllers(icao);
                 } catch (error) {
@@ -808,9 +810,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        await fetchActiveATCAirports(); // Fetch and display active ATC airports on load
-
-        // Additional initialization code here...
+        // Fetch and display active ATC airports on initial load
+        await fetchActiveATCAirports();
     } catch (error) {
         console.error('Error initializing page:', error.message);
     }
@@ -858,6 +859,47 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     renderFlightsTable(allFlights);
 });
 
+
+// ============================
+// Bold Heading Button Functionality
+// ============================
+document.getElementById('boldHeadingButton').addEventListener('click', () => {
+    const minHeading = parseFloat(document.getElementById('minHeading').value);
+    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
+
+    if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
+        alert('Please enter valid Min and Max Heading values.');
+        return;
+    }
+
+    // Toggle boldHeadingEnabled and update button text
+    boldHeadingEnabled = !boldHeadingEnabled;
+    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
+        ? 'Disable Bold Aircraft'
+        : 'Enable Bold Aircraft';
+
+    // Update boldedHeadings range
+    boldedHeadings.minHeading = minHeading;
+    boldedHeadings.maxHeading = maxHeading;
+
+    // Re-render the table
+    renderFlightsTable(allFlights);
+});
+
+// ============================
+// Toggle Heading Button Functionality
+// ============================
+document.getElementById('toggleHeadingButton').addEventListener('click', () => {
+    hideOtherAircraft = !hideOtherAircraft;
+
+    document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
+        ? 'Show All Aircraft'
+        : 'Hide Aircraft';
+
+    // Re-render the table with the hideFilter flag
+    renderFlightsTable(allFlights, hideOtherAircraft);
+});
+
 // ============================
 // Table Rendering
 // ============================
@@ -893,7 +935,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-            // Check heading range
+            // Check if the flight is within the heading range
             const isWithinHeadingRange =
                 boldedHeadings.minHeading !== null &&
                 boldedHeadings.maxHeading !== null &&
@@ -926,7 +968,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 ? `${distanceValue}<br>${etaFormatted}`
                 : 'N/A';
 
-            // Add bold styling to rows within heading range if enabled
+            // Add bold styling if enabled and within heading range
             if (boldHeadingEnabled && isWithinHeadingRange) {
                 row.style.fontWeight = "bold";
             }
