@@ -613,24 +613,6 @@ function displayControllers(controllers) {
         : 'No active controllers available';
 }
 
-
-// ============================
-// Organize
-// ============================
-
-// Toggle Bold Aircraft
-let boldHeadingEnabled = false;
-document.getElementById('boldHeadingButton').addEventListener('click', () => {
-    boldHeadingEnabled = !boldHeadingEnabled;
-
-    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-        ? 'Disable Bold Aircraft'
-        : 'Enable Bold Aircraft';
-
-    renderFlightsTable(allFlights);
-});
-
-
 // ============================
 // Highlights
 // ============================
@@ -847,38 +829,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Error initializing page:', error.message);
     }
-});
-
-
-// ============================
-// Bold Aircraft Rows
-// ============================
-
-// Toggle bold rows based on heading range
-document.getElementById('boldHeadingButton').addEventListener('click', () => {
-    const minHeading = parseFloat(document.getElementById('minHeading').value);
-    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
-
-    // Validate input
-    if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
-        alert('Please enter valid min and max headings.');
-        return;
-    }
-
-    // Toggle the bolding state
-    boldHeadingEnabled = !boldHeadingEnabled;
-
-    // Update button text
-    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-        ? 'Disable Bold Aircraft'
-        : 'Enable Bold Aircraft';
-
-    // Store heading range in global state
-    boldedHeadings.minHeading = minHeading;
-    boldedHeadings.maxHeading = maxHeading;
-
-    // Re-render the table
-    renderFlightsTable(allFlights);
 });
 
 // ============================
