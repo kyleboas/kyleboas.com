@@ -976,7 +976,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
                 <td>${minMachFormatted}<br>${maxMachFormatted}</td>
                 <td>${speedValue}<br>${machValue}</td>
-                <td>${headingValue}<br>${altitudeValue}</td> 
+                <td>${headingValue}<br>${altitudeValue}</td>
+                <td>${flight.distanceToDestination}<br>${flight.etaMinutes || "N/A"}</td>
             `;
 
             tableBody.appendChild(row);
