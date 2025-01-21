@@ -917,7 +917,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
     // Handle empty flight data
     if (!Array.isArray(allFlights) || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
-        console.log('Callsign, Min/Max Mach, Speed (kts)/Mach, Heading/Altitude (ft), Distance (nm)/ETA');
         console.log('No inbound flights found.');
         return;
     }
@@ -929,9 +928,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
         // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
-
-        // Prepare CSV output
-        console.log('Callsign, Min/Max Mach, Speed (kts)/Mach, Heading/Altitude (ft), Distance (nm)/ETA');
 
         allFlights.forEach((flight, index) => {
             const row = document.createElement("tr");
@@ -963,8 +959,15 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const maxMachFormatted = typeof machDetails.maxMach === "number" ? machDetails.maxMach.toFixed(2) : "N/A";
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
-            const etaFormatted = flight.etaMinutes || 'N/A';
-            const distanceValue = flight.distanceToDestination || 'N/A';
+                
+                 // Format ETA and distance
+            const etaSeconds = parseETAInSeconds(flight.etaMinutes);
+            const secondsFormatted = etaSeconds > 120 ? '>120s' : `${etaSeconds}s`;
+            const etaFormatted = etaSeconds !== Number.MAX_SAFE_INTEGER ? `${flight.etaMinutes} (${secondsFormatted})` : 'N/A';
+            const distanceValue = flight.distanceToDestination !== 'N/A' ? `${flight.distanceToDestination}` : 'N/A';
+            const distanceAndEta = distanceValue !== 'N/A' && etaFormatted !== 'N/A'
+                ? `${distanceValue}<br>${etaFormatted}`
+                : 'N/A';
 
             // Add bold styling if enabled and within heading range
             if (boldHeadingEnabled && isWithinHeadingRange) {
@@ -973,19 +976,14 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Populate row HTML
             row.innerHTML = `
-    <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
-    <td>${minMachFormatted}<br>${maxMachFormatted}</td>
-    <td>${speedValue}<br>${machValue}</td>
-    <td>${headingValue}<br>${altitudeValue}</td>
-    <td>${distanceValue} nm<br>${etaFormatted}</td>
-`;
+                <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
+                <td>${minMachFormatted}<br>${maxMachFormatted}</td>
+                <td>${speedValue}<br>${machValue}</td>
+                <td>${headingValue}<br>${altitudeValue}</td>
+                <td>${distanceAndEta}</td>
+            `;
 
             tableBody.appendChild(row);
-
-            // Format and log the CSV row
-            const csvRow = `${flight.callsign || "N/A"}  ${aircraftName}, ${minMachFormatted}/${maxMachFormatted}, ${speedValue}  ${machValue}, ${headingValue}  ${altitudeValue}, ${distanceValue}  ${etaFormatted}`;
-            console.log(csvRow);
-        });
 
         // Highlight flights with close ETAs
         highlightCloseETAs();
