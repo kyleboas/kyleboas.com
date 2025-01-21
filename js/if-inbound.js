@@ -943,7 +943,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     console.log('Applying Distance Filter:', { minDistance, maxDistance });
 
     // Re-render the table with updated filters
-    renderFlightsTable(allFlights);
+    renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
 
