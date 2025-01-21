@@ -930,14 +930,13 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Filter Distance Button Functionality
 // ============================
 
-// Toggle Distance Filter Functionality
 document.getElementById('filterByDistance').addEventListener('click', () => {
     const minDistance = parseFloat(document.getElementById('minDistance').value);
     const maxDistance = parseFloat(document.getElementById('maxDistance').value);
 
     // Update global distance filter settings
-    filterDistances.minDistance = minDistance;
-    filterDistances.maxDistance = maxDistance;
+    filterDistances.minDistance = isNaN(minDistance) ? null : minDistance;
+    filterDistances.maxDistance = isNaN(maxDistance) ? null : maxDistance;
 
     // Toggle filter state
     filterDistanceEnabled = !filterDistanceEnabled;
@@ -996,6 +995,7 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Table Rendering
 // ============================
 
+// Render Flights Table with Distance Filter
 async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
@@ -1023,8 +1023,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.forEach((flight) => {
             // Determine if the flight is within the filter ranges
             const isWithinDistanceRange =
-                (!filterDistances.minDistance || flight.distanceToDestination <= filterDistances.minDistance) &&
-                (!filterDistances.maxDistance || flight.distanceToDestination >= filterDistances.maxDistance);
+                (!filterDistances.minDistance || flight.distanceToDestination >= filterDistances.minDistance) &&
+                (!filterDistances.maxDistance || flight.distanceToDestination <= filterDistances.maxDistance);
 
             const isWithinHeadingRange =
                 boldedHeadings.minHeading !== null &&
@@ -1032,8 +1032,9 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-            if (filterDistanceEnabled && !isWithinDistanceRange) return; // Skip rows outside the distance range
-            if (hideFilter && !isWithinHeadingRange) return; // Skip rows outside the heading range if filter is active
+            // Skip rows based on filters
+            if (filterDistanceEnabled && !isWithinDistanceRange) return;
+            if (hideFilter && !isWithinHeadingRange) return;
 
             // Create the table row
             const row = document.createElement("tr");
