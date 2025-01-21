@@ -979,6 +979,7 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // ============================
 // Toggle Heading Button Functionality
 // ============================
+
 document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     hideOtherAircraft = !hideOtherAircraft;
 
@@ -1019,7 +1020,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        allFlights.forEach((flight) => {
+        allFlights.forEach((flight, index) => {
             const row = document.createElement("tr");
 
             // Extract flight details
@@ -1048,8 +1049,16 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 isVisible = isVisible && isWithinDistanceRange;
             }
 
-// Skip rendering this row if it's not visible
-if (!isVisible) return;
+            // Log visibility status
+            console.log(`Flight ${index + 1} (${flight.callsign || "N/A"}): isVisible = ${isVisible}`);
+
+            // Skip rendering this row if it's not visible
+            if (!isVisible) {
+                console.log(`Skipping Flight ${index + 1} (${flight.callsign || "N/A"}) - Not Visible`);
+                return;
+            }
+
+            console.log(`Rendering Flight ${index + 1} (${flight.callsign || "N/A"})`);
 
             // Format table values
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
