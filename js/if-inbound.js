@@ -991,7 +991,7 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Table Rendering
 // ============================
 
-async function renderFlightsTable(allFlights, hideFilter = false, boldedHeadings = {}, minDistance = null, maxDistance = null, boldHeadingEnabled = false) {
+async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
         console.error("Flights table body not found in DOM.");
@@ -1023,58 +1023,43 @@ async function renderFlightsTable(allFlights, hideFilter = false, boldedHeadings
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-            // Check if the flight is within the heading range
+            // Skip rows if hideFilter is applied and the flight doesn't meet criteria
             const isWithinHeadingRange =
                 boldedHeadings.minHeading !== undefined &&
                 boldedHeadings.maxHeading !== undefined &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-            // Check distance range
             const isWithinDistanceRange =
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
-            // Determine visibility based on filters
             const isVisible = !hideFilter || (isWithinHeadingRange && isWithinDistanceRange);
-            if (!isVisible) return; // Skip hidden rows
+            if (!isVisible) return;
 
-            // Format values
-            const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
-            const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
-            const minMachFormatted = typeof machDetails.minMach === "number" ? machDetails.minMach.toFixed(2) : "N/A";
-            const maxMachFormatted = typeof machDetails.maxMach === "number" ? machDetails.maxMach.toFixed(2) : "N/A";
-            const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
-            const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
-
-            // Format ETA into MM:SS
-            const formatEta = (etaMinutes) => {
-                if (typeof etaMinutes !== "number" || etaMinutes < 0) return "N/A";
-                const totalSeconds = Math.round(etaMinutes * 60);
-                const minutes = Math.floor(totalSeconds / 60);
-                const seconds = totalSeconds % 60;
-                return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-            };
-
-            const etaFormatted = typeof flight.etaMinutes === "number" ? formatEta(flight.etaMinutes) : "N/A";
-            const distanceValue = typeof flight.distanceToDestination === "number" ? flight.distanceToDestination : "N/A";
-            const distanceAndEta = distanceValue !== "N/A" && etaFormatted !== "N/A"
-                ? `${distanceValue}<br>${etaFormatted}`
-                : 'N/A';
-
-            // Add bold styling if enabled and within heading range
-            if (boldHeadingEnabled && isWithinHeadingRange) {
-                row.style.fontWeight = "bold";
-            }
+            // Format table values
+            const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
+            const maxMach = machDetails.maxMach !== "N/A" ? machDetails.maxMach.toFixed(2) : "N/A";
+            const groundSpeed = flight.speed !== "N/A" ? flight.speed.toFixed(0) : "N/A";
+            const machValue = flight.speed !== "N/A" ? (flight.speed / 666.739).toFixed(2) : "N/A";
+            const heading = flight.headingFromAirport !== "N/A" ? Math.round(flight.headingFromAirport) : "N/A";
+            const altitude = flight.altitude !== "N/A" ? flight.altitude.toFixed(0) : "N/A";
+            const distance = flight.distanceToDestination !== "N/A" ? flight.distanceToDestination : "N/A";
+            const eta = flight.etaMinutes !== "N/A" ? flight.etaMinutes : "N/A";
 
             // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
-                <td>${minMachFormatted}<br>${maxMachFormatted}</td>
-                <td>${speedValue}<br>${machValue}</td>
-                <td>${headingValue}<br>${altitudeValue}</td>
-                <td>${distanceAndEta}</td>
+                <td>${minMach}<br>${maxMach}</td>
+                <td>${groundSpeed}<br>${machValue}</td>
+                <td>${heading}<br>${altitude}</td>
+                <td>${distance}<br>${eta}</td>
             `;
+
+            // Highlight rows if boldHeadingEnabled
+            if (boldHeadingEnabled && isWithinHeadingRange) {
+                row.style.fontWeight = "bold";
+            }
 
             tableBody.appendChild(row);
         });
