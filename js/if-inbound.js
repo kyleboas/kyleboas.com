@@ -1102,6 +1102,7 @@ console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToD
             
             if (filterDistanceEnabled && isWithinDistanceRange) { 
                 row.style.display = "none";
+            } 
 
             tableBody.appendChild(row);
         });
