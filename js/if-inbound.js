@@ -979,7 +979,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 <td>${minMachFormatted}<br>${maxMachFormatted}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${altitudeValue}</td>
-                <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
+                <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td> 
             `;
 
             tableBody.appendChild(row);
