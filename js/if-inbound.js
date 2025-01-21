@@ -995,7 +995,6 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Table Rendering
 // ============================
 
-// Render Flights Table with Distance Filter
 async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
@@ -1021,10 +1020,14 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach((flight) => {
-            // Determine if the flight is within the filter ranges
+            // Ensure `distanceToDestination` is a number
+            const distance = parseFloat(flight.distanceToDestination);
+            if (isNaN(distance)) return;
+
+            // Check if the flight is within the filter ranges
             const isWithinDistanceRange =
-                (!filterDistances.minDistance || flight.distanceToDestination >= filterDistances.minDistance) &&
-                (!filterDistances.maxDistance || flight.distanceToDestination <= filterDistances.maxDistance);
+                (!filterDistances.minDistance || distance >= filterDistances.minDistance) &&
+                (!filterDistances.maxDistance || distance <= filterDistances.maxDistance);
 
             const isWithinHeadingRange =
                 boldedHeadings.minHeading !== null &&
@@ -1050,8 +1053,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const machValue = flight.speed !== "N/A" ? (flight.speed / 666.739).toFixed(2) : "N/A";
             const heading = flight.headingFromAirport !== "N/A" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitude = flight.altitude !== "N/A" ? flight.altitude.toFixed(0) : "N/A";
-            const distance = flight.distanceToDestination !== "N/A" ? `${flight.distanceToDestination}` : "N/A";
-            const eta = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
+            const distanceText = flight.distanceToDestination !== "N/A" ? `${flight.distanceToDestination} nm` : "N/A";
+            const etaText = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
 
             // Populate row HTML
             row.innerHTML = `
@@ -1059,7 +1062,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 <td>${minMach}<br>${maxMach}</td>
                 <td>${groundSpeed}<br>${machValue}</td>
                 <td>${heading}<br>${altitude}</td>
-                <td>${distance} nm<br>${eta}</td>
+                <td>${distanceText}<br>${etaText}</td>
             `;
 
             // Apply bold styling if enabled
