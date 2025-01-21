@@ -1040,6 +1040,13 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
                 
+                console.log('Flight Details:', {
+                minDistance,
+                maxDistance,
+                distanceToDestination: flight.distanceToDestination,
+                isWithinDistanceRange
+            });
+                
                 console.log(`Checking distance for Flight (${flight.callsign || "N/A"})`);
 console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToDestination}`);
                 
@@ -1051,7 +1058,7 @@ console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToD
             if (boldHeadingEnabled && hideFilter) {
                 const passesHeadingFilter = isWithinHeadingRange;
                 if (!passesHeadingFilter) {
-                    isVisible = false; // Mark as not visible if heading filter fails
+                    isVisible = false;
                     console.log(`Flight failed heading filter.`);
                 }
             }
@@ -1060,7 +1067,7 @@ console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToD
             if (distanceFilterActive) {
                 const passesDistanceFilter = isWithinDistanceRange;
                 if (!passesDistanceFilter) {
-                    isVisible = false; // Mark as not visible if distance filter fails
+                    isVisible = false;
                     console.log(`Flight failed distance filter.`);
                 }
             }
@@ -1068,7 +1075,7 @@ console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToD
             // Final visibility status
             if (!isVisible) {
                 console.log(`Flight is not visible.`);
-                return; // Skip further processing for this flight
+                return;
             }
             
             // Format table values
