@@ -960,10 +960,16 @@ async function renderFlightsTable(allFlights, hideFilter = false, boldedHeadings
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
 
-            // Format ETA and distance
-            const etaSeconds = parseETAInSeconds(flight.etaMinutes);
-            const secondsFormatted = etaSeconds > 120 ? '>120s' : `${etaSeconds}s`;
-            const etaFormatted = etaSeconds !== Number.MAX_SAFE_INTEGER ? `${flight.etaMinutes} (${secondsFormatted})` : 'N/A';
+            // Format ETA into MM:SS
+            const formatEta = (etaMinutes) => {
+                if (typeof etaMinutes !== "number" || etaMinutes < 0) return "N/A";
+                const totalSeconds = Math.round(etaMinutes * 60);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+            };
+
+            const etaFormatted = typeof flight.etaMinutes === "number" ? formatEta(flight.etaMinutes) : "N/A";
             const distanceValue = typeof flight.distanceToDestination === "number" ? flight.distanceToDestination : "N/A";
             const distanceAndEta = distanceValue !== "N/A" && etaFormatted !== "N/A"
                 ? `${distanceValue}<br>${etaFormatted}`
@@ -993,6 +999,7 @@ async function renderFlightsTable(allFlights, hideFilter = false, boldedHeadings
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
     }
 }
+
 // ============================
 // End Table Rendering
 // ============================
