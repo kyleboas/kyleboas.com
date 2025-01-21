@@ -49,8 +49,6 @@ function applyDefaults() {
         boldHeadingEnabled = true;
         boldedHeadings.minHeading = defaultMinHeading;
         boldedHeadings.maxHeading = defaultMaxHeading;
-        document.getElementById('boldHeadingButton').textContent = 'Disable Bold Aircraft';
-    }
 
     if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
         document.getElementById('minDistance').value = defaultMinDistance;
@@ -788,21 +786,6 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Add defensive checks for undefined DOM elements
-        const boldHeadingButton = document.getElementById('boldHeadingButton');
-        if (boldHeadingButton) {
-            boldHeadingButton.addEventListener('click', () => {
-                boldHeadingEnabled = !boldHeadingEnabled;
-                boldHeadingButton.textContent = boldHeadingEnabled
-                    ? 'Disable Bold Aircraft'
-                    : 'Enable Bold Aircraft';
-
-                if (Array.isArray(allFlights)) {
-                    renderFlightsTable(allFlights); // Ensure allFlights is an array before passing
-                }
-            });
-        }
-
         const manualUpdateButton = document.getElementById('manualUpdateButton');
         if (manualUpdateButton) {
             manualUpdateButton.addEventListener('click', async () => {
@@ -1010,18 +993,8 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
     boldedHeadings.minHeading = minHeading;
     boldedHeadings.maxHeading = maxHeading;
 
-    // Re-render the table
+    // Re-render the table with the updated bolding settings
     renderFlightsTable(allFlights);
-});
-
-document.getElementById('toggleHeadingButton').addEventListener('click', () => {
-    hideOtherAircraft = !hideOtherAircraft;
-
-    document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft 
-        ? 'Show All Aircraft' 
-        : 'Hide Other Aircraft';
-
-    renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
 // Reset Range Filter
