@@ -49,6 +49,7 @@ function applyDefaults() {
         boldHeadingEnabled = true;
         boldedHeadings.minHeading = defaultMinHeading;
         boldedHeadings.maxHeading = defaultMaxHeading;
+    }
 
     if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
         document.getElementById('minDistance').value = defaultMinDistance;
