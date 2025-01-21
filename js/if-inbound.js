@@ -927,19 +927,13 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 });
 
 // ============================
-// Bold Heading Button Functionality
+// Filter Distance Button Functionality
 // ============================
 
 // Toggle Distance Filter Functionality
 document.getElementById('filterByDistance').addEventListener('click', () => {
     const minDistance = parseFloat(document.getElementById('minDistance').value);
     const maxDistance = parseFloat(document.getElementById('maxDistance').value);
-
-    // Validate input values
-    if (isNaN(minDistance) || isNaN(maxDistance) || minDistance > maxDistance) {
-        alert('Please enter valid Min and Max Distance values.');
-        return;
-    }
 
     // Update global distance filter settings
     filterDistances.minDistance = minDistance;
@@ -1029,8 +1023,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.forEach((flight) => {
             // Determine if the flight is within the filter ranges
             const isWithinDistanceRange =
-                (!filterDistances.minDistance || flight.distanceToDestination >= filterDistances.minDistance) &&
-                (!filterDistances.maxDistance || flight.distanceToDestination <= filterDistances.maxDistance);
+                (!filterDistances.minDistance || flight.distanceToDestination <= filterDistances.minDistance) &&
+                (!filterDistances.maxDistance || flight.distanceToDestination >= filterDistances.maxDistance);
 
             const isWithinHeadingRange =
                 boldedHeadings.minHeading !== null &&
