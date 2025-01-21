@@ -917,7 +917,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
     // Handle empty flight data
     if (!Array.isArray(allFlights) || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
-        console.log('Callsign,Min/Max Mach,Speed (kts)/Mach,Heading/Altitude (ft),Distance (nm)/ETA');
+        console.log('Callsign, Min/Max Mach, Speed (kts)/Mach, Heading/Altitude (ft), Distance (nm)/ETA');
         console.log('No inbound flights found.');
         return;
     }
@@ -931,7 +931,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         // Prepare CSV output
-        console.log('Callsign,Min/Max Mach,Speed (kts)/Mach,Heading/Altitude (ft),Distance (nm)/ETA');
+        console.log('Callsign, Min/Max Mach, Speed (kts)/Mach, Heading/Altitude (ft), Distance (nm)/ETA');
 
         allFlights.forEach((flight, index) => {
             const row = document.createElement("tr");
@@ -977,13 +977,13 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 <td>${minMachFormatted}<br>${maxMachFormatted}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${altitudeValue}</td>
-                <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>  
+                <td>${flight.distanceToDestination}<br>${flight.etaMinutes || "N/A"}</td>  
             `;
 
             tableBody.appendChild(row);
 
             // Format and log the CSV row
-            const csvRow = `${flight.callsign || "N/A"}  ${aircraftName},${minMachFormatted}/${maxMachFormatted},${speedValue}  ${machValue},${headingValue}  ${altitudeValue},${distanceValue}  ${etaFormatted}`;
+            const csvRow = `${flight.callsign || "N/A"}  ${aircraftName}, ${minMachFormatted}/${maxMachFormatted}, ${speedValue}  ${machValue}, ${headingValue}  ${altitudeValue}, ${distanceValue}  ${etaFormatted}`;
             console.log(csvRow);
         });
 

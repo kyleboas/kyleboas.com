@@ -202,7 +202,7 @@ th {
     
     <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
 
-<div>
+<div>    
     <pre id="controllersList" style="display: none;">No active ATC.</pre>
 </div>
 
