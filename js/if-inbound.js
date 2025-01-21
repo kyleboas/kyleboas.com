@@ -15,6 +15,7 @@ let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
+let boldHeadingEnabled = false;
 
 // ============================
 // Cookie Utility Functions
