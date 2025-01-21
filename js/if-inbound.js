@@ -974,29 +974,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-document.getElementById('boldHeadingButton').addEventListener('click', () => {
-    const minHeading = parseFloat(document.getElementById('minHeading').value);
-    const maxHeading = parseFloat(document.getElementById('maxHeading').value);
-
-    if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
-        alert('Please enter valid min and max headings.');
-        return;
-    }
-
-    // Toggle boldHeadingEnabled and update button text
-    boldHeadingEnabled = !boldHeadingEnabled;
-    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-        ? 'Disable Bold Aircraft'
-        : 'Enable Bold Aircraft';
-
-    // Update boldedHeadings range
-    boldedHeadings.minHeading = minHeading;
-    boldedHeadings.maxHeading = maxHeading;
-
-    // Re-render the table with the updated bolding settings
-    renderFlightsTable(allFlights);
-});
-
 // Reset Range Filter
 
 document.getElementById('resetDistanceFilterButton').addEventListener('click', () => {
