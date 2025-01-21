@@ -54,6 +54,7 @@ function applyDefaults() {
     if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
         document.getElementById('minDistance').value = defaultMinDistance;
         document.getElementById('maxDistance').value = defaultMaxDistance;
+        distanceFilterEnabled = true;
         minDistance = defaultMinDistance;
         maxDistance = defaultMaxDistance;
     }
@@ -926,32 +927,30 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     renderFlightsTable(allFlights, hideOtherAircraft); // Pass filter flag to rendering function
 });
 
-
 // ============================
-// Toggle Apply Distance Filter
+// Bold Heading Button Functionality
 // ============================
 
+document.getElementById('filterByDistance').addEventListener('click', () => {
+    const minHeading = parseFloat(document.getElementById('minDistance').value);
+    const maxHeading = parseFloat(document.getElementById('maxDistance').value);
 
-// Toggle Apply Distance Filter
-document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
-    const minInput = parseFloat(document.getElementById('minDistance').value);
-    const maxInput = parseFloat(document.getElementById('maxDistance').value);
-
-    if (!isNaN(minInput)) {
-        minDistance = minInput;
-    } else {
-        minDistance = null;
+    if (isNaN(minDistance) || isNaN(maxDistance) || minDistance > maxDistance) {
+        alert('Please enter valid Min and Max Distance values.');
+        return;
     }
 
-    if (!isNaN(maxInput)) {
-        maxDistance = maxInput;
-    } else {
-        maxDistance = null;
-    }
+    // Toggle boldHeadingEnabled and update button text
+    boldHeadingEnabled = !boldHeadingEnabled;
+    document.getElementById('filterByDistance').textContent = filterDistanceEnabled
+        ? 'Disable Distance Filter'
+        : 'Enable Distance Filter';
 
-    console.log('Applying Distance Filter:', { minDistance, maxDistance });
+    // Update boldedHeadings range
+    boldedHeadings.minHeading = minDistance;
+    boldedHeadings.maxHeading = maxDistance
 
-    // Re-render the table with updated filters
+    // Re-render the table
     renderFlightsTable(allFlights);
 });
 
@@ -1100,6 +1099,9 @@ console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToD
             if (boldHeadingEnabled && isWithinHeadingRange) {
                 row.style.fontWeight = "bold";
             }
+            
+            if (filterDistanceEnabled && isWithinDistanceRange) { 
+                row.style.display = "none";
 
             tableBody.appendChild(row);
         });
