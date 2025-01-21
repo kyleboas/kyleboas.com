@@ -1045,7 +1045,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 maxDistance,
                 distanceToDestination: flight.distanceToDestination,
                 isWithinDistanceRange
-            });
+            }); 
                 
                 console.log(`Checking distance for Flight (${flight.callsign || "N/A"})`);
 console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToDestination}`);
