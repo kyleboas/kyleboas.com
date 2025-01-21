@@ -952,6 +952,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 // ============================
 // Bold Heading Button Functionality
 // ============================
+
 document.getElementById('boldHeadingButton').addEventListener('click', () => {
     const minHeading = parseFloat(document.getElementById('minHeading').value);
     const maxHeading = parseFloat(document.getElementById('maxHeading').value);
@@ -1036,8 +1037,19 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
-            const isVisible = !hideFilter || (isWithinHeadingRange && isWithinDistanceRange);
-            if (!isVisible) return;
+            // Determine visibility based on active filters
+            let isVisible = true;
+
+            if (boldHeadingEnabled && hideFilter) {
+                isVisible = isWithinHeadingRange;
+            }
+
+            if (distanceFilterActive) {
+                isVisible = isVisible && isWithinDistanceRange;
+            }
+
+// Skip rendering this row if it's not visible
+if (!isVisible) return;
 
             // Format table values
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
