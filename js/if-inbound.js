@@ -1039,6 +1039,15 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const isWithinDistanceRange =
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
+
+            // Set the row's display property based on the distance range
+            row.style.display = isWithinDistanceRange ? "" : "none";
+
+            // Skip adding rows that are not visible
+            if (!isWithinDistanceRange) return;
+
+            // Add the row to the table
+            tableBody.appendChild(row);
                 
                 console.log('Flight Details:', {
                 minDistance,
@@ -1057,6 +1066,7 @@ console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToD
             console.log(`Flight ${flight.callsign || 'N/A'} - Distance: ${flight.distanceToDestination}, Visible: ${isWithinDistanceRange}`);
 
             // Styling and visibility
+            
             row.style.display = isVisible ? "" : "none";
             row.style.display = isWithinDistanceRange ? '' : 'none';
 
