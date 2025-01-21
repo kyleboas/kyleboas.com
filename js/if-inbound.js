@@ -942,7 +942,7 @@ document.getElementById('filterByDistance').addEventListener('click', () => {
     }
 
     // Toggle filterDistanceEnabled and update button text
-    boldHeadingEnabled = !boldHeadingEnabled;
+    filterDistanceEnabled = !filterDistanceEnabled;
     document.getElementById('filterByDistance').textContent = filterDistanceEnabled
         ? 'Disable Distance Filter'
         : 'Enable Distance Filter';
