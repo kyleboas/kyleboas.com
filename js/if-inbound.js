@@ -1049,7 +1049,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 
                 console.log(`Checking distance for Flight (${flight.callsign || "N/A"})`);
 console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToDestination}`);
-                
+            
+            if (hideFilter && !isWithinDistanceRange) return;
 
             // Determine visibility based on active filters
             let isVisible = true;
