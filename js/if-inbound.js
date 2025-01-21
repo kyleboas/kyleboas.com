@@ -1052,9 +1052,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Skip adding rows that are not visible
             if (!isWithinDistanceRange) return;
-
-            // Add the row to the table
-            tableBody.appendChild(row);
                 
                 console.log('Flight Details:', {
                 minDistance,
