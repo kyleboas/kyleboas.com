@@ -756,13 +756,7 @@ function highlightCloseETAs() {
 function highlightGroup(group, rows, baseColor) {
     group.forEach((flight, index) => {
         const currentRow = rows[allFlights.indexOf(flight)];
-
-        // Ensure the row exists before applying styles
-        if (!currentRow) {
-            console.error("Row not found for flight:", flight);
-            return;
-        }
-
+        
         // Validate ETA string
         function isValidETA(eta) {
             if (eta === 'N/A' || !eta || eta.startsWith('>')) return false; // Invalid if N/A or >12hrs
@@ -1001,7 +995,7 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Table Rendering
 // ============================
 
-async function renderFlightsTable(allFlights, hideFilter = true) {
+async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
         console.error("Flights table body not found in DOM.");
@@ -1045,8 +1039,29 @@ async function renderFlightsTable(allFlights, hideFilter = true) {
             const isWithinDistanceRange =
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
+                
+                console.log('Flight Details:', {
+                minDistance,
+                maxDistance,
+                distanceToDestination: flight.distanceToDestination,
+                isWithinDistanceRange
+            }); 
+                
+                console.log(`Checking distance for Flight (${flight.callsign || "N/A"})`);
+console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToDestination}`);
             
-            if (hideFilter && !isWithinDistanceRange) return;
+            // Determine visibility based on the hide filter and distance range
+            const isVisible = !hideFilter || isWithinDistanceRange;
+
+            // Debugging visibility
+            console.log(`Flight ${flight.callsign || 'N/A'} - Distance: ${flight.distanceToDestination}, Visible: ${isWithinDistanceRange}`);
+
+            // Styling and visibility
+            row.style.display = isVisible ? "" : "none";
+            row.style.display = isWithinDistanceRange ? '' : 'none';
+
+            // Skip adding rows that should be hidden
+            if (!isVisible) return;
             
             // Format table values
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
