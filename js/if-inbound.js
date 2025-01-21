@@ -16,6 +16,7 @@ let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
+let filterDistanceEnabled = false;
 
 // ============================
 // Cookie Utility Functions
@@ -54,7 +55,7 @@ function applyDefaults() {
     if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
         document.getElementById('minDistance').value = defaultMinDistance;
         document.getElementById('maxDistance').value = defaultMaxDistance;
-        distanceFilterEnabled = true;
+        filterDistanceEnabled = true;
         minDistance = defaultMinDistance;
         maxDistance = defaultMaxDistance;
     }
@@ -940,7 +941,7 @@ document.getElementById('filterByDistance').addEventListener('click', () => {
         return;
     }
 
-    // Toggle boldHeadingEnabled and update button text
+    // Toggle filterDistanceEnabled and update button text
     boldHeadingEnabled = !boldHeadingEnabled;
     document.getElementById('filterByDistance').textContent = filterDistanceEnabled
         ? 'Disable Distance Filter'
