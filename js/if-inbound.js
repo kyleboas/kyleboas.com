@@ -924,6 +924,8 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Toggle Apply Distance Filter
 // ============================
 
+
+// Toggle Apply Distance Filter
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
     const minInput = parseFloat(document.getElementById('minDistance').value);
     const maxInput = parseFloat(document.getElementById('maxDistance').value);
@@ -943,7 +945,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     console.log('Applying Distance Filter:', { minDistance, maxDistance });
 
     // Re-render the table with updated filters
-    renderFlightsTable(allFlights, hideOtherAircraft);
+    renderFlightsTable(allFlights);
 });
 
 
