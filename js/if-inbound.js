@@ -1000,14 +1000,17 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
         return;
     }
 
+    // Toggle boldHeadingEnabled and update button text
     boldHeadingEnabled = !boldHeadingEnabled;
     document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
         ? 'Disable Bold Aircraft'
         : 'Enable Bold Aircraft';
 
+    // Update boldedHeadings range
     boldedHeadings.minHeading = minHeading;
     boldedHeadings.maxHeading = maxHeading;
 
+    // Re-render the table
     renderFlightsTable(allFlights);
 });
 
