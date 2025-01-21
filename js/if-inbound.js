@@ -615,6 +615,23 @@ function displayControllers(controllers) {
 
 
 // ============================
+// Organize
+// ============================
+
+// Toggle Bold Aircraft
+let boldHeadingEnabled = false;
+document.getElementById('boldHeadingButton').addEventListener('click', () => {
+    boldHeadingEnabled = !boldHeadingEnabled;
+
+    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
+        ? 'Disable Bold Aircraft'
+        : 'Enable Bold Aircraft';
+
+    renderFlightsTable(allFlights);
+});
+
+
+// ============================
 // Highlights
 // ============================
 
