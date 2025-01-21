@@ -1050,7 +1050,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             }
 
             // Log visibility status
-            console.log(`Flight ${index + 1} (${flight.callsign || "N/A"}): isVisible = ${isVisible}`);
+console.log(`Flight ${index + 1} (${flight.callsign || "N/A"}): Distance = ${flight.distanceToDestination || "N/A"}, isVisible = ${isVisible}`);
 
             // Skip rendering this row if it's not visible
             if (!isVisible) {
