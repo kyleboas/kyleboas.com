@@ -802,7 +802,7 @@ function highlightGroup(group, rows, baseColor) {
         // Update row highlights
         const etaCell = currentRow.querySelector('td:nth-child(5)');
         if (etaCell && flight.etaMinutes !== 'N/A') {
-            etaCell.innerHTML = `${flight.etaMinutes} (${closestTimeDiff > 120 ? '>120s' : `${closestTimeDiff}s`})`;
+            etaCell.innerHTML = `${flight.distanceToDestination}<br>${flight.etaMinutes}`; // Show NM and MM:SS
         }
 
         if (highlightColor) {
@@ -1044,8 +1044,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const machValue = flight.speed !== "N/A" ? (flight.speed / 666.739).toFixed(2) : "N/A";
             const heading = flight.headingFromAirport !== "N/A" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitude = flight.altitude !== "N/A" ? flight.altitude.toFixed(0) : "N/A";
-            const distance = flight.distanceToDestination !== "N/A" ? flight.distanceToDestination : "N/A";
-            const eta = flight.etaMinutes !== "N/A" ? flight.etaMinutes : "N/A";
+            const distance = flight.distanceToDestination !== "N/A" ? `${flight.distanceToDestination} NM` : "N/A";
+            const eta = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
 
             // Populate row HTML
             row.innerHTML = `
