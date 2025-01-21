@@ -995,7 +995,7 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Table Rendering
 // ============================
 
-async function renderFlightsTable(allFlights, hideFilter = false) {
+async function renderFlightsTable(allFlights, hideFilter = true) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
         console.error("Flights table body not found in DOM.");
@@ -1051,33 +1051,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToDestination}`);
             
             if (hideFilter && !isWithinDistanceRange) return;
-
-            // Determine visibility based on active filters
-            let isVisible = true;
-
-            // Apply heading filter
-            if (boldHeadingEnabled && hideFilter) {
-                const passesHeadingFilter = isWithinHeadingRange;
-                if (!passesHeadingFilter) {
-                    isVisible = false;
-                    console.log(`Flight failed heading filter.`);
-                }
-            }
-
-            // Apply distance filter
-            if (distanceFilterActive) {
-                const passesDistanceFilter = isWithinDistanceRange;
-                if (!passesDistanceFilter) {
-                    isVisible = false;
-                    console.log(`Flight failed distance filter.`);
-                }
-            }
-
-            // Final visibility status
-            if (!isVisible) {
-                console.log(`Flight is not visible.`);
-                return;
-            }
             
             // Format table values
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
