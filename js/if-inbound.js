@@ -1020,7 +1020,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         // Iterate through flights
-        allFlights.forEach((flight) => {
+        allFlights.forEach((flight, index) => {
             // Validate and parse distance
             const distance = parseFloat(flight.distanceToDestination);
             if (isNaN(distance)) return;
