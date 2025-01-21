@@ -8,9 +8,7 @@ const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8';
 let allFlights = [];
 let headingFilterActive = false;
 let boldedHeadings = { minHeading: null, maxHeading: null };
-let distanceFilterActive = false;
-let minDistance = null;
-let maxDistance = null;
+let filterDistances = { minDistance: null, maxDistance: null };
 let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
@@ -932,26 +930,28 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Bold Heading Button Functionality
 // ============================
 
+// Toggle Distance Filter Functionality
 document.getElementById('filterByDistance').addEventListener('click', () => {
-    const minHeading = parseFloat(document.getElementById('minDistance').value);
-    const maxHeading = parseFloat(document.getElementById('maxDistance').value);
+    const minDistance = parseFloat(document.getElementById('minDistance').value);
+    const maxDistance = parseFloat(document.getElementById('maxDistance').value);
 
+    // Validate input values
     if (isNaN(minDistance) || isNaN(maxDistance) || minDistance > maxDistance) {
         alert('Please enter valid Min and Max Distance values.');
         return;
     }
 
-    // Toggle filterDistanceEnabled and update button text
+    // Update global distance filter settings
+    filterDistances.minDistance = minDistance;
+    filterDistances.maxDistance = maxDistance;
+
+    // Toggle filter state
     filterDistanceEnabled = !filterDistanceEnabled;
     document.getElementById('filterByDistance').textContent = filterDistanceEnabled
         ? 'Disable Distance Filter'
         : 'Enable Distance Filter';
 
-    // Update boldedHeadings range
-    boldedHeadings.minHeading = minDistance;
-    boldedHeadings.maxHeading = maxDistance
-
-    // Re-render the table
+    // Re-render the table with the new filter state
     renderFlightsTable(allFlights);
 });
 
@@ -1009,13 +1009,12 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         return;
     }
 
-    // Clear the table before rendering
+    // Clear existing rows
     tableBody.innerHTML = "";
 
     // Handle empty flight data
     if (!Array.isArray(allFlights) || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
-        console.log('No inbound flights found.');
         return;
     }
 
@@ -1027,56 +1026,28 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        allFlights.forEach((flight, index) => {
+        allFlights.forEach((flight) => {
+            // Determine if the flight is within the filter ranges
+            const isWithinDistanceRange =
+                (!filterDistances.minDistance || flight.distanceToDestination >= filterDistances.minDistance) &&
+                (!filterDistances.maxDistance || flight.distanceToDestination <= filterDistances.maxDistance);
+
+            const isWithinHeadingRange =
+                boldedHeadings.minHeading !== null &&
+                boldedHeadings.maxHeading !== null &&
+                flight.headingFromAirport >= boldedHeadings.minHeading &&
+                flight.headingFromAirport <= boldedHeadings.maxHeading;
+
+            if (filterDistanceEnabled && !isWithinDistanceRange) return; // Skip rows outside the distance range
+            if (hideFilter && !isWithinHeadingRange) return; // Skip rows outside the heading range if filter is active
+
+            // Create the table row
             const row = document.createElement("tr");
 
             // Extract flight details
-            const aircraftName = flight.aircraftName || "UNKN";
+            const aircraftName = flight.aircraftName || "Unknown";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-            // Skip rows if hideFilter is applied and the flight doesn't meet criteria
-            const isWithinHeadingRange =
-                boldedHeadings.minHeading !== undefined &&
-                boldedHeadings.maxHeading !== undefined &&
-                flight.headingFromAirport >= boldedHeadings.minHeading &&
-                flight.headingFromAirport <= boldedHeadings.maxHeading;
-                
-                const minDistance = parseFloat(document.getElementById('minDistance').value) || null;
-
-            const isWithinDistanceRange =
-                (minDistance === null || flight.distanceToDestination >= minDistance) &&
-                (maxDistance === null || flight.distanceToDestination <= maxDistance);
-
-            // Set the row's display property based on the distance range
-            row.style.display = isWithinDistanceRange ? "" : "none";
-
-            // Skip adding rows that are not visible
-            if (!isWithinDistanceRange) return;
-                
-                console.log('Flight Details:', {
-                minDistance,
-                maxDistance,
-                distanceToDestination: flight.distanceToDestination,
-                isWithinDistanceRange
-            }); 
-                
-                console.log(`Checking distance for Flight (${flight.callsign || "N/A"})`);
-console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToDestination}`);
-            
-            // Determine visibility based on the hide filter and distance range
-            const isVisible = !hideFilter || isWithinDistanceRange;
-
-            // Debugging visibility
-            console.log(`Flight ${flight.callsign || 'N/A'} - Distance: ${flight.distanceToDestination}, Visible: ${isWithinDistanceRange}`);
-
-            // Styling and visibility
-            
-            row.style.display = isVisible ? "" : "none";
-            row.style.display = isWithinDistanceRange ? '' : 'none';
-
-            // Skip adding rows that should be hidden
-            if (!isVisible) return;
-            
             // Format table values
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
             const maxMach = machDetails.maxMach !== "N/A" ? machDetails.maxMach.toFixed(2) : "N/A";
@@ -1093,17 +1064,13 @@ console.log(`Min Distance: ${minDistance}, Flight Distance: ${flight.distanceToD
                 <td>${minMach}<br>${maxMach}</td>
                 <td>${groundSpeed}<br>${machValue}</td>
                 <td>${heading}<br>${altitude}</td>
-                <td>${distance}nm<br>${eta}</td>
+                <td>${distance} nm<br>${eta}</td>
             `;
 
-            // Highlight rows if boldHeadingEnabled
+            // Apply bold styling if enabled
             if (boldHeadingEnabled && isWithinHeadingRange) {
                 row.style.fontWeight = "bold";
             }
-            
-            if (filterDistanceEnabled && isWithinDistanceRange) { 
-                row.style.display = "none";
-            } 
 
             tableBody.appendChild(row);
         });
