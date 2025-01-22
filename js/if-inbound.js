@@ -1061,7 +1061,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 flight.distanceToDestination <= (maxDistance ?? Infinity)
             );
 
-            row.style.display = hideFilter && !isWithinDistanceRange ? "none" : "";
+            row.style.display = isWithinDistanceRange ? "none" : "";
 
             // Skip rendering this row if it's not visible
             if (!isVisible) {
