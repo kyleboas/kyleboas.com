@@ -8,13 +8,14 @@ const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8';
 let allFlights = [];
 let headingFilterActive = false;
 let boldedHeadings = { minHeading: null, maxHeading: null };
-let filterDistances = { minDistance: null, maxDistance: null };
+let distanceFilterActive = false;
+let minDistance = null;
+let maxDistance = null;
 let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
-let filterDistanceEnabled = false;
 
 // ============================
 // Cookie Utility Functions
@@ -53,14 +54,11 @@ function applyDefaults() {
     if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
         document.getElementById('minDistance').value = defaultMinDistance;
         document.getElementById('maxDistance').value = defaultMaxDistance;
-        filterDistanceEnabled = true;
         minDistance = defaultMinDistance;
         maxDistance = defaultMaxDistance;
     }
 
-    updateDistancesAndETAs(allFlights, airportCoordinates)
-        .then(() => renderFlightsTable(allFlights))
-        .catch((error) => console.error("Error applying defaults:", error.message));
+    renderFlightsTable(allFlights); // Re-render the table with applied defaults
 }
 
 // Save default settings to cookies
@@ -418,6 +416,7 @@ async function fetchControllers(icao) {
     }
 }
 
+
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
     if (!airportCoordinates || isNaN(airportCoordinates.latitude) || isNaN(airportCoordinates.longitude)) {
@@ -475,9 +474,8 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
             flight.distanceToDestination = 'N/A';
             flight.etaMinutes = 'N/A';
             flight.headingFromAirport = 'N/A';
+            return;
         }
-    }
-}
 
 // Helper functions with validations
 
@@ -546,6 +544,15 @@ function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, hea
     const totalSeconds = Math.round(timeInHours * 3600);
     const totalMinutes = Math.floor(totalSeconds / 60);
     const remainingSeconds = totalSeconds % 60;
+        // Calculate ETA using dead reckoning
+        flight.etaMinutes = calculateETA(
+            flight.latitude,
+            flight.longitude,
+            airportCoordinates.latitude,
+            airportCoordinates.longitude,
+            flight.speed, 
+            flight.heading
+        );
 
     // Represent ETA above 12 hours
     if (totalMinutes > 720) {
@@ -554,6 +561,14 @@ function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, hea
 
     // Format ETA as "minutes:seconds"
     return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        // Calculate heading from airport to aircraft
+        flight.headingFromAirport = calculateBearing(
+            airportCoordinates.latitude,
+            airportCoordinates.longitude,
+            flight.latitude,
+            flight.longitude
+        );
+    });
 }
 
 // Fetch and update flights
@@ -577,12 +592,19 @@ async function fetchAndUpdateFlights(icao) {
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
 
         const airportCoordinates = await fetchAirportCoordinates(icao);
-        
+
         if (!airportCoordinates) {
             console.warn("No coordinates found for airport ICAO:", icao);
             throw new Error("Failed to fetch airport coordinates.");
         }
-        
+
+        // Update distances, ETAs, and headings
+        await updateDistancesAndETAs(flights, airportCoordinates);
+
+        // Update global state and render table
+        allFlights = flights; // Save to global state
+        renderFlightsTable(allFlights); // Pass `allFlights` directly to the table renderer
+
         // Fetch and display ATIS and controllers
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
@@ -593,6 +615,10 @@ async function fetchAndUpdateFlights(icao) {
     } catch (error) {
         console.error("Error fetching flights:", error.message);
         allFlights = [];
+        console.error("Error fetching flights or controllers:", error.message);
+
+        // Provide fallback for rendering the table and messages
+         allFlights = [];
         renderFlightsTable(allFlights);
         
         document.getElementById('atisMessage').textContent = "ATIS not available.";
@@ -767,7 +793,7 @@ function highlightGroup(group, rows, baseColor) {
             return;
         }
 
-        // Validate ETA string
+       // Validate ETA string
         function isValidETA(eta) {
             if (eta === 'N/A' || !eta || eta.startsWith('>')) return false; // Invalid if N/A or >12hrs
             const [minutes, seconds] = eta.split(':').map(Number);
@@ -929,6 +955,34 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     renderFlightsTable(allFlights, hideOtherAircraft); // Pass filter flag to rendering function
 });
 
+
+// ============================
+// Toggle Apply Distance Filter
+// ============================
+
+document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+    const minInput = parseFloat(document.getElementById('minDistance').value);
+    const maxInput = parseFloat(document.getElementById('maxDistance').value);
+
+    if (!isNaN(minInput)) {
+        minDistance = minInput;
+    } else {
+        minDistance = null;
+    }
+
+    if (!isNaN(maxInput)) {
+        maxDistance = maxInput;
+    } else {
+        maxDistance = null;
+    }
+
+    console.log('Applying Distance Filter:', { minDistance, maxDistance });
+
+    // Re-render the table with updated filters
+    renderFlightsTable(allFlights);
+});
+
+
 // ============================
 // Bold Heading Button Functionality
 // ============================
@@ -971,32 +1025,6 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
-
-// Toggle Apply Distance Filter
-document.getElementById('filterByDistance').addEventListener('click', () => {
-    const minInput = parseFloat(document.getElementById('minDistance').value);
-    const maxInput = parseFloat(document.getElementById('maxDistance').value);
-
-    if (!isNaN(minInput)) {
-        minDistance = minInput;
-    } else {
-        minDistance = null;
-    }
-
-    if (!isNaN(maxInput)) {
-        maxDistance = maxInput;
-    } else {
-        maxDistance = null;
-    }
-
-    console.log('Applying Distance Filter:', { minDistance, maxDistance });
-
-    // Re-render the table with updated filters
-    renderFlightsTable(allFlights);
-});
-
-
-
 // ============================
 // Table Rendering
 // ============================
@@ -1025,10 +1053,10 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach(flight => {
-            const row = document.createElement("tr");
-            
+             const row = document.createElement("tr");
+
             // Extract flight details
-            const aircraftName = flight.aircraftName || "Unknown";
+            const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
             // Validate and parse distance
@@ -1043,27 +1071,33 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             if (filterDistanceEnabled && !isWithinDistanceRange) return;
             if (hideFilter && !isWithinHeadingRange) return; // Heading filter
 
-            const isWithinHeadingRange =
+           const isWithinHeadingRange =
                 boldedHeadings.minHeading !== null &&
                 boldedHeadings.maxHeading !== null &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
-            
-            row.style.display = isVisible ? "" : "none";
-            row.style.display = isWithinDistanceRange ? '' : 'none';
-            
-            if (!isVisible) return;
 
-            // Format table values
+            // Check distance range
+            const isWithinDistanceRange =
+                (minDistance === null || flight.distanceToDestination >= minDistance) &&
+                (maxDistance === null || flight.distanceToDestination <= maxDistance);
+
+            // Determine visibility based on filters
+            const isVisible = !hideFilter || isWithinHeadingRange;
+            if (!isVisible) return; // Skip hidden rows
+
+            // Format values
             const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
             const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
+            const minMachFormatted = typeof machDetails.minMach === "number" ? machDetails.minMach.toFixed(2) : "N/A";
+            const maxMachFormatted = typeof machDetails.maxMach === "number" ? machDetails.maxMach.toFixed(2) : "N/A";
             const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
 
             // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
-                <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
+                <td>${minMachFormatted}<br>${maxMachFormatted}</td>
                 <td>${speedValue}<br>${machValue}</td>
                 <td>${headingValue}<br>${altitudeValue}</td>
                 <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
@@ -1076,7 +1110,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Append the row to the table
             tableBody.appendChild(row);
-        });
+         });
 
         // Highlight flights with close ETAs
         highlightCloseETAs();
@@ -1153,7 +1187,7 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
         renderFlightsTable(allFlights);
     } catch (error) {
         console.error('Error during manual update:', error.message);
-        alert('Failed to update flight data.');
+        alert('Failed to update ATIS and Controllers. Check console for details.');
     }
 });
 
@@ -1180,18 +1214,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     stopAutoUpdate();
-    let countdown = 15; // Update countdown for 15 seconds
+    let countdown = 5; // Update countdown for 5 seconds
     const countdownTimer = document.getElementById('countdownTimer');
 
-    // Set interval for 15 seconds
+    // Set interval for 5 seconds
     updateInterval = setInterval(async () => {
         await fetchAndUpdateFlights(icao);
         await fetchControllers(icao); // Update controllers on auto-update
         await fetchActiveATCAirports(); // Update active airports dynamically
-        countdown = 15; // Reset countdown
-    }, 15000); // 15 seconds interval
+        countdown = 5; // Reset countdown
+    }, 5000); // 5 seconds interval 
 
-    // Countdown display logic
+    // Countdown display logic (decrements every second)
     countdownInterval = setInterval(() => {
         countdown--;
         countdownTimer.textContent = `${countdown}`;
