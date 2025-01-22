@@ -102,6 +102,10 @@ form button:hover {
     background-color: #45a049;
 }
 
+.arrow {
+    font-family: Arial, sans-serif;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
