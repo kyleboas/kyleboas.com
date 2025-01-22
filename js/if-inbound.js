@@ -418,33 +418,6 @@ async function fetchControllers(icao) {
     }
 }
 
-
-// async applyDefaults
-async function applyDefaults() {
-    const defaultMinDistance = parseFloat(getCookie('defaultMinDistance'));
-    const defaultMaxDistance = parseFloat(getCookie('defaultMaxDistance'));
-
-    if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
-        document.getElementById('minDistance').value = defaultMinDistance;
-        document.getElementById('maxDistance').value = defaultMaxDistance;
-
-        filterDistances.minDistance = defaultMinDistance;
-        filterDistances.maxDistance = defaultMaxDistance;
-        filterDistanceEnabled = true;
-    }
-
-    // Fetch airport coordinates dynamically
-    const icao = document.getElementById('icao').value.trim().toUpperCase();
-    const airportCoordinates = await fetchAirportCoordinates(icao);
-
-    if (airportCoordinates) {
-        await updateDistancesAndETAs(allFlights, airportCoordinates);
-        renderFlightsTable(allFlights);
-    } else {
-        console.error("Failed to fetch airport coordinates for applying defaults.");
-    }
-}
-
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
     if (!airportCoordinates || isNaN(airportCoordinates.latitude) || isNaN(airportCoordinates.longitude)) {
