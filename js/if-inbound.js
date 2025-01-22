@@ -755,7 +755,15 @@ function highlightCloseETAs() {
 // Highlight a specific group of flights
 function highlightGroup(group, rows, baseColor) {
     group.forEach((flight, index) => {
-        const currentRow = rows[allFlights.indexOf(flight)];
+        const rowIndex = allFlights.indexOf(flight);
+
+        // Ensure rowIndex is valid
+        if (rowIndex < 0 || rowIndex >= rows.length) {
+            console.warn(`Row not found for flight: ${flight.callsign}`);
+            return; // Skip this iteration if no corresponding row is found
+        }
+        
+        const currentRow = rows[rowIndex];
         
         // Validate ETA string
         function isValidETA(eta) {
@@ -766,8 +774,8 @@ function highlightGroup(group, rows, baseColor) {
 
         // Skip invalid ETAs
         if (!isValidETA(flight.etaMinutes)) {
-            currentRow.style.display = 'none';
-            return;
+        currentRow.style.display = 'none'; // Hide the row
+        return;
         }
 
         let closestTimeDiff = Number.MAX_SAFE_INTEGER;
