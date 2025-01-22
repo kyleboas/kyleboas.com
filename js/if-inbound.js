@@ -703,7 +703,6 @@ function clearHighlights() {
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     rows.forEach(row => {
         row.style.backgroundColor = ''; // Reset background color
-        row.removeAttribute('title'); // Remove tooltips
     });
 }
 
@@ -748,21 +747,26 @@ function highlightCloseETAs() {
 function highlightGroup(group, rows, baseColor) {
     group.forEach((flight, index) => {
         const currentRow = rows[allFlights.indexOf(flight)];
-        
+
+        // Skip if the row is hidden
+        const isHidden = currentRow.style.display === 'none' || 
+                         window.getComputedStyle(currentRow).display === 'none';
+        if (isHidden) {
+            return;
+        }
+
         // Validate ETA string
         function isValidETA(eta) {
-            if (eta === 'N/A' || !eta || eta.startsWith('>')) return false; // Invalid if N/A or >12hrs
+            if (eta === 'N/A' || !eta || eta.startsWith('>')) return false; // Invalid
             const [minutes, seconds] = eta.split(':').map(Number);
-            return !(isNaN(minutes) || isNaN(seconds)); // Valid if both minutes and seconds are numbers
+            return !(isNaN(minutes) || isNaN(seconds)); // Valid
         }
 
         // Skip invalid ETAs
         if (!isValidETA(flight.etaMinutes)) {
-            currentRow.style.display = 'none';
+            currentRow.style.display = 'none'; // Hide invalid rows
             return;
         }
-
-        currentRow.style.display = ''; // Ensure row is visible
 
         let closestTimeDiff = Number.MAX_SAFE_INTEGER;
         let highlightColor = null;
