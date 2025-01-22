@@ -1018,9 +1018,14 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.forEach((flight) => {
             const row = document.createElement("tr");
             
+            const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
+            typeof flight.distanceToDestination === 'number' &&
+            flight.distanceToDestination >= (minDistance ?? 0) &&
+            flight.distanceToDestination <= (maxDistance ?? Infinity)
+        );
+            
             const isVisible = isWithinDistanceRange;
 
-        // Apply bold styling for heading range
         row.style.display = isVisible ? '' : 'none';
 
             const aircraftName = flight.aircraftName || "UNKN";
