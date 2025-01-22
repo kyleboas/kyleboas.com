@@ -198,14 +198,6 @@ th {
     <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
     </form>
     
-    <form id="filterForm" style="margin-top: 20px;">
-    <label for="filterMinDistance">Filter Min Distance:</label>
-    <input type="number" id="filterMinDistance" min="0" placeholder="e.g., 50">
-    <label for="filterMaxDistance">Filter Max Distance:</label>
-    <input type="number" id="filterMaxDistance" min="0" placeholder="e.g., 500">
-    <button type="button" id="filterDistanceButton">Filter Distance</button>
-    </form>
-    
     <button id="manualUpdateButton">Update ATIS and Controllers</button>
     
     <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
@@ -233,24 +225,5 @@ th {
     </tbody>
     </table>
 </div>
-<script>
-    document.getElementById('filterDistanceButton').addEventListener('click', () => {
-    const minDistance = parseFloat(document.getElementById('filterMinDistance').value);
-    const maxDistance = parseFloat(document.getElementById('filterMaxDistance').value);
-
-    if (isNaN(minDistance) || isNaN(maxDistance) || minDistance > maxDistance) {
-        alert('Please enter valid Min and Max Distance values.');
-        return;
-    }
-
-    const filteredFlights = allFlights.filter(flight => {
-        const distance = flight.distanceToDestination;
-        return distance >= minDistance && distance <= maxDistance;
-    });
-
-    renderFlightsTable(filteredFlights);
-});
-
-</script>
 <script src="/js/if-inbound.js"></script>
 </body>
