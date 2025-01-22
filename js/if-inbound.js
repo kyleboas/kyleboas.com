@@ -1028,6 +1028,31 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
+// Toggle Apply Distance Filter
+document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+    const minInput = parseFloat(document.getElementById('minDistance').value);
+    const maxInput = parseFloat(document.getElementById('maxDistance').value);
+
+    if (!isNaN(minInput)) {
+        minDistance = minInput;
+    } else {
+        minDistance = null;
+    }
+
+    if (!isNaN(maxInput)) {
+        maxDistance = maxInput;
+    } else {
+        maxDistance = null;
+    }
+
+    console.log('Applying Distance Filter:', { minDistance, maxDistance });
+
+    // Re-render the table with updated filters
+    renderFlightsTable(allFlights);
+});
+
+
+
 // ============================
 // Table Rendering
 // ============================
@@ -1049,62 +1074,55 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
     }
 
     try {
-        // Fetch aircraft Mach details
         const aircraftIds = allFlights.map(flight => flight.aircraftId);
         const aircraftMachDetails = await pairAircraftData(aircraftIds);
 
         // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        // Iterate through flights
-        allFlights.forEach((flight, index) => {
+        allFlights.forEach(flight => {
+            const row = document.createElement("tr");
+            
+            // Extract flight details
+            const aircraftName = flight.aircraftName || "Unknown";
+            const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
+
             // Validate and parse distance
             const distance = parseFloat(flight.distanceToDestination);
             if (isNaN(distance)) return;
 
             // Determine filter criteria
             const isWithinDistanceRange =
-             (!filterDistances.minDistance || distance >= filterDistances.minDistance) &&
-                (!filterDistances.maxDistance || distance <= filterDistances.maxDistance);
+        (minDistance === null || flight.distanceToDestination >= minDistance) &&
+        (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
-if (filterDistanceEnabled && !isWithinDistanceRange) return;
+            if (filterDistanceEnabled && !isWithinDistanceRange) return;
+            if (hideFilter && !isWithinHeadingRange) return; // Heading filter
 
             const isWithinHeadingRange =
                 boldedHeadings.minHeading !== null &&
                 boldedHeadings.maxHeading !== null &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
-
-            // Skip flights that don't match filter criteria
-            if (filterDistanceEnabled && !isWithinDistanceRange) {
-            return; 
-            }
-            if (hideFilter && !isWithinHeadingRange) return; // Heading filter
-
-            // Create table row only for matching flights
-            const row = document.createElement("tr");
-
-            // Extract flight details
-            const aircraftName = flight.aircraftName || "Unknown";
-            const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
+            
+            row.style.display = isVisible ? "" : "none";
+            row.style.display = isWithinDistanceRange ? '' : 'none';
+            
+            if (!isVisible) return;
 
             // Format table values
-            const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
-            const maxMach = machDetails.maxMach !== "N/A" ? machDetails.maxMach.toFixed(2) : "N/A";
-            const groundSpeed = flight.speed !== "N/A" ? flight.speed.toFixed(0) : "N/A";
-            const machValue = flight.speed !== "N/A" ? (flight.speed / 666.739).toFixed(2) : "N/A";
-            const heading = flight.headingFromAirport !== "N/A" ? Math.round(flight.headingFromAirport) : "N/A";
-            const altitude = flight.altitude !== "N/A" ? flight.altitude.toFixed(0) : "N/A";
-            const distanceT = flight.distanceToDestination !== "N/A" ? `${flight.distanceToDestination}` : "N/A";
-const etaT = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
+            const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
+            const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
+            const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
+            const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
 
             // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
-                <td>${minMach}<br>${maxMach}</td>
-                <td>${groundSpeed}<br>${machValue}</td>
-                <td>${heading}<br>${altitude}</td>
-                <td>${distanceT}<br>${etaT}</td>
+                <td>${machDetails.minMach}<br>${machDetails.maxMach}</td>
+                <td>${speedValue}<br>${machValue}</td>
+                <td>${headingValue}<br>${altitudeValue}</td>
+                <td>${flight.distanceToDestination || "N/A"}<br>${flight.etaMinutes || "N/A"}</td>
             `;
 
             // Apply bold styling if heading range matches
