@@ -79,7 +79,6 @@ document.getElementById('saveDefaultsButton').addEventListener('click', () => {
     alert('Defaults saved!');
 });
 
-
 // ============================
 // Utility Functions
 // ============================
@@ -186,24 +185,21 @@ pairAircraftData(aircraftIds).then(pairedData => {
     console.log("Paired Aircraft Data:", pairedData);
 });
 
-
 // ============================
 // Fetch Functions
 // ============================
 
-// Fetch data using the proxy
 async function fetchWithProxy(endpoint) {
     try {
         const response = await fetch(`${PROXY_URL}${endpoint}`);
         if (!response.ok) {
-            const errorData = await response.text(); // Use `text` instead of `json`
+            const errorData = await response.text();
             console.error('Error from proxy:', errorData);
             throw new Error(`Error fetching data: ${response.status}`);
         }
 
-        const textResponse = await response.text(); // Get the response as text
+        const textResponse = await response.text();
         try {
-            // Attempt to parse it as JSON
             return JSON.parse(textResponse);
         } catch {
             throw new Error('Invalid JSON response');
@@ -420,16 +416,18 @@ async function fetchControllers(icao) {
 }
 
 
+// ============================
 // Update distances, ETA, and headings
+// ============================
+
 async function updateDistancesAndETAs(flights, airportCoordinates) {
     for (const flight of flights) {
         try {
-            // Validate inputs
             if (
                 !airportCoordinates ||
                 !flight.latitude ||
                 !flight.longitude ||
-                !flight.speed || // Ensure speed is valid
+                !flight.speed ||
                 flight.speed <= 0
             ) {
                 flight.distanceToDestination = 'N/A';
@@ -438,7 +436,6 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
                 continue;
             }
 
-            // Calculate distance to destination
             flight.distanceToDestination = Math.ceil(
                 calculateDistance(
                     flight.latitude,
@@ -448,7 +445,6 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
                 )
             );
 
-            // Calculate ETA using dead reckoning
             flight.etaMinutes = calculateETA(
                 flight.latitude,
                 flight.longitude,
@@ -458,7 +454,6 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
                 flight.heading
             );
 
-            // Calculate heading from airport to aircraft
             flight.headingFromAirport = calculateBearing(
                 airportCoordinates.latitude,
                 airportCoordinates.longitude,
@@ -466,7 +461,6 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
                 flight.longitude
             );
         } catch (error) {
-            // Handle errors gracefully for this flight
             console.error(`Error updating flight ${flight.callsign || 'Unknown'}:`, error.message);
             flight.distanceToDestination = 'N/A';
             flight.etaMinutes = 'N/A';
@@ -552,26 +546,26 @@ function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, hea
     return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
+// ============================
 // Fetch and update flights
+// ============================
+
 async function fetchAndUpdateFlights(icao) {
     try {
-        // Unhide the ATIS and controllers elements
         document.getElementById('atisMessage').style.display = 'block';
         document.getElementById('controllersList').style.display = 'block';
 
-        // Fetch required data
         const inboundFlightIds = await fetchInboundFlightIds(icao);
         if (!inboundFlightIds.length) {
             console.warn("No inbound flights found for ICAO:", icao);
-            allFlights = []; // Reset global state
-            renderFlightsTable(allFlights); // Clear table
+            allFlights = [];
+            renderFlightsTable(allFlights);
             document.getElementById('atisMessage').textContent = "No ATIS available.";
             document.getElementById('controllersList').textContent = "No controllers available.";
             return;
         }
 
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
-
         const airportCoordinates = await fetchAirportCoordinates(icao);
 
         if (!airportCoordinates) {
@@ -579,22 +573,17 @@ async function fetchAndUpdateFlights(icao) {
             throw new Error("Failed to fetch airport coordinates.");
         }
 
-        // Update distances, ETAs, and headings
         await updateDistancesAndETAs(flights, airportCoordinates);
 
-        // Update global state and render table
-        allFlights = flights; // Save to global state
-        renderFlightsTable(allFlights); // Pass `allFlights` directly to the table renderer
+        allFlights = flights;
+        renderFlightsTable(allFlights);
 
-        // Fetch and display ATIS and controllers
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
-
-        // Provide fallback for rendering the table and messages
         allFlights = [];
-        renderFlightsTable(allFlights); // Clear table
+        renderFlightsTable(allFlights);
         document.getElementById('atisMessage').textContent = "ATIS not available.";
         document.getElementById('controllersList').textContent = "No controllers online.";
     }
@@ -1018,28 +1007,24 @@ document.getElementById('resetDistanceFilterButton').addEventListener('click', (
 // ============================
 
 function updateRowVisibility(row, flight) {
-    // Check heading range
     const isWithinHeadingRange =
         boldedHeadings.minHeading !== null &&
         boldedHeadings.maxHeading !== null &&
         flight.headingFromAirport >= boldedHeadings.minHeading &&
         flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-    // Check distance range
     const isWithinDistanceRange =
         hiddenDistance.minDistance !== null &&
         hiddenDistance.maxDistance !== null &&
         flight.distanceToDestination >= hiddenDistance.minDistance &&
         flight.distanceToDestination <= hiddenDistance.maxDistance;
 
-    // Update row visibility based on filters
     if (applyDistanceFilterEnabled) {
         row.style.display = isWithinDistanceRange ? "" : "none";
     } else {
         row.style.display = "";
     }
 
-    // Apply bold styling for heading range
     row.style.fontWeight = (boldHeadingEnabled && isWithinHeadingRange) ? "bold" : "";
 }
 
@@ -1054,10 +1039,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         return;
     }
 
-    // Clear the table before rendering
     tableBody.innerHTML = "";
 
-    // Handle empty flight data
     if (!Array.isArray(allFlights) || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
         console.log('No inbound flights found.');
@@ -1065,17 +1048,14 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
     }
 
     try {
-        // Fetch aircraft Mach details
         const aircraftIds = allFlights.map(flight => flight.aircraftId);
         const aircraftMachDetails = await pairAircraftData(aircraftIds);
 
-        // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach((flight) => {
             const row = document.createElement("tr");
 
-            // Format table values
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
@@ -1087,7 +1067,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const distance = flight.distanceToDestination !== "N/A" ? `${flight.distanceToDestination}` : "N/A";
             const eta = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
 
-            // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
                 <td>${minMach}<br>${maxMach}</td>
@@ -1096,13 +1075,10 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 <td>${distance}nm<br>${eta}</td>
             `;
 
-            // Update visibility and styling
             updateRowVisibility(row, flight);
-
             tableBody.appendChild(row);
         });
 
-        // Highlight flights with close ETAs
         highlightCloseETAs();
     } catch (error) {
         console.error("Error rendering the flights table:", error.message);
@@ -1111,17 +1087,12 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 }
 
 // ============================
-// End Table Rendering
-// ============================
-
-// ============================
 // Apply Defaults on Page Load
 // ============================
 
 document.addEventListener('DOMContentLoaded', () => {
     applyDefaults();
 
-    // Set dropdown button text if defaults exist
     const hasDefaults =
         getCookie('defaultMinHeading') ||
         getCookie('defaultMaxHeading') ||
@@ -1132,9 +1103,41 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
         document.getElementById('defaultSettingsForm').style.display = 'block';
     }
+
+    // Bind the manual update button to ATIS and controller fetch
+    const manualUpdateButton = document.getElementById('manualUpdateButton');
+    if (manualUpdateButton) {
+        manualUpdateButton.addEventListener('click', async () => {
+            const icaoInput = document.getElementById('icao');
+            const icao = icaoInput ? icaoInput.value.trim().toUpperCase() : null;
+
+            if (!icao) {
+                alert('Please enter a valid ICAO code.');
+                return;
+            }
+
+            try {
+                // Fetch ATIS and controllers for the given ICAO
+                await fetchAirportATIS(icao);
+                await fetchControllers(icao);
+            } catch (error) {
+                console.error('Error during manual update:', error.message);
+                alert('Failed to update ATIS and Controllers.');
+            }
+        });
+    }
+
+    // Fetch and display active ATC airports on initial load
+    try {
+        await fetchActiveATCAirports();
+    } catch (error) {
+        console.error('Error initializing page:', error.message);
+    }
 });
 
-// Reset Range Filter
+// ============================
+// Reset Distance Filter
+// ============================
 
 document.getElementById('resetDistanceFilterButton').addEventListener('click', () => {
     minDistance = null;
@@ -1142,6 +1145,10 @@ document.getElementById('resetDistanceFilterButton').addEventListener('click', (
 
     document.getElementById('minDistance').value = '';
     document.getElementById('maxDistance').value = '';
+
+    // Disable the distance filter
+    applyDistanceFilterEnabled = false;
+    document.getElementById('applyDistanceFilterButton').textContent = 'Enable Distance Filter';
 
     // Re-render the table without any filters
     renderFlightsTable(allFlights);
@@ -1170,7 +1177,6 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
     }
 
     try {
-        // Fetch ATIS and controllers manually
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
     } catch (error) {
@@ -1195,39 +1201,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('updateButton').addEventListener('click', () => {
-    const icao = document.getElementById('icao').value.trim().toUpperCase();
-    if (!icao) {
-        alert('Please enter a valid ICAO code before updating.');
-        return;
-    }
+        const icao = document.getElementById('icao').value.trim().toUpperCase();
+        if (!icao) {
+            alert('Please enter a valid ICAO code before updating.');
+            return;
+        }
 
-    stopAutoUpdate();
-    let countdown = 5; // Update countdown for 15 seconds
-    const countdownTimer = document.getElementById('countdownTimer');
-
-    // Set interval for 5 seconds
-    updateInterval = setInterval(async () => {
-        await fetchAndUpdateFlights(icao);
-        await fetchControllers(icao); // Update controllers on auto-update
-        await fetchActiveATCAirports(); // Update active airports dynamically
-        countdown = 5; // Reset countdown
-    }, 5000); // 5 seconds interval 
-
-    // Countdown display logic (decrements every second)
-    countdownInterval = setInterval(() => {
-        countdown--;
-        countdownTimer.textContent = `${countdown}`;
-        if (countdown <= 0) countdown = 5; // Reset countdown if it reaches 0
-    }, 1000); // 1 second interval for countdown display
-
-    // Auto-stop the update after 15 minutes
-    updateTimeout = setTimeout(() => {
         stopAutoUpdate();
-        alert('Auto-update stopped after 15 minutes.');
-    }, 15 * 60 * 1000); // 15 minutes
+        let countdown = 5;
+        const countdownTimer = document.getElementById('countdownTimer');
 
-    document.getElementById('stopUpdateButton').style.display = 'inline';
-    countdownTimer.style.display = 'inline';
-});
+        updateInterval = setInterval(async () => {
+            await fetchAndUpdateFlights(icao);
+            await fetchControllers(icao);
+            await fetchActiveATCAirports();
+            countdown = 5;
+        }, 5000);
+
+        countdownInterval = setInterval(() => {
+            countdown--;
+            countdownTimer.textContent = `${countdown}`;
+            if (countdown <= 0) countdown = 5;
+        }, 1000);
+
+        updateTimeout = setTimeout(() => {
+            stopAutoUpdate();
+            alert('Auto-update stopped after 15 minutes.');
+        }, 15 * 60 * 1000);
+
+        document.getElementById('stopUpdateButton').style.display = 'inline';
+        countdownTimer.style.display = 'inline';
+    });
+
     document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
 });
