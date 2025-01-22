@@ -1,0 +1,237 @@
+---
+# Front matter comment to ensure Jekyll properly reads file.
+---
+
+
+body {
+    font-family: Helvetica, sans-serif;
+    margin: 20px;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+}
+
+pre {
+    font-family: Helvetica, sans-serif;
+    font-size: 12px;
+    padding-top: 0px;
+    padding-top: 0px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    z-index: 1;
+    width: 260px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu input,
+.dropdown-menu button {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 8px;
+    width: 100%;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 240px;
+}
+
+.dropdown-menu button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.dropdown-menu button:hover {
+    background-color: #45a049;
+}
+
+form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+form input[type="text"], 
+form input[type="number"], 
+form button {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #45a049;
+}
+
+.heading-arrow {
+    font-family: 'Courier', monospace;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    text-align: center;
+}
+
+tbody {
+    font-size: 12px; 
+}
+
+thead th {
+    padding: 5px;
+    text-align: center;
+    position: sticky;
+    top: 0; 
+    z-index: 1;
+} 
+
+tbody td {
+    padding: 5px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+}
+
+th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+#atisMessage, #controllersList {
+    margin-top: 15px;
+    padding: 10px;
+    border-left: 4px solid #4CAF50;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+// Arrow mixin: Creates the arrow shape
+@mixin arrow($size, $width, $height, $length) {
+  position: relative;
+  display: inline-block;
+  width: $length;
+  height: $height;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: $width;
+    height: $height;
+    background-color: inherit;
+    transform: translateY(-50%);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    border-width: $size;
+    border-style: solid;
+    border-color: transparent;
+    border-left-color: inherit;
+  }
+}
+
+// Arrow rotation for specific headings
+@mixin rotate($angle) {
+  transform: rotate($angle);
+}
+
+// Arrow color
+@mixin arrowColor($color) {
+  &::before {
+    background-color: $color;
+  }
+
+  &::after {
+    border-left-color: $color;
+  }
+}
+
+// Base arrow styles
+.arrow {
+  margin: 25px;
+  @include arrow(8px, 4px, 2px, 20px); // Arrow dimensions
+  @include arrowColor(black);            // Default arrow color
+}
+
+// Heading-based rotation classes
+.arrow.is-north {
+  @include rotate(0deg); // 0°
+}
+
+.arrow.is-northeast {
+  @include rotate(45deg); // 45°
+}
+
+.arrow.is-east {
+  @include rotate(90deg); // 90°
+}
+
+.arrow.is-southeast {
+  @include rotate(135deg); // 135°
+}
+
+.arrow.is-south {
+  @include rotate(180deg); // 180°
+}
+
+.arrow.is-southwest {
+  @include rotate(225deg); // 225°
+}
+
+.arrow.is-west {
+  @include rotate(270deg); // 270°
+}
+
+.arrow.is-northwest {
+  @include rotate(315deg); // 315°
+}
