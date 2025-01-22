@@ -1042,10 +1042,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-            const isWithinDistanceRange =
-                (minDistance === null || flight.distanceToDestination >= minDistance) &&
-                (maxDistance === null || flight.distanceToDestination <= maxDistance);
-
             // Determine visibility based on active filters
             let isVisible = true;
 
