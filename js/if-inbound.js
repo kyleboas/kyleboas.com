@@ -1106,7 +1106,6 @@ console.log(`Flight ${index + 1} (${flight.callsign || "N/A"}): Distance = ${fli
 // ============================
 // End Table Rendering
 // ============================
-
 // ============================
 // Apply Defaults on Page Load
 // ============================
