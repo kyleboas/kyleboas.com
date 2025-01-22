@@ -419,22 +419,53 @@ async function fetchControllers(icao) {
 }
 
 
+// async applyDefaults
+async function applyDefaults() {
+    const defaultMinDistance = parseFloat(getCookie('defaultMinDistance'));
+    const defaultMaxDistance = parseFloat(getCookie('defaultMaxDistance'));
+
+    if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
+        document.getElementById('minDistance').value = defaultMinDistance;
+        document.getElementById('maxDistance').value = defaultMaxDistance;
+
+        filterDistances.minDistance = defaultMinDistance;
+        filterDistances.maxDistance = defaultMaxDistance;
+        filterDistanceEnabled = true;
+    }
+
+    // Fetch airport coordinates dynamically
+    const icao = document.getElementById('icao').value.trim().toUpperCase();
+    const airportCoordinates = await fetchAirportCoordinates(icao);
+
+    if (airportCoordinates) {
+        await updateDistancesAndETAs(allFlights, airportCoordinates);
+        renderFlightsTable(allFlights);
+    } else {
+        console.error("Failed to fetch airport coordinates for applying defaults.");
+    }
+}
+
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
+    if (!airportCoordinates || isNaN(airportCoordinates.latitude) || isNaN(airportCoordinates.longitude)) {
+        console.error("Invalid airport coordinates:", airportCoordinates);
+        return; // Skip processing if coordinates are invalid
+    }
+
     for (const flight of flights) {
         try {
-            // Validate inputs
+            // Validate flight data
             if (
-                !airportCoordinates ||
                 !flight.latitude ||
                 !flight.longitude ||
-                !flight.speed || // Ensure speed is valid
+                !flight.speed ||
                 flight.speed <= 0
             ) {
+                console.warn("Skipping flight with incomplete or invalid data:", flight);
                 flight.distanceToDestination = 'N/A';
                 flight.etaMinutes = 'N/A';
                 flight.headingFromAirport = 'N/A';
-                continue;
+                continue; // Skip to the next flight
             }
 
             // Calculate distance to destination
@@ -464,9 +495,10 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
                 flight.latitude,
                 flight.longitude
             );
+
         } catch (error) {
-            // Handle errors gracefully for this flight
-            console.error(`Error updating flight ${flight.callsign || 'Unknown'}:`, error.message);
+            // Handle errors gracefully for individual flights
+            console.error(`Error processing flight ${flight.callsign || 'Unknown'}:`, error.message);
             flight.distanceToDestination = 'N/A';
             flight.etaMinutes = 'N/A';
             flight.headingFromAirport = 'N/A';
@@ -572,7 +604,7 @@ async function fetchAndUpdateFlights(icao) {
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
 
         const airportCoordinates = await fetchAirportCoordinates(icao);
-
+        
         if (!airportCoordinates) {
             console.warn("No coordinates found for airport ICAO:", icao);
             throw new Error("Failed to fetch airport coordinates.");
@@ -931,24 +963,28 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Filter Distance Button Functionality
 // ============================
 
-document.getElementById('filterByDistance').addEventListener('click', () => {
+document.getElementById('filterByDistance').addEventListener('click', async () => {
     const minDistance = parseFloat(document.getElementById('minDistance').value);
     const maxDistance = parseFloat(document.getElementById('maxDistance').value);
 
-    // Update global distance filter settings
     filterDistances.minDistance = isNaN(minDistance) ? null : minDistance;
     filterDistances.maxDistance = isNaN(maxDistance) ? null : maxDistance;
 
-    // Toggle filter state
     filterDistanceEnabled = !filterDistanceEnabled;
     document.getElementById('filterByDistance').textContent = filterDistanceEnabled
         ? 'Disable Distance Filter'
         : 'Enable Distance Filter';
 
-    await updateDistancesAndETAs(allFlights, airportCoordinates);
-    renderFlightsTable(allFlights);
-});
+    const icao = document.getElementById('icao').value.trim().toUpperCase();
+    const airportCoordinates = await fetchAirportCoordinates(icao);
 
+    if (airportCoordinates) {
+        await updateDistancesAndETAs(allFlights, airportCoordinates);
+        renderFlightsTable(allFlights);
+    } else {
+        console.error("Failed to fetch airport coordinates for filtering.");
+    }
+});
 
 // ============================
 // Bold Heading Button Functionality
