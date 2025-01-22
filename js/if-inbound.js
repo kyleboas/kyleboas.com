@@ -997,14 +997,14 @@ function updateRowVisibility(row, flight) {
 function getHeadingArrow(heading) {
     if (typeof heading !== "number") return ""; // Return empty if heading is not valid
     const directions = [
-        "\u2191",  // 0° (North) - ↑
-        "\u2197",  // 45° (Northeast) - ↗
-        "\u2192",  // 90° (East) - →
-        "\u2198",  // 135° (Southeast) - ↘
-        "\u2193",  // 180° (South) - ↓
-        "\u2199",  // 225° (Southwest) - ↙
-        "\u2190",  // 270° (West) - ←
-        "\u2196",  // 315° (Northwest) - ↖
+        "\u2191\u200D",  // 0° (North) - ↑ + ZWJ
+        "\u2197\u200D",  // 45° (Northeast) - ↗ + ZWJ
+        "\u2192\u200D",  // 90° (East) - → + ZWJ
+        "\u2198\u200D",  // 135° (Southeast) - ↘ + ZWJ
+        "\u2193\u200D",  // 180° (South) - ↓ + ZWJ
+        "\u2199\u200D",  // 225° (Southwest) - ↙ + ZWJ
+        "\u2190\u200D",  // 270° (West) - ← + ZWJ
+        "\u2196\u200D",  // 315° (Northwest) - ↖ + ZWJ
     ];
     const index = Math.round(heading / 45) % 8; // Divide into 8 segments
     return ` ${directions[index]}`;
