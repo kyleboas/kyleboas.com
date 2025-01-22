@@ -1026,8 +1026,10 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
+        // Loop through flights and render rows
         allFlights.forEach((flight, index) => {
-        
+            const row = document.createElement("tr"); // Declare row explicitly
+
             // Determine if the flight is within the specified distance range
             const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
                 typeof flight.distanceToDestination === 'number' &&
@@ -1037,17 +1039,13 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Skip the flight if it does not meet the distance range and the filter is enabled
             if (!isWithinDistanceRange && applyDistanceFilterEnabled) {
-                currentRow.style.display = 'none';
                 return;
             }
-            
-            const row = document.createElement("tr");
 
             // Extract flight details
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-            // Skip rows if hideFilter is applied and the flight doesn't meet criteria
             const isWithinHeadingRange =
                 boldedHeadings.minHeading !== undefined &&
                 boldedHeadings.maxHeading !== undefined &&
@@ -1096,7 +1094,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 row.style.fontWeight = "bold";
             }
 
-            tableBody.appendChild(row);
+            tableBody.appendChild(row); // Append the row to the table body
         });
 
         // Highlight flights with close ETAs
