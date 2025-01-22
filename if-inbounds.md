@@ -103,7 +103,7 @@ form button:hover {
 }
 
 .arrow {
-    font-family: Arial, sans-serif;
+    font-family: 'Courier', monospace;
 }
 
 table {
