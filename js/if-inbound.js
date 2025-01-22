@@ -992,7 +992,7 @@ function updateRowVisibility(row, flight) {
     }
 
     row.style.fontWeight = (boldHeadingEnabled && isWithinHeadingRange) ? "bold" : "";
-}
+} 
 
 function getHeadingArrow(heading) {
     if (typeof heading !== "number") return ""; // Return empty if heading is not valid
