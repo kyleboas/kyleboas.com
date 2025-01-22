@@ -1223,6 +1223,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set interval for 5 seconds
     updateInterval = setInterval(async () => {
+    try {
         await fetchAndUpdateFlights(icao);
         await fetchControllers(icao); // Update controllers on auto-update
         await fetchActiveATCAirports(); 
