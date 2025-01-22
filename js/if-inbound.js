@@ -8,6 +8,7 @@ const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8';
 let allFlights = [];
 let headingFilterActive = false;
 let boldedHeadings = { minHeading: null, maxHeading: null };
+let hiddenDistance = { minDistance: null, maxDistance: null };
 let distanceFilterActive = false;
 let minDistance = null;
 let maxDistance = null;
