@@ -16,6 +16,7 @@ let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
+let isWithinDistanceRange = null;
 
 // ============================
 // Cookie Utility Functions
