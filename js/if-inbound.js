@@ -575,21 +575,19 @@ async function fetchAndUpdateFlights(icao) {
             console.warn("No coordinates found for airport ICAO:", icao);
             throw new Error("Failed to fetch airport coordinates.");
         }
-
+        
         // Update distances, ETAs, and headings
         await updateDistancesAndETAs(flights, airportCoordinates);
-
-        // Update global state and render table
-        allFlights = flights; // Save to global state
-        renderFlightsTable(allFlights); // Pass `allFlights` directly to the table renderer
 
         // Fetch and display ATIS and controllers
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
+        
+        // Update global state and render table
+        allFlights = flights; // Save to global stats
+        renderFlightsTable(allFlights);
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
-
-        // Provide fallback for rendering the table and messages
         allFlights = [];
         renderFlightsTable(allFlights); // Clear table
         document.getElementById('atisMessage').textContent = "ATIS not available.";
@@ -943,7 +941,8 @@ document.getElementById('filterByDistance').addEventListener('click', () => {
     document.getElementById('filterByDistance').textContent = filterDistanceEnabled
         ? 'Disable Distance Filter'
         : 'Enable Distance Filter';
-
+    
+    await updateDistancesAndETAs(allFlights, airportCoordinates);
     // Re-render the table with the new filter state
     renderFlightsTable(allFlights);
 });
@@ -1027,8 +1026,10 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             // Determine filter criteria
             const isWithinDistanceRange =
-                (!filterDistances.minDistance || distance >= filterDistances.minDistance) &&
+             (!filterDistances.minDistance || distance >= filterDistances.minDistance) &&
                 (!filterDistances.maxDistance || distance <= filterDistances.maxDistance);
+
+if (filterDistanceEnabled && !isWithinDistanceRange) return;
 
             const isWithinHeadingRange =
                 boldedHeadings.minHeading !== null &&
@@ -1037,7 +1038,9 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
 
             // Skip flights that don't match filter criteria
-            if (filterDistanceEnabled && !isWithinDistanceRange) return; // Distance filter
+            if (filterDistanceEnabled && !isWithinDistanceRange) {
+            return; 
+            }
             if (hideFilter && !isWithinHeadingRange) return; // Heading filter
 
             // Create table row only for matching flights
@@ -1055,7 +1058,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const heading = flight.headingFromAirport !== "N/A" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitude = flight.altitude !== "N/A" ? flight.altitude.toFixed(0) : "N/A";
             const distanceText = flight.distanceToDestination !== "N/A" ? `${flight.distanceToDestination}` : "N/A";
-            const etaText = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
+const etaText = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
 
             // Populate row HTML
             row.innerHTML = `
