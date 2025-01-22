@@ -969,12 +969,6 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // ============================
 
 // ============================
-// Global Variables
-// ============================
-const hiddenDistance = { minDistance: null, maxDistance: null }; // Distance filter range
-const boldedHeadings = { minHeading: null, maxHeading: null }; // Heading filter range
-
-// ============================
 // Event Listener for Distance Filter
 // ============================
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
