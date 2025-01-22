@@ -770,8 +770,6 @@ function highlightGroup(group, rows, baseColor) {
             return;
         }
 
-        currentRow.style.display = ''; // Ensure row is visible
-
         let closestTimeDiff = Number.MAX_SAFE_INTEGER;
         let highlightColor = null;
 
@@ -1029,6 +1027,20 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach((flight, index) => {
+        
+            // Determine if the flight is within the specified distance range
+            const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
+                typeof flight.distanceToDestination === 'number' &&
+                flight.distanceToDestination >= (minDistance ?? 0) &&
+                flight.distanceToDestination <= (maxDistance ?? Infinity)
+            );
+
+            // Skip the flight if it does not meet the distance range and the filter is enabled
+            if (!isWithinDistanceRange && applyDistanceFilterEnabled) {
+                currentRow.style.display = 'none';
+                return;
+            }
+            
             const row = document.createElement("tr");
 
             // Extract flight details
@@ -1052,19 +1064,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             if (distanceFilterActive) {
                 isVisible = isVisible && isWithinDistanceRange;
             }
-            
-            // Determine if the flight is within the specified distance range
-            const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
-                typeof flight.distanceToDestination === 'number' &&
-                flight.distanceToDestination >= (minDistance ?? 0) &&
-                flight.distanceToDestination <= (maxDistance ?? Infinity)
-            );
-
-            // Skip the flight if it does not meet the distance range and the filter is enabled
-            if (!isWithinDistanceRange && applyDistanceFilterEnabled) {
-                return;
-            }
-
 
             // Skip rendering this row if it's not visible
             if (!isVisible) {
