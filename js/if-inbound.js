@@ -419,47 +419,134 @@ async function fetchControllers(icao) {
 
 // Update distances, ETA, and headings
 async function updateDistancesAndETAs(flights, airportCoordinates) {
-    flights.forEach((flight) => {
-        if (
-            !airportCoordinates ||
-            !flight.latitude ||
-            !flight.longitude ||
-            flight.speed <= 0
-        ) {
-            flight.distanceToDestination = 'N/A';
-            flight.etaMinutes = 'N/A';
-            flight.headingFromAirport = 'N/A';
-            return;
-        }
+    for (const flight of flights) {
+        try {
+            // Validate inputs
+            if (
+                !airportCoordinates ||
+                !flight.latitude ||
+                !flight.longitude ||
+                !flight.speed || // Ensure speed is valid
+                flight.speed <= 0
+            ) {
+                flight.distanceToDestination = 'N/A';
+                flight.etaMinutes = 'N/A';
+                flight.headingFromAirport = 'N/A';
+                continue;
+            }
 
-        // Calculate distance to destination
-        flight.distanceToDestination = Math.ceil(
-            calculateDistance(
+            // Calculate distance to destination
+            flight.distanceToDestination = Math.ceil(
+                calculateDistance(
+                    flight.latitude,
+                    flight.longitude,
+                    airportCoordinates.latitude,
+                    airportCoordinates.longitude
+                )
+            );
+
+            // Calculate ETA using dead reckoning
+            flight.etaMinutes = calculateETA(
                 flight.latitude,
                 flight.longitude,
                 airportCoordinates.latitude,
-                airportCoordinates.longitude
-            )
-        );
+                airportCoordinates.longitude,
+                flight.speed,
+                flight.heading
+            );
 
-        // Calculate ETA using dead reckoning
-        flight.etaMinutes = calculateETA(
-            flight.latitude,
-            flight.longitude,
-            airportCoordinates.latitude,
-            airportCoordinates.longitude,
-            flight.speed, 
-            flight.heading
-        );
+            // Calculate heading from airport to aircraft
+            flight.headingFromAirport = calculateBearing(
+                airportCoordinates.latitude,
+                airportCoordinates.longitude,
+                flight.latitude,
+                flight.longitude
+            );
+        } catch (error) {
+            // Handle errors gracefully for this flight
+            console.error(`Error updating flight ${flight.callsign || 'Unknown'}:`, error.message);
+            flight.distanceToDestination = 'N/A';
+            flight.etaMinutes = 'N/A';
+            flight.headingFromAirport = 'N/A';
+        }
+    }
+}
 
-        // Calculate heading from airport to aircraft
-        flight.headingFromAirport = calculateBearing(
-            airportCoordinates.latitude,
-            airportCoordinates.longitude,
-            flight.latitude,
-            flight.longitude
-        );
-    });
+// Helper functions with validations
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    // Validate coordinates
+    if (
+        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
+        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
+    ) {
+        throw new Error("Invalid coordinates provided for distance calculation.");
+    }
+
+    const R = 3440; // Earth's radius in nautical miles
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+    const Δφ = toRadians(lat2 - lat1), Δλ = toRadians(lon2 - lon1);
+
+    const a = Math.sin(Δφ / 2) ** 2 +
+              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function calculateBearing(lat1, lon1, lat2, lon2) {
+    // Validate coordinates
+    if (
+        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
+        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
+    ) {
+        throw new Error("Invalid coordinates provided for bearing calculation.");
+    }
+
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const toDegrees = (radians) => radians * (180 / Math.PI);
+
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) -
+              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+    return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360
+}
+
+function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
+    // Validate inputs
+    if (
+        !groundSpeed || groundSpeed <= 0 ||
+        currentLat == null || currentLon == null || destLat == null || destLon == null ||
+        isNaN(currentLat) || isNaN(currentLon) || isNaN(destLat) || isNaN(destLon)
+    ) {
+        return 'N/A'; // Cannot calculate ETA without valid inputs
+    }
+
+    // Calculate the distance to the destination
+    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
+    if (!distance || distance <= 0) {
+        return 'N/A'; // Cannot calculate ETA with invalid distance
+    }
+
+    // Calculate ETA in hours
+    const timeInHours = distance / groundSpeed;
+
+    // Convert hours to minutes and seconds
+    const totalSeconds = Math.round(timeInHours * 3600);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+
+    // Represent ETA above 12 hours
+    if (totalMinutes > 720) {
+        return '>12hrs';
+    }
+
+    // Format ETA as "minutes:seconds"
+    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
 // Fetch and update flights
@@ -715,7 +802,7 @@ function highlightGroup(group, rows, baseColor) {
         // Update row highlights
         const etaCell = currentRow.querySelector('td:nth-child(5)');
         if (etaCell && flight.etaMinutes !== 'N/A') {
-            etaCell.innerHTML = `${flight.etaMinutes} (${closestTimeDiff > 120 ? '>120s' : `${closestTimeDiff}s`})`;
+            etaCell.innerHTML = `${flight.distanceToDestination}<br>${flight.etaMinutes}`; // Show NM and MM:SS
         }
 
         if (highlightColor) {
@@ -837,6 +924,8 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Toggle Apply Distance Filter
 // ============================
 
+
+// Toggle Apply Distance Filter
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
     const minInput = parseFloat(document.getElementById('minDistance').value);
     const maxInput = parseFloat(document.getElementById('maxDistance').value);
@@ -863,6 +952,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 // ============================
 // Bold Heading Button Functionality
 // ============================
+
 document.getElementById('boldHeadingButton').addEventListener('click', () => {
     const minHeading = parseFloat(document.getElementById('minHeading').value);
     const maxHeading = parseFloat(document.getElementById('maxHeading').value);
@@ -889,6 +979,7 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // ============================
 // Toggle Heading Button Functionality
 // ============================
+
 document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     hideOtherAircraft = !hideOtherAircraft;
 
@@ -917,7 +1008,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
     // Handle empty flight data
     if (!Array.isArray(allFlights) || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
-        console.log('Callsign,Min/Max Mach,Speed (kts)/Mach,Heading/Altitude (ft),Distance (nm)/ETA');
         console.log('No inbound flights found.');
         return;
     }
@@ -930,9 +1020,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        // Prepare CSV output
-        console.log('Callsign,Min/Max Mach,Speed (kts)/Mach,Heading/Altitude (ft),Distance (nm)/ETA');
-
         allFlights.forEach((flight, index) => {
             const row = document.createElement("tr");
 
@@ -940,51 +1027,64 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
 
-            // Check if the flight is within the heading range
+            // Skip rows if hideFilter is applied and the flight doesn't meet criteria
             const isWithinHeadingRange =
-                boldedHeadings.minHeading !== null &&
-                boldedHeadings.maxHeading !== null &&
+                boldedHeadings.minHeading !== undefined &&
+                boldedHeadings.maxHeading !== undefined &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
 
-            // Check distance range
             const isWithinDistanceRange =
                 (minDistance === null || flight.distanceToDestination >= minDistance) &&
                 (maxDistance === null || flight.distanceToDestination <= maxDistance);
 
-            // Determine visibility based on filters
-            const isVisible = !hideFilter || isWithinHeadingRange;
-            if (!isVisible) return; // Skip hidden rows
+            // Determine visibility based on active filters
+            let isVisible = true;
 
-            // Format values
-            const speedValue = typeof flight.speed === "number" ? flight.speed.toFixed(0) : "N/A";
-            const machValue = typeof flight.speed === "number" ? (flight.speed / 666.739).toFixed(2) : "N/A";
-            const minMachFormatted = typeof machDetails.minMach === "number" ? machDetails.minMach.toFixed(2) : "N/A";
-            const maxMachFormatted = typeof machDetails.maxMach === "number" ? machDetails.maxMach.toFixed(2) : "N/A";
-            const headingValue = typeof flight.headingFromAirport === "number" ? Math.round(flight.headingFromAirport) : "N/A";
-            const altitudeValue = flight.altitude ? flight.altitude.toFixed(0) : "N/A";
-            const etaFormatted = flight.etaMinutes || 'N/A';
-            const distanceValue = flight.distanceToDestination || 'N/A';
-
-            // Add bold styling if enabled and within heading range
-            if (boldHeadingEnabled && isWithinHeadingRange) {
-                row.style.fontWeight = "bold";
+            if (boldHeadingEnabled && hideFilter) {
+                isVisible = isWithinHeadingRange;
             }
+
+            if (distanceFilterActive) {
+                isVisible = isVisible && isWithinDistanceRange;
+            }
+
+            // Log visibility status
+console.log(`Flight ${index + 1} (${flight.callsign || "N/A"}): Distance = ${flight.distanceToDestination || "N/A"}, isWithinDistanceRange = ${isWithinDistanceRange}, isVisible = ${isVisible}`);
+
+            // Skip rendering this row if it's not visible
+            if (!isVisible) {
+                console.log(`Skipping Flight ${index + 1} (${flight.callsign || "N/A"}) - Not Visible`);
+                return;
+            }
+
+            console.log(`Rendering Flight ${index + 1} (${flight.callsign || "N/A"})`);
+
+            // Format table values
+            const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
+            const maxMach = machDetails.maxMach !== "N/A" ? machDetails.maxMach.toFixed(2) : "N/A";
+            const groundSpeed = flight.speed !== "N/A" ? flight.speed.toFixed(0) : "N/A";
+            const machValue = flight.speed !== "N/A" ? (flight.speed / 666.739).toFixed(2) : "N/A";
+            const heading = flight.headingFromAirport !== "N/A" ? Math.round(flight.headingFromAirport) : "N/A";
+            const altitude = flight.altitude !== "N/A" ? flight.altitude.toFixed(0) : "N/A";
+            const distance = flight.distanceToDestination !== "N/A" ? `${flight.distanceToDestination}` : "N/A";
+            const eta = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
 
             // Populate row HTML
             row.innerHTML = `
                 <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
-                <td>${minMachFormatted}<br>${maxMachFormatted}</td>
-                <td>${speedValue}<br>${machValue}</td>
-                <td>${headingValue}<br>${altitudeValue}</td>
-                <td>${distanceValue}<br>${etaFormatted}</td> 
+                <td>${minMach}<br>${maxMach}</td>
+                <td>${groundSpeed}<br>${machValue}</td>
+                <td>${heading}<br>${altitude}</td>
+                <td>${distance}nm<br>${eta}</td>
             `;
 
-            tableBody.appendChild(row);
+            // Highlight rows if boldHeadingEnabled
+            if (boldHeadingEnabled && isWithinHeadingRange) {
+                row.style.fontWeight = "bold";
+            }
 
-            // Format and log the CSV row
-            const csvRow = `${flight.callsign || "N/A"}  ${aircraftName},${minMachFormatted}/${maxMachFormatted},${speedValue}  ${machValue},${headingValue}  ${altitudeValue},${distanceValue}  ${etaFormatted}`;
-            console.log(csvRow);
+            tableBody.appendChild(row);
         });
 
         // Highlight flights with close ETAs
