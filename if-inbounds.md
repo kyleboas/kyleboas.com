@@ -250,5 +250,7 @@ th {
 
     renderFlightsTable(filteredFlights);
 });
+
+</script>
 <script src="/js/if-inbound.js"></script>
 </body>
