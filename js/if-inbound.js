@@ -17,7 +17,6 @@ let updateTimeout = null;
 let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
-let isWithinDistanceRange = null;
 let applyDistanceFilterEnabled = false;
 
 // ============================
@@ -1013,13 +1012,13 @@ function updateRowVisibility(row, flight) {
         
         console.log({
         applyDistanceFilterEnabled,
-        isWithinDistanceRange,
+        isOutsideDistanceRange,
         flightDistance: flight.distanceToDestination,
         filterRange: hiddenDistance,
     });
 
     // Update row visibility based on filters
-    row.style.display = (applyDistanceFilterEnabled && !isWithinDistanceRange) ? "none" : "";
+    row.style.display = (applyDistanceFilterEnabled && !isOutsideDistanceRange) ? "none" : "";
 
     // Apply bold styling for heading range
     row.style.fontWeight = (boldHeadingEnabled && isWithinHeadingRange) ? "bold" : "";
