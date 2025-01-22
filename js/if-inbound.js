@@ -861,42 +861,6 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
 });
 
 // ============================
-// Event Listeners
-// ============================
-
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        // Bind the manual update button to ATIS and controller fetch
-        const manualUpdateButton = document.getElementById('manualUpdateButton');
-        if (manualUpdateButton) {
-            manualUpdateButton.addEventListener('click', async () => {
-                const icaoInput = document.getElementById('icao');
-                const icao = icaoInput ? icaoInput.value.trim().toUpperCase() : null;
-
-                if (!icao) {
-                    alert('Please enter a valid ICAO code.');
-                    return;
-                }
-
-                try {
-                    // Fetch ATIS and controllers for the given ICAO
-                    await fetchAirportATIS(icao);
-                    await fetchControllers(icao);
-                } catch (error) {
-                    console.error('Error during manual update:', error.message);
-                    alert('Failed to update ATIS and Controllers.');
-                }
-            });
-        }
-
-        // Fetch and display active ATC airports on initial load
-        await fetchActiveATCAirports();
-    } catch (error) {
-        console.error('Error initializing page:', error.message);
-    }
-});
-
-// ============================
 // Toggle Aircraft Visibility
 // ============================
 
@@ -1085,55 +1049,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 }
 
 // ============================
-// Apply Defaults on Page Load
-// ============================
-
-document.addEventListener('DOMContentLoaded', () => {
-    applyDefaults();
-
-    const hasDefaults =
-        getCookie('defaultMinHeading') ||
-        getCookie('defaultMaxHeading') ||
-        getCookie('defaultMinDistance') ||
-        getCookie('defaultMaxDistance');
-
-    if (hasDefaults) {
-        document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
-        document.getElementById('defaultSettingsForm').style.display = 'block';
-    }
-
-    // Bind the manual update button to ATIS and controller fetch
-    const manualUpdateButton = document.getElementById('manualUpdateButton');
-    if (manualUpdateButton) {
-        manualUpdateButton.addEventListener('click', async () => {
-            const icaoInput = document.getElementById('icao');
-            const icao = icaoInput ? icaoInput.value.trim().toUpperCase() : null;
-
-            if (!icao) {
-                alert('Please enter a valid ICAO code.');
-                return;
-            }
-
-            try {
-                // Fetch ATIS and controllers for the given ICAO
-                await fetchAirportATIS(icao);
-                await fetchControllers(icao);
-            } catch (error) {
-                console.error('Error during manual update:', error.message);
-                alert('Failed to update ATIS and Controllers.');
-            }
-        });
-    }
-
-    // Fetch and display active ATC airports on initial load
-    try {
-        await fetchActiveATCAirports();
-    } catch (error) {
-        console.error('Error initializing page:', error.message);
-    }
-});
-
-// ============================
 // Reset Distance Filter
 // ============================
 
@@ -1184,52 +1099,107 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
 });
 
 // Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('searchForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const icao = document.getElementById('icao').value.trim().toUpperCase();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Apply default settings
+    applyDefaults();
 
-        if (!icao) {
-            alert('Please enter a valid ICAO code.');
-            return;
-        }
+    const hasDefaults =
+        getCookie('defaultMinHeading') ||
+        getCookie('defaultMaxHeading') ||
+        getCookie('defaultMinDistance') ||
+        getCookie('defaultMaxDistance');
 
-        stopAutoUpdate();
-        await fetchAndUpdateFlights(icao);
-    });
+    if (hasDefaults) {
+        document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
+        document.getElementById('defaultSettingsForm').style.display = 'block';
+    }
 
-    document.getElementById('updateButton').addEventListener('click', () => {
-        const icao = document.getElementById('icao').value.trim().toUpperCase();
-        if (!icao) {
-            alert('Please enter a valid ICAO code before updating.');
-            return;
-        }
+    // Manual update button logic
+    const manualUpdateButton = document.getElementById('manualUpdateButton');
+    if (manualUpdateButton) {
+        manualUpdateButton.addEventListener('click', async () => {
+            const icaoInput = document.getElementById('icao');
+            const icao = icaoInput ? icaoInput.value.trim().toUpperCase() : null;
 
-        stopAutoUpdate();
-        let countdown = 5;
-        const countdownTimer = document.getElementById('countdownTimer');
+            if (!icao) {
+                alert('Please enter a valid ICAO code.');
+                return;
+            }
 
-        updateInterval = setInterval(async () => {
-            await fetchAndUpdateFlights(icao);
-            await fetchControllers(icao);
-            await fetchActiveATCAirports();
-            countdown = 5;
-        }, 5000);
+            try {
+                await fetchAirportATIS(icao);
+                await fetchControllers(icao);
+            } catch (error) {
+                console.error('Error during manual update:', error.message);
+                alert('Failed to update ATIS and Controllers.');
+            }
+        });
+    }
 
-        countdownInterval = setInterval(() => {
-            countdown--;
-            countdownTimer.textContent = `${countdown}`;
-            if (countdown <= 0) countdown = 5;
-        }, 1000);
+    // Fetch and display active ATC airports on page load
+    try {
+        await fetchActiveATCAirports();
+    } catch (error) {
+        console.error('Error initializing page:', error.message);
+    }
 
-        updateTimeout = setTimeout(() => {
+    // Search form submission logic
+    const searchForm = document.getElementById('searchForm');
+    if (searchForm) {
+        searchForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const icao = document.getElementById('icao').value.trim().toUpperCase();
+
+            if (!icao) {
+                alert('Please enter a valid ICAO code.');
+                return;
+            }
+
             stopAutoUpdate();
-            alert('Auto-update stopped after 15 minutes.');
-        }, 15 * 60 * 1000);
+            await fetchAndUpdateFlights(icao);
+        });
+    }
 
-        document.getElementById('stopUpdateButton').style.display = 'inline';
-        countdownTimer.style.display = 'inline';
-    });
+    // Update button logic
+    const updateButton = document.getElementById('updateButton');
+    if (updateButton) {
+        updateButton.addEventListener('click', () => {
+            const icao = document.getElementById('icao').value.trim().toUpperCase();
+            if (!icao) {
+                alert('Please enter a valid ICAO code before updating.');
+                return;
+            }
 
-    document.getElementById('stopUpdateButton').addEventListener('click', stopAutoUpdate);
+            stopAutoUpdate();
+            let countdown = 5;
+            const countdownTimer = document.getElementById('countdownTimer');
+
+            updateInterval = setInterval(async () => {
+                await fetchAndUpdateFlights(icao);
+                await fetchControllers(icao);
+                await fetchActiveATCAirports();
+                countdown = 5;
+            }, 5000);
+
+            countdownInterval = setInterval(() => {
+                countdown--;
+                countdownTimer.textContent = `${countdown}`;
+                if (countdown <= 0) countdown = 5;
+            }, 1000);
+
+            updateTimeout = setTimeout(() => {
+                stopAutoUpdate();
+                alert('Auto-update stopped after 15 minutes.');
+            }, 15 * 60 * 1000);
+
+            document.getElementById('stopUpdateButton').style.display = 'inline';
+            countdownTimer.style.display = 'inline';
+        });
+    }
+
+    // Stop update button logic
+    const stopUpdateButton = document.getElementById('stopUpdateButton');
+    if (stopUpdateButton) {
+        stopUpdateButton.addEventListener('click', stopAutoUpdate);
+    }
 });
