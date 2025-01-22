@@ -1026,7 +1026,7 @@ function updateRowVisibility(row, flight) {
         flight.headingFromAirport <= boldedHeadings.maxHeading;
 
     // Check distance range
-    const isOutsideDistanceRange =
+    const isWithinDistanceRange =
         hiddenDistance.minDistance !== null &&
         hiddenDistance.maxDistance !== null &&
         flight.distanceToDestination >= hiddenDistance.minDistance &&
@@ -1034,7 +1034,7 @@ function updateRowVisibility(row, flight) {
 
     // Update row visibility based on filters
     if (applyDistanceFilterEnabled) {
-        row.style.display = isOutsideDistanceRange ? "" : "none";
+        row.style.display = isWithinDistanceRange ? "" : "none";
     } else {
         row.style.display = "";
     }
@@ -1113,6 +1113,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 // ============================
 // End Table Rendering
 // ============================
+
 // ============================
 // Apply Defaults on Page Load
 // ============================
