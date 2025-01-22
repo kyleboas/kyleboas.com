@@ -968,6 +968,15 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 // Toggle Apply Distance Filter
 // ============================
 
+// ============================
+// Global Variables
+// ============================
+const hiddenDistance = { minDistance: null, maxDistance: null }; // Distance filter range
+const boldedHeadings = { minHeading: null, maxHeading: null }; // Heading filter range
+
+// ============================
+// Event Listener for Distance Filter
+// ============================
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
     const minDistance = parseFloat(document.getElementById('minDistance').value);
     const maxDistance = parseFloat(document.getElementById('maxDistance').value);
@@ -978,7 +987,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
         return;
     }
 
-    // Toggle state
+    // Toggle filter state
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
 
     // Update button text
@@ -990,11 +999,20 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     hiddenDistance.minDistance = minDistance;
     hiddenDistance.maxDistance = maxDistance;
 
-    // Re-render the table
+    // Re-render the table with updated filters
     renderFlightsTable(allFlights);
 });
 
+// ============================
+// Helper Function: Update Row Visibility
+// ============================
 function updateRowVisibility(row, flight) {
+    // Validate row element
+    if (!row || !(row instanceof HTMLElement)) {
+        console.error("Invalid row element:", row);
+        return;
+    }
+
     // Check heading range
     const isWithinHeadingRange =
         boldedHeadings.minHeading !== null &&
@@ -1007,13 +1025,14 @@ function updateRowVisibility(row, flight) {
         hiddenDistance.minDistance !== null &&
         hiddenDistance.maxDistance !== null &&
         (flight.distanceToDestination < hiddenDistance.minDistance ||
-         flight.distanceToDestination > hiddenDistance.maxDistance);
-        
+            flight.distanceToDestination > hiddenDistance.maxDistance);
+
     console.log({
         applyDistanceFilterEnabled,
         isOutsideDistanceRange,
         flightDistance: flight.distanceToDestination,
         filterRange: hiddenDistance,
+        displayCondition: applyDistanceFilterEnabled && isOutsideDistanceRange,
     });
 
     // Update row visibility based on filters
@@ -1024,10 +1043,36 @@ function updateRowVisibility(row, flight) {
 }
 
 // ============================
+// Helper Function: Parse ETA in Seconds
+// ============================
+function parseETAInSeconds(etaMinutes) {
+    if (!etaMinutes || isNaN(etaMinutes)) return Infinity;
+    return parseInt(etaMinutes, 10) * 60;
+}
+
+// ============================
+// Helper Function: Pair Aircraft Data
+// ============================
+async function pairAircraftData(aircraftIds) {
+    // Mock fetching aircraft data
+    return aircraftIds.reduce((acc, id) => {
+        acc[id] = { minMach: 0.75, maxMach: 0.85 }; // Example data
+        return acc;
+    }, {});
+}
+
+// ============================
+// Highlight Flights with Close ETAs
+// ============================
+function highlightCloseETAs() {
+    // Example implementation to highlight flights with close ETAs
+    console.log("Highlighting flights with close ETAs...");
+}
+
+// ============================
 // Table Rendering
 // ============================
-
-async function renderFlightsTable(allFlights, hideFilter = false) {
+async function renderFlightsTable(allFlights) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
         console.error("Flights table body not found in DOM.");
@@ -1040,7 +1085,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
     // Handle empty flight data
     if (!Array.isArray(allFlights) || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
-        console.log('No inbound flights found.');
         return;
     }
 
@@ -1089,6 +1133,12 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
     }
 }
+
+// ============================
+// Initial Render Call
+// ============================
+renderFlightsTable(allFlights);
+
 
 // ============================
 // End Table Rendering
