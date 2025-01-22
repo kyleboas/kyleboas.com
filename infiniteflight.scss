@@ -153,16 +153,18 @@ th {
 @mixin arrow($size, $width, $height, $length) {
   position: relative;
   display: inline-block;
-  width: $length;
-  height: $height;
+  width: 5px;
+  height: 4px;
+  max-width: 8px;
+  margin-left: 8px; 
 
   &::before {
     content: '';
     position: absolute;
     top: 50%;
     left: 0;
-    width: $width;
-    height: $height;
+    width: 6px;
+    height: 2px;
     background-color: inherit;
     transform: translateY(-50%);
   }
@@ -173,7 +175,7 @@ th {
     top: 50%;
     left: 100%;
     transform: translateY(-50%);
-    border-width: $size;
+    border-width: 3px;
     border-style: solid;
     border-color: transparent;
     border-left-color: inherit;
@@ -198,40 +200,47 @@ th {
 
 // Base arrow styles
 .arrow {
-  margin: 25px;
-  @include arrow(8px, 4px, 2px, 20px); // Arrow dimensions
+  @include arrow(3px, 6px, 2px, 20px); // Arrow dimensions
   @include arrowColor(black);            // Default arrow color
 }
 
 // Heading-based rotation classes
 .arrow.is-north {
   @include rotate(0deg); // 0°
+  margin-bottom: 1px;
 }
 
 .arrow.is-northeast {
   @include rotate(45deg); // 45°
+  margin-bottom: 3px;
 }
 
 .arrow.is-east {
   @include rotate(90deg); // 90°
+  margin-bottom: 2px;
 }
 
 .arrow.is-southeast {
   @include rotate(135deg); // 135°
+  margin-bottom: 3px;
 }
 
 .arrow.is-south {
   @include rotate(180deg); // 180°
+  margin-bottom: 2px;
 }
 
 .arrow.is-southwest {
   @include rotate(225deg); // 225°
+  margin-bottom: 2px;
 }
 
 .arrow.is-west {
   @include rotate(270deg); // 270°
+  margin-bottom: 2px;
 }
 
 .arrow.is-northwest {
   @include rotate(315deg); // 315°
+  margin-bottom: 1px;
 }
