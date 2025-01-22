@@ -1054,18 +1054,15 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 <td>${distance}nm<br>${eta}</td>
             `;
 
-            // Highlight rows if boldHeadingEnabled
-            if (boldHeadingEnabled && isWithinHeadingRange)
-            {
+            if (boldHeadingEnabled && isWithinHeadingRange)             {
                 row.style.fontWeight = "bold";
             }
-            
-            // Hide aircraft outside Distance Filter
+
             if (applyDistanceFilterEnabled && !isWithinDistanceRange) {
                 row.style.display = "none";
             } else {
                 row.style.display = "";
-            } 
+            }
 
             tableBody.appendChild(row);
         });
