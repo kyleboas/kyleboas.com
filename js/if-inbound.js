@@ -922,6 +922,20 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     renderFlightsTable(allFlights, hideOtherAircraft); // Pass filter flag to rendering function
 });
 
+// ============================
+// Toggle Heading Button Functionality
+// ============================
+
+document.getElementById('toggleHeadingButton').addEventListener('click', () => {
+    hideOtherAircraft = !hideOtherAircraft;
+
+    document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
+        ? 'Show All Aircraft'
+        : 'Hide Aircraft';
+
+    // Re-render the table with the hideFilter flag
+    renderFlightsTable(allFlights, hideOtherAircraft);
+});
 
 // ============================
 // Bold Heading Button Functionality
@@ -951,21 +965,6 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 });
 
 // ============================
-// Toggle Heading Button Functionality
-// ============================
-
-document.getElementById('toggleHeadingButton').addEventListener('click', () => {
-    hideOtherAircraft = !hideOtherAircraft;
-
-    document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
-        ? 'Show All Aircraft'
-        : 'Hide Aircraft';
-
-    // Re-render the table with the hideFilter flag
-    renderFlightsTable(allFlights, hideOtherAircraft);
-});
-
-// ============================
 // Toggle Apply Distance Filter
 // ============================
 
@@ -974,8 +973,9 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     const maxDistance = parseFloat(document.getElementById('maxDistance').value);
 
     // Toggle boldHeadingEnabled and update button text
-    applyDistanceFilterEnabled = !applyDistanceFilterEnabled; 
-    document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
+    applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
+
+document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
         ? 'Disable Distance Filter'
         : 'Enable Distance Filter';
 
@@ -1019,27 +1019,22 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         allFlights.forEach((flight) => {
             const row = document.createElement("tr");
 
-            // Extract flight details
-            const aircraftName = flight.aircraftName || "UNKN";
-            const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
-
             // Skip rows if hideFilter is applied and the flight doesn't meet criteria
             const isWithinHeadingRange =
                 boldedHeadings.minHeading !== undefined &&
                 boldedHeadings.maxHeading !== undefined &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
-            
-            // Determine if the flight is within the specified distance range
-            const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
-                typeof flight.distanceToDestination === 'number' &&
-                flight.distanceToDestination >= (minDistance ?? 0) &&
-                flight.distanceToDestination <= (maxDistance ?? Infinity)
-            );
-
-            row.style.display = isWithinDistanceRange ? "none" : "";
+                
+            const isWithinDistanceRange =
+                hiddenDistance.minDistance !== undefined &&
+                hiddenDistance.maxDistance !== undefined &&
+                flight.distanceToDestination >= hiddenDistance.minDistance &&
+                flight.distanceToDestination <= hiddenDistance.maxDistance;
 
             // Format table values
+            const aircraftName = flight.aircraftName || "UNKN";
+            const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
             const maxMach = machDetails.maxMach !== "N/A" ? machDetails.maxMach.toFixed(2) : "N/A";
             const groundSpeed = flight.speed !== "N/A" ? flight.speed.toFixed(0) : "N/A";
@@ -1063,6 +1058,8 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             {
                 row.style.fontWeight = "bold";
             }
+            
+            // Hide aircraft outside Distance Filter
             if (applyDistanceFilterEnabled && isWithinDistanceRange)
             {
                 row.style.display = "none";
