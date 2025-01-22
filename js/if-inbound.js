@@ -1061,9 +1061,10 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             }
             
             // Hide aircraft outside Distance Filter
-            if (applyDistanceFilterEnabled && isWithinDistanceRange)
-            {
+            if (applyDistanceFilterEnabled && !isWithinDistanceRange) {
                 row.style.display = "none";
+            } else {
+                row.style.display = "";
             } 
 
             tableBody.appendChild(row);
