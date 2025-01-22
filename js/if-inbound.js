@@ -1005,11 +1005,11 @@ function updateRowVisibility(row, flight) {
         flight.headingFromAirport <= boldedHeadings.maxHeading;
 
     // Check distance range
-    const isWithinDistanceRange =
+    const isOutsideDistanceRange =
         hiddenDistance.minDistance !== null &&
         hiddenDistance.maxDistance !== null &&
-        flight.distanceToDestination >= hiddenDistance.minDistance &&
-        flight.distanceToDestination <= hiddenDistance.maxDistance;
+        flight.distanceToDestination <= hiddenDistance.minDistance &&
+        flight.distanceToDestination >= hiddenDistance.maxDistance;
         
         console.log({
         applyDistanceFilterEnabled,
