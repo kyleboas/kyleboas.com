@@ -994,7 +994,29 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     renderFlightsTable(allFlights);
 });
 
+// ============================
+// Reset Distance Filter
+// ============================
+
+document.getElementById('resetDistanceFilterButton').addEventListener('click', () => {
+    minDistance = null;
+    maxDistance = null;
+
+    document.getElementById('minDistance').value = '';
+    document.getElementById('maxDistance').value = '';
+
+    // Disable the distance filter
+    applyDistanceFilterEnabled = false;
+    document.getElementById('applyDistanceFilterButton').textContent = 'Enable Distance Filter';
+
+    // Re-render the table without any filters
+    renderFlightsTable(allFlights);
+});
+
+// ============================
 // Helper Function: Update row visibility and styling
+// ============================
+
 function updateRowVisibility(row, flight) {
     // Check heading range
     const isWithinHeadingRange =
@@ -1007,18 +1029,15 @@ function updateRowVisibility(row, flight) {
     const isOutsideDistanceRange =
         hiddenDistance.minDistance !== null &&
         hiddenDistance.maxDistance !== null &&
-        flight.distanceToDestination <= hiddenDistance.minDistance &&
-        flight.distanceToDestination >= hiddenDistance.maxDistance;
-        
-        console.log({
-        applyDistanceFilterEnabled,
-        isOutsideDistanceRange,
-        flightDistance: flight.distanceToDestination,
-        filterRange: hiddenDistance,
-    });
+        flight.distanceToDestination >= hiddenDistance.minDistance &&
+        flight.distanceToDestination <= hiddenDistance.maxDistance;
 
     // Update row visibility based on filters
-    row.style.display = (applyDistanceFilterEnabled && !isOutsideDistanceRange) ? "none" : "";
+    if (applyDistanceFilterEnabled) {
+        row.style.display = isOutsideDistanceRange ? "" : "none";
+    } else {
+        row.style.display = "";
+    }
 
     // Apply bold styling for heading range
     row.style.fontWeight = (boldHeadingEnabled && isWithinHeadingRange) ? "bold" : "";
