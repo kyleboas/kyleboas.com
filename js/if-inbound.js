@@ -1095,8 +1095,8 @@ if (filterDistanceEnabled && !isWithinDistanceRange) return;
             const machValue = flight.speed !== "N/A" ? (flight.speed / 666.739).toFixed(2) : "N/A";
             const heading = flight.headingFromAirport !== "N/A" ? Math.round(flight.headingFromAirport) : "N/A";
             const altitude = flight.altitude !== "N/A" ? flight.altitude.toFixed(0) : "N/A";
-            const distanceText = flight.distanceToDestination !== "N/A" ? `${flight.distanceToDestination}` : "N/A";
-const etaText = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
+            const distanceT = flight.distanceToDestination !== "N/A" ? `${flight.distanceToDestination}` : "N/A";
+const etaT = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
 
             // Populate row HTML
             row.innerHTML = `
@@ -1104,7 +1104,7 @@ const etaText = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
                 <td>${minMach}<br>${maxMach}</td>
                 <td>${groundSpeed}<br>${machValue}</td>
                 <td>${heading}<br>${altitude}</td>
-                <td>${distanceText}<br>${etaText}</td>
+                <td>${distanceT}<br>${etaT}</td>
             `;
 
             // Apply bold styling if heading range matches
