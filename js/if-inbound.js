@@ -1056,13 +1056,22 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             if (distanceFilterActive) {
                 isVisible = isVisible && isWithinDistanceRange;
             }
+            
+            // Determine if the flight is within the specified distance range
+            const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
+                typeof flight.distanceToDestination === 'number' &&
+                flight.distanceToDestination >= (minDistance ?? 0) &&
+                flight.distanceToDestination <= (maxDistance ?? Infinity)
+            );
 
-            // Log visibility status
-console.log(`Flight ${index + 1} (${flight.callsign || "N/A"}): Distance = ${flight.distanceToDestination || "N/A"}, isWithinDistanceRange = ${isWithinDistanceRange}, isVisible = ${isVisible}`);
+            // Skip the flight if it does not meet the distance range and the filter is enabled
+            if (!isWithinDistanceRange && applyDistanceFilterEnabled) {
+                return;
+            }
+
 
             // Skip rendering this row if it's not visible
             if (!isVisible) {
-                console.log(`Skipping Flight ${index + 1} (${flight.callsign || "N/A"}) - Not Visible`);
                 return;
             }
 
