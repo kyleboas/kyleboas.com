@@ -102,7 +102,7 @@ form button:hover {
     background-color: #45a049;
 }
 
-.arrow {
+.heading-arrow {
     font-family: 'Courier', monospace;
 }
 

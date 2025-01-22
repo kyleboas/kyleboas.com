@@ -1073,7 +1073,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                     ${machValue}M
                 </td>
                 <td>
-                    ${heading}${getHeadingArrow(flight.headingFromAirport)}<br>
+                    ${heading}<span class="heading-arrow">${getHeadingArrow(flight.headingFromAirport)}</span><br>
                     ${altitude}ft
                 </td>
                 <td>
