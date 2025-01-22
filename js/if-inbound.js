@@ -1044,11 +1044,26 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const eta = flight.etaMinutes !== "N/A" ? `${flight.etaMinutes}` : "N/A";
 
             row.innerHTML = `
-                <td>${flight.callsign || "N/A"}<br><small>${aircraftName}</small></td>
-                <td>${minMach}<br>${maxMach}</td>
-                <td>${groundSpeed}<br>${machValue}</td>
-                <td>${heading}<br>${altitude}</td>
-                <td>${distance}nm<br>${eta}</td>
+                <td>
+                    ${flight.callsign || "N/A"}<br>
+                    <small>${aircraftName}</small>
+                </td>
+                <td>
+                    ${minMach}M<br>
+                    ${maxMach}M
+                </td>
+                <td>
+                    ${groundSpeed}knts<br>
+                    ${machValue}M
+                </td>
+                <td>
+                    ${heading}<br>
+                    ${altitude}ft
+                </td>
+                <td>
+                    ${distance}nm<br>
+                    ${eta}
+                </td>
             `;
 
             updateRowVisibility(row, flight);
