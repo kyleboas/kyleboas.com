@@ -975,29 +975,23 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
         ? 'Reset Distance Filter'
         : 'Apply Distance Filter';
+        
+    const minInput = parseFloat(document.getElementById('minDistance').value);
+        const maxInput = parseFloat(document.getElementById('maxDistance').value);
+
+        if (!isNaN(minInput)) {
+            minDistance = minInput;
+        } else {
+            minDistance = null; // Clear the filter if input is invalid or empty
+        }
+
+        if (!isNaN(maxInput)) {
+            maxDistance = maxInput;
+        } else {
+            maxDistance = null; // Clear the filter if input is invalid or empty
+        }
 
     renderFlightsTable(allFlights, hideOtherAircraft); // Re-render the table with distance filter applied/removed
-});
-
-// Filter Listener
-document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
-    const minInput = parseFloat(document.getElementById('minDistance').value);
-    const maxInput = parseFloat(document.getElementById('maxDistance').value);
-
-    if (!isNaN(minInput)) {
-        minDistance = minInput;
-    } else {
-        minDistance = null; // Clear the filter if input is invalid or empty
-    }
-
-    if (!isNaN(maxInput)) {
-        maxDistance = maxInput;
-    } else {
-        maxDistance = null; // Clear the filter if input is invalid or empty
-    }
-
-    // Re-render the table with the updated distance filter
-    renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
 // ============================
@@ -1029,7 +1023,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
         // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        allFlights.forEach((flight, index) => {
+        allFlights.forEach((flight) => {
             const row = document.createElement("tr");
 
             // Extract flight details
@@ -1042,17 +1036,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 boldedHeadings.maxHeading !== undefined &&
                 flight.headingFromAirport >= boldedHeadings.minHeading &&
                 flight.headingFromAirport <= boldedHeadings.maxHeading;
-
-            // Determine visibility based on active filters
-            let isVisible = true;
-
-            if (boldHeadingEnabled && hideFilter) {
-                isVisible = isWithinHeadingRange;
-            }
-
-            if (distanceFilterActive) {
-                isVisible = isVisible && isWithinDistanceRange;
-            }
             
             // Determine if the flight is within the specified distance range
             const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
@@ -1062,13 +1045,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             );
 
             row.style.display = isWithinDistanceRange ? "none" : "";
-
-            // Skip rendering this row if it's not visible
-            if (!isVisible) {
-                return;
-            }
-
-            console.log(`Rendering Flight ${index + 1} (${flight.callsign || "N/A"})`);
 
             // Format table values
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
@@ -1090,9 +1066,14 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             `;
 
             // Highlight rows if boldHeadingEnabled
-            if (boldHeadingEnabled && isWithinHeadingRange) {
+            if (boldHeadingEnabled && isWithinHeadingRange)
+            {
                 row.style.fontWeight = "bold";
             }
+            if (applyDistanceFilterEnabled && isWithinDistanceRange)
+            {
+                row.style.display = "none";
+            } 
 
             tableBody.appendChild(row);
         });
