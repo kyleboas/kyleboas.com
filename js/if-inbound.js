@@ -17,6 +17,7 @@ let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
 let isWithinDistanceRange = null;
+let applyDistanceFilterEnabled = false;
 
 // ============================
 // Cookie Utility Functions
@@ -55,8 +56,9 @@ function applyDefaults() {
     if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
         document.getElementById('minDistance').value = defaultMinDistance;
         document.getElementById('maxDistance').value = defaultMaxDistance;
-        minDistance = defaultMinDistance;
-        maxDistance = defaultMaxDistance;
+        applyDistanceFilterEnabled = true;
+        hiddenDistance.minDistance = defaultMinDistance;
+        hiddenDistance.maxDistance = defaultMaxDistance;
     }
 
     renderFlightsTable(allFlights); // Re-render the table with applied defaults
@@ -967,31 +969,22 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Toggle Apply Distance Filter
 // ============================
 
-// Toggle Apply Distance Filter
-let applyDistanceFilterEnabled = false;
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+    const minDistance = parseFloat(document.getElementById('minDistance').value);
+    const maxDistance = parseFloat(document.getElementById('maxDistance').value);
+
+    // Toggle boldHeadingEnabled and update button text
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
-
     document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
-        ? 'Reset Distance Filter'
-        : 'Apply Distance Filter';
-        
-    const minInput = parseFloat(document.getElementById('minDistance').value);
-        const maxInput = parseFloat(document.getElementById('maxDistance').value);
+        ? 'Disable Distance Filter'
+        : 'Enable Distance Filter';
 
-        if (!isNaN(minInput)) {
-            minDistance = minInput;
-        } else {
-            minDistance = null; // Clear the filter if input is invalid or empty
-        }
+    // Update boldedHeadings range
+    hiddenDistance.minDistance = minDistance;
+    hiddenDistance.maxDistance = maxDistance;
 
-        if (!isNaN(maxInput)) {
-            maxDistance = maxInput;
-        } else {
-            maxDistance = null; // Clear the filter if input is invalid or empty
-        }
-
-    renderFlightsTable(allFlights, hideOtherAircraft); // Re-render the table with distance filter applied/removed
+    // Re-render the table
+    renderFlightsTable(allFlights);
 });
 
 // ============================
