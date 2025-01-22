@@ -994,7 +994,6 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     renderFlightsTable(allFlights);
 });
 
-// Helper Function: Update row visibility and styling
 function updateRowVisibility(row, flight) {
     // Check heading range
     const isWithinHeadingRange =
@@ -1007,10 +1006,10 @@ function updateRowVisibility(row, flight) {
     const isOutsideDistanceRange =
         hiddenDistance.minDistance !== null &&
         hiddenDistance.maxDistance !== null &&
-        flight.distanceToDestination <= hiddenDistance.minDistance &&
-        flight.distanceToDestination >= hiddenDistance.maxDistance;
+        (flight.distanceToDestination < hiddenDistance.minDistance ||
+         flight.distanceToDestination > hiddenDistance.maxDistance);
         
-        console.log({
+    console.log({
         applyDistanceFilterEnabled,
         isOutsideDistanceRange,
         flightDistance: flight.distanceToDestination,
@@ -1018,7 +1017,7 @@ function updateRowVisibility(row, flight) {
     });
 
     // Update row visibility based on filters
-    row.style.display = (applyDistanceFilterEnabled && !isOutsideDistanceRange) ? "none" : "";
+    row.style.display = (applyDistanceFilterEnabled && isOutsideDistanceRange) ? "none" : "";
 
     // Apply bold styling for heading range
     row.style.fontWeight = (boldHeadingEnabled && isWithinHeadingRange) ? "bold" : "";
