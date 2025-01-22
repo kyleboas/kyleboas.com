@@ -61,7 +61,7 @@ function applyDefaults() {
         hiddenDistance.maxDistance = defaultMaxDistance;
     }
 
-    renderFlightsTable(allFlights); // Re-render the table with applied defaults
+    renderFlightsTable(allFlights);
 }
 
 // Save default settings to cookies
@@ -1017,6 +1017,11 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
         allFlights.forEach((flight) => {
             const row = document.createElement("tr");
+            
+            const isVisible = isWithinDistanceRange;
+
+        // Apply bold styling for heading range
+        row.style.display = isVisible ? '' : 'none';
 
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
