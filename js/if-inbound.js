@@ -974,7 +974,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     const maxDistance = parseFloat(document.getElementById('maxDistance').value);
 
     // Toggle boldHeadingEnabled and update button text
-    applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
+    applyDistanceFilterEnabled = !applyDistanceFilterEnabled; 
     document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
         ? 'Disable Distance Filter'
         : 'Enable Distance Filter';
