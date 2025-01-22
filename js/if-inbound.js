@@ -613,9 +613,6 @@ async function fetchAndUpdateFlights(icao) {
         // Fetch and display ATIS and controllers
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
-        
-        // Update distances and ETAs
-        await updateDistancesAndETAs(flights, airportCoordinates);
 
         // Save to global state and re-render the table
         allFlights = flights;
@@ -960,33 +957,6 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 });
 
 // ============================
-// Filter Distance Button Functionality
-// ============================
-
-document.getElementById('filterByDistance').addEventListener('click', async () => {
-    const minDistance = parseFloat(document.getElementById('minDistance').value);
-    const maxDistance = parseFloat(document.getElementById('maxDistance').value);
-
-    filterDistances.minDistance = isNaN(minDistance) ? null : minDistance;
-    filterDistances.maxDistance = isNaN(maxDistance) ? null : maxDistance;
-
-    filterDistanceEnabled = !filterDistanceEnabled;
-    document.getElementById('filterByDistance').textContent = filterDistanceEnabled
-        ? 'Disable Distance Filter'
-        : 'Enable Distance Filter';
-
-    const icao = document.getElementById('icao').value.trim().toUpperCase();
-    const airportCoordinates = await fetchAirportCoordinates(icao);
-
-    if (airportCoordinates) {
-        await updateDistancesAndETAs(allFlights, airportCoordinates);
-        renderFlightsTable(allFlights);
-    } else {
-        console.error("Failed to fetch airport coordinates for filtering.");
-    }
-});
-
-// ============================
 // Bold Heading Button Functionality
 // ============================
 
@@ -1028,8 +998,9 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
+
 // Toggle Apply Distance Filter
-document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+document.getElementById('filterByDistance').addEventListener('click', () => {
     const minInput = parseFloat(document.getElementById('minDistance').value);
     const maxInput = parseFloat(document.getElementById('maxDistance').value);
 
@@ -1205,7 +1176,7 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
         // Fetch ATIS and controllers manually
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
-        await updateDistancesAndETAs(allFlights, airportCoordinates);
+
         renderFlightsTable(allFlights);
     } catch (error) {
         console.error('Error during manual update:', error.message);
@@ -1227,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         stopAutoUpdate();
         await fetchAndUpdateFlights(icao);
     });
-
+  
     document.getElementById('updateButton').addEventListener('click', () => {
     const icao = document.getElementById('icao').value.trim().toUpperCase();
     if (!icao) {
@@ -1236,23 +1207,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     stopAutoUpdate();
-    let countdown = 5; // Update countdown for 15 seconds
+    let countdown = 15; // Update countdown for 15 seconds
     const countdownTimer = document.getElementById('countdownTimer');
 
-    // Set interval for 5 seconds
+    // Set interval for 15 seconds
     updateInterval = setInterval(async () => {
-    try {
         await fetchAndUpdateFlights(icao);
         await fetchControllers(icao); // Update controllers on auto-update
-        await fetchActiveATCAirports(); 
-        await updateDistancesAndETAs(allFlights, airportCoordinates); // Recalculate distances and ETAs
-        renderFlightsTable(allFlights);
-            } catch (error) {
-                console.error("Error during auto-update:", error.message);
-            }
-        }, 5000); // 5-second interval
+        await fetchActiveATCAirports(); // Update active airports dynamically
+        countdown = 15; // Reset countdown
+    }, 15000); // 15 seconds interval
 
-    // Countdown display logic (decrements every second)
+    // Countdown display logic
     countdownInterval = setInterval(() => {
         countdown--;
         countdownTimer.textContent = `${countdown}`;
