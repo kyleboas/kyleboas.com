@@ -58,7 +58,9 @@ function applyDefaults() {
         maxDistance = defaultMaxDistance;
     }
 
-    renderFlightsTable(allFlights); // Re-render the table with applied defaults
+    updateDistancesAndETAs(allFlights, airportCoordinates)
+        .then(() => renderFlightsTable(allFlights))
+        .catch((error) => console.error("Error applying defaults:", error.message));
 }
 
 // Save default settings to cookies
@@ -576,20 +578,21 @@ async function fetchAndUpdateFlights(icao) {
             throw new Error("Failed to fetch airport coordinates.");
         }
         
-        // Update distances, ETAs, and headings
-        await updateDistancesAndETAs(flights, airportCoordinates);
-
         // Fetch and display ATIS and controllers
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
         
-        // Update global state and render table
-        allFlights = flights; // Save to global stats
+        // Update distances and ETAs
+        await updateDistancesAndETAs(flights, airportCoordinates);
+
+        // Save to global state and re-render the table
+        allFlights = flights;
         renderFlightsTable(allFlights);
     } catch (error) {
-        console.error("Error fetching flights or controllers:", error.message);
+        console.error("Error fetching flights:", error.message);
         allFlights = [];
-        renderFlightsTable(allFlights); // Clear table
+        renderFlightsTable(allFlights);
+        
         document.getElementById('atisMessage').textContent = "ATIS not available.";
         document.getElementById('controllersList').textContent = "No controllers online.";
     }
@@ -941,9 +944,8 @@ document.getElementById('filterByDistance').addEventListener('click', () => {
     document.getElementById('filterByDistance').textContent = filterDistanceEnabled
         ? 'Disable Distance Filter'
         : 'Enable Distance Filter';
-    
+
     await updateDistancesAndETAs(allFlights, airportCoordinates);
-    // Re-render the table with the new filter state
     renderFlightsTable(allFlights);
 });
 
@@ -1149,9 +1151,11 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
         // Fetch ATIS and controllers manually
         await fetchAirportATIS(icao);
         await fetchControllers(icao);
+        await updateDistancesAndETAs(allFlights, airportCoordinates);
+        renderFlightsTable(allFlights);
     } catch (error) {
         console.error('Error during manual update:', error.message);
-        alert('Failed to update ATIS and Controllers. Check console for details.');
+        alert('Failed to update flight data.');
     }
 });
 
@@ -1185,9 +1189,13 @@ document.addEventListener('DOMContentLoaded', () => {
     updateInterval = setInterval(async () => {
         await fetchAndUpdateFlights(icao);
         await fetchControllers(icao); // Update controllers on auto-update
-        await fetchActiveATCAirports(); // Update active airports dynamically
-        countdown = 5; // Reset countdown
-    }, 5000); // 5 seconds interval 
+        await fetchActiveATCAirports(); 
+        await updateDistancesAndETAs(allFlights, airportCoordinates); // Recalculate distances and ETAs
+        renderFlightsTable(allFlights);
+            } catch (error) {
+                console.error("Error during auto-update:", error.message);
+            }
+        }, 5000); // 5-second interval
 
     // Countdown display logic (decrements every second)
     countdownInterval = setInterval(() => {
