@@ -973,14 +973,21 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     const minDistance = parseFloat(document.getElementById('minDistance').value);
     const maxDistance = parseFloat(document.getElementById('maxDistance').value);
 
-    // Toggle boldHeadingEnabled and update button text
+    // Validate inputs
+    if (isNaN(minDistance) || isNaN(maxDistance) || minDistance > maxDistance) {
+        alert('Please enter valid Min and Max Distance values.');
+        return;
+    }
+
+    // Toggle state
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
 
-document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
+    // Update button text
+    document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
         ? 'Disable Distance Filter'
         : 'Enable Distance Filter';
 
-    // Update boldedHeadings range
+    // Update distance filter ranges
     hiddenDistance.minDistance = minDistance;
     hiddenDistance.maxDistance = maxDistance;
 
@@ -992,27 +999,30 @@ document.getElementById('applyDistanceFilterButton').textContent = applyDistance
 function updateRowVisibility(row, flight) {
     // Check heading range
     const isWithinHeadingRange =
-        boldedHeadings.minHeading !== undefined &&
-        boldedHeadings.maxHeading !== undefined &&
+        boldedHeadings.minHeading !== null &&
+        boldedHeadings.maxHeading !== null &&
         flight.headingFromAirport >= boldedHeadings.minHeading &&
         flight.headingFromAirport <= boldedHeadings.maxHeading;
 
     // Check distance range
     const isWithinDistanceRange =
-        hiddenDistance.minDistance !== undefined &&
-        hiddenDistance.maxDistance !== undefined &&
+        hiddenDistance.minDistance !== null &&
+        hiddenDistance.maxDistance !== null &&
         flight.distanceToDestination >= hiddenDistance.minDistance &&
         flight.distanceToDestination <= hiddenDistance.maxDistance;
+        
+        console.log({
+        applyDistanceFilterEnabled,
+        isWithinDistanceRange,
+        flightDistance: flight.distanceToDestination,
+        filterRange: hiddenDistance,
+    });
 
-    // Update row visibility
+    // Update row visibility based on filters
     row.style.display = (applyDistanceFilterEnabled && !isWithinDistanceRange) ? "none" : "";
 
-    // Update row styling for bold headings
-    if (boldHeadingEnabled && isWithinHeadingRange) {
-        row.style.fontWeight = "bold";
-    } else {
-        row.style.fontWeight = "";
-    }
+    // Apply bold styling for heading range
+    row.style.fontWeight = (boldHeadingEnabled && isWithinHeadingRange) ? "bold" : "";
 }
 
 // ============================
