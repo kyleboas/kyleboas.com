@@ -164,7 +164,7 @@ th {
     top: 50%;
     left: 0;
     width: 6px;
-    height: 2px;
+    height: 1px;
     background-color: inherit;
     transform: translateY(-50%);
   }
@@ -217,7 +217,7 @@ th {
 
 .arrow.is-east {
   @include rotate(90deg); // 90°
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .arrow.is-southeast {
@@ -232,12 +232,12 @@ th {
 
 .arrow.is-southwest {
   @include rotate(225deg); // 225°
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .arrow.is-west {
   @include rotate(270deg); // 270°
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .arrow.is-northwest {
