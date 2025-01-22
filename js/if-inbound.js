@@ -994,6 +994,22 @@ function updateRowVisibility(row, flight) {
     row.style.fontWeight = (boldHeadingEnabled && isWithinHeadingRange) ? "bold" : "";
 }
 
+function getHeadingArrow(heading) {
+    if (typeof heading !== "number") return ""; // Return empty if heading is not valid
+    const directions = [
+        "↑",  // 0° (North)
+        "↗",  // 45° (Northeast)
+        "→",  // 90° (East)
+        "↘",  // 135° (Southeast)
+        "↓",  // 180° (South)
+        "↙",  // 225° (Southwest)
+        "←",  // 270° (West)
+        "↖",  // 315° (Northwest)
+    ];
+    const index = Math.round(heading / 45) % 8; // Divide into 8 segments
+    return ` ${directions[index]}`;
+}
+
 // ============================
 // Table Rendering
 // ============================
@@ -1045,7 +1061,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             row.innerHTML = `
                 <td>
-                    ${flight.callsign || "N/A"}<br>
+                    <strong>${flight.callsign || "N/A"}</strong><br>
                     <small>${aircraftName}</small>
                 </td>
                 <td>
@@ -1057,7 +1073,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                     ${machValue}M
                 </td>
                 <td>
-                    ${heading}<br>
+                    ${heading}${getHeadingArrow(flight.headingFromAirport)}<br>
                     ${altitude}ft
                 </td>
                 <td>
