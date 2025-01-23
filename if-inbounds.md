@@ -75,7 +75,7 @@
             <div id="secondaryAirportContainer"></div>
         </div>
         
-      <div class="main-airport
+      <div class="main-airport">
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>    
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
       </div>
@@ -98,7 +98,6 @@
             <!-- Dynamic rows will be added here -->
         </tbody>
         </table>
-    </div>
     <script src="/js/if-inbound.js"></script>
   </body>
   {% include footer.html %} 
