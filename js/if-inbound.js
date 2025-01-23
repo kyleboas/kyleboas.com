@@ -240,28 +240,19 @@ async function fetchActiveATCAirports() {
         // Map airports to their facilities
         const activeATCAirports = (atcData.result || []).reduce((acc, atcFacility) => {
             const airportIcao = atcFacility.airportIcao;
-            const frequencyTypes = {
-                0: "Ground",
-                1: "Tower",
-                2: "Unicom",
-                3: "Clearance",
-                4: "Approach",
-                5: "Departure",
-                6: "Center",
-                7: "ATIS",
-                8: "Aircraft",
-                9: "Recorded",
-                10: "Unknown",
-                11: "Unused",
-            };
 
             if (!acc[airportIcao]) {
                 acc[airportIcao] = {
                     icao: airportIcao,
-                    frequencies: new Set(),
+                    hasApproach: false,
                 };
             }
-            acc[airportIcao].frequencies.add(frequencyTypes[atcFacility.type] || "Unknown");
+
+            // Check if this facility is "Approach" (type 4)
+            if (atcFacility.type === 4) {
+                acc[airportIcao].hasApproach = true;
+            }
+
             return acc;
         }, {});
 
@@ -273,21 +264,21 @@ async function fetchActiveATCAirports() {
 
         // Combine active ATC data with inbound flight data
         const combinedAirports = airportsWithInbounds.map((airport) => {
-            const atcInfo = activeATCAirports[airport.airportIcao] || { frequencies: new Set() };
+            const atcInfo = activeATCAirports[airport.airportIcao] || { hasApproach: false };
             return {
                 icao: airport.airportIcao,
                 inboundCount: airport.inboundFlightsCount,
-                frequencies: Array.from(atcInfo.frequencies),
+                hasApproach: atcInfo.hasApproach,
             };
         });
 
         // Add airports with ATC but no inbounds
-        Object.values(activeATCAirports).forEach((atcAirport) => {
-            if (!combinedAirports.find((airport) => airport.icao === atcAirport.icao)) {
+        Object.keys(activeATCAirports).forEach((icao) => {
+            if (!combinedAirports.find((airport) => airport.icao === icao)) {
                 combinedAirports.push({
-                    icao: atcAirport.icao,
+                    icao,
                     inboundCount: 0,
-                    frequencies: Array.from(atcAirport.frequencies),
+                    hasApproach: activeATCAirports[icao].hasApproach,
                 });
             }
         });
@@ -297,20 +288,22 @@ async function fetchActiveATCAirports() {
 
         // Display the top 5 airports with formatting
         const topAirports = combinedAirports.slice(0, 5);
-        const additionalAirports = combinedAirports.slice(5).filter((airport) => airport.frequencies.length > 0);
+        const additionalAirports = combinedAirports.slice(5).filter((airport) => airport.hasApproach);
 
         const formattedAirports = [...topAirports, ...additionalAirports].map((airport) => {
-            const isActive = airport.frequencies.length > 0;
-            const hasApproach = airport.frequencies.includes("Approach");
+            const hasApproach = airport.hasApproach;
             return `
-                <span style="${isActive ? 'font-style: italic;' : ''}">
+                <span ${hasApproach ? 'style="font-style: italic;"' : ''}>
                     ${airport.icao}${hasApproach ? '*' : ''}: ${airport.inboundCount}
                 </span>`;
         });
 
+        // Combine the list with commas
+        const formattedOutput = formattedAirports.join(", ");
+
         // Update the DOM
         const atcAirportsListElement = document.getElementById("atcAirportsList");
-        atcAirportsListElement.innerHTML = formattedAirports.join("<br>") || "No active ATC airports found.";
+        atcAirportsListElement.innerHTML = formattedOutput || "No active ATC airports found.";
     } catch (error) {
         console.error("Error fetching active ATC airports:", error.message);
 
