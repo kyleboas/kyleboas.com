@@ -669,7 +669,6 @@ function parseETAInSeconds(eta) {
 // Display Functions
 // ============================
 
-// Handle secondary airport search
 document.getElementById('secondarySearchForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const secondaryIcao = document.getElementById('secondaryIcao').value.trim().toUpperCase();
@@ -691,9 +690,9 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
         const airportDiv = document.createElement('div');
         airportDiv.id = `secondary-${secondaryIcao}`;
         airportDiv.innerHTML = `
-            <h4>${secondaryIcao}</h4>
-            <div id="secondary-${secondaryIcao}-atis" style="display: none;">ATIS: Fetching...</div>
-            <pre id="secondary-${secondaryIcao}-controllers" style="display: none;">Fetching controllers...</pre>
+            <p class="secondary-atis" id="secondary-${secondaryIcao}-atis" style="display: none;">ATIS: Fetching...</div>
+            <p class="secondary-controllers" id="secondary-${secondaryIcao}-controllers" style="display: none;">Fetching controllers...</p>
+            <button type="button" class="removeAirportButton" data-icao="${secondaryIcao}">Remove</button>
         `;
         secondaryAirportContainer.appendChild(airportDiv);
 
@@ -715,6 +714,17 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
     } catch (error) {
         console.error('Error fetching data for secondary airport:', error.message);
         alert(`Failed to fetch data for the secondary airport: ${secondaryIcao}`);
+    }
+});
+
+// Remove secondary airport button functionality
+document.getElementById('secondaryAirportContainer').addEventListener('click', (event) => {
+    if (event.target.classList.contains('removeAirportButton')) {
+        const icao = event.target.getAttribute('data-icao');
+        const airportDiv = document.getElementById(`secondary-${icao}`);
+        if (airportDiv) {
+            airportDiv.remove();
+        }
     }
 });
 
