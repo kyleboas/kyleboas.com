@@ -669,6 +669,55 @@ function parseETAInSeconds(eta) {
 // Display Functions
 // ============================
 
+// Handle secondary airport search
+document.getElementById('secondarySearchForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const secondaryIcao = document.getElementById('secondaryIcao').value.trim().toUpperCase();
+
+    if (!secondaryIcao) {
+        alert('Please enter a valid ICAO code.');
+        return;
+    }
+
+    // Prevent duplicate secondary airports
+    if (document.getElementById(`secondary-${secondaryIcao}`)) {
+        alert('This airport is already added.');
+        return;
+    }
+
+    try {
+        // Create container for the secondary airport
+        const secondaryAirportContainer = document.getElementById('secondaryAirportContainer');
+        const airportDiv = document.createElement('div');
+        airportDiv.id = `secondary-${secondaryIcao}`;
+        airportDiv.innerHTML = `
+            <h4>${secondaryIcao}</h4>
+            <div id="secondary-${secondaryIcao}-atis" style="display: none;">ATIS: Fetching...</div>
+            <pre id="secondary-${secondaryIcao}-controllers" style="display: none;">Fetching controllers...</pre>
+        `;
+        secondaryAirportContainer.appendChild(airportDiv);
+
+        // Fetch ATIS and controllers for the secondary airport
+        const atis = await fetchAirportATIS(secondaryIcao);
+        const controllers = await fetchControllers(secondaryIcao);
+
+        // Display ATIS
+        const atisElement = document.getElementById(`secondary-${secondaryIcao}-atis`);
+        atisElement.style.display = 'block';
+        atisElement.textContent = `ATIS: ${atis || 'Not available'}`;
+
+        // Display controllers
+        const controllersElement = document.getElementById(`secondary-${secondaryIcao}-controllers`);
+        controllersElement.style.display = 'block';
+        controllersElement.textContent = controllers.length
+            ? controllers.join('\n')
+            : 'No active controllers available.';
+    } catch (error) {
+        console.error('Error fetching data for secondary airport:', error.message);
+        alert(`Failed to fetch data for the secondary airport: ${secondaryIcao}`);
+    }
+});
+
 
 // Display ATIS
 function displayATIS(atis) {

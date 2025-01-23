@@ -64,6 +64,17 @@
         
         <button id="manualUpdateButton">Update Information</button>
         
+        <!-- Secondary Airport Search -->
+        <form id="secondarySearchForm" novalidate>
+            <input type="text" id="secondaryIcao" name="secondaryIcao" placeholder="Enter Secondary ICAO" required>
+            <button type="submit">Add Secondary Airport</button>
+        </form>
+        <!-- Secondary Airport Section -->
+        <div id="secondaryAirports">
+            <h3>Secondary Airports</h3>
+            <div id="secondaryAirportContainer"></div>
+        </div>
+        
         <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
 
     <div>    
