@@ -71,7 +71,6 @@
         </form>
         <!-- Secondary Airport Section -->
         <div id="secondaryAirport">
-            <h3>Secondary Airports</h3>
             <div id="secondaryAirportContainer"></div>
         </div>
         
