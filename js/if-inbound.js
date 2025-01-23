@@ -878,7 +878,7 @@ function displayControllers(controllers, centerFrequencies = []) {
         : 'No active controllers available';
 
     const centerControllers = centerFrequencies.length
-        ? centerFrequencies.map(ctrl => `<strong>${ctrl}</strong><br>`).join('')
+        ? centerFrequencies.map(ctrl => `${ctrl}<br>`).join('')
         : 'No active Center frequencies available.';
 
     // Combine Center frequencies and other controllers
