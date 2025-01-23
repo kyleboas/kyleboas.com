@@ -142,13 +142,15 @@ th {
     font-weight: bold;
 }
 
-#atisMessage, #controllersList {
+.secondaryAirports, .mainAirport {
     margin-top: 15px;
     padding: 10px;
     border-left: 4px solid #4CAF50;
     border-radius: 4px;
     font-size: 15px;
 }
+
+
 
 // Arrow mixin: Creates the arrow shape
 @mixin arrow($size, $width, $height, $length) {

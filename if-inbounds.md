@@ -70,12 +70,12 @@
             <button type="submit">Add Secondary Airport</button>
         </form>
         <!-- Secondary Airport Section -->
-        <div id="secondaryAirports">
+        <div id="secondaryAirport">
             <h3>Secondary Airports</h3>
             <div id="secondaryAirportContainer"></div>
         </div>
         
-      <div class="main-airport">
+      <div class="mainAirport">
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>    
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
       </div>
