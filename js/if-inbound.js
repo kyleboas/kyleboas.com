@@ -269,7 +269,7 @@ async function fetchAircraftType(aircraftId) {
 }
 
 async function fetchActiveATCAirports() {
-    const endpoint = `/sessions/${SESSION_ID}/atc`;
+    const endpoint = '/sessions/' + SESSION_ID + '/atc';
 
     try {
         // Fetch ATC data from the endpoint
@@ -277,7 +277,7 @@ async function fetchActiveATCAirports() {
 
         // Map airports to their facilities
         const activeATCAirports = (atcData.result || []).reduce((acc, atcFacility) => {
-            const airportIcao = atcFacility.airportName; // Change to `airportIcao` if available
+            const airportIcao = atcFacility.airportName; // Change to 'airportIcao' if available
 
             if (!acc[airportIcao]) {
                 acc[airportIcao] = {
@@ -286,7 +286,7 @@ async function fetchActiveATCAirports() {
                 };
             }
 
-            // Check if this facility is "Approach" (type 4)
+            // Check if this facility is 'Approach' (type 4)
             if (atcFacility.type === 4) {
                 acc[airportIcao].hasApproach = true;
             }
@@ -295,7 +295,7 @@ async function fetchActiveATCAirports() {
         }, {});
 
         // Fetch inbound counts for airports
-        const worldData = await fetchWithProxy(`/sessions/${SESSION_ID}/world`);
+        const worldData = await fetchWithProxy('/sessions/' + SESSION_ID + '/world');
         const airportsWithInbounds = (worldData.result || []).filter(
             (airport) => airport.inboundFlightsCount > 0
         );
@@ -339,22 +339,22 @@ async function fetchActiveATCAirports() {
         const formattedAirports = finalAirports.map((airport) => {
             const hasApproach = airport.hasApproach;
             return hasApproach
-                ? `<strong>${airport.icao}</strong>*: ${airport.inboundCount}`
-                : `<strong>${airport.icao}</strong>: ${airport.inboundCount}`;
+                ? '<strong>' + airport.icao + '</strong>*: ' + airport.inboundCount
+                : '<strong>' + airport.icao + '</strong>: ' + airport.inboundCount;
         });
 
         // Join the output with commas
-        const formattedOutput = formattedAirports.join(", ");
+        const formattedOutput = formattedAirports.join(', ');
 
         // Update the DOM
-        const atcAirportsListElement = document.getElementById("atcAirportsList");
-        atcAirportsListElement.innerHTML = formattedOutput || "No active ATC airports found.";
+        const atcAirportsListElement = document.getElementById('atcAirportsList');
+        atcAirportsListElement.innerHTML = formattedOutput || 'No active ATC airports found.';
     } catch (error) {
-        console.error("Error fetching active ATC airports:", error.message);
+        console.error('Error fetching active ATC airports:', error.message);
 
         // Display error message
-        const atcAirportsListElement = document.getElementById("atcAirportsList");
-        atcAirportsListElement.textContent = "Failed to fetch active ATC airports.";
+        const atcAirportsListElement = document.getElementById('atcAirportsList');
+        atcAirportsListElement.textContent = 'Failed to fetch active ATC airports.';
     }
 }
 
@@ -367,7 +367,7 @@ async function fetchAirportCoordinates(icao) {
     }
 
     try {
-        const data = await fetchWithProxy(`/airport/${icao}`);
+        const data = await fetchWithProxy('/airport/' + icao);
         const coordinates = { latitude: data.result.latitude, longitude: data.result.longitude };
         setCache(icao, coordinates, 'airportCoordinates');
         return coordinates;
