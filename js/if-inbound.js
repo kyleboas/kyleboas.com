@@ -859,7 +859,6 @@ function displayATIS(atis) {
     atisElement.textContent = `ATIS: ${atis || 'Not available'}`;
 }
 
-// Display Controllers
 function displayControllers(controllers, centerFrequencies = []) {
     const controllersElement = document.getElementById('controllersList');
     const mainAirportElement = document.querySelector('.mainAirport');
@@ -872,22 +871,20 @@ function displayControllers(controllers, centerFrequencies = []) {
     // Ensure the main airport section is visible
     mainAirportElement.style.display = 'block';
 
-    // Format the controllers display
+    // Separate Center frequencies and other controllers
     const otherControllers = controllers.length
         ? controllers.filter(ctrl => !centerFrequencies.includes(ctrl)).map(ctrl => `${ctrl}<br>`).join('')
-        : 'No active controllers available';
+        : 'No active controllers available.';
 
     const centerControllers = centerFrequencies.length
         ? centerFrequencies.map(ctrl => `${ctrl}<br>`).join('')
         : 'No active Center frequencies available.';
 
-    // Combine Center frequencies and other controllers
+    // Combine other controllers first, followed by Center frequencies
     controllersElement.style.display = 'block';
     controllersElement.innerHTML = `
         <p>Active Center Frequencies:</p>
         <p>${centerControllers}</p>
-        <p>Other Controllers:</p>
-        <p>${otherControllers}</p>
     `;
 }
 
