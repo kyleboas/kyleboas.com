@@ -231,41 +231,92 @@ async function fetchAircraftType(aircraftId) {
 
 // Fetch and display the top 10 active ATC airports with inbound flight counts
 async function fetchActiveATCAirports() {
-    const endpoint = `/sessions/${SESSION_ID}/world`;
+    const endpoint = `/sessions/${SESSION_ID}/atc`;
 
     try {
-        // Fetch data from the world endpoint
-        const data = await fetchWithProxy(endpoint);
+        // Fetch ATC data from the endpoint
+        const atcData = await fetchWithProxy(endpoint);
 
-        // Extract airports with active ATC and inbound flight counts
-        const activeAtcAirports = (data.result || [])
-            .filter(airport => airport.inboundFlightsCount > 0 || (airport.atcFacilities && airport.atcFacilities.length > 0)) // Include airports with inbound flights or active ATC
-            .map(airport => ({
+        // Map airports to their facilities
+        const activeATCAirports = (atcData.result || []).reduce((acc, atcFacility) => {
+            const airportIcao = atcFacility.airportIcao;
+            const frequencyTypes = {
+                0: "Ground",
+                1: "Tower",
+                2: "Unicom",
+                3: "Clearance",
+                4: "Approach",
+                5: "Departure",
+                6: "Center",
+                7: "ATIS",
+                8: "Aircraft",
+                9: "Recorded",
+                10: "Unknown",
+                11: "Unused",
+            };
+
+            if (!acc[airportIcao]) {
+                acc[airportIcao] = {
+                    icao: airportIcao,
+                    frequencies: new Set(),
+                };
+            }
+            acc[airportIcao].frequencies.add(frequencyTypes[atcFacility.type] || "Unknown");
+            return acc;
+        }, {});
+
+        // Fetch inbound counts for airports
+        const worldData = await fetchWithProxy(`/sessions/${SESSION_ID}/world`);
+        const airportsWithInbounds = (worldData.result || []).filter(
+            (airport) => airport.inboundFlightsCount > 0
+        );
+
+        // Combine active ATC data with inbound flight data
+        const combinedAirports = airportsWithInbounds.map((airport) => {
+            const atcInfo = activeATCAirports[airport.airportIcao] || { frequencies: new Set() };
+            return {
                 icao: airport.airportIcao,
-                inboundCount: airport.inboundFlightsCount || 0 // Default to 0 if no inbound flights
-            }))
-            .sort((a, b) => b.inboundCount - a.inboundCount); // Sort by inbound count (descending)
+                inboundCount: airport.inboundFlightsCount,
+                frequencies: Array.from(atcInfo.frequencies),
+            };
+        });
 
-        // Remove duplicates by ensuring unique ICAO codes
-        const uniqueAirports = Array.from(new Map(activeAtcAirports.map(airport => [airport.icao, airport])).values());
+        // Add airports with ATC but no inbounds
+        Object.values(activeATCAirports).forEach((atcAirport) => {
+            if (!combinedAirports.find((airport) => airport.icao === atcAirport.icao)) {
+                combinedAirports.push({
+                    icao: atcAirport.icao,
+                    inboundCount: 0,
+                    frequencies: Array.from(atcAirport.frequencies),
+                });
+            }
+        });
 
-        // Limit the list to the top 5 airports
-        const topAirports = uniqueAirports.slice(0, 5);
+        // Sort by inbound count in descending order
+        combinedAirports.sort((a, b) => b.inboundCount - a.inboundCount);
 
-        // Format the list for display
-        const listContent = topAirports.map(
-            airport => `${airport.icao}: ${airport.inboundCount}`
-        ).join(', '); // Join the entries with commas
+        // Display the top 5 airports with formatting
+        const topAirports = combinedAirports.slice(0, 5);
+        const additionalAirports = combinedAirports.slice(5).filter((airport) => airport.frequencies.length > 0);
 
-        // Set the content inside the <pre> element
-        const atcAirportsListElement = document.getElementById('atcAirportsList');
-        atcAirportsListElement.textContent = listContent || 'No active ATC airports found.';
+        const formattedAirports = [...topAirports, ...additionalAirports].map((airport) => {
+            const isActive = airport.frequencies.length > 0;
+            const hasApproach = airport.frequencies.includes("Approach");
+            return `
+                <span style="${isActive ? 'font-style: italic;' : ''}">
+                    ${airport.icao}${hasApproach ? '*' : ''}: ${airport.inboundCount}
+                </span>`;
+        });
+
+        // Update the DOM
+        const atcAirportsListElement = document.getElementById("atcAirportsList");
+        atcAirportsListElement.innerHTML = formattedAirports.join("<br>") || "No active ATC airports found.";
     } catch (error) {
-        console.error('Error fetching active ATC airports:', error.message);
+        console.error("Error fetching active ATC airports:", error.message);
 
         // Display error message
-        const atcAirportsListElement = document.getElementById('atcAirportsList');
-        atcAirportsListElement.textContent = 'Failed to fetch active ATC airports.';
+        const atcAirportsListElement = document.getElementById("atcAirportsList");
+        atcAirportsListElement.textContent = "Failed to fetch active ATC airports.";
     }
 }
 
@@ -341,37 +392,42 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
+
+
 // Fetch ATIS
-async function fetchAirportATIS(icao) {
-    const atisElement = document.getElementById('atisMessage');
+async function fetchAirportATIS(icao, targetElementId) {
+    const atisElement = document.getElementById(targetElementId);
     if (atisElement) atisElement.textContent = 'Fetching ATIS...';
 
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
     if (cached) {
         console.log('Using cached ATIS for', icao);
-        displayATIS(cached); // Display cached ATIS
+        if (atisElement) atisElement.textContent = `ATIS: ${cached}`;
         return cached;
     }
 
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`);
-        const atis = data.result || 'ATIS not available'; // Use `data.result`
+        const atis = data.result || 'ATIS not available';
         setCache(icao, atis, 'atis');
-        displayATIS(atis); // Display fetched ATIS
+        if (atisElement) atisElement.textContent = `ATIS: ${atis}`;
         return atis;
     } catch (error) {
         console.error('Error fetching ATIS:', error.message);
-        displayATIS('ATIS not available');
+        if (atisElement) atisElement.textContent = 'ATIS not available';
         return 'ATIS not available';
     }
 }
 
 // Fetch Controllers
-async function fetchControllers(icao) {
+async function fetchControllers(icao, targetElementId) {
+    const controllersElement = document.getElementById(targetElementId);
+    if (controllersElement) controllersElement.textContent = 'Fetching controllers...';
+
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
         console.log('Using cached controllers for', icao);
-        displayControllers(cached); // Display cached controllers
+        if (controllersElement) controllersElement.innerHTML = cached.join('<br>');
         return cached;
     }
 
@@ -406,11 +462,17 @@ async function fetchControllers(icao) {
         }).map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
 
         setCache(icao, sortedControllers, 'controllers');
-        displayControllers(sortedControllers); // Display sorted controllers
+
+        if (controllersElement) {
+            controllersElement.innerHTML = sortedControllers.length
+                ? sortedControllers.join('<br>')
+                : 'No active controllers available';
+        }
+
         return sortedControllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
-        displayControllers(['No active controllers available']);
+        if (controllersElement) controllersElement.textContent = 'No controllers available';
         return [];
     }
 }
