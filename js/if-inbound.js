@@ -552,8 +552,7 @@ function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, hea
 
 async function fetchAndUpdateFlights(icao) {
     try {
-
-document.getElementById('mainAiport').style.display = 'block';
+        document.querySelector('.mainAirport').style.display = 'block';
         document.getElementById('atisMessage').style.display = 'block';
         document.getElementById('controllersList').style.display = 'block';
 
