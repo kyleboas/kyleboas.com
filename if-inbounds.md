@@ -67,7 +67,7 @@
         <!-- Secondary Airport Search -->
         <form id="secondarySearchForm" novalidate>
             <input type="text" id="secondaryIcao" name="secondaryIcao" placeholder="Enter Secondary ICAO" required>
-            <button type="submit">Add Secondary Airport</button>
+            <button type="submit">Add Airport</button>
         </form>
         <!-- Secondary Airport Section -->
         <div id="secondaryAirport">
