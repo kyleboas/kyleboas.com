@@ -689,8 +689,10 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
         const secondaryAirportContainer = document.getElementById('secondaryAirportContainer');
         const airportDiv = document.createElement('div');
         airportDiv.id = `secondary-${secondaryIcao}`;
+        airportDiv.className = 'secondaryAirport'; // Add class here
         airportDiv.innerHTML = `
-            <p class="secondary-atis" id="secondary-${secondaryIcao}-atis" style="display: none;">ATIS: Fetching...</div>
+            <h4>${secondaryIcao}</h4>
+            <p class="secondary-atis" id="secondary-${secondaryIcao}-atis" style="display: none;">ATIS: Fetching...</p>
             <p class="secondary-controllers" id="secondary-${secondaryIcao}-controllers" style="display: none;">Fetching controllers...</p>
             <button type="button" class="removeAirportButton" data-icao="${secondaryIcao}">Remove</button>
         `;
