@@ -554,16 +554,16 @@ async function fetchAndUpdateFlights(icao) {
     try {
 
 document.getElementById('mainAiport').style.display = 'block';
-        document.getElementById('mainatisMessage').style.display = 'block';
-        document.getElementById('maincontrollersList').style.display = 'block';
+        document.getElementById('atisMessage').style.display = 'block';
+        document.getElementById('controllersList').style.display = 'block';
 
         const inboundFlightIds = await fetchInboundFlightIds(icao);
         if (!inboundFlightIds.length) {
             console.warn("No inbound flights found for ICAO:", icao);
             allFlights = [];
             renderFlightsTable(allFlights);
-            document.getElementById('mainatisMessage').textContent = "No ATIS available.";
-            document.getElementById('maincontrollersList').textContent = "No controllers available.";
+            document.getElementById('atisMessage').textContent = "No ATIS available.";
+            document.getElementById('controllersList').textContent = "No controllers available.";
             return;
         }
 
@@ -586,8 +586,8 @@ document.getElementById('mainAiport').style.display = 'block';
         console.error("Error fetching flights or controllers:", error.message);
         allFlights = [];
         renderFlightsTable(allFlights);
-        document.getElementById('mainatisMessage').textContent = "ATIS not available.";
-        document.getElementById('maincontrollersList').textContent = "No controllers online.";
+        document.getElementById('atisMessage').textContent = "ATIS not available.";
+        document.getElementById('controllersList').textContent = "No controllers online.";
     }
 }
 
