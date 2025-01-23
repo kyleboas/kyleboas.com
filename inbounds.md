@@ -75,8 +75,8 @@
         </div>
         
       <div class="mainAirport" style="display:none;">
-        <p class="mainatisMessage" id="mainatisMessage" style="display: none;">ATIS: Not fetched yet</p>    
-        <p class="maincontrollersList" id="maincontrollersList" style="display: none;">No active ATC.</p>
+        <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>    
+        <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
       </div>
 
         <button type="button" id="updateButton">Update</button>
