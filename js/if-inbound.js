@@ -277,7 +277,7 @@ async function fetchActiveATCAirports() {
 
         // Map airports to their facilities
         const activeATCAirports = (atcData.result || []).reduce((acc, atcFacility) => {
-            const airportIcao = atcFacility.airportIcao;
+            const airportIcao = atcFacility.airportName; // Change to `airportIcao` if available
 
             if (!acc[airportIcao]) {
                 acc[airportIcao] = {
@@ -329,7 +329,7 @@ async function fetchActiveATCAirports() {
 
         // Include any additional airports with active ATC not in the top 5
         const additionalAirports = combinedAirports.filter(
-            (airport) => !topAirports.includes(airport) && airport.hasApproach
+            (airport) => !topAirports.find((top) => top.icao === airport.icao) && airport.hasApproach
         );
 
         // Combine the top airports and additional airports with active ATC
@@ -338,7 +338,9 @@ async function fetchActiveATCAirports() {
         // Format the output
         const formattedAirports = finalAirports.map((airport) => {
             const hasApproach = airport.hasApproach;
-            return `${hasApproach ? `<i>${airport.icao}*</i>` : airport.icao}: ${airport.inboundCount}`;
+            return hasApproach
+                ? `<strong>${airport.icao}</strong>*: ${airport.inboundCount}`
+                : `<strong>${airport.icao}</strong>: ${airport.inboundCount}`;
         });
 
         // Join the output with commas
