@@ -1,78 +1,95 @@
----
-layout: page
----
-
-<body>
-<div class="container">
-    <h1>Search Inbound Flights</h1>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Infinite Flight Inbound Search</title>
+     
+    {% if site.tags != "" %}
+    {% include collecttags.html %}
+    {% endif %}
     
-    <div id="activeAtcAirports" style="font-size: 15px;">
-    <pre id="atcAirportsList">Fetching data...</pre>
-</div>
-
-    <!-- Search Form -->
-    <form id="searchForm" novalidate>
-        <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
-        <button type="submit">Search</button>
-    </form>
+    {% include favicon.html %}
     
-    <div class="dropdown">
-    <button class="dropdown-toggle">Set Defaults ▼</button>
-    <div class="dropdown-menu">
-        <h2>Set Defaults</h2>
-        <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum e.g., 0">
-        <br>
-        <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
-        <br>
-        <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
-        <br>
-        <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
-        <br>
-        <button type="button" id="saveDefaultsButton">Save Defaults</button>
-    </div>
-</div>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
 
-    <!-- Filter Form -->
-    <form id="filterForm" style="margin-top: 20px;">
-        <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum e.g., 0">
-        <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum e.g., 90">
-        <button type="button" id="boldHeadingButton">Bold Aircraft</button>
-        <button type="button" id="toggleHeadingButton">Hide/Show Other Aircraft</button>
+    <!--[if lt IE 9]>
+      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/infiniteflight.css" />
+    <link rel="alternate" type="application/rss+xml" title="{{ site.name }} - {{ site.description }}" href="{{ site.baseurl }}/feed" />
+  </head>
+
+  <body>
+    <div class="container">
+        <h1>Search Inbound Infinite Flight Flights</h1>
         
-    <input type="number" id="minDistance" min="0" placeholder="Minimum e.g., 50">
-    <input type="number" id="maxDistance" min="0" placeholder="Maximum e.g., 500">
-    <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
-    <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
-    <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
-    </form>
-    
-    <button id="manualUpdateButton">Update Information</button>
-    
-    <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
+        <div id="activeAtcAirports" style="font-size: 15px;">
+        <pre id="atcAirportsList">Fetching data...</pre>
+    </div>
 
-<div>    
-    <pre id="controllersList" style="display: none;">No active ATC.</pre>
-</div>
+        <!-- Search Form -->
+        <form id="searchForm" novalidate>
+            <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
+            <button type="submit">Search</button>
+        </form>
+        
+        <div class="dropdown">
+        <button class="dropdown-toggle">Set Defaults ▼</button>
+        <div class="dropdown-menu">
+            <h2>Set Defaults</h2>
+            <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum e.g., 0">
+            <br>
+            <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
+            <br>
+            <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
+            <br>
+            <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
+            <br>
+            <button type="button" id="saveDefaultsButton">Save Defaults</button>
+        </div>
+    </div>
 
-    <button type="button" id="updateButton">Update</button>
-    <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-    <span id="countdownTimer" style="display: none;"></span>
-    
-    <table id="flightsTable">
-    <thead>
-        <tr>
-            <th>Aircraft</th>
-            <th>MIN/MAX</th>
-            <th>GS/MACH</th>
-            <th>HDG/ALT</th>
-            <th>NM/ETA</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Dynamic rows will be added here -->
-    </tbody>
-    </table>
-</div>
-<link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/infiniteflight.css" />
-<script src="/js/if-inbound.js"></script>
-</body>
+        <!-- Filter Form -->
+        <form id="filterForm" style="margin-top: 20px;">
+            <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum e.g., 0">
+            <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum e.g., 90">
+            <button type="button" id="boldHeadingButton">Bold Aircraft</button>
+            <button type="button" id="toggleHeadingButton">Hide/Show Other Aircraft</button>
+            
+        <input type="number" id="minDistance" min="0" placeholder="Minimum e.g., 50">
+        <input type="number" id="maxDistance" min="0" placeholder="Maximum e.g., 500">
+        <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
+        <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
+        <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
+        </form>
+        
+        <button id="manualUpdateButton">Update Information</button>
+        
+        <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
+
+    <div>    
+        <pre id="controllersList" style="display: none;">No active ATC.</pre>
+    </div>
+
+        <button type="button" id="updateButton">Update</button>
+        <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
+        <span id="countdownTimer" style="display: none;"></span>
+        
+        <table id="flightsTable">
+        <thead>
+            <tr>
+                <th>Aircraft</th>
+                <th>MIN/MAX</th>
+                <th>GS/MACH</th>
+                <th>HDG/ALT</th>
+                <th>NM/ETA</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamic rows will be added here -->
+        </tbody>
+        </table>
+    </div>
+    <script src="/js/if-inbound.js"></script>
+  </body>
+</html> 
