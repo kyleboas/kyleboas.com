@@ -930,12 +930,6 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     const minDistance = parseFloat(document.getElementById('minDistance').value);
     const maxDistance = parseFloat(document.getElementById('maxDistance').value);
 
-    // Validate inputs
-    if (isNaN(minDistance) || isNaN(maxDistance) || minDistance > maxDistance) {
-        alert('Please enter valid Min and Max Distance values.');
-        return;
-    }
-
     // Toggle state
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
 
