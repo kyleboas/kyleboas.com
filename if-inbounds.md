@@ -34,17 +34,13 @@ layout: page
 
     <!-- Filter Form -->
     <form id="filterForm" style="margin-top: 20px;">
-        <label for="minHeading">Min Heading:</label>
-        <input type="number" id="minHeading" min="0" max="360" placeholder="e.g., 0">
-        <label for="maxHeading">Max Heading:</label>
-        <input type="number" id="maxHeading" min="0" max="360" placeholder="e.g., 90">
+        <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum e.g., 0">
+        <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum e.g., 90">
         <button type="button" id="boldHeadingButton">Bold Aircraft</button>
         <button type="button" id="toggleHeadingButton">Hide/Show Other Aircraft</button>
         
-    <label for="minDistance">Min Distance:</label>
-    <input type="number" id="minDistance" min="0" placeholder="e.g., 50">
-    <label for="maxDistance">Max Distance:</label>
-    <input type="number" id="maxDistance" min="0" placeholder="e.g., 500">
+    <input type="number" id="minDistance" min="0" placeholder="Minimum e.g., 50">
+    <input type="number" id="maxDistance" min="0" placeholder="Maximum e.g., 500">
     <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
     <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
     <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
