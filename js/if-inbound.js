@@ -436,18 +436,14 @@ async function fetchControllers(icao) {
                     3: "Clearance",
                     4: "Approach",
                     5: "Departure",
-                    6: "Center",
+                    6: "Center", // Center frequency
                     7: "ATIS",
-                    8: "Aircraft",
-                    9: "Recorded",
-                    10: "Unknown",
-                    11: "Unused",
                 };
                 const frequencyName = frequencyTypes[facility.type] || "Unknown";
                 return { frequencyName, username: facility.username, type: facility.type };
             });
 
-        // Sort controllers based on the specified order
+        // Sort controllers by a specific order
         const sortedControllers = controllers.sort((a, b) => {
             const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
             const indexA = order.indexOf(a.frequencyName);
@@ -455,12 +451,17 @@ async function fetchControllers(icao) {
             return indexA - indexB;
         }).map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
 
+        // Extract only Center frequencies
+        const centerFrequencies = controllers
+            .filter(ctrl => ctrl.frequencyName === "Center")
+            .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
+
         setCache(icao, sortedControllers, 'controllers');
-        displayControllers(sortedControllers); // Display sorted controllers
+        displayControllers(sortedControllers, centerFrequencies); // Pass both sorted controllers and centers
         return sortedControllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
-        displayControllers(['No active controllers available']);
+        displayControllers(['No active controllers available'], []);
         return [];
     }
 }
@@ -859,7 +860,7 @@ function displayATIS(atis) {
 }
 
 // Display Controllers
-function displayControllers(controllers) {
+function displayControllers(controllers, centerFrequencies = []) {
     const controllersElement = document.getElementById('controllersList');
     const mainAirportElement = document.querySelector('.mainAirport');
 
@@ -871,11 +872,23 @@ function displayControllers(controllers) {
     // Ensure the main airport section is visible
     mainAirportElement.style.display = 'block';
 
-    // Update the controllers content
-    controllersElement.style.display = 'block';
-    controllersElement.innerHTML = controllers.length
-        ? controllers.map(ctrl => `${ctrl}<br>`).join('')
+    // Format the controllers display
+    const otherControllers = controllers.length
+        ? controllers.filter(ctrl => !centerFrequencies.includes(ctrl)).map(ctrl => `${ctrl}<br>`).join('')
         : 'No active controllers available';
+
+    const centerControllers = centerFrequencies.length
+        ? centerFrequencies.map(ctrl => `<strong>${ctrl}</strong><br>`).join('')
+        : 'No active Center frequencies available.';
+
+    // Combine Center frequencies and other controllers
+    controllersElement.style.display = 'block';
+    controllersElement.innerHTML = `
+        <p>Active Center Frequencies:</p>
+        <p>${centerControllers}</p>
+        <p>Other Controllers:</p>
+        <p>${otherControllers}</p>
+    `;
 }
 
 // ============================
