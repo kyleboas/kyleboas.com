@@ -75,11 +75,10 @@
             <div id="secondaryAirportContainer"></div>
         </div>
         
-        <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
-
-    <div>    
-        <pre id="controllersList" style="display: none;">No active ATC.</pre>
-    </div>
+      <div class="main-airport
+        <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>    
+        <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
+      </div>
 
         <button type="button" id="updateButton">Update</button>
         <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
