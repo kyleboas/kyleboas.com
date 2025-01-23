@@ -883,6 +883,7 @@ function displayControllers(controllers, centerFrequencies = []) {
     // Combine other controllers first, followed by Center frequencies
     controllersElement.style.display = 'block';
     controllersElement.innerHTML = `
+        <p>${otherControllers}</p>
         <p>Active Center Frequencies:</p>
         <p>${centerControllers}</p>
     `;
