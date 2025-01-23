@@ -18,6 +18,7 @@ let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
 let applyDistanceFilterEnabled = false;
+let secondaryAirports = {};
 
 // ============================
 // Cookie Utility Functions
@@ -34,6 +35,44 @@ function getCookie(name) {
     const cookie = cookies.find((c) => c.startsWith(`${name}=`));
     return cookie ? cookie.split('=')[1] : null;
 }
+
+// ============================
+// LocalStorage Utility Functions
+// ============================
+
+function saveStateToLocalStorage() {
+    const state = {
+        allFlights,
+        headingFilterActive,
+        boldedHeadings,
+        hiddenDistance,
+        distanceFilterActive,
+        minDistance,
+        maxDistance,
+        hideOtherAircraft,
+        boldHeadingEnabled,
+        applyDistanceFilterEnabled,
+        secondaryAirports, // Include secondary airports
+    };
+    localStorage.setItem("appState", JSON.stringify(state));
+}
+
+function loadStateFromLocalStorage() {
+    const state = JSON.parse(localStorage.getItem('appState'));
+    if (state) {
+        allFlights = state.allFlights || [];
+        headingFilterActive = state.headingFilterActive || false;
+        boldedHeadings = state.boldedHeadings || { minHeading: null, maxHeading: null };
+        hiddenDistance = state.hiddenDistance || { minDistance: null, maxDistance: null };
+        distanceFilterActive = state.distanceFilterActive || false;
+        minDistance = state.minDistance;
+        maxDistance = state.maxDistance;
+        hideOtherAircraft = state.hideOtherAircraft || false;
+        boldHeadingEnabled = state.boldHeadingEnabled || false;
+        applyDistanceFilterEnabled = state.applyDistanceFilterEnabled || false;
+        secondaryAirports = state.secondaryAirports || {}; // Restore secondary airports
+ }
+}  
 
 // ============================
 // Default Settings
@@ -799,10 +838,21 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
     }
 
     try {
-        // Create container for the secondary airport
+        // Fetch ATIS and controllers
+        const atis = await fetchSecondaryATIS(secondaryIcao);
+        const controllers = await fetchSecondaryControllers(secondaryIcao);
+
+        // Save to state
+        secondaryAirports[secondaryIcao] = {
+            atis,
+            controllers,
+        };
+
+        // Update UI
         const secondaryAirportContainer = document.getElementById('secondaryAirportContainer');
         const airportDiv = document.createElement('div');
         airportDiv.id = `secondary-${secondaryIcao}`;
+        airportDiv.className = 'secondaryAirport';
         airportDiv.className = 'secondaryAirport';
         airportDiv.innerHTML = `
             <p class="secondary-atis" id="secondary-${secondaryIcao}-atis">Fetching ATIS...</p>
@@ -824,6 +874,8 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
         controllersElement.innerHTML = controllers.length
             ? controllers.map(ctrl => `${ctrl}<br>`).join('') // Use <br> for line breaks
             : 'No active controllers available.';
+        // Save state
+        saveStateToLocalStorage();
     } catch (error) {
         console.error(`Error fetching data for secondary airport ${secondaryIcao}:`, error.message);
         alert(`Failed to fetch data for the secondary airport: ${secondaryIcao}`);
@@ -834,10 +886,18 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
 document.getElementById('secondaryAirportContainer').addEventListener('click', (event) => {
     if (event.target.classList.contains('removeAirportButton')) {
         const icao = event.target.getAttribute('data-icao');
-        const airportDiv = document.getElementById(`secondary-${icao}`);
+
+        // Remove from state
+        delete secondaryAirports[icao];
+
+        // Remove from UI
+        const airportDiv = document.getElementById('secondary-${icao}');
         if (airportDiv) {
             airportDiv.remove();
         }
+
+        // Save state
+        saveStateToLocalStorage();
     }
 });
 
@@ -1340,7 +1400,41 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
 document.addEventListener('DOMContentLoaded', async () => {
     // Apply default settings
     applyDefaults();
+    // Load saved state
+    loadStateFromLocalStorage();
 
+    // Apply filters and settings from state
+    if (boldedHeadings.minHeading !== null && boldedHeadings.maxHeading !== null) {
+        document.getElementById('minHeading').value = boldedHeadings.minHeading;
+        document.getElementById('maxHeading').value = boldedHeadings.maxHeading;
+    }
+
+    if (hiddenDistance.minDistance !== null && hiddenDistance.maxDistance !== null) {
+        document.getElementById('minDistance').value = hiddenDistance.minDistance;
+        document.getElementById('maxDistance').value = hiddenDistance.maxDistance;
+    }
+
+    // Restore secondary airports
+    const secondaryAirportContainer = document.getElementById('secondaryAirportContainer');
+    for (const [icao, data] of Object.entries(secondaryAirports)) {
+        const airportDiv = document.createElement('div');
+        airportDiv.id = 'secondary-${icao}';
+        airportDiv.className = 'secondaryAirport';
+        airportDiv.innerHTML = `
+            <p class="secondary-atis" id="secondary-${icao}-atis">ATIS: ${data.atis || 'Not available'}</p>
+            <p class='secondary-controllers' id='secondary-${icao}-controllers'>
+                ${data.controllers.length ? data.controllers.join("<br>") : 'No active controllers available.'}
+            </p>
+            <button type='button'
+            class="removeAirportButton" data-icao='${icao}'>Remove</button>
+        `;
+        secondaryAirportContainer.appendChild(airportDiv);
+    }
+
+    // Render the flights table with the restored state
+    renderFlightsTable(allFlights);
+
+    // Apply default settings if defaults exist
     const hasDefaults =
         getCookie('defaultMinHeading') ||
         getCookie('defaultMaxHeading') ||
