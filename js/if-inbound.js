@@ -848,21 +848,36 @@ document.getElementById('secondaryAirportContainer').addEventListener('click', (
 // Display ATIS
 function displayATIS(atis) {
     const atisElement = document.getElementById('atisMessage');
-    if (!atisElement) {
-        console.error('ATIS display element not found.');
+    const mainAirportElement = document.querySelector('.mainAirport');
+
+    if (!atisElement || !mainAirportElement) {
+        console.error('ATIS display element or mainAirport element not found.');
         return;
     }
-    atisElement.textContent = `ATIS: ${atis}`;
+
+    // Ensure the main airport section is visible
+    mainAirportElement.style.display = 'block';
+
+    // Update the ATIS content
+    atisElement.style.display = 'block';
+    atisElement.textContent = `ATIS: ${atis || 'Not available'}`;
 }
 
 // Display Controllers
 function displayControllers(controllers) {
     const controllersElement = document.getElementById('controllersList');
-    if (!controllersElement) {
-        console.error('Controller display element not found.');
+    const mainAirportElement = document.querySelector('.mainAirport');
+
+    if (!controllersElement || !mainAirportElement) {
+        console.error('Controllers display element or mainAirport element not found.');
         return;
     }
 
+    // Ensure the main airport section is visible
+    mainAirportElement.style.display = 'block';
+
+    // Update the controllers content
+    controllersElement.style.display = 'block';
     controllersElement.innerHTML = controllers.length
         ? controllers.map(ctrl => `${ctrl}<br>`).join('')
         : 'No active controllers available';
