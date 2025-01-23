@@ -142,12 +142,20 @@ th {
     font-weight: bold;
 }
 
+.atisMessage {
+   padding-top: 5px;
+}
+
+.controllersList {
+   padding-bottom: 5px; 
+}
+
 .secondaryAirport, .mainAirport {
     margin-top: 15px;
     padding: 10px;
     border-left: 4px solid #4CAF50;
     border-radius: 4px;
-    font-size: 15px;
+    font-size: 13px;
 }
 
 
