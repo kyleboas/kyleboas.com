@@ -207,44 +207,44 @@ th {
 
 // Heading-based rotation classes
 .arrow.is-north {
-  @include rotate(0deg); // 0°
+  @include rotate(270deg); // 0°
   margin-bottom: 1px;
 }
 
 .arrow.is-northeast {
-  @include rotate(45deg); // 45°
+  @include rotate(315deg); // 45°
   margin-bottom: 3px;
 }
 
 .arrow.is-east {
-  @include rotate(90deg); // 90°
+  @include rotate(0deg); // 90°
   margin-bottom: 3px;
 }
 
 .arrow.is-southeast {
-  @include rotate(135deg); // 135°
+  @include rotate(45deg); // 135°
   margin-bottom: 3px;
   margin-left: 7px;
 }
 
 .arrow.is-south {
-  @include rotate(180deg); // 180°
+  @include rotate(90deg); // 180°
   margin-bottom: 2px;
   margin-left: 7px;
 }
 
 .arrow.is-southwest {
-  @include rotate(225deg); // 225°
+  @include rotate(135deg); // 225°
   margin-bottom: 1px;
   margin-left: 7px;
 }
 
 .arrow.is-west {
-  @include rotate(270deg); // 270°
+  @include rotate(180deg); // 270°
   margin-bottom: 1px;
 }
 
 .arrow.is-northwest {
-  @include rotate(315deg); // 315°
+  @include rotate(225deg); // 315°
   margin-bottom: 1px;
 }
