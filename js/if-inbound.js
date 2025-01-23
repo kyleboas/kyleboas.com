@@ -786,6 +786,7 @@ async function fetchSecondaryControllers(icao) {
 }
 
 // Add secondary airport to the display
+// Add secondary airport to the display
 document.getElementById('secondarySearchForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const secondaryIcao = document.getElementById('secondaryIcao').value.trim().toUpperCase();
@@ -824,8 +825,8 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
 
         // Display controllers
         const controllersElement = document.getElementById(`secondary-${secondaryIcao}-controllers`);
-        controllersElement.textContent = controllers.length
-            ? controllers.join('\n')
+        controllersElement.innerHTML = controllers.length
+            ? controllers.map(ctrl => `${ctrl}<br>`).join('') // Use <br> for line breaks
             : 'No active controllers available.';
     } catch (error) {
         console.error(`Error fetching data for secondary airport ${secondaryIcao}:`, error.message);
