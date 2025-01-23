@@ -1,5 +1,4 @@
-<html>
-  <head>
+<head>
     <title>Infinite Flight Inbound Search</title>
      
     {% if site.tags != "" %}
@@ -98,5 +97,3 @@
         </tbody>
         </table>
     <script src="/js/if-inbound.js"></script>
-  </body>
-</html> 
