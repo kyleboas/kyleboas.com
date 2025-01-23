@@ -392,39 +392,36 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
 
 
 // Fetch ATIS
-async function fetchAirportATIS(icao, targetElementId) {
-    const atisElement = document.getElementById(targetElementId);
+async function fetchAirportATIS(icao) {
+    const atisElement = document.getElementById('atisMessage');
     if (atisElement) atisElement.textContent = 'Fetching ATIS...';
 
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
     if (cached) {
         console.log('Using cached ATIS for', icao);
-        if (atisElement) atisElement.textContent = `ATIS: ${cached}`;
+        displayATIS(cached); // Display cached ATIS
         return cached;
     }
 
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`);
-        const atis = data.result || 'ATIS not available';
+        const atis = data.result || 'ATIS not available'; // Use `data.result`
         setCache(icao, atis, 'atis');
-        if (atisElement) atisElement.textContent = `ATIS: ${atis}`;
+        displayATIS(atis); // Display fetched ATIS
         return atis;
     } catch (error) {
         console.error('Error fetching ATIS:', error.message);
-        if (atisElement) atisElement.textContent = 'ATIS not available';
+        displayATIS('ATIS not available');
         return 'ATIS not available';
     }
 }
 
 // Fetch Controllers
-async function fetchControllers(icao, targetElementId) {
-    const controllersElement = document.getElementById(targetElementId);
-    if (controllersElement) controllersElement.textContent = 'Fetching controllers...';
-
+async function fetchControllers(icao) {
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
         console.log('Using cached controllers for', icao);
-        if (controllersElement) controllersElement.innerHTML = cached.join('<br>');
+        displayControllers(cached); // Display cached controllers
         return cached;
     }
 
@@ -459,17 +456,11 @@ async function fetchControllers(icao, targetElementId) {
         }).map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
 
         setCache(icao, sortedControllers, 'controllers');
-
-        if (controllersElement) {
-            controllersElement.innerHTML = sortedControllers.length
-                ? sortedControllers.join('<br>')
-                : 'No active controllers available';
-        }
-
+        displayControllers(sortedControllers); // Display sorted controllers
         return sortedControllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
-        if (controllersElement) controllersElement.textContent = 'No controllers available';
+        displayControllers(['No active controllers available']);
         return [];
     }
 }
@@ -848,7 +839,6 @@ document.getElementById('secondaryAirportContainer').addEventListener('click', (
         }
     }
 });
-
 
 // Display ATIS
 function displayATIS(atis) {
