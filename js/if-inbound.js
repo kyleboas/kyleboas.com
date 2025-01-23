@@ -54,7 +54,7 @@ function saveStateToLocalStorage() {
         applyDistanceFilterEnabled,
         secondaryAirports, // Include secondary airports
     };
-    localStorage.setItem("appState", JSON.stringify(state));
+    localStorage.setItem('appState', JSON.stringify(state));
 }
 
 function loadStateFromLocalStorage() {
