@@ -18,7 +18,6 @@ let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
 let applyDistanceFilterEnabled = false;
-let secondaryAirports = {};
 
 // ============================
 // Cookie Utility Functions
@@ -35,44 +34,6 @@ function getCookie(name) {
     const cookie = cookies.find((c) => c.startsWith(`${name}=`));
     return cookie ? cookie.split('=')[1] : null;
 }
-
-// ============================
-// LocalStorage Utility Functions
-// ============================
-
-function saveStateToLocalStorage() {
-    const state = {
-        allFlights,
-        headingFilterActive,
-        boldedHeadings,
-        hiddenDistance,
-        distanceFilterActive,
-        minDistance,
-        maxDistance,
-        hideOtherAircraft,
-        boldHeadingEnabled,
-        applyDistanceFilterEnabled,
-        secondaryAirports, // Include secondary airports
-    };
-    localStorage.setItem('appState', JSON.stringify(state));
-}
-
-function loadStateFromLocalStorage() {
-    const state = JSON.parse(localStorage.getItem('appState'));
-    if (state) {
-        allFlights = state.allFlights || [];
-        headingFilterActive = state.headingFilterActive || false;
-        boldedHeadings = state.boldedHeadings || { minHeading: null, maxHeading: null };
-        hiddenDistance = state.hiddenDistance || { minDistance: null, maxDistance: null };
-        distanceFilterActive = state.distanceFilterActive || false;
-        minDistance = state.minDistance;
-        maxDistance = state.maxDistance;
-        hideOtherAircraft = state.hideOtherAircraft || false;
-        boldHeadingEnabled = state.boldHeadingEnabled || false;
-        applyDistanceFilterEnabled = state.applyDistanceFilterEnabled || false;
-        secondaryAirports = state.secondaryAirports || {}; // Restore secondary airports
- }
-}  
 
 // ============================
 // Default Settings
@@ -269,7 +230,7 @@ async function fetchAircraftType(aircraftId) {
 }
 
 async function fetchActiveATCAirports() {
-    const endpoint = '/sessions/' + SESSION_ID + '/atc';
+    const endpoint = `/sessions/${SESSION_ID}/atc`;
 
     try {
         // Fetch ATC data from the endpoint
@@ -277,7 +238,7 @@ async function fetchActiveATCAirports() {
 
         // Map airports to their facilities
         const activeATCAirports = (atcData.result || []).reduce((acc, atcFacility) => {
-            const airportIcao = atcFacility.airportName; // Change to 'airportIcao' if available
+            const airportIcao = atcFacility.airportIcao;
 
             if (!acc[airportIcao]) {
                 acc[airportIcao] = {
@@ -286,7 +247,7 @@ async function fetchActiveATCAirports() {
                 };
             }
 
-            // Check if this facility is 'Approach' (type 4)
+            // Check if this facility is "Approach" (type 4)
             if (atcFacility.type === 4) {
                 acc[airportIcao].hasApproach = true;
             }
@@ -295,7 +256,7 @@ async function fetchActiveATCAirports() {
         }, {});
 
         // Fetch inbound counts for airports
-        const worldData = await fetchWithProxy('/sessions/' + SESSION_ID + '/world');
+        const worldData = await fetchWithProxy(`/sessions/${SESSION_ID}/world`);
         const airportsWithInbounds = (worldData.result || []).filter(
             (airport) => airport.inboundFlightsCount > 0
         );
@@ -329,7 +290,7 @@ async function fetchActiveATCAirports() {
 
         // Include any additional airports with active ATC not in the top 5
         const additionalAirports = combinedAirports.filter(
-            (airport) => !topAirports.find((top) => top.icao === airport.icao) && airport.hasApproach
+            (airport) => !topAirports.includes(airport) && airport.hasApproach
         );
 
         // Combine the top airports and additional airports with active ATC
@@ -338,23 +299,21 @@ async function fetchActiveATCAirports() {
         // Format the output
         const formattedAirports = finalAirports.map((airport) => {
             const hasApproach = airport.hasApproach;
-            return hasApproach
-                ? '<strong>' + airport.icao + '</strong>*: ' + airport.inboundCount
-                : '<strong>' + airport.icao + '</strong>: ' + airport.inboundCount;
+            return `${hasApproach ? `<i>${airport.icao}*</i>` : airport.icao}: ${airport.inboundCount}`;
         });
 
         // Join the output with commas
-        const formattedOutput = formattedAirports.join(', ');
+        const formattedOutput = formattedAirports.join(", ");
 
         // Update the DOM
-        const atcAirportsListElement = document.getElementById('atcAirportsList');
-        atcAirportsListElement.innerHTML = formattedOutput || 'No active ATC airports found.';
+        const atcAirportsListElement = document.getElementById("atcAirportsList");
+        atcAirportsListElement.innerHTML = formattedOutput || "No active ATC airports found.";
     } catch (error) {
-        console.error('Error fetching active ATC airports:', error.message);
+        console.error("Error fetching active ATC airports:", error.message);
 
         // Display error message
-        const atcAirportsListElement = document.getElementById('atcAirportsList');
-        atcAirportsListElement.textContent = 'Failed to fetch active ATC airports.';
+        const atcAirportsListElement = document.getElementById("atcAirportsList");
+        atcAirportsListElement.textContent = "Failed to fetch active ATC airports.";
     }
 }
 
@@ -367,7 +326,7 @@ async function fetchAirportCoordinates(icao) {
     }
 
     try {
-        const data = await fetchWithProxy('/airport/' + icao);
+        const data = await fetchWithProxy(`/airport/${icao}`);
         const coordinates = { latitude: data.result.latitude, longitude: data.result.longitude };
         setCache(icao, coordinates, 'airportCoordinates');
         return coordinates;
@@ -840,21 +799,10 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
     }
 
     try {
-        // Fetch ATIS and controllers
-        const atis = await fetchSecondaryATIS(secondaryIcao);
-        const controllers = await fetchSecondaryControllers(secondaryIcao);
-
-        // Save to state
-        secondaryAirports[secondaryIcao] = {
-            atis,
-            controllers,
-        };
-
-        // Update UI
+        // Create container for the secondary airport
         const secondaryAirportContainer = document.getElementById('secondaryAirportContainer');
         const airportDiv = document.createElement('div');
         airportDiv.id = `secondary-${secondaryIcao}`;
-        airportDiv.className = 'secondaryAirport';
         airportDiv.className = 'secondaryAirport';
         airportDiv.innerHTML = `
             <p class="secondary-atis" id="secondary-${secondaryIcao}-atis">Fetching ATIS...</p>
@@ -876,8 +824,6 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
         controllersElement.innerHTML = controllers.length
             ? controllers.map(ctrl => `${ctrl}<br>`).join('') // Use <br> for line breaks
             : 'No active controllers available.';
-        // Save state
-        saveStateToLocalStorage();
     } catch (error) {
         console.error(`Error fetching data for secondary airport ${secondaryIcao}:`, error.message);
         alert(`Failed to fetch data for the secondary airport: ${secondaryIcao}`);
@@ -888,18 +834,10 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
 document.getElementById('secondaryAirportContainer').addEventListener('click', (event) => {
     if (event.target.classList.contains('removeAirportButton')) {
         const icao = event.target.getAttribute('data-icao');
-
-        // Remove from state
-        delete secondaryAirports[icao];
-
-        // Remove from UI
-        const airportDiv = document.getElementById('secondary-${icao}');
+        const airportDiv = document.getElementById(`secondary-${icao}`);
         if (airportDiv) {
             airportDiv.remove();
         }
-
-        // Save state
-        saveStateToLocalStorage();
     }
 });
 
@@ -1402,41 +1340,7 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
 document.addEventListener('DOMContentLoaded', async () => {
     // Apply default settings
     applyDefaults();
-    // Load saved state
-    loadStateFromLocalStorage();
 
-    // Apply filters and settings from state
-    if (boldedHeadings.minHeading !== null && boldedHeadings.maxHeading !== null) {
-        document.getElementById('minHeading').value = boldedHeadings.minHeading;
-        document.getElementById('maxHeading').value = boldedHeadings.maxHeading;
-    }
-
-    if (hiddenDistance.minDistance !== null && hiddenDistance.maxDistance !== null) {
-        document.getElementById('minDistance').value = hiddenDistance.minDistance;
-        document.getElementById('maxDistance').value = hiddenDistance.maxDistance;
-    }
-
-    // Restore secondary airports
-    const secondaryAirportContainer = document.getElementById('secondaryAirportContainer');
-    for (const [icao, data] of Object.entries(secondaryAirports)) {
-        const airportDiv = document.createElement('div');
-        airportDiv.id = 'secondary-${icao}';
-        airportDiv.className = 'secondaryAirport';
-        airportDiv.innerHTML = `
-            <p class="secondary-atis" id="secondary-${icao}-atis">ATIS: ${data.atis || 'Not available'}</p>
-            <p class='secondary-controllers' id='secondary-${icao}-controllers'>
-                ${data.controllers.length ? data.controllers.join("<br>") : 'No active controllers available.'}
-            </p>
-            <button type='button'
-            class="removeAirportButton" data-icao='${icao}'>Remove</button>
-        `;
-        secondaryAirportContainer.appendChild(airportDiv);
-    }
-
-    // Render the flights table with the restored state
-    renderFlightsTable(allFlights);
-
-    // Apply default settings if defaults exist
     const hasDefaults =
         getCookie('defaultMinHeading') ||
         getCookie('defaultMaxHeading') ||
