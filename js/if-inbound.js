@@ -798,7 +798,7 @@ function highlightGroup(group, rows, baseColor) {
         // Update row highlights
         const etaCell = currentRow.querySelector('td:nth-child(5)');
         if (etaCell && flight.etaMinutes !== 'N/A') {
-            etaCell.innerHTML = `${flight.distanceToDestination}<br>${flight.etaMinutes}`; // Show NM and MM:SS
+            etaCell.innerHTML = `${flight.distanceToDestination}nm<br>${flight.etaMinutes}`; // Show NM and MM:SS
         }
 
         if (highlightColor) {
