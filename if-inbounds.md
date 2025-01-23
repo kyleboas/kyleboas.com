@@ -92,4 +92,5 @@
     </div>
     <script src="/js/if-inbound.js"></script>
   </body>
+  {% include footer.html %} 
 </html> 
