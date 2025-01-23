@@ -229,7 +229,6 @@ async function fetchAircraftType(aircraftId) {
     }
 }
 
-// Fetch and display the top 10 active ATC airports with inbound flight counts
 async function fetchActiveATCAirports() {
     const endpoint = `/sessions/${SESSION_ID}/atc`;
 
@@ -286,19 +285,24 @@ async function fetchActiveATCAirports() {
         // Sort by inbound count in descending order
         combinedAirports.sort((a, b) => b.inboundCount - a.inboundCount);
 
-        // Display the top 5 airports with formatting
+        // Select the top 5 airports by inbound flights
         const topAirports = combinedAirports.slice(0, 5);
-        const additionalAirports = combinedAirports.slice(5).filter((airport) => airport.hasApproach);
 
-        const formattedAirports = [...topAirports, ...additionalAirports].map((airport) => {
+        // Include any additional airports with active ATC not in the top 5
+        const additionalAirports = combinedAirports.filter(
+            (airport) => !topAirports.includes(airport) && airport.hasApproach
+        );
+
+        // Combine the top airports and additional airports with active ATC
+        const finalAirports = [...topAirports, ...additionalAirports];
+
+        // Format the output
+        const formattedAirports = finalAirports.map((airport) => {
             const hasApproach = airport.hasApproach;
-            return `
-                <span ${hasApproach ? 'style="font-style: italic;"' : ''}>
-                    ${airport.icao}${hasApproach ? '*' : ''}: ${airport.inboundCount}
-                </span>`;
+            return `${hasApproach ? `<i>${airport.icao}*</i>` : airport.icao}: ${airport.inboundCount}`;
         });
 
-        // Combine the list with commas
+        // Join the output with commas
         const formattedOutput = formattedAirports.join(", ");
 
         // Update the DOM
