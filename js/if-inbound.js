@@ -611,17 +611,25 @@ function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, hea
 
 async function fetchAndUpdateFlights(icao) {
     try {
+        // Ensure the main airport section is visible
         document.querySelector('.mainAirport').style.display = 'block';
         document.getElementById('atisMessage').style.display = 'block';
         document.getElementById('controllersList').style.display = 'block';
 
+        // Fetch ATIS and Controllers
+        const atis = await fetchAirportATIS(icao, 'atisMessage');
+        const controllers = await fetchControllers(icao, 'controllersList');
+
+        // Display ATIS and Controllers
+        displayATIS(atis);
+        displayControllers(controllers);
+
+        // Fetch flights and update the table
         const inboundFlightIds = await fetchInboundFlightIds(icao);
         if (!inboundFlightIds.length) {
             console.warn("No inbound flights found for ICAO:", icao);
             allFlights = [];
             renderFlightsTable(allFlights);
-            document.getElementById('atisMessage').textContent = "No ATIS available.";
-            document.getElementById('controllersList').textContent = "No controllers available.";
             return;
         }
 
@@ -634,12 +642,8 @@ async function fetchAndUpdateFlights(icao) {
         }
 
         await updateDistancesAndETAs(flights, airportCoordinates);
-
         allFlights = flights;
         renderFlightsTable(allFlights);
-
-        await fetchAirportATIS(icao);
-        await fetchControllers(icao);
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
         allFlights = [];

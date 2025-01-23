@@ -1,5 +1,4 @@
-<html>
-  <head>
+<head>
     <title>Infinite Flight Inbound Search</title>
      
     {% if site.tags != "" %}
@@ -50,15 +49,18 @@
 
         <!-- Filter Form -->
         <form id="filterForm" style="margin-top: 20px;">
+          <div class="HeadingFilter">
             <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum e.g., 0">
             <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum e.g., 90">
             <button type="button" id="boldHeadingButton">Bold Aircraft</button>
-            <button type="button" id="toggleHeadingButton">Hide/Show Other Aircraft</button>
-            
+            <button type="button" id="toggleHeadingButton">Hide Aircraft</button>
+           </div> 
+        <div class="DistanceFilter">
         <input type="number" id="minDistance" min="0" placeholder="Minimum e.g., 50">
         <input type="number" id="maxDistance" min="0" placeholder="Maximum e.g., 500">
         <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
         <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
+        </div>
         <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
         </form>
         
@@ -74,7 +76,7 @@
             <div id="secondaryAirportContainer"></div>
         </div>
         
-      <div class="mainAirport">
+      <div class="mainAirport" style="display:none;">
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>    
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
       </div>
@@ -98,5 +100,3 @@
         </tbody>
         </table>
     <script src="/js/if-inbound.js"></script>
-  </body>
-</html> 
