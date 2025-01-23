@@ -748,8 +748,9 @@ function displayControllers(controllers) {
         console.error('Controller display element not found.');
         return;
     }
-    controllersElement.textContent = controllers.length
-        ? `${controllers.join('\n')}`
+
+    controllersElement.innerHTML = controllers.length
+        ? controllers.map(ctrl => `${ctrl}<br>`).join('')
         : 'No active controllers available';
 }
 
