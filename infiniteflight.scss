@@ -213,38 +213,39 @@ th {
 
 .arrow.is-northeast {
   @include rotate(315deg); // 45°
-  margin-bottom: 3px;
+  margin-bottom: 1px;
 }
 
 .arrow.is-east {
   @include rotate(0deg); // 90°
-  margin-bottom: 3px;
+  margin-bottom: 1px;
 }
 
 .arrow.is-southeast {
   @include rotate(45deg); // 135°
   margin-bottom: 3px;
-  margin-left: 7px;
 }
 
 .arrow.is-south {
   @include rotate(90deg); // 180°
-  margin-bottom: 2px;
-  margin-left: 7px;
+  margin-bottom: 3px;
 }
 
 .arrow.is-southwest {
   @include rotate(135deg); // 225°
-  margin-bottom: 1px;
+  margin-bottom: 3px;
   margin-left: 7px;
 }
 
 .arrow.is-west {
   @include rotate(180deg); // 270°
-  margin-bottom: 1px;
+  margin-bottom: 2px;
+  margin-left: 7px;
 }
 
 .arrow.is-northwest {
   @include rotate(225deg); // 315°
   margin-bottom: 1px;
+  margin-left: 7px;
+  
 }
