@@ -20,17 +20,13 @@ layout: page
     <button class="dropdown-toggle">Set Defaults ▼</button>
     <div class="dropdown-menu">
         <h2>Set Defaults</h2>
-        <label for="defaultMinHeading">Default Min Heading:</label>
-        <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="e.g., 0">
+        <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum e.g., 0">
         <br>
-        <label for="defaultMaxHeading">Default Max Heading:</label>
-        <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="e.g., 90">
+        <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
         <br>
-        <label for="defaultMinDistance">Default Min Distance:</label>
-        <input type="number" id="defaultMinDistance" min="0" placeholder="e.g., 50">
+        <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
         <br>
-        <label for="defaultMaxDistance">Default Max Distance:</label>
-        <input type="number" id="defaultMaxDistance" min="0" placeholder="e.g., 500">
+        <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
         <br>
         <button type="button" id="saveDefaultsButton">Save Defaults</button>
     </div>
