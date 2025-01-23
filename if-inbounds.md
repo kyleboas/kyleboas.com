@@ -46,7 +46,7 @@ layout: page
     <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
     </form>
     
-    <button id="manualUpdateButton">Update ATIS and Controllers</button>
+    <button id="manualUpdateButton">Update Information</button>
     
     <div id="atisMessage" style="display: none;">ATIS: Not fetched yet</div>
 
