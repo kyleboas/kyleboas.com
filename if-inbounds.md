@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html>
 <head>
     <title>Infinite Flight Inbound Search</title>
      
@@ -21,32 +23,32 @@
 <body>
     <div class="container">
         <div class="nav-container">
-    <div class="nav-left">
-        <input 
-            type="text" 
-            id="icao" 
-            name="icao" 
-            placeholder="Airport" 
-            style="width: 40px; border: none; margin-right: -10px;"
-        />
-                <button id="search" style="background-color: transparent; color: #828282;">
-                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                </button>
-                <button id="add" style="background-color: transparent; color: #828282; margin-left: -25px;">
-                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                </button>
-                <button id="settings" style="background-color: transparent; color: #828282; margin-left: -20px;">
-                    <i class="fa-solid fa-sliders" aria-hidden="true"></i>
-                </button>
-                <button id="update" style="background-color: transparent; color: #828282; margin-left: -30px;">
-                    <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
-                </button>
+          <div class="nav-left">
+            <input 
+                type="text" 
+                id="icao" 
+                name="icao" 
+                placeholder="Airport" 
+                style="width: 40px; border: none; margin-right: -10px;"
+            />
+                    <button id="search" style="background-color: transparent; color: #828282;">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    </button>
+                    <button id="add" style="background-color: transparent; color: #828282; margin-left: -25px;">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                    </button>
+                    <button id="settings" style="background-color: transparent; color: #828282; margin-left: -20px;">
+                        <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                    </button>
+                    <button id="update" style="background-color: transparent; color: #828282; margin-left: -30px;">
+                        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="nav-right" style="font-size: 12px; display: none;">
+                    NZAA 125   YSSY 41   KLAX 37<br>
+                    LSZH 37   EGLL 27   KLAS 35
+                </div>
             </div>
-            <div class="nav-right" style="font-size: 12px; display: none;">
-                NZAA 125   YSSY 41   KLAX 37<br>
-                LSZH 37   EGLL 27   KLAS 35
-            </div>
-        </div>
         
         <table id="flightsTable">
         <thead>
@@ -63,3 +65,5 @@
         </tbody>
         </table>
     <script src="/js/if-inbound.js"></script>
+</body>
+</html> 
