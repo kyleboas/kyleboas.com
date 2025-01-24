@@ -309,10 +309,10 @@ table {
 
 // Responsive Design
 
-@media (min-width: 670px) {
+@media (min-width: 640px) {
     .container {
         flex-direction: row;
-        justify-content: center;
+        justify-content: left;
         align-items: flex-start;
         gap: 20px;
     }
@@ -322,10 +322,7 @@ table {
     }
 
     .page-left {
-        flex: 1;
-        max-width: 30%;
-        margin-left: 10px;
-        margin-right: 40px;
+        width: 230px;
     }
 
     table {
