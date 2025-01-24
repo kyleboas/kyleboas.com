@@ -19,6 +19,7 @@
 </head>
 
 <body>
+    <h1 style="font-size: 16px; padding-bottom:0px;">Infinite Flight Inbound Search</h1>
     <div class="container">
         <div class="nav-container">
             <div class="nav-left">
