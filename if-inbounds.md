@@ -3,7 +3,7 @@ layout: infiniteflight
 ---
 
 <div class="container">
-   <div class="page-left">
+  <div class="page-left">
     <div class="nav-container">
         <div class="nav-left">
             <input 
@@ -32,43 +32,7 @@ layout: infiniteflight
         </div>
     </div>
     
-    <!-- Secondary Airport Section -->
-    <div id="secondaryAirport">
-        <div id="secondaryAirportContainer"></div>
-    </div>
-
-    <div class="mainAirport" style="display: none;">
-        <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
-        <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
-    </div>
-   </div> 
-   <div class="page-right">
-    <table id="flightsTable">
-        <thead>
-            <tr>
-                <th style="padding-left: 25px; padding-right: 25px;">Aircraft</th>
-                <th>MIN/MAX</th>
-                <th>GS/MACH</th>
-                <th>HDG/ALT</th>
-                <th>NM/ETA</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Dynamic rows will be added here -->
-        </tbody>
-    </table>
-</div>
-
-<div style="display: none;">
-    <div class="container">
-        <h1>Search Inbound Infinite Flight Flights</h1>
-
-        <!-- Search Form -->
-        <form id="searchForm" novalidate>
-            <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
-            <button type="submit">Search</button>
-        </form>
-
+    <div class="settings-menu hidden">
         <div class="dropdown">
             <button class="dropdown-toggle">Set Defaults ▼</button>
             <div class="dropdown-menu">
@@ -101,8 +65,37 @@ layout: infiniteflight
             </div>
             <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
         </form>
+    </div>
+    
+    <!-- Secondary Airport Section -->
+    <div id="secondaryAirport">
+        <div id="secondaryAirportContainer"></div>
+    </div>
 
-        <button id="manualUpdateButton">Update Information</button>
+    <div class="mainAirport" style="display: none;">
+        <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
+        <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
+    </div>
+   </div> 
+   <div class="page-right">
+    <table id="flightsTable">
+        <thead>
+            <tr>
+                <th style="padding-left: 25px; padding-right: 25px;">Aircraft</th>
+                <th>MIN/MAX</th>
+                <th>GS/MACH</th>
+                <th>HDG/ALT</th>
+                <th>NM/ETA</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamic rows will be added here -->
+        </tbody>
+    </table>
+  </div>
+
+<div style="display: none;">
+       <button id="manualUpdateButton">Update Information</button>
 
         <!-- Secondary Airport Search -->
         <form id="secondarySearchForm" novalidate>
@@ -113,7 +106,6 @@ layout: infiniteflight
         <button type="button" id="updateButton">Update</button>
         <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
         <span id="countdownTimer" style="display: none;"></span>
-    </div>
 </div>
 
 <script>
