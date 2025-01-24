@@ -1384,18 +1384,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchButton = document.getElementById("search");
     const icaoInput = document.getElementById("icao");
 
+    async function handleSearch() {
+        const icao = icaoInput.value.trim().toUpperCase(); // Get the value from the input
+
+        if (!icao) {
+            alert("Please enter a valid ICAO code.");
+            return;
+        }
+
+        stopAutoUpdate(); // Stop any ongoing updates
+        await fetchAndUpdateFlights(icao); // Fetch and update flights
+    }
+
     // Add an event listener for the search button
     if (searchButton) {
         searchButton.addEventListener("click", async () => {
-            const icao = icaoInput.value.trim().toUpperCase(); // Get the value from the input
+            await handleSearch(); // Trigger search logic
+        });
+    }
 
-            if (!icao) {
-                alert("Please enter a valid ICAO code.");
-                return;
+    // Trigger search when Enter is pressed in the input field
+    if (icaoInput) {
+        icaoInput.addEventListener("keydown", async (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent form submission or default behavior
+                await handleSearch(); // Trigger search logic
             }
-
-            stopAutoUpdate(); // Stop any ongoing updates
-            await fetchAndUpdateFlights(icao); // Fetch and update flights
         });
     }
 
@@ -1424,8 +1438,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-        // Starts the auto-update process
-        function startAutoUpdate(icao) {
+    // Starts the auto-update process
+    function startAutoUpdate(icao) {
         isAutoUpdateActive = true;
         updateButton.style.color = "blue"; // Change the text/icon color to blue
         const icon = updateButton.querySelector("i"); // Find the icon inside the button
