@@ -210,62 +210,6 @@ async function fetchWithProxy(endpoint) {
     }
 }
 
-async function renderATCTable() {
-    const atcAirports = await fetchActiveATCAirports(); // Fetch active ATC airports
-    const tableBody = document.querySelector("#atcTable tbody");
-    tableBody.innerHTML = ""; // Clear existing table rows
-
-    if (!atcAirports || atcAirports.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6">No active ATC airports found.</td></tr>';
-        return;
-    }
-
-    for (const airport of atcAirports) {
-        const { icao, hasApproach, inboundCount } = airport;
-
-        // Fetch controllers for the airport
-        const controllers = await fetchControllers(icao);
-        const controllerFrequencies = controllers
-            .map(ctrl => ctrl.frequencyName[0].toUpperCase()) // Get the first letter of frequency name
-            .join(""); // Combine to form GTA, GTAS, etc.
-
-        // Fetch inbound flights and categorize them by distance
-        const inboundFlightIds = await fetchInboundFlightIds(icao);
-        const flights = await fetchInboundFlightDetails(inboundFlightIds);
-
-        let within50nm = 0;
-        let within200nm = 0;
-        let within500nm = 0;
-
-        for (const flight of flights) {
-            if (flight.distanceToDestination <= 50) {
-                within50nm++;
-            } else if (flight.distanceToDestination <= 200) {
-                within200nm++;
-            } else if (flight.distanceToDestination <= 500) {
-                within500nm++;
-            }
-        }
-
-        // Add row to the table
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${icao}</td>
-            <td>${controllerFrequencies}</td>
-            <td>${within50nm}</td>
-            <td>${within200nm}</td>
-            <td>${within500nm}</td>
-            <td>${inboundCount}</td>
-        `;
-        tableBody.appendChild(row);
-    }
-}
-
-// Fetch and render the table when the page loads
-document.addEventListener("DOMContentLoaded", () => {
-    renderATCTable();
-});
-
 // Fetch Aircraft Type
 async function fetchAircraftType(aircraftId) {
     const endpoint = `/aircraft/${aircraftId}/liveries`;
