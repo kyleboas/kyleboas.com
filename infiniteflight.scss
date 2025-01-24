@@ -25,20 +25,6 @@ pre {
     padding-top: 0px;
 }
 
-.settings-menu {
-    display: none;
-    margin-top: 10px;
-    padding: 20px;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
-    &.visible {
-        display: block; // Show when the visible class is added
-    }
-}
-
 // Search
 
 .nav-container {
@@ -92,40 +78,46 @@ pre {
 
 // Settings
 
-input[type="number"] {
-    border: none;
-    width: 60px;
-    outline: none;
-} 
-
 .settings-menu {
-  display: flex;
+  display: none;
+  margin-top: 10px;
+  padding: 20px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   flex-direction: column;
-  align-items: center; /* Horizontally center */
-  justify-content: center; /* Vertically center */
-  height: 100%; /* Ensure it fills the container */
-  text-align: center; /* Center text within the elements */
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  
+  &.visible {
+        display: flex;
+    }
 }
 
 .dropdown {
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
 }
 
 .dropdown-menu {
-  text-align: center; /* Center text */
+  text-align: center;
 }
 
 .HeadingFilter, .DistanceFilter {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center items horizontally */
-  margin-bottom: 20px; /* Add space between filters */
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-button, input {
-  margin: 5px 0; /* Add spacing between buttons and inputs */
+input {
+    border: none;
+    width: 60px;
+    outline: none;
 }
 
 // Dropdown
