@@ -25,7 +25,7 @@ layout: infiniteflight
                 <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
             </button>
         </div>
-        <div class="nav-right" style="font-size: 10px; text-align: left;">
+        <div class="nav-right" id="atcAirportsList" style="font-size: 10px; text-align: left;">
             NZAA 125 YSSY 41<br>
             LSZH 37 EGLL 27
         </div>
@@ -60,10 +60,6 @@ layout: infiniteflight
 <div style="display: none;">
     <div class="container">
         <h1>Search Inbound Infinite Flight Flights</h1>
-        
-        <div id="activeAtcAirports" style="font-size: 15px;">
-            <pre id="atcAirportsList">Fetching data...</pre>
-        </div>
 
         <!-- Search Form -->
         <form id="searchForm" novalidate>
