@@ -39,22 +39,22 @@ pre {
 }
 
 .nav-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-
-    span {
-        font-size: 18px;
-        color: #4a4a4a;
-    }
-
-    svg {
-        fill: #4a4a4a;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-    }
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
+
+.nav-left span {
+    font-size: 18px;
+    color: #4a4a4a;
+}
+
+.nav-left svg {
+  fill: #4a4a4a;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+} 
 
 .nav-right {
     text-align: right;
@@ -101,11 +101,11 @@ form button {
   justify-content: center;
   height: 100%;
   text-align: center;
-  
-  &.visible {
-        display: flex;
-    }
 }
+
+.settings-menu .visible {
+  display: flex;
+} 
 
 .dropdown {
   display: none;
@@ -261,6 +261,7 @@ th {
 
 .atisMessage p {
     margin-top: 0;
+    font-size: 13px;
 }
 
 .controllersList p {
@@ -275,9 +276,6 @@ th {
     background-color: white;
     font-size: 13px;
 }
-
-.secondaryAirport,
-.mainAirport {
 
 /* Arrow xmins */
 
