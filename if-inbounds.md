@@ -48,6 +48,16 @@
             </div>
         </div>
         
+        <!-- Secondary Airport Section -->
+        <div id="secondaryAirport">
+            <div id="secondaryAirportContainer"></div>
+        </div>
+         
+        <div class="mainAirport" style="display:none;">
+        <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>    
+        <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
+        </div>
+        
         <table id="flightsTable">
             <thead>
                 <tr>
@@ -118,15 +128,6 @@
             <input type="text" id="secondaryIcao" name="secondaryIcao" placeholder="Enter Secondary ICAO" required>
             <button type="submit">Add Airport</button>
         </form>
-        <!-- Secondary Airport Section -->
-        <div id="secondaryAirport">
-            <div id="secondaryAirportContainer"></div>
-        </div>
-        
-      <div class="mainAirport" style="display:none;">
-        <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>    
-        <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
-      </div>
 
         <button type="button" id="updateButton">Update</button>
         <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
