@@ -203,16 +203,20 @@ th {
    font-size: 13px;
 }
 
-.controllersList {
+.controllersList p {
    margin-bottom: 0;
    font-size: 13px;
+}
+
+.controllersList {
+   margin-bottom: 0;
 }
 
 .secondaryAirport, .mainAirport {
     margin-top: 15px;
     padding: 10px;
     border-left: 4px solid #4CAF50;
-    border-radius: 4px;
+    background-color: white;
     font-size: 13px;
 }
 
