@@ -1,99 +1,105 @@
 ---
-layout: page
+Title: Infinite Flight Inbound Search
+layout: infiniteflight
+permalink: /infiniteflight/inbounds/
 ---
 
-<head>
-    <title>Infinite Flight Inbound Search</title>
-     
-    {% if site.tags != "" %}
-    {% include collecttags.html %}
-    {% endif %}
-    
-    {% include favicon.html %}
-    
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
-
-    <!--[if lt IE 9]>
-      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
-    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/infiniteflight.css" />
-    <link rel="alternate" type="application/rss+xml" title="{{ site.name }} - {{ site.description }}" href="{{ site.baseurl }}/feed" />
-    <script src="https://kit.fontawesome.com/dff461b9f7.js" crossorigin="anonymous"></script>
-  </head>
-
-  <body>
-    <div class="container">
-        <h1>Search Inbound Infinite Flight Flights</h1>
-        
-        <div id="activeAtcAirports" style="font-size: 15px;">
-        <pre id="atcAirportsList">Fetching data...</pre>
-    </div>
-
-        <!-- Search Form -->
-        <form id="searchForm" novalidate>
-            <input type="text" id="icao" name="icao" placeholder="Enter ICAO" required>
-            <button type="submit">Search</button>
-        </form>
-        
-        <div class="dropdown">
-        <button class="dropdown-toggle">Set Defaults ▼</button>
-        <div class="dropdown-menu">
-            <h2>Set Defaults</h2>
-            <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum e.g., 0">
-            <br>
-            <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
-            <br>
-            <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
-            <br>
-            <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
-            <br>
-            <button type="button" id="saveDefaultsButton">Save Defaults</button>
+<div class="container">
+  <div class="page-left">
+    <div class="nav-container">
+        <div class="nav-left">
+            <input 
+                type="text" 
+                id="icao" 
+                name="icao" 
+                placeholder="Airport" 
+                style="width: 50px; border: none; margin-right: -10px; font-size: 14px; outline:none;"
+            />
+            <button id="search" style="background-color: transparent; color: #828282; font-size: 14px; margin-left:-15px">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            </button>
+            <button id="add" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            </button>
+            <button id="settings" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
+                <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+            </button>
+            <button id="update" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
+                <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="nav-right" id="atcAirportsList" style="font-size: 10px; text-align: left;">
+            NZAA 125 YSSY 41<br>
+            LSZH 37 EGLL 27
         </div>
     </div>
+    
+    <div class="settings-menu hidden">
+        <div class="dropdown" style="display:none;">
+            <button class="dropdown-toggle">Set Defaults ▼</button>
+            <div class="dropdown-menu">
+                <h2>Set Defaults</h2>
+                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum e.g., 0">
+                <br>
+                <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
+                <br>
+                <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
+                <br>
+                <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
+                <br>
+                <button type="button" id="saveDefaultsButton">Save Defaults</button>
+            </div>
+        </div>
 
         <!-- Filter Form -->
-        <form id="filterForm" style="margin-top: 20px;">
-          <div class="HeadingFilter">
-            <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum e.g., 0">
-            <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum e.g., 90">
-            <button type="button" id="boldHeadingButton">Bold Aircraft</button>
-            <button type="button" id="toggleHeadingButton">Hide Aircraft</button>
-           </div> 
-        <div class="DistanceFilter">
-        <input type="number" id="minDistance" min="0" placeholder="Minimum e.g., 50">
-        <input type="number" id="maxDistance" min="0" placeholder="Maximum e.g., 500">
-        <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
-        <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
-        </div>
-        <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
+        <form id="filterForm">
+            <div class="HeadingFilter">
+                <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
+                <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
+                <button type="button" id="boldHeadingButton">Enable</button>
+                <button type="button" id="toggleHeadingButton">Hide</button>
+            </div> 
+            <div class="DistanceFilter">
+                <input type="number" id="minDistance" min="0" placeholder="Minimum">
+                <input type="number" id="maxDistance" min="0" placeholder="Maximum">
+                <button type="button" id="applyDistanceFilterButton">Enable</button>
+                <button type="button" id="resetDistanceFilterButton">Reset</button>
+            </div>
+            <button type="button" id="filterHeadingHighlightButton" style="display:none;">Filter</button>
         </form>
-        
-        <button id="manualUpdateButton">Update Information</button>
-        
-        <!-- Secondary Airport Search -->
-        <form id="secondarySearchForm" novalidate>
-            <input type="text" id="secondaryIcao" name="secondaryIcao" placeholder="Enter Secondary ICAO" required>
-            <button type="submit">Add Airport</button>
-        </form>
-        <!-- Secondary Airport Section -->
-        <div id="secondaryAirport">
-            <div id="secondaryAirportContainer"></div>
-        </div>
-        
-      <div class="mainAirport" style="display:none;">
-        <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>    
-        <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
-      </div>
+    </div>
+    
+    <table id="atcTable">
+    <thead>
+        <tr>
+            <th style="padding-left: 25px; padding-right: 25px;">Airport</th>
+            <th>ATC</th>
+            <th>50nm</th>
+            <th>200nm</th>
+            <th>500nm</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Dynamic rows will be added here -->
+    </tbody>
+    </table>
+    
+    <!-- Secondary Airport Section -->
+    <div id="secondaryAirport">
+        <div id="secondaryAirportContainer"></div>
+    </div>
 
-        <button type="button" id="updateButton">Update</button>
-        <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
-        <span id="countdownTimer" style="display: none;"></span>
-        
-        <table id="flightsTable">
+    <div class="mainAirport" style="display: none;">
+        <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
+        <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
+    </div>
+   </div> 
+   <div class="page-right">
+    <table id="flightsTable">
         <thead>
             <tr>
-                <th>Aircraft</th>
+                <th style="padding-left: 25px; padding-right: 25px;">Aircraft</th>
                 <th>MIN/MAX</th>
                 <th>GS/MACH</th>
                 <th>HDG/ALT</th>
@@ -103,5 +109,27 @@ layout: page
         <tbody>
             <!-- Dynamic rows will be added here -->
         </tbody>
-        </table>
-    <script src="/js/if-inbound.js"></script>
+    </table>
+  </div>
+
+<div style="display: none;">
+       <button id="manualUpdateButton">Update Information</button>
+
+        <!-- Secondary Airport Search -->
+        <form id="secondarySearchForm" novalidate>
+            <input type="text" id="secondaryIcao" name="secondaryIcao" placeholder="Enter Secondary ICAO" required>
+            <button type="submit">Add Airport</button>
+        </form>
+
+        <button type="button" id="updateButton">Update</button>
+        <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
+        <span id="countdownTimer" style="display: none;"></span>
+</div>
+
+<script>
+document.getElementById('settings').addEventListener('click', () => {
+    const settingsMenu = document.querySelector('.settings-menu');
+    settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
+});
+</script>
+<script src="/js/if-inbounds-test.js"></script>
