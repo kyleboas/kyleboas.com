@@ -1,3 +1,7 @@
+---
+layout: page
+---
+
 <head>
     <title>Infinite Flight Inbound Search</title>
      
