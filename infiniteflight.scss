@@ -354,6 +354,7 @@ th {
     
     .nav-container {
        flex: 1 1 0%;
+       max-width: 100%; 
     }
     
     .secondaryAirport, .mainAirport {
@@ -364,6 +365,7 @@ th {
        max-width: 80%;
        margin-right: 50px;
        margin-left: 20px;
+       margin-left: 0;
     }  
 
     .page-right {
