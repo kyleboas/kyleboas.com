@@ -3,6 +3,7 @@ layout: infiniteflight
 ---
 
 <div class="container">
+   <div class="page-left">
     <div class="nav-container">
         <div class="nav-left">
             <input 
@@ -40,7 +41,8 @@ layout: infiniteflight
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
     </div>
-
+   </div> 
+   <div class="page-right">
     <table id="flightsTable">
         <thead>
             <tr>
