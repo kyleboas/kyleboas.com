@@ -2,7 +2,6 @@
 # Front matter comment to ensure Jekyll properly reads file.
 ---
 
-
 body {
     font-family: Helvetica, sans-serif;
     margin: 20px;
@@ -24,7 +23,6 @@ pre {
     font-family: Helvetica, sans-serif;
     font-size: 12px;
     padding-top: 0px;
-    padding-top: 0px;
 }
 
 // Search
@@ -44,18 +42,18 @@ pre {
     display: flex;
     align-items: center;
     gap: 15px;
-}
 
-.nav-left span {
-    font-size: 18px;
-    color: #4a4a4a;
-}
+    span {
+        font-size: 18px;
+        color: #4a4a4a;
+    }
 
-.nav-left svg {
-    fill: #4a4a4a;
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
+    svg {
+        fill: #4a4a4a;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
 }
 
 .nav-right {
@@ -78,93 +76,91 @@ pre {
     }
 }
 
-
-// 
+// Dropdown
 
 .dropdown {
     position: relative;
     display: inline-block;
-}
 
-.dropdown-toggle {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    font-size: 14px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
+    .dropdown-toggle {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
 
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 15px;
-    z-index: 1;
-    width: 260px;
-}
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 15px;
+        z-index: 1;
+        width: 260px;
 
-.dropdown:hover .dropdown-menu {
-    display: block;
-}
+        input,
+        button {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-.dropdown-menu input,
-.dropdown-menu button {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding: 8px;
-    width: 100%;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 240px;
-}
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-top: 15px;
 
-.dropdown-menu button {
-    background-color: #4CAF50;
-    color: white;
-    cursor: pointer;
-    margin-top: 15px;
-}
+            &:hover {
+                background-color: #45a049;
+            }
+        }
+    }
 
-.dropdown-menu button:hover {
-    background-color: #45a049;
+    &:hover .dropdown-menu {
+        display: block;
+    }
 }
 
 .DistanceFilter {
     padding-top: 20px;
     padding-bottom: 20px;
-} 
+}
 
 form {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 20px;
-}
 
-form input[type="text"], 
-form input[type="number"], 
-form button {
-    padding: 6px;
-    font-size: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
+    input[type="text"],
+    input[type="number"],
+    button {
+        padding: 6px;
+        font-size: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
 
-form button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease; 
-}
+    button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
 
-form button:hover {
-    background-color: #45a049;
+        &:hover {
+            background-color: #45a049;
+        }
+    }
 }
 
 .heading-arrow {
@@ -176,167 +172,139 @@ table {
     border-collapse: collapse;
     margin-top: 20px;
     text-align: center;
-    border: none;
-}
 
-tbody {
-    font-size: 12px; 
-}
+    th,
+    td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        font-size: 12px;
+    }
 
-thead th {
-    padding: 5px;
-    text-align: center;
-    position: sticky;
-    top: 0; 
-    z-index: 1;
-    border-bottom-style: none; 
-}
+    thead th {
+        background-color: #f4f4f4;
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
 
-tbody td {
-    padding: 5px;
-    border: none;
-    border-bottom: 1px solid #c2c2c2;
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-    font-size: 12px;
-    border-left: none;
-}
-
-th {
-    background-color: #f4f4f4;
-    font-weight: bold;
-    border: none;
+    tbody td {
+        border-bottom: 1px solid #c2c2c2;
+    }
 }
 
 .atisMessage {
-   margin-top: 0;
-   font-size: 13px;
+    margin-top: 0;
+    font-size: 13px;
 }
 
-.controllersList p {
-   margin-bottom: 0;
-   font-size: 13px;
-}
-
-.controllersList {
-   margin-bottom: 0;
-}
-
-.secondaryAirport, .mainAirport {
+.secondaryAirport,
+.mainAirport {
     margin-top: 15px;
     padding: 10px;
     border-left: 4px solid #4CAF50;
     background-color: white;
     font-size: 13px;
+
+    p {
+        margin-top: 0px;
+    }
 }
 
-.secondaryAirport p {
-    margin-top: 0px;
-}
+// Arrow mixins
 
-
-// Arrow mixin: Creates the arrow shape
 @mixin arrow($size, $width, $height, $length) {
-  position: relative;
-  display: inline-block;
-  width: 5px;
-  height: 4px;
-  max-width: 8px;
-  margin-left: 5px; 
+    position: relative;
+    display: inline-block;
+    width: 5px;
+    height: 4px;
+    max-width: 8px;
+    margin-left: 5px;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 6px;
-    height: 1px;
-    background-color: inherit;
-    transform: translateY(-50%);
-  }
+    &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 6px;
+        height: 1px;
+        background-color: inherit;
+        transform: translateY(-50%);
+    }
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 100%;
-    transform: translateY(-50%);
-    border-width: 3px;
-    border-style: solid;
-    border-color: transparent;
-    border-left-color: inherit;
-  }
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        transform: translateY(-50%);
+        border-width: 3px;
+        border-style: solid;
+        border-color: transparent;
+        border-left-color: inherit;
+    }
 }
 
-// Arrow rotation for specific headings
 @mixin rotate($angle) {
-  transform: rotate($angle);
+    transform: rotate($angle);
 }
 
-// Arrow color
 @mixin arrowColor($color) {
-  &::before {
-    background-color: $color;
-  }
+    &::before {
+        background-color: $color;
+    }
 
-  &::after {
-    border-left-color: $color;
-  }
+    &::after {
+        border-left-color: $color;
+    }
 }
 
-// Base arrow styles
 .arrow {
-  @include arrow(3px, 6px, 2px, 20px); // Arrow dimensions
-  @include arrowColor(black);            // Default arrow color
+    @include arrow(3px, 6px, 2px, 20px);
+    @include arrowColor(black);
 }
 
-// Heading-based rotation classes
 .arrow.is-north {
-  @include rotate(270deg); // 0°
-  margin-bottom: 1px;
+    @include rotate(270deg);
+    margin-bottom: 1px;
 }
 
 .arrow.is-northeast {
-  @include rotate(315deg); // 45°
-  margin-bottom: 1px;
+    @include rotate(315deg);
+    margin-bottom: 1px;
 }
 
 .arrow.is-east {
-  @include rotate(0deg); // 90°
-  margin-bottom: 1px;
+    @include rotate(0deg);
+    margin-bottom: 1px;
 }
 
 .arrow.is-southeast {
-  @include rotate(45deg); // 135°
-  margin-bottom: 3px;
+    @include rotate(45deg);
+    margin-bottom: 3px;
 }
 
 .arrow.is-south {
-  @include rotate(90deg); // 180°
-  margin-bottom: 3px;
+    @include rotate(90deg);
+    margin-bottom: 3px;
 }
 
 .arrow.is-southwest {
-  @include rotate(135deg); // 225°
-  margin-bottom: 3px;
-  margin-left: 7px;
+    @include rotate(135deg);
+    margin-bottom: 3px;
+    margin-left: 7px;
 }
 
 .arrow.is-west {
-  @include rotate(180deg); // 270°
-  margin-bottom: 2px;
-  margin-left: 7px;
+    @include rotate(180deg);
+    margin-bottom: 2px;
+    margin-left: 7px;
 }
 
 .arrow.is-northwest {
-  @include rotate(225deg); // 315°
-  margin-bottom: 1px;
-  margin-left: 7px;
-  
+    @include rotate(225deg);
+    margin-bottom: 1px;
+    margin-left: 7px;
 }
 
 // Responsive Design
@@ -356,6 +324,8 @@ th {
     .page-left {
         flex: 1;
         max-width: 30%;
+        margin-left: 10px;
+        margin-right: 40px;
     }
 
     table {
@@ -369,7 +339,8 @@ th {
 
     #flightsTable {
         max-width: 80%;
-        margin: 0 50px 0 20px;
+        margin-right: 50px;
+        margin-left: 20px;
     }
 
     .page-right {
