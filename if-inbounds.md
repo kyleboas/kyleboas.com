@@ -34,7 +34,6 @@ layout: infiniteflight
         <div class="dropdown">
             <button class="dropdown-toggle">Set Defaults ▼</button>
             <div class="dropdown-menu">
-                <h2>Set Defaults</h2>
                 <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum e.g., 0" />
                 <br />
                 <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360" />
