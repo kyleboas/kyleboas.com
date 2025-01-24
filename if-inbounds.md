@@ -64,5 +64,5 @@
         </table>
     </div>
     
-    <script src="/js/if-inbound.js"></script>
+    <script src="/js/if-inbounds-test.js"></script>
 </body>
