@@ -269,18 +269,8 @@ async function fetchActiveATCAirports() {
                 icao: airport.airportIcao,
                 inboundCount: airport.inboundFlightsCount,
                 hasApproach: atcInfo.hasApproach,
+                hasATC: Boolean(activeATCAirports[airport.airportIcao]),
             };
-        });
-
-        // Add airports with ATC but no inbounds
-        Object.keys(activeATCAirports).forEach((icao) => {
-            if (!combinedAirports.find((airport) => airport.icao === icao)) {
-                combinedAirports.push({
-                    icao,
-                    inboundCount: 0,
-                    hasApproach: activeATCAirports[icao].hasApproach,
-                });
-            }
         });
 
         // Sort by inbound count in descending order
@@ -289,18 +279,21 @@ async function fetchActiveATCAirports() {
         // Select the top 5 airports by inbound flights
         const topAirports = combinedAirports.slice(0, 4);
 
-        // Include any additional airports with active ATC not in the top 5
-        const additionalAirports = combinedAirports.filter(
-            (airport) => !topAirports.includes(airport) && airport.hasApproach
-        );
-
-        // Combine the top airports and additional airports with active ATC
-        const finalAirports = [...topAirports, ...additionalAirports];
-
         // Format the output
-        const formattedAirports = finalAirports.map((airport) => {
-            const hasApproach = airport.hasApproach;
-            return `${hasApproach ? `<i>${airport.icao}*</i>` : airport.icao}: ${airport.inboundCount}`;
+        const formattedAirports = topAirports.map((airport) => {
+            let icao = airport.icao;
+
+            // Add bold for airports with ATC
+            if (airport.hasATC) {
+                icao = `<strong>${icao}</strong>`;
+            }
+
+            // Add an asterisk for airports with approach
+            if (airport.hasApproach) {
+                icao += "*";
+            }
+
+            return `${icao}: ${airport.inboundCount}`;
         });
 
         // Join the output with commas
