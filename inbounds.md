@@ -31,8 +31,8 @@
             <button type="submit">Search</button>
         </form>
         
-        <div class="container">
-        <div class="left">
+        <div class="nav-container">
+        <div class="nav-left">
             <span>Airport</span>
             <!-- Add icons -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm0 1.5C7.305 3.5 3.5 7.305 3.5 12S7.305 20.5 12 20.5 20.5 16.695 20.5 12 16.695 3.5 12 3.5zm-.01 9.99h4.01v1.5h-4.01v4.01H9.49v-4.01h-4.01v-1.5h4.01v-4.01h1.5v4.01z"/></svg>
@@ -40,7 +40,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 5v2H4v11h16V7h-5V5h6v15H3V5h6z"/></svg>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 2h7v2h-7V2zm-3 0H4v2h6V2zm-8 4h20v16H2V6zm2 2v12h16V8H4z"/></svg>
         </div>
-        <div class="right">
+        <div class="nav-right">
             NZAA 125 &nbsp; YSSY 41 &nbsp; KLAX 37<br>
             LSZH 37 &nbsp; EGLL 27 &nbsp; KLAS 35
         </div>
