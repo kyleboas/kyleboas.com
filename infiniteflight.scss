@@ -342,8 +342,17 @@ th {
 @media (min-width: 670px) {
     .container {
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: center; /* Ensures both sections meet at the middle */
         align-items: flex-start;
+        gap: 20px; /* Optional spacing between sections */
+    }
+    
+    @media (min-width: 670px) {
+    .container {
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 20px;
     }
     
     .nav-right {
@@ -352,7 +361,7 @@ th {
 
     .page-left {
         flex: 1; 
-        max-width: 40%;
+        max-width: 30%;
         margin-left: 10px;
         margin-right: 20px;
     }
