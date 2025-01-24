@@ -19,7 +19,33 @@
 
   <body>
     <div class="container">
-        <div class="nav-container"><div class="nav-left"><input type="text" id="icao" name="icao" placeholder="Airport" style="width: 40px;border: none;margin-right: -10px;/* padding-right: 5px; */"></input><button style="/* background-color: #ffffff; *//* color: black; */background-color: #ffffff;color: #828282;/* left: 6px; */"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></button><button style="background-color: #ffffff;color: #828282;margin-left: -25px;"><i class="fa-solid fa-plus" aria-hidden="true"></i></button><button style="background-color: #ffffff;color: #828282;margin-left: -20px;"><i class="fa-solid fa-sliders" aria-hidden="true" style="/* background-color: #ffffff; *//* color: black; *//* margin-left: -20px; */"></i></button><button style="background-color: #ffffff;color: #828282;margin-left: -30px;"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i></button></div><div class="nav-right" style="font-size: 12px;display: none;">NZAA 125   YSSY 41   KLAX 37<br></br>LSZH 37   EGLL 27   KLAS 35</div></div>
+        <div class="nav-container">
+    <div class="nav-left">
+        <input 
+            type="text" 
+            id="icao" 
+            name="icao" 
+            placeholder="Airport" 
+            style="width: 40px; border: none; margin-right: -10px;"
+        />
+                <button style="background-color: #ffffff; color: #828282;">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                </button>
+                <button style="background-color: #ffffff; color: #828282; margin-left: -25px;">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                </button>
+                <button style="background-color: #ffffff; color: #828282; margin-left: -20px;">
+                    <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                </button>
+                <button style="background-color: #ffffff; color: #828282; margin-left: -30px;">
+                    <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="nav-right" style="font-size: 12px; display: none;">
+                NZAA 125   YSSY 41   KLAX 37<br>
+                LSZH 37   EGLL 27   KLAS 35
+            </div>
+        </div>
         
         <table id="flightsTable">
         <thead>
