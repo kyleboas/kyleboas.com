@@ -1350,7 +1350,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (hasDefaults) {
         document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
         document.getElementById('defaultSettingsForm').style.display = 'block';
-    }
+    } 
 
     // Manual update button logic
     const manualUpdateButton = document.getElementById('manualUpdateButton');
