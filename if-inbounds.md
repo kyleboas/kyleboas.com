@@ -54,13 +54,13 @@ layout: infiniteflight
             <div class="HeadingFilter">
                 <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
                 <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
-                <button type="button" id="boldHeadingButton">Filter</button>
+                <button type="button" id="boldHeadingButton">Enable</button>
                 <button type="button" id="toggleHeadingButton">Hide</button>
             </div> 
             <div class="DistanceFilter">
                 <input type="number" id="minDistance" min="0" placeholder="Minimum">
                 <input type="number" id="maxDistance" min="0" placeholder="Maximum">
-                <button type="button" id="applyDistanceFilterButton">Filter</button>
+                <button type="button" id="applyDistanceFilterButton">Enable</button>
                 <button type="button" id="resetDistanceFilterButton">Reset</button>
             </div>
             <button type="button" id="filterHeadingHighlightButton">Filter</button>

@@ -1047,8 +1047,8 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
 
     const button = document.getElementById('filterHeadingHighlightButton');
     button.textContent = headingHighlightEnabled
-        ? 'Disable Highlight by Heading'
-        : 'Enable Highlight by Heading';
+        ? 'Disable'
+        : 'Enable';
 
     highlightCloseETAs(); // Reapply highlighting with the heading filter
 });
@@ -1099,8 +1099,8 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
     // Toggle boldHeadingEnabled and update button text
     boldHeadingEnabled = !boldHeadingEnabled;
     document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-        ? 'Disable Bold Aircraft'
-        : 'Enable Bold Aircraft';
+        ? 'Disable'
+        : 'Enable';
 
     // Update boldedHeadings range
     boldedHeadings.minHeading = minHeading;
@@ -1124,8 +1124,8 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
     // Update button text
     document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
-        ? 'Disable Distance Filter'
-        : 'Enable Distance Filter';
+        ? 'Disable'
+        : 'Enable';
 
     // Update distance filter ranges
     hiddenDistance.minDistance = minDistance;
@@ -1145,7 +1145,7 @@ document.getElementById('resetDistanceFilterButton').addEventListener('click', (
 
     // Disable the distance filter
     applyDistanceFilterEnabled = false;
-    document.getElementById('applyDistanceFilterButton').textContent = 'Enable Distance Filter';
+    document.getElementById('applyDistanceFilterButton').textContent = 'Enable';
 
     // Re-render the table without any filters
     renderFlightsTable(allFlights);
