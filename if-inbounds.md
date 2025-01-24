@@ -10,7 +10,7 @@ layout: infiniteflight
                 id="icao" 
                 name="icao" 
                 placeholder="Airport" 
-                style="width: 50px; border: none; margin-right: -10px; font-size: 14px;"
+                style="width: 50px; border: none; margin-right: -10px; font-size: 14px; outline:none;"
             />
             <button id="search" style="background-color: transparent; color: #828282; font-size: 14px; margin-left:-15px">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
