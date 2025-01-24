@@ -172,25 +172,40 @@ table {
     border-collapse: collapse;
     margin-top: 20px;
     text-align: center;
+    border: none;
+}
 
-    th,
-    td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        font-size: 12px;
-    }
+tbody {
+    font-size: 12px; 
+}
 
-    thead th {
-        background-color: #f4f4f4;
-        font-weight: bold;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
+thead th {
+    padding: 5px;
+    text-align: center;
+    position: sticky;
+    top: 0; 
+    z-index: 1;
+    border-bottom-style: none; 
+}
 
-    tbody td {
-        border-bottom: 1px solid #c2c2c2;
-    }
+tbody td {
+    padding: 5px;
+    border: none;
+    border-bottom: 1px solid #c2c2c2;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+    border-left: none;
+}
+
+th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+    border: none;
 }
 
 .atisMessage {
@@ -309,7 +324,7 @@ table {
 
 // Responsive Design
 
-@media (min-width: 640px) {
+@media (min-width: 710px) {
     .container {
         flex-direction: row;
         justify-content: left;
