@@ -782,10 +782,9 @@ async function fetchSecondaryControllers(icao) {
 }
 
 // Add secondary airport to the display
-// Add secondary airport to the display
-document.getElementById('secondarySearchForm').addEventListener('submit', async (event) => {
+document.getElementById('add').addEventListener('click', async (event) => {
     event.preventDefault();
-    const secondaryIcao = document.getElementById('secondaryIcao').value.trim().toUpperCase();
+    const secondaryIcao = document.getElementById('icao').value.trim().toUpperCase();
 
     if (!secondaryIcao) {
         alert('Please enter a valid ICAO code.');
