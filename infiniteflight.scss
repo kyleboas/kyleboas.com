@@ -14,8 +14,10 @@ body {
 }
 
 .container {
-    max-width: 800px;
-    margin: auto;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    max-width: 100%;
 }
 
 pre {
@@ -338,4 +340,38 @@ th {
   
 }
 
-.footer { display: none; }
+<style>
+/* General Styles */
+.container {
+    display: flex;
+    flex-direction: column; /* Default stack layout for narrow screens */
+    margin: 0 auto;
+    max-width: 100%; /* Ensure it’s responsive */
+}
+
+/* Layout adjustment for screens wider than 900px */
+@media (min-width: 900px) {
+    .container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .nav-container {
+        flex: 1; 
+        max-width: 30%; 
+    }
+
+    #secondaryAirport,
+    .mainAirport {
+        flex: 1;
+        max-width: 30%;
+    }
+
+    #flightsTable {
+        flex: 1;
+        max-width: 40%;
+        margin-left: auto;
+        margin-right: 0;
+    }
+}
