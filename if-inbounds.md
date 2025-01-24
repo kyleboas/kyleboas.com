@@ -6,14 +6,14 @@ layout: infiniteflight
    <div class="page-left">
     <div class="nav-container">
         <div class="nav-left">
-            <input 
-                type="text" 
-                id="icao" 
-                name="icao" 
-                placeholder="Airport" 
-                style="width: 50px; border: none; margin-right: -10px; font-size: 14px; outline:none;"
+            <input
+                type="text"
+                id="icao"
+                name="icao"
+                placeholder="Airport"
+                style="width: 50px; border: none; margin-right: -10px; font-size: 14px; outline: none;"
             />
-            <button id="search" style="background-color: transparent; color: #828282; font-size: 14px; margin-left:-15px">
+            <button id="search" style="background-color: transparent; color: #828282; font-size: 14px; margin-left: -15px;">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             </button>
             <button id="add" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
@@ -27,10 +27,13 @@ layout: infiniteflight
             </button>
         </div>
         <div class="nav-right" id="atcAirportsList" style="font-size: 10px; text-align: left;">
-            NZAA 125 YSSY 41<br>
+            NZAA 125 YSSY 41<br />
             LSZH 37 EGLL 27
         </div>
-      <div class="settings-menu hidden">
+    </div>
+
+    <!-- Settings Menu -->
+    <div class="settings-menu hidden">
         <div class="dropdown">
             <button class="dropdown-toggle">Set Defaults ▼</button>
             <div class="dropdown-menu">
@@ -61,8 +64,8 @@ layout: infiniteflight
             </div>
             <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
         </form>
-      </div>
     </div>
+</div>
     
     <!-- Secondary Airport Section -->
     <div id="secondaryAirport">
