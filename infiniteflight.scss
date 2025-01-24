@@ -78,6 +78,10 @@ pre {
 
 // Settings
 
+form input[type="text"], form input[type="number"], form button {
+  border: none;
+} 
+
 .settings-menu {
   display: none;
   margin-top: 10px;
