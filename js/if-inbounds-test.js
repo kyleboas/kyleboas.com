@@ -1452,7 +1452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Stops the auto-update process
     function stopAutoUpdate() {
         isAutoUpdateActive = false;
-        updateButton.innerHTML = `<i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>`; // Reset button icon
+        updateButton.style.color = "blue";
         const countdownTimer = document.getElementById("countdownTimer");
 
         // Clear intervals
