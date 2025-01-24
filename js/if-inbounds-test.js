@@ -1424,23 +1424,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Starts the auto-update process
-    function startAutoUpdate(icao) {
+        // Starts the auto-update process
+        function startAutoUpdate(icao) {
         isAutoUpdateActive = true;
-        updateButton.style.color = "blue";
+        updateButton.style.color = "blue"; // Change the text/icon color to blue
+        const icon = updateButton.querySelector("i"); // Find the icon inside the button
+        if (icon) icon.classList.add("spin"); // Add the spinning animation
+
         const countdownTimer = document.getElementById("countdownTimer");
         countdownTimer.style.display = "inline";
-        let countdown = 5; // Countdown timer value
+        let countdown = 5;
 
         // Auto-update logic every 5 seconds
         updateInterval = setInterval(async () => {
-            await fetchAndUpdateFlights(icao); // Fetch updated flights
-            await fetchControllers(icao); // Fetch controllers
-            await fetchActiveATCAirports(); // Fetch ATC airports
+            await fetchAndUpdateFlights(icao);
+            await fetchControllers(icao);
+            await fetchActiveATCAirports();
             countdown = 5; // Reset countdown
         }, 5000);
 
-        // Countdown timer display
+        // Countdown timer logic
         countdownInterval = setInterval(() => {
             countdown--;
             countdownTimer.textContent = `${countdown}`;
@@ -1448,10 +1451,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 1000);
     }
 
-    // Stops the auto-update process
     function stopAutoUpdate() {
         isAutoUpdateActive = false;
-        updateButton.style.color = "#828282";
+        updateButton.style.color = ""; // Reset text/icon color
+        const icon = updateButton.querySelector("i"); // Find the icon inside the button
+        if (icon) icon.classList.remove("spin"); // Remove the spinning animation
+
         const countdownTimer = document.getElementById("countdownTimer");
 
         // Clear intervals
@@ -1459,6 +1464,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (countdownInterval) clearInterval(countdownInterval);
 
         // Hide countdown timer
-        if (countdownTimer) countdownTimer.style.display = "none";
+        countdownTimer.style.display = "none";
     }
 });

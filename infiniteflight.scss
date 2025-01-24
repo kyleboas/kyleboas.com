@@ -64,6 +64,19 @@ pre {
     line-height: 1.5;
 }
 
+.spin {
+    animation: spin 1s linear infinite; /* Spinning animation */
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 
 // 
 
