@@ -259,10 +259,13 @@ th {
     border: none;
 }
 
-.atisMessage {
+.atisMessage p {
     margin-top: 0;
-    font-size: 13px;
 }
+
+.controllersList p {
+    margin-bottom: 0;
+} 
 
 .secondaryAirport,
 .mainAirport {
@@ -271,11 +274,10 @@ th {
     border-left: 4px solid #4CAF50;
     background-color: white;
     font-size: 13px;
-
-    p {
-        margin-top: 0px;
-    }
 }
+
+.secondaryAirport,
+.mainAirport {
 
 /* Arrow xmins */
 
