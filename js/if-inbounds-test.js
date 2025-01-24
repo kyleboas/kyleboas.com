@@ -18,6 +18,7 @@ let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
 let applyDistanceFilterEnabled = false;
+let isAutoUpdateActive = false;
 
 // ============================
 // Cookie Utility Functions
@@ -1399,46 +1400,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Update button logic
-    const updateButton = document.getElementById('updateButton');
-    if (updateButton) {
-        updateButton.addEventListener('click', () => {
-            const icao = document.getElementById('icao').value.trim().toUpperCase();
-            if (!icao) {
-                alert('Please enter a valid ICAO code before updating.');
-                return;
-            }
+        // Update button logic
+        const updateButton = document.getElementById("update");
+        
+        // Update button logic (start/stop auto-update)
+        if (updateButton) {
+            updateButton.addEventListener("click", () => {
+                const icao = document.getElementById("icao").value.trim().toUpperCase();
+                if (!icao) {
+                    alert("Please enter a valid ICAO code before updating.");
+                    return;
+                }
 
-            stopAutoUpdate();
-            let countdown = 5;
-            const countdownTimer = document.getElementById('countdownTimer');
+                if (isAutoUpdateActive) {
+                    // If auto-update is active, stop it
+                    stopAutoUpdate();
+                } else {
+                    // If auto-update is not active, start it
+                    startAutoUpdate(icao);
+                }
+            });
+        }
 
+        function startAutoUpdate(icao) {
+            isAutoUpdateActive = true;
+            updateButton.textContent = "Stop Update"; // Change button text to indicate stopping
+
+            let countdown = 5; // Countdown timer value
+            const countdownTimer = document.getElementById("countdownTimer");
+            countdownTimer.style.display = "inline";
+
+            // Start auto-update interval (every 5 seconds)
             updateInterval = setInterval(async () => {
                 await fetchAndUpdateFlights(icao);
                 await fetchControllers(icao);
                 await fetchActiveATCAirports();
-                countdown = 5;
+                countdown = 5; // Reset countdown
             }, 5000);
 
+            // Update the countdown display
             countdownInterval = setInterval(() => {
                 countdown--;
                 countdownTimer.textContent = `${countdown}`;
                 if (countdown <= 0) countdown = 5;
             }, 1000);
+        }
 
-            updateTimeout = setTimeout(() => {
-                stopAutoUpdate();
-                alert('Auto-update stopped after 15 minutes.');
-            }, 15 * 60 * 1000);
+        function stopAutoUpdate() {
+            isAutoUpdateActive = false;
+            updateButton.textContent = "Update"; // Reset button text to "Update"
 
-            document.getElementById('stopUpdateButton').style.display = 'inline';
-            countdownTimer.style.display = 'inline';
-        });
-    }
+            // Clear all intervals
+            if (updateInterval) clearInterval(updateInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
 
-    // Stop update button logic
-    const stopUpdateButton = document.getElementById('stopUpdateButton');
-    if (stopUpdateButton) {
-        stopUpdateButton.addEventListener('click', stopAutoUpdate);
-    }
-});
+    // Hide countdown timer
+    const countdownTimer = document.getElementById("countdownTimer");
+    if (countdownTimer) countdownTimer.style.display = "none";
+}
