@@ -80,15 +80,18 @@ pre {
 
 form input[type="text"], form input[type="number"], form button {
   border: none;
+}
+
+form button {
+  width: 60px;
+  margin-bottom: 5px;
 } 
 
 .settings-menu {
   display: none;
   width: 170px;
-  margin-top: 10px;
-  padding: 20px;
+  padding: 10px;
   background-color: white;
-  border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   flex-direction: column;
