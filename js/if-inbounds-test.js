@@ -884,7 +884,6 @@ function displayControllers(controllers, centerFrequencies = []) {
     controllersElement.style.display = 'block';
     controllersElement.innerHTML = `
         <p>${otherControllers}</p>
-        <p>Active Center Frequencies:</p>
         <p>${centerControllers}</p>
     `;
 }
