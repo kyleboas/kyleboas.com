@@ -3,7 +3,6 @@ layout: infiniteflight
 ---
 
 <div class="container">
-<h1 style="font-size: 16px; padding-bottom: 0px;">Infinite Flight Inbound Search</h1>
     <div class="nav-container">
         <div class="nav-left">
             <input 
