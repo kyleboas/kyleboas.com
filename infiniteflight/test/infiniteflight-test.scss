@@ -39,28 +39,43 @@ pre {
 }
 
 .nav-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-
-    span {
-        font-size: 18px;
-        color: #4a4a4a;
-    }
-
-    svg {
-        fill: #4a4a4a;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-    }
+  display: flex;
+  align-items: center;
+  gap: 0px;
 }
+
+.nav-left span {
+  font-size: 18px;
+  color: #828282;
+}
+
+.nav-left svg {
+  width: 20px;
+  height: 20px;
+  fill: #828282;
+} 
 
 .nav-right {
     text-align: right;
     font-size: 16px;
-    color: #4a4a4a;
+    color: #828282;
     line-height: 1.5;
+}
+
+.nav-left input {
+    width: 50px;
+    border: none;
+    font-size: 14px;
+    outline: none;
+}
+
+.nav-left button {
+    background-color: transparent;
+    color: #828282;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
 }
 
 .spin {
@@ -101,10 +116,10 @@ form button {
   justify-content: center;
   height: 100%;
   text-align: center;
-  
-  &.visible {
-        display: flex;
-    }
+}
+
+.settings-menu.visible {
+  display: flex;
 }
 
 .dropdown {
@@ -261,6 +276,7 @@ th {
 
 .atisMessage p {
     margin-top: 0;
+    font-size: 13px;
 }
 
 .controllersList p {
