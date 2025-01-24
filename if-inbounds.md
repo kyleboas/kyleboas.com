@@ -1,25 +1,8 @@
-<head>
-    <title>Infinite Flight Inbound Search</title>
-    
-    {% if site.tags != "" %}
-        {% include collecttags.html %}
-    {% endif %}
-    
-    {% include favicon.html %}
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    
-    <!--[if lt IE 9]>
-        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    
-    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/infiniteflight.css">
-    <link rel="alternate" type="application/rss+xml" title="{{ site.name }} - {{ site.description }}" href="{{ site.baseurl }}/feed">
-    <script src="https://kit.fontawesome.com/dff461b9f7.js" crossorigin="anonymous"></script>
-</head>
+---
+layout: infiniteflight
+---
 
-<body>
-    <h1 style="font-size: 16px; padding-bottom:0px;">Infinite Flight Inbound Search</h1>
+<h1 style="font-size: 16px; padding-bottom:0px;">Infinite Flight Inbound Search</h1>
     <div class="container">
         <div class="nav-container">
             <div class="nav-left">
@@ -134,4 +117,4 @@
         <button type="button" id="stopUpdateButton" style="display: none;">Stop Update</button>
         <span id="countdownTimer" style="display: none;"></span>
 </div> 
-    <script src="/js/if-inbounds-test.js"></script>
+<script src="/js/if-inbounds-test.js"></script>

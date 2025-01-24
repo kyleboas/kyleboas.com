@@ -394,7 +394,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
 // Fetch ATIS
 async function fetchAirportATIS(icao) {
     const atisElement = document.getElementById('atisMessage');
-    if (atisElement) atisElement.textContent = 'Fetching ATIS...';
+    if (atisElement) atisElement.textContent = '';
 
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
     if (cached) {
@@ -805,8 +805,8 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
         airportDiv.id = `secondary-${secondaryIcao}`;
         airportDiv.className = 'secondaryAirport';
         airportDiv.innerHTML = `
-            <p class="secondary-atis" id="secondary-${secondaryIcao}-atis">Fetching ATIS...</p>
-            <p class="secondary-controllers" id="secondary-${secondaryIcao}-controllers">Fetching controllers...</p>
+            <p class="secondary-atis" id="secondary-${secondaryIcao}-atis"></p>
+            <p class="secondary-controllers" id="secondary-${secondaryIcao}-controllers"></p>
             <button type="button" class="removeAirportButton" data-icao="${secondaryIcao}">Remove</button>
         `;
         secondaryAirportContainer.appendChild(airportDiv);
@@ -1337,6 +1337,7 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
 });
 
 // Event Listeners
+// Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
     // Apply default settings
     applyDefaults();
@@ -1382,62 +1383,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Search form submission logic
-    const searchForm = document.getElementById('searchForm');
-    if (searchForm) {
-        searchForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const icao = document.getElementById('icao').value.trim().toUpperCase();
+    const searchButton = document.getElementById('search');
+    const icaoInput = document.getElementById('icao');
+
+    // Add an event listener for the search button
+    if (searchButton) {
+        searchButton.addEventListener('click', async () => {
+            const icao = icaoInput.value.trim().toUpperCase(); // Get the value from the input
 
             if (!icao) {
                 alert('Please enter a valid ICAO code.');
                 return;
             }
 
-            stopAutoUpdate();
-            await fetchAndUpdateFlights(icao);
+            stopAutoUpdate(); // Stop any ongoing updates
+            await fetchAndUpdateFlights(icao); // Fetch and update flights
+        });
+    }
+
+    // Add an event listener for "Enter" key in the ICAO input field
+    if (icaoInput) {
+        icaoInput.addEventListener('keydown', async (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default form submission
+
+                const icao = icaoInput.value.trim().toUpperCase();
+
+                if (!icao) {
+                    alert('Please enter a valid ICAO code.');
+                    return;
+                }
+
+                stopAutoUpdate(); // Stop any ongoing updates
+                await fetchAndUpdateFlights(icao); // Fetch and update flights
+            }
         });
     }
 
     // Update button logic
-    const updateButton = document.getElementById('updateButton');
+    const updateButton = document.getElementById('update');
     if (updateButton) {
         updateButton.addEventListener('click', () => {
             const icao = document.getElementById('icao').value.trim().toUpperCase();
+            const icao = icaoInput.value.trim().toUpperCase();
             if (!icao) {
                 alert('Please enter a valid ICAO code before updating.');
                 return;
             }
 
-            stopAutoUpdate();
-            let countdown = 5;
-            const countdownTimer = document.getElementById('countdownTimer');
-
-            updateInterval = setInterval(async () => {
-                await fetchAndUpdateFlights(icao);
-                await fetchControllers(icao);
-                await fetchActiveATCAirports();
-                countdown = 5;
-            }, 5000);
-
-            countdownInterval = setInterval(() => {
-                countdown--;
-                countdownTimer.textContent = `${countdown}`;
-                if (countdown <= 0) countdown = 5;
-            }, 1000);
-
-            updateTimeout = setTimeout(() => {
+            if (isAutoUpdateActive) {
+                // If auto-update is active, stop it
                 stopAutoUpdate();
-                alert('Auto-update stopped after 15 minutes.');
-            }, 15 * 60 * 1000);
-
-            document.getElementById('stopUpdateButton').style.display = 'inline';
-            countdownTimer.style.display = 'inline';
+            } else {
+                // If auto-update is not active, start it
+                startAutoUpdate(icao);
+            }
         });
-    }
-
-    // Stop update button logic
-    const stopUpdateButton = document.getElementById('stopUpdateButton');
-    if (stopUpdateButton) {
-        stopUpdateButton.addEventListener('click', stopAutoUpdate);
     }
 });
