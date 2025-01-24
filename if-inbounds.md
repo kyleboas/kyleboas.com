@@ -30,6 +30,39 @@ layout: infiniteflight
             NZAA 125 YSSY 41<br>
             LSZH 37 EGLL 27
         </div>
+            <div class="settings-menu hidden">
+        <div class="dropdown">
+            <button class="dropdown-toggle">Set Defaults ▼</button>
+            <div class="dropdown-menu">
+                <h2>Set Defaults</h2>
+                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum e.g., 0" />
+                <br />
+                <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360" />
+                <br />
+                <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50" />
+                <br />
+                <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500" />
+                <br />
+                <button type="button" id="saveDefaultsButton">Save Defaults</button>
+            </div>
+        </div>
+
+        <form id="filterForm" style="margin-top: 20px;">
+            <div class="HeadingFilter">
+                <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum e.g., 0" />
+                <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum e.g., 90" />
+                <button type="button" id="boldHeadingButton">Bold Aircraft</button>
+                <button type="button" id="toggleHeadingButton">Hide Aircraft</button>
+            </div>
+            <div class="DistanceFilter">
+                <input type="number" id="minDistance" min="0" placeholder="Minimum e.g., 50" />
+                <input type="number" id="maxDistance" min="0" placeholder="Maximum e.g., 500" />
+                <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
+                <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
+            </div>
+            <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
+        </form>
+      </div>
     </div>
     
     <!-- Secondary Airport Section -->
@@ -116,4 +149,10 @@ layout: infiniteflight
     </div>
 </div>
 
+<script>
+document.getElementById('settings').addEventListener('click', () => {
+    const settingsMenu = document.querySelector('.settings-menu');
+    settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
+});
+</script>
 <script src="/js/if-inbounds-test.js"></script>

@@ -25,6 +25,19 @@ pre {
     padding-top: 0px;
 }
 
+.settings-menu {
+    display: none; // Hidden by default
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    &.visible {
+        display: block; // Show when the visible class is added
+    }
+}
+
 // Search
 
 .nav-container {
