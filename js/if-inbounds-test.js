@@ -1385,7 +1385,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchButton = document.getElementById("search");
     const icaoInput = document.getElementById("icao");
 
-// Add an event listener for the search button
+    // Add an event listener for the search button
     if (searchButton) {
         searchButton.addEventListener("click", async () => {
             const icao = icaoInput.value.trim().toUpperCase(); // Get the value from the input
@@ -1400,61 +1400,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-        // Update button logic
-        const updateButton = document.getElementById("update");
+    // Update button logic
+    const updateButton = document.getElementById("update");
         
-        // Update button logic (start/stop auto-update)
-        if (updateButton) {
-            updateButton.addEventListener("click", () => {
-                const icao = document.getElementById("icao").value.trim().toUpperCase();
-                if (!icao) {
-                    alert("Please enter a valid ICAO code before updating.");
-                    return;
-                }
+    // Update button logic (start/stop auto-update)
+    if (updateButton) {
+        updateButton.addEventListener("click", () => {
+            const icao = document.getElementById("icao").value.trim().toUpperCase();
+            if (!icao) {
+                alert("Please enter a valid ICAO code before updating.");
+                return;
+            }
 
-                if (isAutoUpdateActive) {
-                    // If auto-update is active, stop it
-                    stopAutoUpdate();
-                } else {
-                    // If auto-update is not active, start it
-                    startAutoUpdate(icao);
-                }
-            });
-        }
+            if (isAutoUpdateActive) {
+                // If auto-update is active, stop it
+                stopAutoUpdate();
+            } else {
+                // If auto-update is not active, start it
+                startAutoUpdate(icao);
+            }
+        });
+    }
 
-        function startAutoUpdate(icao) {
-            isAutoUpdateActive = true;
-            updateButton.textContent = "Stop Update"; // Change button text to indicate stopping
+    function startAutoUpdate(icao) {
+        isAutoUpdateActive = true;
+        updateButton.textContent = "Stop Update"; // Change button text to indicate stopping
 
-            let countdown = 5; // Countdown timer value
-            const countdownTimer = document.getElementById("countdownTimer");
-            countdownTimer.style.display = "inline";
+        let countdown = 5; // Countdown timer value
+        const countdownTimer = document.getElementById("countdownTimer");
+        countdownTimer.style.display = "inline";
 
-            // Start auto-update interval (every 5 seconds)
-            updateInterval = setInterval(async () => {
-                await fetchAndUpdateFlights(icao);
-                await fetchControllers(icao);
-                await fetchActiveATCAirports();
-                countdown = 5; // Reset countdown
-            }, 5000);
+        // Start auto-update interval (every 5 seconds)
+        updateInterval = setInterval(async () => {
+            await fetchAndUpdateFlights(icao);
+            await fetchControllers(icao);
+            await fetchActiveATCAirports();
+            countdown = 5; // Reset countdown
+        }, 5000);
 
-            // Update the countdown display
-            countdownInterval = setInterval(() => {
-                countdown--;
-                countdownTimer.textContent = `${countdown}`;
-                if (countdown <= 0) countdown = 5;
-            }, 1000);
-        }
+        // Update the countdown display
+        countdownInterval = setInterval(() => {
+            countdown--;
+            countdownTimer.textContent = `${countdown}`;
+            if (countdown <= 0) countdown = 5;
+        }, 1000);
+    }
 
-        function stopAutoUpdate() {
-            isAutoUpdateActive = false;
-            updateButton.textContent = "Update"; // Reset button text to "Update"
+    function stopAutoUpdate() {
+        isAutoUpdateActive = false;
+        updateButton.textContent = "Update"; // Reset button text to "Update"
 
-            // Clear all intervals
-            if (updateInterval) clearInterval(updateInterval);
-            if (countdownInterval) clearInterval(countdownInterval);
+        // Clear all intervals
+        if (updateInterval) clearInterval(updateInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
 
-    // Hide countdown timer
-    const countdownTimer = document.getElementById("countdownTimer");
-    if (countdownTimer) countdownTimer.style.display = "none";
-}
+        // Hide countdown timer
+        const countdownTimer = document.getElementById("countdownTimer");
+        if (countdownTimer) countdownTimer.style.display = "none";
+    }
+});
