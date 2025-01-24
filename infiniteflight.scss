@@ -41,26 +41,42 @@ pre {
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 0px;
 }
 
 .nav-left span {
-    font-size: 18px;
-    color: #828282;
+  font-size: 18px;
+  color: #828282;
 }
 
 .nav-left svg {
-  fill: #828282;
   width: 20px;
   height: 20px;
-  cursor: pointer;
+  fill: #828282;
 } 
 
 .nav-right {
     text-align: right;
-    font-size: 16px;
+    font-size: 10px;
     color: #828282;
     line-height: 1.5;
+}
+
+.nav-left input {
+    width: 50px;
+    border: none;
+    font-size: 14px;
+    outline: none;
+}
+
+.nav-left button {
+    background-color: transparent;
+    color: #828282;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    padding: 0px;
+    margin: 6px; 
 }
 
 .spin {
