@@ -146,7 +146,7 @@ form button {
     color: white;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease; 
 }
 
 form button:hover {
@@ -162,6 +162,7 @@ table {
     border-collapse: collapse;
     margin-top: 20px;
     text-align: center;
+    border: none;
 }
 
 tbody {
