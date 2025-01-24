@@ -30,7 +30,7 @@ layout: infiniteflight
             NZAA 125 YSSY 41<br>
             LSZH 37 EGLL 27
         </div>
-            <div class="settings-menu hidden">
+      <div class="settings-menu hidden">
         <div class="dropdown">
             <button class="dropdown-toggle">Set Defaults ▼</button>
             <div class="dropdown-menu">
