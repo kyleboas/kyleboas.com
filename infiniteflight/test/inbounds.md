@@ -1,6 +1,7 @@
 ---
 Title: Infinite Flight Inbound Search
 layout: infiniteflight-test
+permalink: /inbounds/
 ---
 
 <div class="container">
