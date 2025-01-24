@@ -1428,7 +1428,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Starts the auto-update process
     function startAutoUpdate(icao) {
         isAutoUpdateActive = true;
-        updateButton.innerHTML = `<i class="fa-solid fa-stop" aria-hidden="true"></i>`; // Update button icon
+        updateButton.style.color = "blue";
         const countdownTimer = document.getElementById("countdownTimer");
         countdownTimer.style.display = "inline";
         let countdown = 5; // Countdown timer value
@@ -1452,7 +1452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Stops the auto-update process
     function stopAutoUpdate() {
         isAutoUpdateActive = false;
-        updateButton.style.color = "blue";
+        updateButton.style.color = "#828282";
         const countdownTimer = document.getElementById("countdownTimer");
 
         // Clear intervals

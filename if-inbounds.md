@@ -61,7 +61,7 @@
         <table id="flightsTable">
             <thead>
                 <tr>
-                    <th>Aircraft</th>
+                    <th style="padding-left: 25px;padding-right: 25px;">Aircraft</th>
                     <th>MIN/MAX</th>
                     <th>GS/MACH</th>
                     <th>HDG/ALT</th>
