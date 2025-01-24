@@ -25,9 +25,9 @@ layout: infiniteflight
                 <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
             </button>
         </div>
-        <div class="nav-right" style="font-size: 10x; text-align: left;">
-            NZAA 125   YSSY 41   KLAX 37<br>
-            LSZH 37   EGLL 27   KLAS 35
+        <div class="nav-right" style="font-size: 10px; text-align: left;">
+            NZAA 125 YSSY 41<br>
+            LSZH 37 EGLL 27
         </div>
     </div>
     
