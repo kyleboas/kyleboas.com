@@ -287,7 +287,7 @@ async function fetchActiveATCAirports() {
         combinedAirports.sort((a, b) => b.inboundCount - a.inboundCount);
 
         // Select the top 5 airports by inbound flights
-        const topAirports = combinedAirports.slice(0, 5);
+        const topAirports = combinedAirports.slice(0, 4);
 
         // Include any additional airports with active ATC not in the top 5
         const additionalAirports = combinedAirports.filter(
