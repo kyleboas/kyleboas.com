@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>
+        {% if page.title %}
+            {{ page.title }} - Kyle Boas
+        {% else %}
+            Kyle Boas
+        {% endif %}
+    </title>
+
+    {% if site.tags != "" %}
+        {% include collecttags.html %}
+    {% endif %}
+
+    {% include favicon.html %}
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <!--[if lt IE 9]>
+        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/infiniteflight-test.css">
+    <link rel="alternate" type="application/rss+xml" 
+          title="{{ site.name }} - {{ site.description }}" 
+          href="{{ site.baseurl }}/feed">
+    <script src="https://kit.fontawesome.com/dff461b9f7.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    {{ content }}
+</body>
+</html>
