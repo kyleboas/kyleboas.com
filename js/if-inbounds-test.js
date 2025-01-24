@@ -1453,10 +1453,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function stopAutoUpdate() {
         isAutoUpdateActive = false;
-        updateButton.style.color = ""; // Reset text/icon color
-        const icon = updateButton.querySelector("i"); // Find the icon inside the button
-        if (icon) icon.classList.remove("spin"); // Remove the spinning animation
-
+        updateButton.style.color = "#828282";
+        const icon = updateButton.querySelector("i");
+        if (icon) icon.classList.remove("spin");
         const countdownTimer = document.getElementById("countdownTimer");
 
         // Clear intervals
