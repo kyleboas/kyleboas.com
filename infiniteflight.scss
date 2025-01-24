@@ -327,9 +327,9 @@ th {
 @media (min-width: 710px) {
     .container {
         flex-direction: row;
-        justify-content: left;
         align-items: flex-start;
         gap: 20px;
+        width: 610px
     }
 
     .nav-right {
