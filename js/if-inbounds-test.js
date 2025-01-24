@@ -1402,11 +1402,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Update button logic
     const updateButton = document.getElementById("update");
-        
+    let isAutoUpdateActive = false; // Tracks auto-update state
+    let updateInterval = null; // Stores auto-update interval
+    let countdownInterval = null; // Stores countdown interval
+
     // Update button logic (start/stop auto-update)
     if (updateButton) {
         updateButton.addEventListener("click", () => {
-            const icao = document.getElementById("icao").value.trim().toUpperCase();
+            const icao = icaoInput.value.trim().toUpperCase();
             if (!icao) {
                 alert("Please enter a valid ICAO code before updating.");
                 return;
@@ -1422,23 +1425,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Starts the auto-update process
     function startAutoUpdate(icao) {
         isAutoUpdateActive = true;
-        updateButton.textContent = "Stop Update"; // Change button text to indicate stopping
-
-        let countdown = 5; // Countdown timer value
+        updateButton.innerHTML = `<i class="fa-solid fa-stop" aria-hidden="true"></i>`; // Update button icon
         const countdownTimer = document.getElementById("countdownTimer");
         countdownTimer.style.display = "inline";
+        let countdown = 5; // Countdown timer value
 
-        // Start auto-update interval (every 5 seconds)
+        // Auto-update logic every 5 seconds
         updateInterval = setInterval(async () => {
-            await fetchAndUpdateFlights(icao);
-            await fetchControllers(icao);
-            await fetchActiveATCAirports();
+            await fetchAndUpdateFlights(icao); // Fetch updated flights
+            await fetchControllers(icao); // Fetch controllers
+            await fetchActiveATCAirports(); // Fetch ATC airports
             countdown = 5; // Reset countdown
         }, 5000);
 
-        // Update the countdown display
+        // Countdown timer display
         countdownInterval = setInterval(() => {
             countdown--;
             countdownTimer.textContent = `${countdown}`;
@@ -1446,16 +1449,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 1000);
     }
 
+    // Stops the auto-update process
     function stopAutoUpdate() {
         isAutoUpdateActive = false;
-        updateButton.textContent = "Update"; // Reset button text to "Update"
+        updateButton.innerHTML = `<i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>`; // Reset button icon
+        const countdownTimer = document.getElementById("countdownTimer");
 
-        // Clear all intervals
+        // Clear intervals
         if (updateInterval) clearInterval(updateInterval);
         if (countdownInterval) clearInterval(countdownInterval);
 
         // Hide countdown timer
-        const countdownTimer = document.getElementById("countdownTimer");
         if (countdownTimer) countdownTimer.style.display = "none";
     }
 });
