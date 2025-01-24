@@ -103,9 +103,9 @@ form button {
   text-align: center;
 }
 
-.settings-menu .visible {
+.settings-menu.visible {
   display: flex;
-} 
+}
 
 .dropdown {
   display: none;
