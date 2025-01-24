@@ -1,4 +1,5 @@
 ---
+Title: Infinite Flight Inbound Search
 layout: infiniteflight
 permalink: /infiniteflight/inbounds/
 ---
