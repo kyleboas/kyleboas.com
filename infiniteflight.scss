@@ -346,21 +346,29 @@ th {
         align-items: flex-start;
     }
 
-    .nav-container {
+    .page-left {
         flex: 1; 
-        max-width: 30%; 
+        max-width: 50%;
+        margin-left: 10px;
     }
-
-    #secondaryAirport,
-    .mainAirport {
-        flex: 1;
-        max-width: 30%;
+    
+    .nav-container {
+       flex: 1 1 0%;
     }
-
+    
     #flightsTable {
+       max-width: 80%;
+       margin-right: 50px;
+       margin-left: 20px;
+    }  
+
+    .page-right {
         flex: 1;
         max-width: 40%;
         margin-left: auto;
         margin-right: 0;
+        margin-right: 20px;
     }
+    .table {
+        margin-top: 20px;
 }
