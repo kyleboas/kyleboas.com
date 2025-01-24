@@ -1,6 +1,7 @@
 ---
 Title: Infinite Flight Inbound Search
 layout: infiniteflight
+permalink: /infiniteflight/inbounds/
 ---
 
 <div class="container">
@@ -11,25 +12,22 @@ layout: infiniteflight
                 type="text" 
                 id="icao" 
                 name="icao" 
-                placeholder="Airport" 
-                style="width: 50px; border: none; margin-right: -10px; font-size: 14px; outline:none;"
+                placeholder="Airport"
             />
-            <button id="search" style="background-color: transparent; color: #828282; font-size: 14px; margin-left:-15px">
+            <button id="search">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             </button>
-            <button id="add" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
+            <button id="add">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
             </button>
-            <button id="settings" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
+            <button id="settings">
                 <i class="fa-solid fa-sliders" aria-hidden="true"></i>
             </button>
-            <button id="update" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
+            <button id="update">
                 <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
             </button>
         </div>
-        <div class="nav-right" id="atcAirportsList" style="font-size: 10px; text-align: left;">
-            NZAA 125 YSSY 41<br>
-            LSZH 37 EGLL 27
+        <div class="nav-right" id="atcAirportsList">
         </div>
     </div>
     
@@ -38,7 +36,7 @@ layout: infiniteflight
             <button class="dropdown-toggle">Set Defaults ▼</button>
             <div class="dropdown-menu">
                 <h2>Set Defaults</h2>
-                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum e.g., 0">
+                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum">
                 <br>
                 <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
                 <br>
@@ -67,22 +65,6 @@ layout: infiniteflight
             <button type="button" id="filterHeadingHighlightButton" style="display:none;">Filter</button>
         </form>
     </div>
-    
-    <table id="atcTable">
-    <thead>
-        <tr>
-            <th style="padding-left: 25px; padding-right: 25px;">Airport</th>
-            <th>ATC</th>
-            <th>50nm</th>
-            <th>200nm</th>
-            <th>500nm</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Dynamic rows will be added here -->
-    </tbody>
-    </table>
     
     <!-- Secondary Airport Section -->
     <div id="secondaryAirport">
