@@ -36,20 +36,6 @@ layout: page
             <button type="submit">Search</button>
         </form>
         
-        <div class="nav-container">
-           <div class="nav-left">
-        <input type="text" id="icao" name="icao" placeholder="Airport">
-        <button><i class="fa-solid fa-magnifying-glass"></i></button>
-        <button><i class="fa-solid fa-plus"></i></button>
-        <button><i class="fa-solid fa-sliders"></i></button>
-        <button><i class="fa-solid fa-arrows-rotate"></i></button>
-    </div>
-    <div class="nav-right">
-        NZAA 125 &nbsp; YSSY 41 &nbsp; KLAX 37<br>
-        LSZH 37 &nbsp; EGLL 27 &nbsp; KLAS 35
-    </div>
-</div>
-        
         <div class="dropdown">
         <button class="dropdown-toggle">Set Defaults ▼</button>
         <div class="dropdown-menu">
