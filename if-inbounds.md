@@ -63,4 +63,3 @@
         </tbody>
         </table>
     <script src="/js/if-inbound.js"></script>
-</body> 
