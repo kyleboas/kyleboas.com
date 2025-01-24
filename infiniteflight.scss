@@ -339,17 +339,26 @@ th {
   
 }
 
-@media (min-width: 900px) {
+@media (min-width: 670px) {
     .container {
         flex-direction: row;
         justify-content: space-between;
         align-items: flex-start;
     }
+    
+    .nav-right {
+        display: none;
+    } 
 
     .page-left {
         flex: 1; 
-        max-width: 50%;
+        max-width: 40%;
         margin-left: 10px;
+        margin-right: 20px;
+    }
+    
+    table {
+        margin-top: 0;
     }
     
     .nav-container {
@@ -378,3 +387,13 @@ th {
     .table {
         margin-top: 20px;
 }
+
+@media (min-width: 1100px) {
+    
+    .nav-right {
+       display: block;
+    }
+}  
+
+
+
