@@ -18,7 +18,7 @@
     <script src="https://kit.fontawesome.com/dff461b9f7.js" crossorigin="anonymous"></script>
   </head>
 
-  <body>
+<body>
     <div class="container">
         <div class="nav-container">
     <div class="nav-left">
