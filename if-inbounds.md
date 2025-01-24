@@ -29,7 +29,7 @@
             placeholder="Airport" 
             style="width: 40px; border: none; margin-right: -10px;"
         />
-                <button id="search" style="background-color: #ffffff; color: #828282;">
+                <button id="search" style="background-color: transparent; color: #828282;">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                 </button>
                 <button id="add" style="background-color: transparent; color: #828282; margin-left: -25px;">
@@ -38,7 +38,7 @@
                 <button id="settings" style="background-color: transparent; color: #828282; margin-left: -20px;">
                     <i class="fa-solid fa-sliders" aria-hidden="true"></i>
                 </button>
-                <button id="update" style="background-color: #ffffff; color: #828282; margin-left: -30px;">
+                <button id="update" style="background-color: transparent; color: #828282; margin-left: -30px;">
                     <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
                 </button>
             </div>
