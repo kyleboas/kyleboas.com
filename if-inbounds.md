@@ -35,7 +35,7 @@
                 <button id="add" style="background-color: transparent; color: #828282; margin-left: -25px; font-size: 14px;">
                     <i class="fa-solid fa-plus" aria-hidden="true"></i>
                 </button>
-                <button id="settings" style="background-color: transparent; color: #828282; margin-left: -20px; font-size: 14px;">
+                <button id="settings" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
                     <i class="fa-solid fa-sliders" aria-hidden="true"></i>
                 </button>
                 <button id="update" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
