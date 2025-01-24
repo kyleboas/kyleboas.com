@@ -52,18 +52,18 @@ layout: infiniteflight
         <!-- Filter Form -->
         <form id="filterForm" style="margin-top: 20px;">
             <div class="HeadingFilter">
-                <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum e.g., 0">
-                <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum e.g., 90">
-                <button type="button" id="boldHeadingButton">Bold Aircraft</button>
-                <button type="button" id="toggleHeadingButton">Hide Aircraft</button>
+                <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
+                <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
+                <button type="button" id="boldHeadingButton">Bold</button>
+                <button type="button" id="toggleHeadingButton">Hide</button>
             </div> 
             <div class="DistanceFilter">
-                <input type="number" id="minDistance" min="0" placeholder="Minimum e.g., 50">
-                <input type="number" id="maxDistance" min="0" placeholder="Maximum e.g., 500">
-                <button type="button" id="applyDistanceFilterButton">Apply Distance Filter</button>
-                <button type="button" id="resetDistanceFilterButton">Reset Filter</button>
+                <input type="number" id="minDistance" min="0" placeholder="Minimum">
+                <input type="number" id="maxDistance" min="0" placeholder="Maximum">
+                <button type="button" id="applyDistanceFilterButton">Distance</button>
+                <button type="button" id="resetDistanceFilterButton">Reset</button>
             </div>
-            <button type="button" id="filterHeadingHighlightButton">Enable Highlight by Heading</button>
+            <button type="button" id="filterHeadingHighlightButton">Split</button>
         </form>
     </div>
     
