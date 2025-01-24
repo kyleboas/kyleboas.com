@@ -18,6 +18,7 @@ let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
 let applyDistanceFilterEnabled = false;
+let isAutoUpdateActive = false;
 
 // ============================
 // Cookie Utility Functions
@@ -268,38 +269,31 @@ async function fetchActiveATCAirports() {
                 icao: airport.airportIcao,
                 inboundCount: airport.inboundFlightsCount,
                 hasApproach: atcInfo.hasApproach,
+                hasATC: Boolean(activeATCAirports[airport.airportIcao]),
             };
-        });
-
-        // Add airports with ATC but no inbounds
-        Object.keys(activeATCAirports).forEach((icao) => {
-            if (!combinedAirports.find((airport) => airport.icao === icao)) {
-                combinedAirports.push({
-                    icao,
-                    inboundCount: 0,
-                    hasApproach: activeATCAirports[icao].hasApproach,
-                });
-            }
         });
 
         // Sort by inbound count in descending order
         combinedAirports.sort((a, b) => b.inboundCount - a.inboundCount);
 
         // Select the top 5 airports by inbound flights
-        const topAirports = combinedAirports.slice(0, 5);
-
-        // Include any additional airports with active ATC not in the top 5
-        const additionalAirports = combinedAirports.filter(
-            (airport) => !topAirports.includes(airport) && airport.hasApproach
-        );
-
-        // Combine the top airports and additional airports with active ATC
-        const finalAirports = [...topAirports, ...additionalAirports];
+        const topAirports = combinedAirports.slice(0, 4);
 
         // Format the output
-        const formattedAirports = finalAirports.map((airport) => {
-            const hasApproach = airport.hasApproach;
-            return `${hasApproach ? `<i>${airport.icao}*</i>` : airport.icao}: ${airport.inboundCount}`;
+        const formattedAirports = topAirports.map((airport) => {
+            let icao = airport.icao;
+
+            // Add bold for airports with ATC
+            if (airport.hasATC) {
+                icao = `<strong>${icao}</strong>`;
+            }
+
+            // Add an asterisk for airports with approach
+            if (airport.hasApproach) {
+                icao += "*";
+            }
+
+            return `${icao}: ${airport.inboundCount}`;
         });
 
         // Join the output with commas
@@ -394,7 +388,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
 // Fetch ATIS
 async function fetchAirportATIS(icao) {
     const atisElement = document.getElementById('atisMessage');
-    if (atisElement) atisElement.textContent = '';
+    if (atisElement) atisElement.textContent = 'Fetching ATIS...';
 
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
     if (cached) {
@@ -782,10 +776,9 @@ async function fetchSecondaryControllers(icao) {
 }
 
 // Add secondary airport to the display
-// Add secondary airport to the display
-document.getElementById('secondarySearchForm').addEventListener('submit', async (event) => {
+document.getElementById('add').addEventListener('click', async (event) => {
     event.preventDefault();
-    const secondaryIcao = document.getElementById('secondaryIcao').value.trim().toUpperCase();
+    const secondaryIcao = document.getElementById('icao').value.trim().toUpperCase();
 
     if (!secondaryIcao) {
         alert('Please enter a valid ICAO code.');
@@ -805,8 +798,8 @@ document.getElementById('secondarySearchForm').addEventListener('submit', async 
         airportDiv.id = `secondary-${secondaryIcao}`;
         airportDiv.className = 'secondaryAirport';
         airportDiv.innerHTML = `
-            <p class="secondary-atis" id="secondary-${secondaryIcao}-atis"></p>
-            <p class="secondary-controllers" id="secondary-${secondaryIcao}-controllers"></p>
+            <p class="secondary-atis" id="secondary-${secondaryIcao}-atis">Fetching ATIS...</p>
+            <p class="secondary-controllers" id="secondary-${secondaryIcao}-controllers">Fetching controllers...</p>
             <button type="button" class="removeAirportButton" data-icao="${secondaryIcao}">Remove</button>
         `;
         secondaryAirportContainer.appendChild(airportDiv);
@@ -884,7 +877,6 @@ function displayControllers(controllers, centerFrequencies = []) {
     controllersElement.style.display = 'block';
     controllersElement.innerHTML = `
         <p>${otherControllers}</p>
-        <p>Active Center Frequencies:</p>
         <p>${centerControllers}</p>
     `;
 }
@@ -1055,8 +1047,8 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
 
     const button = document.getElementById('filterHeadingHighlightButton');
     button.textContent = headingHighlightEnabled
-        ? 'Disable Highlight by Heading'
-        : 'Enable Highlight by Heading';
+        ? 'Disable'
+        : 'Enable';
 
     highlightCloseETAs(); // Reapply highlighting with the heading filter
 });
@@ -1107,8 +1099,8 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
     // Toggle boldHeadingEnabled and update button text
     boldHeadingEnabled = !boldHeadingEnabled;
     document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-        ? 'Disable Bold Aircraft'
-        : 'Enable Bold Aircraft';
+        ? 'Disable'
+        : 'Enable';
 
     // Update boldedHeadings range
     boldedHeadings.minHeading = minHeading;
@@ -1132,8 +1124,8 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
     // Update button text
     document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
-        ? 'Disable Distance Filter'
-        : 'Enable Distance Filter';
+        ? 'Disable'
+        : 'Enable';
 
     // Update distance filter ranges
     hiddenDistance.minDistance = minDistance;
@@ -1153,7 +1145,7 @@ document.getElementById('resetDistanceFilterButton').addEventListener('click', (
 
     // Disable the distance filter
     applyDistanceFilterEnabled = false;
-    document.getElementById('applyDistanceFilterButton').textContent = 'Enable Distance Filter';
+    document.getElementById('applyDistanceFilterButton').textContent = 'Enable';
 
     // Re-render the table without any filters
     renderFlightsTable(allFlights);
@@ -1337,7 +1329,6 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
 });
 
 // Event Listeners
-// Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
     // Apply default settings
     applyDefaults();
@@ -1351,7 +1342,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (hasDefaults) {
         document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
         document.getElementById('defaultSettingsForm').style.display = 'block';
-    }
+    } 
 
     // Manual update button logic
     const manualUpdateButton = document.getElementById('manualUpdateButton');
@@ -1383,51 +1374,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Search form submission logic
-    const searchButton = document.getElementById('search');
-    const icaoInput = document.getElementById('icao');
+    const searchButton = document.getElementById("search");
+    const icaoInput = document.getElementById("icao");
+
+    async function handleSearch() {
+        const icao = icaoInput.value.trim().toUpperCase(); // Get the value from the input
+
+        if (!icao) {
+            alert("Please enter a valid ICAO code.");
+            return;
+        }
+
+        stopAutoUpdate(); // Stop any ongoing updates
+        await fetchAndUpdateFlights(icao); // Fetch and update flights
+    }
 
     // Add an event listener for the search button
     if (searchButton) {
-        searchButton.addEventListener('click', async () => {
-            const icao = icaoInput.value.trim().toUpperCase(); // Get the value from the input
-
-            if (!icao) {
-                alert('Please enter a valid ICAO code.');
-                return;
-            }
-
-            stopAutoUpdate(); // Stop any ongoing updates
-            await fetchAndUpdateFlights(icao); // Fetch and update flights
+        searchButton.addEventListener("click", async () => {
+            await handleSearch(); // Trigger search logic
         });
     }
 
-    // Add an event listener for "Enter" key in the ICAO input field
+    // Trigger search when Enter is pressed in the input field
     if (icaoInput) {
-        icaoInput.addEventListener('keydown', async (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault(); // Prevent default form submission
-
-                const icao = icaoInput.value.trim().toUpperCase();
-
-                if (!icao) {
-                    alert('Please enter a valid ICAO code.');
-                    return;
-                }
-
-                stopAutoUpdate(); // Stop any ongoing updates
-                await fetchAndUpdateFlights(icao); // Fetch and update flights
+        icaoInput.addEventListener("keydown", async (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent form submission or default behavior
+                await handleSearch(); // Trigger search logic
             }
         });
     }
 
     // Update button logic
-    const updateButton = document.getElementById('update');
+    const updateButton = document.getElementById("update");
+    let isAutoUpdateActive = false; // Tracks auto-update state
+    let updateInterval = null; // Stores auto-update interval
+    let countdownInterval = null; // Stores countdown interval
+
+    // Update button logic (start/stop auto-update)
     if (updateButton) {
-        updateButton.addEventListener('click', () => {
-            const icao = document.getElementById('icao').value.trim().toUpperCase();
+        updateButton.addEventListener("click", () => {
             const icao = icaoInput.value.trim().toUpperCase();
             if (!icao) {
-                alert('Please enter a valid ICAO code before updating.');
+                alert("Please enter a valid ICAO code before updating.");
                 return;
             }
 
@@ -1439,5 +1429,47 @@ document.addEventListener('DOMContentLoaded', async () => {
                 startAutoUpdate(icao);
             }
         });
+    }
+
+    // Starts the auto-update process
+    function startAutoUpdate(icao) {
+        isAutoUpdateActive = true;
+        updateButton.style.color = "blue"; // Change the text/icon color to blue
+        const icon = updateButton.querySelector("i"); // Find the icon inside the button
+        if (icon) icon.classList.add("spin"); // Add the spinning animation
+
+        const countdownTimer = document.getElementById("countdownTimer");
+        countdownTimer.style.display = "inline";
+        let countdown = 5;
+
+        // Auto-update logic every 5 seconds
+        updateInterval = setInterval(async () => {
+            await fetchAndUpdateFlights(icao);
+            await fetchControllers(icao);
+            await fetchActiveATCAirports();
+            countdown = 5; // Reset countdown
+        }, 5000);
+
+        // Countdown timer logic
+        countdownInterval = setInterval(() => {
+            countdown--;
+            countdownTimer.textContent = `${countdown}`;
+            if (countdown <= 0) countdown = 5;
+        }, 1000);
+    }
+
+    function stopAutoUpdate() {
+        isAutoUpdateActive = false;
+        updateButton.style.color = "#828282";
+        const icon = updateButton.querySelector("i");
+        if (icon) icon.classList.remove("spin");
+        const countdownTimer = document.getElementById("countdownTimer");
+
+        // Clear intervals
+        if (updateInterval) clearInterval(updateInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
+
+        // Hide countdown timer
+        countdownTimer.style.display = "none";
     }
 });
