@@ -15,6 +15,7 @@
 
     <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/infiniteflight.css" />
     <link rel="alternate" type="application/rss+xml" title="{{ site.name }} - {{ site.description }}" href="{{ site.baseurl }}/feed" />
+    <script src="https://kit.fontawesome.com/dff461b9f7.js" crossorigin="anonymous"></script>
   </head>
 
   <body>
