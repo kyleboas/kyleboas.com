@@ -64,7 +64,7 @@
         </table>
     </div>
     
-<div style="display:none;>
+<div style="display:none;">
         <div class="container">
         <h1>Search Inbound Infinite Flight Flights</h1>
         
