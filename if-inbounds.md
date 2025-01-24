@@ -12,10 +12,10 @@ layout: infiniteflight
                 placeholder="Airport" 
                 style="width: 50px; border: none; margin-right: -10px; font-size: 14px;"
             />
-            <button id="search" style="background-color: transparent; color: #828282; font-size: 14px;">
+            <button id="search" style="background-color: transparent; color: #828282; font-size: 14px; margin-left:-15px">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             </button>
-            <button id="add" style="background-color: transparent; color: #828282; margin-left: -25px; font-size: 14px;">
+            <button id="add" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
             </button>
             <button id="settings" style="background-color: transparent; color: #828282; margin-left: -30px; font-size: 14px;">
@@ -25,7 +25,7 @@ layout: infiniteflight
                 <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
             </button>
         </div>
-        <div class="nav-right" style="font-size: 12px; display: none;">
+        <div class="nav-right" style="font-size: 10x; text-align: left;">
             NZAA 125   YSSY 41   KLAX 37<br>
             LSZH 37   EGLL 27   KLAS 35
         </div>
