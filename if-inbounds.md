@@ -1,5 +1,6 @@
 ---
 layout: infiniteflight
+permalink: /infiniteflight/inbounds/
 ---
 
 <div class="container">
