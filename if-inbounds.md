@@ -29,8 +29,6 @@ permalink: /infiniteflight/inbounds/
             </button>
         </div>
         <div class="nav-right" id="atcAirportsList" style="font-size: 10px; text-align: left;">
-            NZAA 125 YSSY 41<br>
-            LSZH 37 EGLL 27
         </div>
     </div>
     
@@ -68,22 +66,6 @@ permalink: /infiniteflight/inbounds/
             <button type="button" id="filterHeadingHighlightButton" style="display:none;">Filter</button>
         </form>
     </div>
-    
-    <table id="atcTable">
-    <thead>
-        <tr>
-            <th style="padding-left: 25px; padding-right: 25px;">Airport</th>
-            <th>ATC</th>
-            <th>50nm</th>
-            <th>200nm</th>
-            <th>500nm</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Dynamic rows will be added here -->
-    </tbody>
-</table>
     
     <!-- Secondary Airport Section -->
     <div id="secondaryAirport">
