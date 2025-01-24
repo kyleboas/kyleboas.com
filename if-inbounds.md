@@ -50,7 +50,7 @@ layout: infiniteflight
         </div>
 
         <!-- Filter Form -->
-        <form id="filterForm" style="margin-top: 20px;">
+        <form id="filterForm">
             <div class="HeadingFilter">
                 <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
                 <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
@@ -63,7 +63,7 @@ layout: infiniteflight
                 <button type="button" id="applyDistanceFilterButton">Enable</button>
                 <button type="button" id="resetDistanceFilterButton">Reset</button>
             </div>
-            <button type="button" id="filterHeadingHighlightButton">Filter</button>
+            <button type="button" id="filterHeadingHighlightButton" style="display:none;">Filter</button>
         </form>
     </div>
     
