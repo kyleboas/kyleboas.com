@@ -340,16 +340,6 @@ th {
   
 }
 
-<style>
-/* General Styles */
-.container {
-    display: flex;
-    flex-direction: column; /* Default stack layout for narrow screens */
-    margin: 0 auto;
-    max-width: 100%; /* Ensure it’s responsive */
-}
-
-/* Layout adjustment for screens wider than 900px */
 @media (min-width: 900px) {
     .container {
         flex-direction: row;
