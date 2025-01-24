@@ -33,7 +33,7 @@ layout: infiniteflight
     </div>
     
     <div class="settings-menu hidden">
-        <div class="dropdown">
+        <div class="dropdown" style="display:none;">
             <button class="dropdown-toggle">Set Defaults ▼</button>
             <div class="dropdown-menu">
                 <h2>Set Defaults</h2>
