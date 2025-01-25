@@ -131,4 +131,4 @@ document.getElementById('settings').addEventListener('click', () => {
     settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
 });
 </script>
-<script src="/js/infiniteflight/test/inbounds.js"></script>
+<script src="/js/infiniteflight/test/inbounds-test.js"></script>
