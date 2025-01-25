@@ -124,6 +124,7 @@ form button {
 .settings-menu.visible {
   opacity: 1;
   pointer-events: auto;
+  z-index: 2;
 }
 
 
@@ -260,7 +261,7 @@ thead th {
     text-align: center;
     position: sticky;
     top: 0; 
-    z-index: 1;
+    z-index: 2;
     border-bottom-style: none; 
 }
 
