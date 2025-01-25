@@ -1042,14 +1042,22 @@ function rgbToHex(rgb) {
 
 // Toggle Heading Highlight and reapply highlights
 document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
+    const minHeadingInput = document.getElementById('minHeading').value;
+    const maxHeadingInput = document.getElementById('maxHeading').value;
+
+    const minHeading = parseFloat(minHeadingInput);
+    const maxHeading = parseFloat(maxHeadingInput);
+
+    if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
+        alert('Please enter valid Min Heading and Max Heading values.');
+        return;
+    }
+
     headingHighlightEnabled = !headingHighlightEnabled;
 
     const button = document.getElementById('filterHeadingHighlightButton');
-    button.textContent = headingHighlightEnabled
-        ? 'Disable'
-        : 'Split';
-
-filterHeadingHighlightButton.style.backgroundColor = headingHighlightEnabled ? 'blue' : '#c2c2c2';
+    button.textContent = headingHighlightEnabled ? 'Disable' : 'Split';
+    button.style.backgroundColor = headingHighlightEnabled ? 'blue' : '#c2c2c2';
 
     highlightCloseETAs(); // Reapply highlighting with the heading filter
 });
