@@ -68,6 +68,23 @@ permalink: /infiniteflight/inbounds/
         </form>
     </div>
     
+    <!-- ATC Table -->
+    <table id="atcTable">
+        <thead>
+            <tr>
+                <th>Airport</th>
+                <th>Freq.</th>
+                <th>50nm</th>
+                <th>200nm</th>
+                <th>500nm</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamic rows will be added here -->
+        </tbody>
+    </table>
+    
     <!-- Secondary Airport Section -->
     <div id="secondaryAirport">
         <div id="secondaryAirportContainer"></div>
