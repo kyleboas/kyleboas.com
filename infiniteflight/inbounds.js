@@ -1646,6 +1646,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await fetchControllers(icao);
             await fetchActiveATCAirports();
             renderFlightsTable(allFlights, hideOtherAircraft);
+            await renderATCTable();
             countdown = 5; // Reset countdown
         }, 5000);
 
