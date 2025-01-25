@@ -774,7 +774,7 @@ async function fetchSecondaryControllers(icao) {
         return [];
     }
 }
-
+ 
 // Add secondary airport to the display
 document.getElementById('add').addEventListener('click', async (event) => {
     event.preventDefault();
