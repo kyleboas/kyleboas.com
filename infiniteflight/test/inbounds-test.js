@@ -398,6 +398,7 @@ async function fetchActiveATCAirportsData() {
 // Render ATC Table
 async function renderATCTable() {
     const atcTableBody = document.querySelector("#atcTable tbody");
+
     if (!atcTableBody) {
         console.error("ATC table body not found in DOM.");
         return;
@@ -407,14 +408,25 @@ async function renderATCTable() {
     atcTableBody.innerHTML = "";
 
     try {
-        // Fetch active ATC data
+        console.log("Fetching active ATC airport data...");
         const activeATCAirports = await fetchActiveATCAirportsData();
+
+        // Log the fetched ATC airports data
+        console.log("Fetched active ATC airports:", activeATCAirports);
+
+        if (!activeATCAirports || activeATCAirports.length === 0) {
+            console.warn("No active ATC airports to display.");
+            atcTableBody.innerHTML = '<tr><td colspan="6">No active ATC airports available.</td></tr>';
+            return;
+        }
 
         // Ensure flight data is already cached
         if (!allFlights || allFlights.length === 0) {
             console.warn("Flight data is missing. Fetching flights...");
             await fetchAndCacheFlights();
         }
+
+        console.log("All flights data:", allFlights);
 
         // Loop through each active ATC airport
         activeATCAirports.forEach((airport) => {
@@ -423,28 +435,39 @@ async function renderATCTable() {
                 (flight) => flight.destinationAirportIcao === airport.icao
             );
 
+            // Log the flights associated with this airport
+            console.log(`Flights for airport ${airport.icao}:`, airportFlights);
+
             // Count flights based on distance ranges
             const distanceCounts = countInboundFlightsByDistance(airportFlights);
 
+            // Log the distance counts for debugging
+            console.log(`Distance counts for ${airport.icao}:`, distanceCounts);
+
             // Total number of inbound flights for the airport
             const totalInbounds = airportFlights.length;
+
+            // Log total inbound flights
+            console.log(`Total inbound flights for ${airport.icao}:`, totalInbounds);
 
             // Create a new row for the table
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${airport.icao}</td>
                 <td>${airport.frequencies || "N/A"}</td>
-                <td>${distanceCounts["50nm"]}</td>
-                <td>${distanceCounts["200nm"]}</td>
-                <td>${distanceCounts["500nm"]}</td>
-                <td>${totalInbounds}</td>
+                <td>${distanceCounts["50nm"] || 0}</td>
+                <td>${distanceCounts["200nm"] || 0}</td>
+                <td>${distanceCounts["500nm"] || 0}</td>
+                <td>${totalInbounds || 0}</td>
             `;
 
             // Append the row to the table body
             atcTableBody.appendChild(row);
         });
+
+        console.log("ATC table successfully rendered.");
     } catch (error) {
-        console.error("Error rendering ATC table:", error.message);
+        console.error("Error in renderATCTable:", error.message);
 
         // Display an error message in the table
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
