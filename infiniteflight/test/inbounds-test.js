@@ -322,15 +322,48 @@ async function fetchActiveATCAirportsData() {
     try {
         const atcData = await fetchWithProxy(endpoint);
 
-        // Map airports and their frequencies
-        return atcData.result.map((facility) => ({
-            icao: facility.airportIcao,
-            frequencies: facility.frequencies || [],
-        }));
+        // Group ATC data by airport and aggregate frequencies
+        const airports = atcData.result.reduce((acc, facility) => {
+            const icao = facility.airportName; // Use airportName as ICAO
+            const frequencyCode = mapFrequencyType(facility.type);
+
+            if (!acc[icao]) {
+                acc[icao] = { icao, frequencies: [] };
+            }
+
+            // Add frequency type
+            if (frequencyCode) acc[icao].frequencies.push(frequencyCode);
+
+            return acc;
+        }, {});
+
+        // Convert to an array and sort frequencies
+        return Object.values(airports).map((airport) => {
+            // Sort frequencies in the desired order and concatenate them
+            airport.frequencies = airport.frequencies
+                .sort((a, b) => a.localeCompare(b))
+                .join("");
+            return airport;
+        });
     } catch (error) {
         console.error("Error fetching active ATC airports:", error.message);
         return [];
     }
+}
+
+// Helper function to map frequency type codes to descriptive names
+function mapFrequencyType(type) {
+    const frequencyMap = {
+        0: "G", // Ground
+        1: "T", // Tower
+        2: "U", // Unicom
+        3: "C", // Clearance
+        4: "A", // Approach
+        5: "D", // Departure
+        6: "C", // Center
+        7: "S", // ATIS
+    };
+    return frequencyMap[type] || null;
 }
 
 // Render ATC Table
@@ -345,13 +378,13 @@ async function renderATCTable() {
     atcTableBody.innerHTML = "";
 
     try {
-        // Fetch ATC frequencies
+        // Fetch active ATC data
         const activeATCAirports = await fetchActiveATCAirportsData();
 
         // Ensure flight data is already cached
         if (!allFlights || allFlights.length === 0) {
             console.warn("Flight data is missing. Fetching flights...");
-            await fetchAndCacheFlights(); // Fetch and cache flights if not already done
+            await fetchAndCacheFlights();
         }
 
         // Loop through each active ATC airport
@@ -367,14 +400,11 @@ async function renderATCTable() {
             // Total number of inbound flights for the airport
             const totalInbounds = airportFlights.length;
 
-            // Format the frequencies for display (no spaces or commas)
-            const frequencies = formatFrequencies(airport.frequencies);
-
             // Create a new row for the table
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${airport.icao}</td>
-                <td>${frequencies}</td>
+                <td>${airport.frequencies || "N/A"}</td>
                 <td>${distanceCounts["50nm"]}</td>
                 <td>${distanceCounts["200nm"]}</td>
                 <td>${distanceCounts["500nm"]}</td>
@@ -391,17 +421,6 @@ async function renderATCTable() {
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
     }
 }
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        // Fetch flight data and ATC data
-        await fetchAndCacheFlights();
-        await renderATCTable();
-    } catch (error) {
-        console.error("Error initializing page:", error.message);
-    }
-});
 
 // ============================
 // End ATC Table
@@ -1445,7 +1464,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (hasDefaults) {
         document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
         document.getElementById('defaultSettingsForm').style.display = 'block';
-    } 
+    }
+    
+    try {
+        await fetchActiveATCAirports();
+        await renderATCTable();
+    } catch (error) {
+        console.error('Error initializing ATC table:', error.message);
+    }
+
 
     // Manual update button logic
     const manualUpdateButton = document.getElementById('manualUpdateButton');
