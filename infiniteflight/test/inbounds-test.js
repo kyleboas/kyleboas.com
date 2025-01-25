@@ -430,49 +430,39 @@ async function renderATCTable() {
         console.log("Fetching active ATC airport data...");
         const activeATCAirports = await fetchActiveATCAirportsData();
 
-        // Log the fetched ATC airports data
-        console.log("Fetched active ATC airports:", activeATCAirports);
-
         if (!activeATCAirports || activeATCAirports.length === 0) {
             console.warn("No active ATC airports to display.");
             atcTableBody.innerHTML = '<tr><td colspan="6">No active ATC airports available.</td></tr>';
             return;
         }
 
-        // Ensure flight data is already cached
-        console.log("Checking if allFlights is defined...");
-        console.log("allFlights:", allFlights);
+        // Log the active ATC airports for debugging
+        console.log("Active ATC Airports:", activeATCAirports);
 
-        if (!allFlights || allFlights.length === 0) {
-            console.warn("Flight data is missing. Fetching flights...");
-            await fetchAndCacheFlights(); // Ensure this function works correctly
-        }
+        for (const airport of activeATCAirports) {
+            console.log(`Fetching inbound flight IDs for airport: ${airport.icao}`);
 
-        console.log("All flights after fetching:", allFlights);
+            // Fetch inbound flight IDs for the airport
+            const inboundFlightIds = await fetchInboundFlightIds(airport.icao);
+            console.log(`Inbound flight IDs for ${airport.icao}:`, inboundFlightIds);
 
-        // Loop through each active ATC airport
-        activeATCAirports.forEach((airport) => {
-            console.log(`Processing airport: ${airport.icao}`);
+            if (!inboundFlightIds || inboundFlightIds.length === 0) {
+                console.warn(`No inbound flights found for airport ${airport.icao}.`);
+                continue;
+            }
 
-            // Filter flights heading to this airport
-            const airportFlights = allFlights.filter(
-                (flight) => flight.destinationAirportIcao === airport.icao
-            );
+            console.log(`Fetching flight details for airport: ${airport.icao}`);
+            const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
 
-            // Log the flights associated with this airport
+            // Log the fetched flights for debugging
             console.log(`Flights for airport ${airport.icao}:`, airportFlights);
 
             // Count flights based on distance ranges
             const distanceCounts = countInboundFlightsByDistance(airportFlights);
-
-            // Log the distance counts for debugging
             console.log(`Distance counts for ${airport.icao}:`, distanceCounts);
 
             // Total number of inbound flights for the airport
             const totalInbounds = airportFlights.length;
-
-            // Log total inbound flights
-            console.log(`Total inbound flights for ${airport.icao}:`, totalInbounds);
 
             // Create a new row for the table
             const row = document.createElement("tr");
@@ -487,13 +477,11 @@ async function renderATCTable() {
 
             // Append the row to the table body
             atcTableBody.appendChild(row);
-        });
+        }
 
         console.log("ATC table successfully rendered.");
     } catch (error) {
         console.error("Error in renderATCTable:", error.message);
-
-        // Display an error message in the table
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
     }
 }
