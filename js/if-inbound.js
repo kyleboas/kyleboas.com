@@ -1191,6 +1191,21 @@ function getHeadingArrow(heading) {
 // Table Rendering
 // ============================
 
+// Modify the toggleHeadingButton click listener
+document.getElementById('toggleHeadingButton').addEventListener('click', () => {
+    hideOtherAircraft = !hideOtherAircraft;
+
+    document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
+        ? 'Show All Aircraft'
+        : 'Hide Aircraft';
+
+    boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2';
+
+    // Re-render the table with the hideFilter flag
+    renderFlightsTable(allFlights, hideOtherAircraft);
+});
+
+// Update renderFlightsTable to handle row styling for hidden aircraft
 async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
@@ -1224,6 +1239,14 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
             const isVisible = isWithinDistanceRange;
 
         row.style.display = isVisible ? '' : 'none';
+            // Determine if the row represents an "other" aircraft
+const isOtherAircraft = !hideFilter || (boldHeadingEnabled &&
+    (flight.headingFromAirport < boldedHeadings.minHeading ||
+     flight.headingFromAirport > boldedHeadings.maxHeading));
+            
+            // Apply styles for hidden or visible aircraft
+            row.style.opacity = isOtherAircraft && hideFilter ? '0.3' : '1';
+            row.style.pointerEvents = isOtherAircraft && hideFilter ? 'none' : 'auto';
 
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
