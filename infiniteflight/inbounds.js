@@ -1395,7 +1395,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         stopAutoUpdate(); // Stop any ongoing updates
         await fetchAndUpdateFlights(icao); // Fetch and update flights
-        icaoInput.value = ''; // Clear input
     }
 
     // Add an event listener for the search button
@@ -1422,57 +1421,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     let countdownInterval = null; // Stores countdown interval
 
     // Update button logic (start/stop auto-update)
-        if (updateButton) {
+    if (updateButton) {
         updateButton.addEventListener("click", () => {
-            startAutoUpdate(icaoInput.value); // Directly pass the raw input to the function
+            const icao = icaoInput.value.trim().toUpperCase();
+            if (!icao) {
+                alert("Please enter a valid ICAO code before updating.");
+                return;
+            }
+
+            if (isAutoUpdateActive) {
+                // If auto-update is active, stop it
+                stopAutoUpdate();
+            } else {
+                // If auto-update is not active, start it
+                startAutoUpdate(icao);
+            }
         });
     }
 
     // Starts the auto-update process
     function startAutoUpdate(icao) {
-    // Get the main airport ICAO
-    const mainAirportIcao = document.getElementById('mainAirportIcao')?.value.trim().toUpperCase();
+        isAutoUpdateActive = true;
+        updateButton.style.color = "blue"; // Change the text/icon color to blue
+        const icon = updateButton.querySelector("i"); // Find the icon inside the button
+        if (icon) icon.classList.add("spin"); // Add the spinning animation
 
-    // Get secondary airport ICAOs
-    const secondaryIcaos = Array.from(document.querySelectorAll('.secondaryAirport'))
-        .map((el) => el.id.replace('secondary-', '').toUpperCase());
+        const countdownTimer = document.getElementById("countdownTimer");
+        countdownTimer.style.display = "inline";
+        let countdown = 5;
 
-    // Combine into a list of allowed ICAOs
-    const allowedIcaos = [mainAirportIcao, ...secondaryIcaos];
+        // Auto-update logic every 5 seconds
+        updateInterval = setInterval(async () => {
+            await fetchAndUpdateFlights(icao);
+            await fetchControllers(icao);
+            await fetchActiveATCAirports();
+            renderFlightsTable(allFlights, hideOtherAircraft);
+            countdown = 5; // Reset countdown
+        }, 5000);
 
-    // Validate the provided ICAO
-    if (!allowedIcaos.includes(icao)) {
-        alert('Invalid ICAO. Please use a valid main or secondary airport ICAO.');
-        return;
+        // Countdown timer logic
+        countdownInterval = setInterval(() => {
+            countdown--;
+            countdownTimer.textContent = `${countdown}`;
+            if (countdown <= 0) countdown = 5;
+        }, 1000);
     }
-
-    // Set auto-update active state
-    isAutoUpdateActive = true;
-    updateButton.style.color = "blue"; // Change the button color
-    const icon = updateButton.querySelector("i"); // Find the icon inside the button
-    if (icon) icon.classList.add("spin"); // Add a spinning animation to indicate activity
-
-    // Show countdown timer
-    const countdownTimer = document.getElementById("countdownTimer");
-    countdownTimer.style.display = "inline";
-    let countdown = 5;
-
-    // Start auto-update interval
-    updateInterval = setInterval(async () => {
-        await fetchAndUpdateFlights(icao);
-        await fetchControllers(icao);
-        await fetchActiveATCAirports();
-        renderFlightsTable(allFlights, hideOtherAircraft);
-        countdown = 5; // Reset countdown
-    }, 5000);
-
-    // Start countdown timer interval
-    countdownInterval = setInterval(() => {
-        countdown--;
-        countdownTimer.textContent = `${countdown}`;
-        if (countdown <= 0) countdown = 5;
-    }, 1000);
-}
 
     function stopAutoUpdate() {
         isAutoUpdateActive = false;
