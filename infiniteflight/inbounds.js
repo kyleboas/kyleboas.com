@@ -1422,21 +1422,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let countdownInterval = null; // Stores countdown interval
 
     // Update button logic (start/stop auto-update)
-    if (updateButton) {
+        if (updateButton) {
         updateButton.addEventListener("click", () => {
-            const icao = icaoInput.value.trim().toUpperCase();
-            if (!icao) {
-                alert("Please enter a valid ICAO code before updating.");
-                return;
-            }
-
-            if (isAutoUpdateActive) {
-                // If auto-update is active, stop it
-                stopAutoUpdate();
-            } else {
-                // If auto-update is not active, start it
-                startAutoUpdate(icao);
-            }
+            startAutoUpdate(icaoInput.value); // Directly pass the raw input to the function
         });
     }
 
