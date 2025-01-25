@@ -439,6 +439,9 @@ async function renderATCTable() {
         // Log the active ATC airports for debugging
         console.log("Active ATC Airports:", activeATCAirports);
 
+        // Collect data for each airport, including total inbound flights
+        const airportData = [];
+
         for (const airport of activeATCAirports) {
             console.log(`Fetching inbound flight IDs for airport: ${airport.icao}`);
 
@@ -464,22 +467,34 @@ async function renderATCTable() {
             // Total number of inbound flights for the airport
             const totalInbounds = airportFlights.length;
 
-            // Create a new row for the table
+            // Store airport data with total inbound flights
+            airportData.push({
+                icao: airport.icao,
+                frequencies: airport.frequencies || "N/A",
+                distanceCounts,
+                totalInbounds,
+            });
+        }
+
+        // Sort the airports by total inbound flights (descending order)
+        airportData.sort((a, b) => b.totalInbounds - a.totalInbounds);
+
+        // Render the sorted data in the table
+        airportData.forEach((airport) => {
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${airport.icao}</td>
-                <td>${airport.frequencies || "N/A"}</td>
-                <td>${distanceCounts["50nm"] || 0}</td>
-                <td>${distanceCounts["200nm"] || 0}</td>
-                <td>${distanceCounts["500nm"] || 0}</td>
-                <td>${totalInbounds || 0}</td>
+                <td>${airport.frequencies}</td>
+                <td>${airport.distanceCounts["50nm"] || 0}</td>
+                <td>${airport.distanceCounts["200nm"] || 0}</td>
+                <td>${airport.distanceCounts["500nm"] || 0}</td>
+                <td>${airport.totalInbounds || 0}</td>
             `;
 
-            // Append the row to the table body
             atcTableBody.appendChild(row);
-        }
+        });
 
-        console.log("ATC table successfully rendered.");
+        console.log("ATC table successfully rendered and sorted by total.");
     } catch (error) {
         console.error("Error in renderATCTable:", error.message);
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
