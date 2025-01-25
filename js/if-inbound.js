@@ -1127,6 +1127,8 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
         ? 'Disable'
         : 'Enable';
 
+applyDistanceFilterButton.style.backgroundColor = applyDistanceFilterEnabled ? 'blue' : '#828282';
+
     // Update distance filter ranges
     hiddenDistance.minDistance = minDistance;
     hiddenDistance.maxDistance = maxDistance;
