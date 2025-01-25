@@ -33,21 +33,30 @@ permalink: /inbounds/
         <div class="settings-menu hidden">
             <!-- Filter Form -->
             <form id="filterForm">
+              <div class="settings-left"
                 <div class="HeadingFilter">
                     <label class="settings-label">Heading</label>
                     <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
                     <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
                     <button type="button" id="boldHeadingButton">Enable</button>
-                    <button type="button" id="toggleHeadingButton">Hide</button>
                 </div> 
                 <div class="DistanceFilter">
                     <label class="settings-label">Distance</label>
                     <input type="number" id="minDistance" min="0" placeholder="Minimum">
                     <input type="number" id="maxDistance" min="0" placeholder="Maximum">
                     <button type="button" id="applyDistanceFilterButton">Enable</button>
-                    <button type="button" id="resetDistanceFilterButton">Reset</button>
                 </div>
-                <button type="button" id="filterHeadingHighlightButton" style="display:none;">Filter</button>
+               </div>
+               <div class="settings-right">
+               <label class="settings-description">Dim aircraft by heading.</label>
+               <button type="button" id="toggleHeadingButton">Hide</button>
+               <label class="settings-description">Hide aircraft by direction.</label>
+                <button type="button" id="toggleHeadingButton">Hide</button>
+               <label class="settings-description">Split aircraft by direction.</label>
+                <button type="button" id="filterHeadingHighlightButton" style="display:none;">Split</button>
+                <label class="settings-description">Reset defaults.</label> 
+                <button type="button" id="resetDistanceFilterButton">Reset</button>
+               </div>
             </form>
         </div>
     </div>
