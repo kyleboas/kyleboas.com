@@ -312,7 +312,9 @@ async function fetchActiveATCAirports() {
 }
 
 
-// ATC Table
+// ============================
+// Render ATC Table
+// ============================
 async function renderATCTable() {
     const atcTableBody = document.querySelector("#atcTable tbody");
     if (!atcTableBody) {
@@ -324,12 +326,14 @@ async function renderATCTable() {
     atcTableBody.innerHTML = "";
 
     try {
-        // Fetch active ATC airports and flights
+        // Fetch active ATC airports and flights data
         const activeATCAirports = await fetchActiveATCAirportsData();
-        const allFlights = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
-        const flights = allFlights.result || [];
+        const allFlightsData = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        const flights = allFlightsData.result || [];
 
+        // Loop through each active ATC airport
         activeATCAirports.forEach((airport) => {
+            // Filter flights heading to this airport
             const airportFlights = flights.filter(
                 (flight) => flight.destinationAirportIcao === airport.icao
             );
@@ -337,13 +341,13 @@ async function renderATCTable() {
             // Count flights based on distance ranges
             const distanceCounts = countInboundFlightsByDistance(airportFlights);
 
-            // Format frequencies
-            const frequencies = formatFrequencies(airport.frequencies);
-
-            // Total inbounds
+            // Total number of inbound flights for the airport
             const totalInbounds = airportFlights.length;
 
-            // Create a new table row
+            // Format the frequencies for display (no spaces or commas)
+            const frequencies = formatFrequencies(airport.frequencies);
+
+            // Create a new row for the table
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${airport.icao}</td>
@@ -354,26 +358,37 @@ async function renderATCTable() {
                 <td>${totalInbounds}</td>
             `;
 
+            // Append the row to the table body
             atcTableBody.appendChild(row);
         });
     } catch (error) {
         console.error("Error rendering ATC table:", error.message);
+
+        // Display an error message in the table
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
     }
 }
 
-// Helper function to fetch active ATC data
-async function fetchActiveATCAirportsData() {
-    const endpoint = `/sessions/${SESSION_ID}/atc`;
-    const atcData = await fetchWithProxy(endpoint);
+// ============================
+// ATC Tablr Helper Functions
+// ============================
 
-    return atcData.result.map((facility) => ({
-        icao: facility.airportIcao,
-        frequencies: facility.frequencies || [],
-    }));
+// Count inbound flights by distance ranges
+function countInboundFlightsByDistance(flights) {
+    return flights.reduce((counts, flight) => {
+        const distance = flight.distanceToDestination;
+        if (distance <= 50) {
+            counts['50nm']++;
+        } else if (distance <= 200) {
+            counts['200nm']++;
+        } else if (distance <= 500) {
+            counts['500nm']++;
+        }
+        return counts;
+    }, { '50nm': 0, '200nm': 0, '500nm': 0 });
 }
 
-// Helper function to format frequencies
+// Format the frequencies for display (no spaces or commas)
 function formatFrequencies(frequencies) {
     const frequencyMap = {
         Ground: "G",
@@ -383,40 +398,43 @@ function formatFrequencies(frequencies) {
         ATIS: "S",
     };
 
-    // Count occurrences of each frequency type
-    const formatted = frequencies.reduce((acc, freq) => {
-        const type = frequencyMap[freq.type] || "";
-        return acc + type;
-    }, "");
-
-    return formatted.split("").sort().join(""); // Sort alphabetically
+    // Map the frequencies and concatenate them without spaces or commas
+    return frequencies.map(freq => frequencyMap[freq.type] || "").sort().join("");
 }
 
-// Helper function to count inbound flights by distance
-function countInboundFlightsByDistance(flights) {
-    const counts = {
-        "50nm": 0,
-        "200nm": 0,
-        "500nm": 0,
-    };
+// Fetch active ATC airport data
+async function fetchActiveATCAirportsData() {
+    const endpoint = `/sessions/${SESSION_ID}/atc`;
+    const atcData = await fetchWithProxy(endpoint);
 
-    flights.forEach((flight) => {
-        if (flight.distanceToDestination <= 50) {
-            counts["50nm"]++;
-        } else if (flight.distanceToDestination <= 200) {
-            counts["200nm"]++;
-        } else if (flight.distanceToDestination <= 500) {
-            counts["500nm"]++;
+    // Map airports and their frequencies
+    return atcData.result.map((facility) => ({
+        icao: facility.airportIcao,
+        frequencies: facility.frequencies || [],
+    }));
+}
+
+// Fetch proxy data
+async function fetchWithProxy(endpoint) {
+    try {
+        const response = await fetch(`${PROXY_URL}${endpoint}`);
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error("Error from proxy:", errorData);
+            throw new Error(`Error fetching data: ${response.status}`);
         }
-    });
 
-    return counts;
+        const textResponse = await response.text();
+        try {
+            return JSON.parse(textResponse);
+        } catch {
+            throw new Error("Invalid JSON response");
+        }
+    } catch (error) {
+        console.error("Error communicating with proxy:", error.message);
+        throw error;
+    }
 }
-
-// Call the function to render the ATC table
-document.addEventListener("DOMContentLoaded", () => {
-    renderATCTable();
-});
 
 
 // Fetch airport latitude and longitude
