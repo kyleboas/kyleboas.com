@@ -779,9 +779,15 @@ async function fetchSecondaryControllers(icao) {
 document.getElementById('add').addEventListener('click', async (event) => {
     event.preventDefault();
     const secondaryIcao = document.getElementById('icao').value.trim().toUpperCase();
+    const mainAirportIcao = document.getElementById('mainAirportIcao').value.trim().toUpperCase();
 
     if (!secondaryIcao) {
         alert('Please enter a valid ICAO code.');
+        return;
+    }
+
+    // Prevent adding the main airport as a secondary airport
+    if (secondaryIcao === mainAirportIcao) {
         return;
     }
 
@@ -1388,6 +1394,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         stopAutoUpdate(); // Stop any ongoing updates
         await fetchAndUpdateFlights(icao); // Fetch and update flights
+        icaoInput.value = ''; // Clear input
     }
 
     // Add an event listener for the search button
