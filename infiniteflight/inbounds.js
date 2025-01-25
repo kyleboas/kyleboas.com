@@ -1427,13 +1427,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Update button logic (start/stop auto-update)
             if (updateButton) {
-    updateButton.addEventListener("click", () => {
-        const mainAirport = document.getElementById("mainAirportIcao").value.trim().toUpperCase();
-        const secondaryAirports = Array.from(document.querySelectorAll(".secondaryAirport"))
-            .map((el) => el.id.replace("secondary-", "").toUpperCase())
-            .filter((code) => code);
+        updateButton.addEventListener("click", () => {
+                const mainAirport = document.getElementById("mainAirportIcao").value.trim().toUpperCase();
+                const secondaryAirports = Array.from(document.querySelectorAll(".secondaryAirport"))
+                    .map((el) => el.id.replace("secondary-", "").toUpperCase())
+                    .filter((code) => code);
 
-            if (!mainAirport && secondaryAirports.length === 0) {
+                if (!mainAirport && secondaryAirports.length === 0) {
                     alert("Please provide a main airport or at least one secondary airport to start auto-update.");
                     return;
                 }
@@ -1448,11 +1448,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+
         // Checks if ATIS is available for the main airport or any of the secondary airports.
         async function checkATISAvailability(mainAirport, secondaryAirports) {
-            const airportsToCheck = [];
-            if (mainAirport) airportsToCheck.push(mainAirport);
-            airportsToCheck.push(...secondaryAirports);
+    const airportsToCheck = [];
+    if (mainAirport) airportsToCheck.push(mainAirport);
+    airportsToCheck.push(...secondaryAirports);
 
             try {
                 for (const icao of airportsToCheck) {
