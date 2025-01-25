@@ -313,8 +313,27 @@ async function fetchActiveATCAirports() {
 
 
 // ============================
-// Render ATC Table
+// ATC Table
 // ============================
+
+// Fetch active ATC airport data
+async function fetchActiveATCAirportsData() {
+    const endpoint = `/sessions/${SESSION_ID}/atc`;
+    try {
+        const atcData = await fetchWithProxy(endpoint);
+
+        // Map airports and their frequencies
+        return atcData.result.map((facility) => ({
+            icao: facility.airportIcao,
+            frequencies: facility.frequencies || [],
+        }));
+    } catch (error) {
+        console.error("Error fetching active ATC airports:", error.message);
+        return [];
+    }
+}
+
+// Render ATC Table
 async function renderATCTable() {
     const atcTableBody = document.querySelector("#atcTable tbody");
     if (!atcTableBody) {
@@ -326,15 +345,19 @@ async function renderATCTable() {
     atcTableBody.innerHTML = "";
 
     try {
-        // Fetch active ATC airports and flights data
+        // Fetch ATC frequencies
         const activeATCAirports = await fetchActiveATCAirportsData();
-        const allFlightsData = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
-        const flights = allFlightsData.result || [];
+
+        // Ensure flight data is already cached
+        if (!allFlights || allFlights.length === 0) {
+            console.warn("Flight data is missing. Fetching flights...");
+            await fetchAndCacheFlights(); // Fetch and cache flights if not already done
+        }
 
         // Loop through each active ATC airport
         activeATCAirports.forEach((airport) => {
             // Filter flights heading to this airport
-            const airportFlights = flights.filter(
+            const airportFlights = allFlights.filter(
                 (flight) => flight.destinationAirportIcao === airport.icao
             );
 
@@ -369,73 +392,20 @@ async function renderATCTable() {
     }
 }
 
-// ============================
-// ATC Tablr Helper Functions
-// ============================
 
-// Count inbound flights by distance ranges
-function countInboundFlightsByDistance(flights) {
-    return flights.reduce((counts, flight) => {
-        const distance = flight.distanceToDestination;
-        if (distance <= 50) {
-            counts['50nm']++;
-        } else if (distance <= 200) {
-            counts['200nm']++;
-        } else if (distance <= 500) {
-            counts['500nm']++;
-        }
-        return counts;
-    }, { '50nm': 0, '200nm': 0, '500nm': 0 });
-}
-
-// Format the frequencies for display (no spaces or commas)
-function formatFrequencies(frequencies) {
-    const frequencyMap = {
-        Ground: "G",
-        Tower: "T",
-        Approach: "A",
-        Departure: "D",
-        ATIS: "S",
-    };
-
-    // Map the frequencies and concatenate them without spaces or commas
-    return frequencies.map(freq => frequencyMap[freq.type] || "").sort().join("");
-}
-
-// Fetch active ATC airport data
-async function fetchActiveATCAirportsData() {
-    const endpoint = `/sessions/${SESSION_ID}/atc`;
-    const atcData = await fetchWithProxy(endpoint);
-
-    // Map airports and their frequencies
-    return atcData.result.map((facility) => ({
-        icao: facility.airportIcao,
-        frequencies: facility.frequencies || [],
-    }));
-}
-
-// Fetch proxy data
-async function fetchWithProxy(endpoint) {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const response = await fetch(`${PROXY_URL}${endpoint}`);
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error("Error from proxy:", errorData);
-            throw new Error(`Error fetching data: ${response.status}`);
-        }
-
-        const textResponse = await response.text();
-        try {
-            return JSON.parse(textResponse);
-        } catch {
-            throw new Error("Invalid JSON response");
-        }
+        // Fetch flight data and ATC data
+        await fetchAndCacheFlights();
+        await renderATCTable();
     } catch (error) {
-        console.error("Error communicating with proxy:", error.message);
-        throw error;
+        console.error("Error initializing page:", error.message);
     }
-}
+});
 
+// ============================
+// End ATC Table
+// ============================
 
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
