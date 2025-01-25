@@ -40,8 +40,35 @@ pre {
   width: 100%;
 }
 
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.nav-right {
+  text-align: right;
+  font-size: 10px;
+  color: #828282;
+  line-height: 1.5;
+  width: 100%;
+}
+
+.settings-menu {
+  display: none;
+  width: 100%;
+  background-color: white;
+  border-radius: 4px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5px;
+}
+
 .settings-menu.visible {
-  display: flex; /* Show when toggled */
+  display: flex;
 }
 
 .nav-left span {
@@ -70,13 +97,6 @@ pre {
   cursor: pointer;
   padding: 0px;
   margin: 6px;
-}
-
-.nav-right {
-    text-align: right;
-    font-size: 10px;
-    color: #828282;
-    line-height: 1.5;
 }
 
 .spin {
