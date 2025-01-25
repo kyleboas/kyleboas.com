@@ -1296,9 +1296,6 @@ async function renderATCTable() {
         return;
     }
 
-    // Clear the table body
-    atcTableBody.innerHTML = "";
-
     try {
         console.log("Fetching active ATC airport data...");
         const activeATCAirports = await fetchActiveATCAirportsData();
@@ -1355,22 +1352,36 @@ async function renderATCTable() {
         // Sort the airports by total inbound flights (descending order)
         airportData.sort((a, b) => b.totalInbounds - a.totalInbounds);
 
-        // Render the sorted data in the table
+        // Update rows dynamically
         airportData.forEach((airport) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${airport.icao}</td>
-                <td>${airport.frequencies}</td>
-                <td>${airport.distanceCounts["50nm"] || 0}</td>
-                <td>${airport.distanceCounts["200nm"] || 0}</td>
-                <td>${airport.distanceCounts["500nm"] || 0}</td>
-                <td>${airport.totalInbounds || 0}</td>
-            `;
+            // Check if a row for this airport already exists
+            const existingRow = document.querySelector(`#atcTable tbody tr[data-icao="${airport.icao}"]`);
 
-            atcTableBody.appendChild(row);
+            if (existingRow) {
+                // Update the existing row's cells
+                const cells = existingRow.children;
+                cells[1].textContent = airport.frequencies;
+                cells[2].textContent = airport.distanceCounts["50nm"] || 0;
+                cells[3].textContent = airport.distanceCounts["200nm"] || 0;
+                cells[4].textContent = airport.distanceCounts["500nm"] || 0;
+                cells[5].textContent = airport.totalInbounds || 0;
+            } else {
+                // Create a new row if it doesn't exist
+                const row = document.createElement("tr");
+                row.setAttribute("data-icao", airport.icao);
+                row.innerHTML = `
+                    <td>${airport.icao}</td>
+                    <td>${airport.frequencies}</td>
+                    <td>${airport.distanceCounts["50nm"] || 0}</td>
+                    <td>${airport.distanceCounts["200nm"] || 0}</td>
+                    <td>${airport.distanceCounts["500nm"] || 0}</td>
+                    <td>${airport.totalInbounds || 0}</td>
+                `;
+                atcTableBody.appendChild(row);
+            }
         });
 
-        console.log("ATC table successfully rendered and sorted by total.");
+        console.log("ATC table successfully updated.");
     } catch (error) {
         console.error("Error in renderATCTable:", error.message);
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
