@@ -1533,7 +1533,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (hasDefaults) {
         document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
         document.getElementById('defaultSettingsForm').style.display = 'block';
-    } 
+    }
+    
+    try {
+        await fetchActiveATCAirports();
+        await renderATCTable();
+    } catch (error) {
+        console.error('Error initializing ATC table:', error.message);
+    }
 
     // Manual update button logic
     const manualUpdateButton = document.getElementById('manualUpdateButton');
