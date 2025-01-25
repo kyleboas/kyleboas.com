@@ -1424,10 +1424,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (updateButton) {
         updateButton.addEventListener("click", () => {
             const icao = icaoInput.value.trim().toUpperCase();
-            if (!icao) {
-                alert("Please enter a valid ICAO code before updating.");
-                return;
-            }
 
             if (isAutoUpdateActive) {
                 // If auto-update is active, stop it
