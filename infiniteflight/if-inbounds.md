@@ -1,7 +1,7 @@
 ---
 Title: Infinite Flight Inbound Search
 layout: infiniteflight
-permalink: /infiniteflight/inbounds/
+permalink: /test/inbounds/
 ---
 
 <div class="container">
@@ -115,4 +115,4 @@ document.getElementById('settings').addEventListener('click', () => {
     settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
 });
 </script>
-<script src="/js/if-inbound.js"></script>
+<script src="/js/infiniteflight/test/inbounds.js"></script>

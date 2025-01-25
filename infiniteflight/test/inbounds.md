@@ -1,7 +1,7 @@
 ---
 Title: Infinite Flight Inbound Search
-layout: infiniteflight-test
-permalink: /inbounds/
+layout: infiniteflight
+permalink: /infiniteflight/inbounds/
 ---
 
 <div class="container">
@@ -29,36 +29,43 @@ permalink: /inbounds/
         </div>
         <div class="nav-right" id="atcAirportsList">
         </div>
-         
-        <div class="settings-menu hidden">
-            <!-- Filter Form -->
-            <form id="filterForm">
-              <div class="settings-left"
-                <div class="HeadingFilter">
-                    <label class="settings-label">Heading</label>
-                    <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
-                    <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
-                    <button type="button" id="boldHeadingButton">Enable</button>
-                </div> 
-                <div class="DistanceFilter">
-                    <label class="settings-label">Distance</label>
-                    <input type="number" id="minDistance" min="0" placeholder="Minimum">
-                    <input type="number" id="maxDistance" min="0" placeholder="Maximum">
-                    <button type="button" id="applyDistanceFilterButton">Enable</button>
-                </div>
-               </div>
-               <div class="settings-right">
-               <label class="settings-description">Dim aircraft by heading.</label>
-               <button type="button" id="toggleHeadingButton">Hide</button>
-               <label class="settings-description">Hide aircraft by direction.</label>
-                <button type="button" id="toggleHeadingButton">Hide</button>
-               <label class="settings-description">Split aircraft by direction.</label>
-                <button type="button" id="filterHeadingHighlightButton" style="display:none;">Split</button>
-                <label class="settings-description">Reset defaults.</label> 
-                <button type="button" id="resetDistanceFilterButton">Reset</button>
-               </div>
-            </form>
+    </div>
+    
+    <div class="settings-menu hidden">
+        <div class="dropdown" style="display:none;">
+            <button class="dropdown-toggle">Set Defaults ▼</button>
+            <div class="dropdown-menu">
+                <h2>Set Defaults</h2>
+                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum">
+                <br>
+                <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
+                <br>
+                <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
+                <br>
+                <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
+                <br>
+                <button type="button" id="saveDefaultsButton">Save Defaults</button>
+            </div>
         </div>
+
+        <!-- Filter Form -->
+        <form id="filterForm">
+            <div class="HeadingFilter">
+              <label class="settings-label">Heading</label>
+                <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
+                <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
+                <button type="button" id="boldHeadingButton">Enable</button>
+                <button type="button" id="toggleHeadingButton">Hide</button>
+            </div> 
+            <div class="DistanceFilter">
+              <label class="settings-label">Distance</label>
+                <input type="number" id="minDistance" min="0" placeholder="Minimum">
+                <input type="number" id="maxDistance" min="0" placeholder="Maximum">
+                <button type="button" id="applyDistanceFilterButton">Enable</button>
+                <button type="button" id="filterHeadingHighlightButton">Split</button>
+            </div>
+            <button type="button" id="resetDistanceFilterButton" style="display:none;">Filter</button>
+        </form>
     </div>
     
     <!-- Secondary Airport Section -->
@@ -89,22 +96,6 @@ permalink: /inbounds/
   </div>
 
 <div style="display: none;">
-<div class="dropdown" style="display:none;">
-            <button class="dropdown-toggle">Set Defaults ▼</button>
-            <div class="dropdown-menu">
-                <h2>Set Defaults</h2>
-                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum">
-                <br>
-                <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
-                <br>
-                <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
-                <br>
-                <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
-                <br>
-                <button type="button" id="saveDefaultsButton">Save Defaults</button>
-            </div>
-        </div>
-
        <button id="manualUpdateButton">Update Information</button>
 
         <!-- Secondary Airport Search -->
@@ -124,4 +115,4 @@ document.getElementById('settings').addEventListener('click', () => {
     settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
 });
 </script>
-<script src="/js/if-inbounds-test.js"></script>
+<script src="/infiniteflight/inbounds.js"></script>
