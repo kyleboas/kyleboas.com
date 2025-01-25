@@ -1059,15 +1059,17 @@ filterHeadingHighlightButton.style.backgroundColor = headingHighlightEnabled ? '
 // Toggle Heading Button Functionality
 // ============================
 
+// Modify the toggleHeadingButton click listener
 document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     hideOtherAircraft = !hideOtherAircraft;
 
     document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
-        ? 'Show All Aircraft'
-        : 'Hide Aircraft';
+        ? 'Disable'
+        : 'Hide';
 
     boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2';
-    
+
+    // Re-render the table with the hideFilter flag
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
@@ -1188,20 +1190,6 @@ function getHeadingArrow(heading) {
 // ============================
 // Table Rendering
 // ============================
-
-// Modify the toggleHeadingButton click listener
-document.getElementById('toggleHeadingButton').addEventListener('click', () => {
-    hideOtherAircraft = !hideOtherAircraft;
-
-    document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
-        ? 'Show All Aircraft'
-        : 'Hide Aircraft';
-
-    boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2';
-
-    // Re-render the table with the hideFilter flag
-    renderFlightsTable(allFlights, hideOtherAircraft);
-});
 
 // Update renderFlightsTable to handle row styling for hidden aircraft
 async function renderFlightsTable(allFlights, hideFilter = false) {
