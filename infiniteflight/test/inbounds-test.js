@@ -316,41 +316,6 @@ async function fetchActiveATCAirports() {
 // ATC Table
 // ============================
 
-// Fetch active ATC airport data
-async function fetchActiveATCAirportsData() {
-    const endpoint = `/sessions/${SESSION_ID}/atc`;
-    try {
-        const atcData = await fetchWithProxy(endpoint);
-
-        // Group ATC data by airport and aggregate frequencies
-        const airports = atcData.result.reduce((acc, facility) => {
-            const icao = facility.airportName; // Use airportName as ICAO
-            const frequencyCode = mapFrequencyType(facility.type);
-
-            if (!acc[icao]) {
-                acc[icao] = { icao, frequencies: [] };
-            }
-
-            // Add frequency type
-            if (frequencyCode) acc[icao].frequencies.push(frequencyCode);
-
-            return acc;
-        }, {});
-
-        // Convert to an array and sort frequencies
-        return Object.values(airports).map((airport) => {
-            // Sort frequencies in the desired order and concatenate them
-            airport.frequencies = airport.frequencies
-                .sort((a, b) => a.localeCompare(b))
-                .join("");
-            return airport;
-        });
-    } catch (error) {
-        console.error("Error fetching active ATC airports:", error.message);
-        return [];
-    }
-}
-
 // Helper function to map frequency type codes to descriptive names
 function mapFrequencyType(type) {
     const frequencyMap = {
@@ -364,6 +329,55 @@ function mapFrequencyType(type) {
         7: "S", // ATIS
     };
     return frequencyMap[type] || null;
+}
+
+async function fetchActiveATCAirportsData() {
+    const endpoint = `/sessions/${SESSION_ID}/atc`;
+
+    try {
+        const atcData = await fetchWithProxy(endpoint);
+
+        // Validate response structure
+        if (!atcData || atcData.errorCode !== 0 || !Array.isArray(atcData.result)) {
+            throw new Error("Invalid ATC data received from API.");
+        }
+
+        // Define fixed order of frequencies
+        const frequencyOrder = ["G", "T", "A", "D", "S"];
+
+        // Group ATC data by airport and aggregate frequencies
+        const airports = atcData.result.reduce((acc, facility) => {
+            const icao = facility.airportName; // Use airportName as ICAO
+            const frequencyCode = mapFrequencyType(facility.type);
+
+            if (!icao) {
+                console.warn("Skipping facility with missing airportName:", facility);
+                return acc;
+            }
+
+            if (!acc[icao]) {
+                acc[icao] = { icao, frequencies: [] };
+            }
+
+            // Add frequency type if valid
+            if (frequencyCode) acc[icao].frequencies.push(frequencyCode);
+
+            return acc;
+        }, {});
+
+        // Convert grouped airports into an array and sort frequencies
+        return Object.values(airports).map((airport) => {
+            // Sort frequencies by the fixed order
+            airport.frequencies = frequencyOrder
+                .filter((freq) => airport.frequencies.includes(freq)) // Keep only valid frequencies
+                .join(""); // Join sorted frequency codes into a single string
+
+            return airport;
+        });
+    } catch (error) {
+        console.error("Error fetching active ATC airports:", error.message);
+        return [];
+    }
 }
 
 // Render ATC Table
