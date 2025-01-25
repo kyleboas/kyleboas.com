@@ -1048,7 +1048,9 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
     const button = document.getElementById('filterHeadingHighlightButton');
     button.textContent = headingHighlightEnabled
         ? 'Disable'
-        : 'Enable';
+        : 'Split';
+
+filterHeadingHighlightButton.style.backgroundColor = headingHighlightEnabled ? 'blue' : '#828282'; 
 
     highlightCloseETAs(); // Reapply highlighting with the heading filter
 });
@@ -1101,6 +1103,8 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
     document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
         ? 'Disable'
         : 'Enable';
+        
+boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#828282';
 
     // Update boldedHeadings range
     boldedHeadings.minHeading = minHeading;
