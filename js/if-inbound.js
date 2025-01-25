@@ -1050,24 +1050,9 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
         ? 'Disable'
         : 'Split';
 
-filterHeadingHighlightButton.style.backgroundColor = headingHighlightEnabled ? 'blue' : '#828282'; 
+filterHeadingHighlightButton.style.backgroundColor = headingHighlightEnabled ? 'blue' : '#c2c2c2';
 
     highlightCloseETAs(); // Reapply highlighting with the heading filter
-});
-
-// ============================
-// Toggle Aircraft Visibility
-// ============================
-
-// Toggle visibility of rows outside heading range
-document.getElementById('toggleHeadingButton').addEventListener('click', () => {
-    hideOtherAircraft = !hideOtherAircraft;
-
-    document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
-        ? 'Show All Aircraft'
-        : 'Hide Other Aircraft';
-
-    renderFlightsTable(allFlights, hideOtherAircraft); // Pass filter flag to rendering function
 });
 
 // ============================
@@ -1080,6 +1065,8 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     document.getElementById('toggleHeadingButton').textContent = hideOtherAircraft
         ? 'Show All Aircraft'
         : 'Hide Aircraft';
+
+boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2';
 
     // Re-render the table with the hideFilter flag
     renderFlightsTable(allFlights, hideOtherAircraft);
@@ -1104,7 +1091,7 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
         ? 'Disable'
         : 'Enable';
         
-boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#828282';
+boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2';
 
     // Update boldedHeadings range
     boldedHeadings.minHeading = minHeading;
@@ -1131,7 +1118,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
         ? 'Disable'
         : 'Enable';
 
-applyDistanceFilterButton.style.backgroundColor = applyDistanceFilterEnabled ? 'blue' : '#828282';
+applyDistanceFilterButton.style.backgroundColor = applyDistanceFilterEnabled ? 'blue' : '#c2c2c2';
 
     // Update distance filter ranges
     hiddenDistance.minDistance = minDistance;
