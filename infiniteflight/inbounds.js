@@ -1420,28 +1420,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     let updateInterval = null; // Stores auto-update interval
     let countdownInterval = null; // Stores countdown interval
 
-    // Update button logic (start/stop auto-update)
-        if (updateButton) {
-        updateButton.addEventListener("click", () => {
-        const icao = icaoInput.value.trim().toUpperCase();
-        const mainAirport = document.getElementById("mainAirportIcao").value.trim().toUpperCase();
-        const secondaryAirports = Array.from(document.querySelectorAll(".secondaryAirport"))
-            .map((el) => el.id.replace("secondary-", "").toUpperCase())
-            .filter((code) => code);
+        // Update button logic (start/stop auto-update)
+            if (updateButton) {
+        updateButton.addEventListener("click", () =>        {
+                const mainAirport = document.getElementById("mainAirportIcao").value.trim().toUpperCase();
+                const secondaryAirports = Array.from(document.querySelectorAll(".secondaryAirport"))
+                    .map((el) => el.id.replace("secondary-", "").toUpperCase())
+                    .filter((code) => code);
 
-        if (!icao && !mainAirport && secondaryAirports.length === 0) {
-                    alert("Please provide an ICAO code, a main airport, or at least one secondary airport before starting auto-update.");
-                return;
-            }
-
-            if (isAutoUpdateActive) {
-                    
-             stopAutoUpdate();
-            } else {
-            
-            const activeIcao = icao || mainAirport || secondaryAirports[0];
-            startAutoUpdate(activeIcao);
+                // Ensure either main airport or secondary airport is present
+                if (!mainAirport && secondaryAirports.length === 0) {
+                    alert("Please provide a main airport or at least one secondary airport before starting auto-update.");
+                    return;
                 }
+
+                if (isAutoUpdateActive) {
+                    // Stop the auto-update process if already active
+                    stopAutoUpdate();
+                } else {
+                    // Use main airport if available, otherwise use the first secondary airport
+                    const activeIcao = mainAirport || secondaryAirports[0];
+                    startAutoUpdate(activeIcao);
+                }
+            });
+        }
+
+        // Automatically start auto-update when searching
+        if (searchButton) {
+            searchButton.addEventListener("click", () => {
+                const mainAirport = document.getElementById("mainAirportIcao").value.trim().toUpperCase();
+                const secondaryAirports = Array.from(document.querySelectorAll(".secondaryAirport"))
+                    .map((el) => el.id.replace("secondary-", "").toUpperCase())
+                    .filter((code) => code);
+
+                // Ensure either main airport or secondary airport is present
+                if (!mainAirport && secondaryAirports.length === 0) {
+                    alert("Please provide a main airport or at least one secondary airport before starting auto-update.");
+                    return;
+                }
+
+                // Use main airport if available, otherwise use the first secondary airport
+                const activeIcao = mainAirport || secondaryAirports[0];
+                startAutoUpdate(activeIcao);
             });
         }
 
