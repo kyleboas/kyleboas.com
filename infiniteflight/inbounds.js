@@ -1421,19 +1421,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     let countdownInterval = null; // Stores countdown interval
 
     // Update button logic (start/stop auto-update)
-    if (updateButton) {
+        if (updateButton) {
         updateButton.addEventListener("click", () => {
-            const icao = icaoInput.value.trim().toUpperCase();
+        const icao = icaoInput.value.trim().toUpperCase();
+        const mainAirport = document.getElementById("mainAirportIcao").value.trim().toUpperCase();
+        const secondaryAirports = Array.from(document.querySelectorAll(".secondaryAirport"))
+            .map((el) => el.id.replace("secondary-", "").toUpperCase())
+            .filter((code) => code);
+
+        if (!icao && !mainAirport && secondaryAirports.length === 0) {
+                    alert("Please provide an ICAO code, a main airport, or at least one secondary airport before starting auto-update.");
+                return;
+            }
 
             if (isAutoUpdateActive) {
-                // If auto-update is active, stop it
-                stopAutoUpdate();
+                    
+             stopAutoUpdate();
             } else {
-                // If auto-update is not active, start it
-                startAutoUpdate(icao);
-            }
-        });
-    }
+            
+            const activeIcao = icao || mainAirport || secondaryAirports[0];
+            startAutoUpdate(activeIcao);
+                }
+            });
+        }
 
     // Starts the auto-update process
     function startAutoUpdate(icao) {
