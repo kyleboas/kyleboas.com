@@ -3,45 +3,45 @@
 ---
 
 body {
-    font-family: Helvetica, sans-serif;
-    margin: 20px;
-    line-height: 1.6;
-    background-color: #f7f7f7;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  font-family: Helvetica, sans-serif;
+  margin: 20px;
+  line-height: 1.6;
+  background-color: #f7f7f7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
-    margin: 0 auto;
-    max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 100%;
 }
 
 pre {
-    font-family: Helvetica, sans-serif;
-    font-size: 12px;
-    padding-top: 0px;
+  font-family: Helvetica, sans-serif;
+  font-size: 12px;
+  padding-top: 0px;
 }
 
 /* Search */
 
 .nav-container {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 15px 25px;
-    display: flex;
-    align-items: center;
-    max-width: 600px;
-    justify-content: space-between;
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 15px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; 
+  max-width: 600px;
+  width: 100%;
 }
 
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 0px;
+.settings-menu.visible {
+  display: flex; /* Show when toggled */
 }
 
 .nav-left span {
@@ -53,49 +53,43 @@ pre {
   width: 20px;
   height: 20px;
   fill: #828282;
-} 
-
-.nav-right {
-    text-align: right;
-    font-size: 10px;
-    color: #828282;
-    line-height: 1.5;
 }
 
 .nav-left input {
-    width: 50px;
-    border: none;
-    font-size: 14px;
-    outline: none;
+  width: 50px;
+  border: none;
+  font-size: 14px;
+  outline: none;
 }
 
 .nav-left button {
-    background-color: transparent;
-    color: #828282;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
-    padding: 0px;
-    margin: 6px; 
+  background-color: transparent;
+  color: #828282;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  padding: 0px;
+  margin: 6px;
 }
 
 .spin {
-    animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Settings */
 
 form input {
   border: none;
+  outline: none;
 }
 
 form button {
@@ -103,24 +97,6 @@ form button {
   width: 60px;
   margin-top: 2px;
   margin-bottom: 5px;
-} 
-
-.settings-menu {
-  display: none;
-  width: 170px;
-  padding: 10px;
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-}
-
-.settings-menu.visible {
-  display: flex;
 }
 
 .dropdown {
@@ -133,146 +109,99 @@ form button {
   text-align: center;
 }
 
-.HeadingFilter, .DistanceFilter {
+.HeadingFilter,
+.DistanceFilter {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
 }
 
 input {
-    border: none;
-    width: 60px;
-    outline: none;
+  border: none;
+  width: 60px;
+  outline: none;
 }
 
 /* Dropdown */
 
-.dropdown {
-    position: relative;
-    display: inline-block;
-
-    .dropdown-toggle {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        font-size: 14px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 15px;
-        z-index: 1;
-        width: 260px;
-
-        input,
-        button {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            padding: 8px;
-            width: 100%;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-            margin-top: 15px;
-
-            &:hover {
-                background-color: #45a049;
-            }
-        }
-    }
-
-    &:hover .dropdown-menu {
-        display: block;
-    }
-}
-
-.DistanceFilter {
-}
-
 form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 
-    input[type="text"],
-    input[type="number"],
-    button {
-        padding: 6px;
-        font-size: 12px;
-        border-radius: 4px;
-        outline: none;
+  input[type="text"],
+  input[type="number"],
+  button {
+    padding: 6px;
+    font-size: 12px;
+    border-radius: 4px;
+    outline: none;
+    text-align: center;
+   font-size: 10px;
+  }
+
+  button {
+    background-color: #c2c2c2;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #fe8648;
     }
-
-    button {
-        background-color: #c2c2c2;
-        color: white;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-
-        &:hover {
-            background-color: #fe8648;
-        }
-    }
+  }
 }
 
+
+.settings-label {
+  font-size: 12px;
+  color: #828282;
+}
 .heading-arrow {
-    font-family: 'Courier', monospace;
+  font-family: "Courier", monospace;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    text-align: center;
-    border: none;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  text-align: center;
+  border: none;
 }
 
 tbody {
-    font-size: 12px; 
+  font-size: 12px;
 }
 
 thead th {
-    padding: 5px;
-    text-align: center;
-    position: sticky;
-    top: 0; 
-    z-index: 1;
-    border-bottom-style: none; 
+  padding: 5px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom-style: none;
 }
 
 tbody td {
-    padding: 5px;
-    border: none;
-    border-bottom: 1px solid #c2c2c2;
+  padding: 5px;
+  border: none;
+  border-bottom: 1px solid #c2c2c2;
 }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-    font-size: 12px;
-    border-left: none;
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  border-left: none;
 }
 
 th {
-    background-color: #f4f4f4;
-    font-weight: bold;
-    border: none;
+  background-color: #f4f4f4;
+  font-weight: bold;
+  border: none;
 }
 
 .atisMessage p {
