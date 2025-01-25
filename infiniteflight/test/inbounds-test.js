@@ -395,6 +395,25 @@ async function fetchActiveATCAirportsData() {
     }
 }
 
+// Helper function to count inbound flights by distance ranges
+function countInboundFlightsByDistance(flights) {
+    if (!Array.isArray(flights)) {
+        console.error("countInboundFlightsByDistance received invalid input:", flights);
+        return { "50nm": 0, "200nm": 0, "500nm": 0 };
+    }
+
+    const counts = { "50nm": 0, "200nm": 0, "500nm": 0 };
+    flights.forEach((flight) => {
+        const distance = flight.distanceToDestination; // Ensure this property exists
+        if (distance <= 50) counts["50nm"]++;
+        else if (distance <= 200) counts["200nm"]++;
+        else if (distance <= 500) counts["500nm"]++;
+    });
+
+    console.log("Calculated distance counts:", counts);
+    return counts;
+}
+
 // Render ATC Table
 async function renderATCTable() {
     const atcTableBody = document.querySelector("#atcTable tbody");
@@ -421,15 +440,20 @@ async function renderATCTable() {
         }
 
         // Ensure flight data is already cached
+        console.log("Checking if allFlights is defined...");
+        console.log("allFlights:", allFlights);
+
         if (!allFlights || allFlights.length === 0) {
             console.warn("Flight data is missing. Fetching flights...");
-            await fetchAndCacheFlights();
+            await fetchAndCacheFlights(); // Ensure this function works correctly
         }
 
-        console.log("All flights data:", allFlights);
+        console.log("All flights after fetching:", allFlights);
 
         // Loop through each active ATC airport
         activeATCAirports.forEach((airport) => {
+            console.log(`Processing airport: ${airport.icao}`);
+
             // Filter flights heading to this airport
             const airportFlights = allFlights.filter(
                 (flight) => flight.destinationAirportIcao === airport.icao
