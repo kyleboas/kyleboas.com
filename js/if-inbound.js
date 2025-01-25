@@ -1066,9 +1066,8 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
         ? 'Show All Aircraft'
         : 'Hide Aircraft';
 
-boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2';
-
-    // Re-render the table with the hideFilter flag
+    boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2';
+    
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
