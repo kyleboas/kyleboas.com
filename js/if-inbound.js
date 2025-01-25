@@ -1448,6 +1448,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await fetchAndUpdateFlights(icao);
             await fetchControllers(icao);
             await fetchActiveATCAirports();
+            renderFlightsTable(allFlights, hideOtherAircraft);
             countdown = 5; // Reset countdown
         }, 5000);
 
