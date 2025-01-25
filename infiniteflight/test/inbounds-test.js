@@ -335,20 +335,30 @@ async function fetchActiveATCAirportsData() {
     const endpoint = `/sessions/${SESSION_ID}/atc`;
 
     try {
+        console.log("Fetching ATC data from:", endpoint); // Debug the endpoint being called
+
         const atcData = await fetchWithProxy(endpoint);
+
+        // Log the raw API response
+        console.log("Raw ATC API response:", atcData);
 
         // Validate response structure
         if (!atcData || atcData.errorCode !== 0 || !Array.isArray(atcData.result)) {
-            throw new Error("Invalid ATC data received from API.");
+            console.error("Invalid ATC data received:", atcData);
+            throw new Error("Invalid ATC data format.");
         }
 
         // Define fixed order of frequencies
         const frequencyOrder = ["G", "T", "A", "D", "S"];
+        console.log("Frequency order:", frequencyOrder);
 
         // Group ATC data by airport and aggregate frequencies
         const airports = atcData.result.reduce((acc, facility) => {
-            const icao = facility.airportName; // Use airportName as ICAO
+            const icao = facility.airportName;
             const frequencyCode = mapFrequencyType(facility.type);
+
+            // Log each facility being processed
+            console.log("Processing facility:", facility);
 
             if (!icao) {
                 console.warn("Skipping facility with missing airportName:", facility);
@@ -359,23 +369,28 @@ async function fetchActiveATCAirportsData() {
                 acc[icao] = { icao, frequencies: [] };
             }
 
-            // Add frequency type if valid
             if (frequencyCode) acc[icao].frequencies.push(frequencyCode);
 
             return acc;
         }, {});
 
+        // Log grouped airport data before sorting
+        console.log("Grouped airport data (unsorted):", airports);
+
         // Convert grouped airports into an array and sort frequencies
-        return Object.values(airports).map((airport) => {
-            // Sort frequencies by the fixed order
+        const processedAirports = Object.values(airports).map((airport) => {
             airport.frequencies = frequencyOrder
                 .filter((freq) => airport.frequencies.includes(freq)) // Keep only valid frequencies
                 .join(""); // Join sorted frequency codes into a single string
-
             return airport;
         });
+
+        // Log the final processed data
+        console.log("Processed ATC airport data:", processedAirports);
+
+        return processedAirports;
     } catch (error) {
-        console.error("Error fetching active ATC airports:", error.message);
+        console.error("Error in fetchActiveATCAirportsData:", error.message);
         return [];
     }
 }
