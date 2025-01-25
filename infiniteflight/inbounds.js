@@ -1583,7 +1583,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        stopAutoUpdate(); // Stop any ongoing updates
         await fetchAndUpdateFlights(icao); // Fetch and update flights
     }
 
