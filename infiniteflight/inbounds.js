@@ -1280,9 +1280,9 @@ function countInboundFlightsByDistance(flights) {
         const distance = flight.distanceToDestination;
         if (typeof distance !== "number") return;
 
-        if (distance <= 50) counts["50nm"]++;
-        else if (distance <= 200) counts["200nm"]++;
-        else if (distance <= 500) counts["500nm"]++;
+        if (distance >= 0 && distance <= 50) counts["50nm"]++;
+        else if (distance >= 51 && distance <= 200) counts["200nm"]++;
+        else if (distance >= 201 && distance <= 500) counts["500nm"]++;
     });
 
     return counts;
