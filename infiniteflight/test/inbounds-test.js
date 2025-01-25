@@ -1282,6 +1282,25 @@ function getHeadingArrow(heading) {
 // ATC Table Rendering
 // ============================
 
+function countInboundFlightsByDistance(flights) {
+    if (!Array.isArray(flights)) {
+        console.error("countInboundFlightsByDistance received invalid input:", flights);
+        return { "50nm": 0, "200nm": 0, "500nm": 0 };
+    }
+
+    const counts = { "50nm": 0, "200nm": 0, "500nm": 0 };
+    flights.forEach((flight) => {
+        const distance = flight.distanceToDestination;
+        if (typeof distance !== "number") return;
+
+        if (distance <= 50) counts["50nm"]++;
+        else if (distance <= 200) counts["200nm"]++;
+        else if (distance <= 500) counts["500nm"]++;
+    });
+
+    return counts;
+}
+
 async function renderATCTable() {
     const atcTableBody = document.querySelector("#atcTable tbody");
 
