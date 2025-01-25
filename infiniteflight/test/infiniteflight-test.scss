@@ -377,6 +377,11 @@ th {
         margin-right: 50px;
         margin-left: 20px;
     }
+    
+    #atcTable th:nth-child(6),
+    #atcTable td:nth-child(6) { 
+        display: none;
+    }
 
     .page-right {
         flex: 1;
