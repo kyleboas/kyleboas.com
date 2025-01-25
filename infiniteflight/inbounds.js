@@ -1427,32 +1427,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Update button logic (start/stop auto-update)
             if (updateButton) {
-    updateButton.addEventListener("click", async        () => {
-                const mainAirport = document.getElementById("mainAirportIcao").value.trim().toUpperCase();
-                const secondaryAirports = Array.from(document.querySelectorAll(".secondaryAirport"))
-                    .map((el) => el.id.replace("secondary-", "").toUpperCase())
-                    .filter((code) => code);
+    updateButton.addEventListener("click", () => {
+        const mainAirport = document.getElementById("mainAirportIcao").value.trim().toUpperCase();
+        const secondaryAirports = Array.from(document.querySelectorAll(".secondaryAirport"))
+            .map((el) => el.id.replace("secondary-", "").toUpperCase())
+            .filter((code) => code);
 
-                // Ensure either main airport or secondary airports are present
-                if (!mainAirport && secondaryAirports.length === 0) {
-                    alert("Please provide a main airport or at least one secondary airport before starting auto-update.");
-                    return;
-                }
-
-                // Check if ATIS is available for main or any secondary airport
-                const isATISAvailable = await checkATISAvailability(mainAirport, secondaryAirports);
-                if (!isATISAvailable) {
-                    alert("ATIS is not available for the selected airports. Cannot start auto-update.");
+            if (!mainAirport && secondaryAirports.length === 0) {
+                    alert("Please provide a main airport or at least one secondary airport to start auto-update.");
                     return;
                 }
 
                 if (isAutoUpdateActive) {
-                    // Stop the auto-update process if already active
+                    // Stop auto-update if it is already active
                     stopAutoUpdate();
                 } else {
-                    // Use main airport if available, otherwise use the first secondary airport
-                    const activeIcao = mainAirport || secondaryAirports[0];
-                    startAutoUpdate(activeIcao);
+                    // Start auto-update without prioritizing any airport
+                    startAutoUpdate();
                 }
             });
         }
@@ -1478,24 +1469,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
     // Starts the auto-update process
-    function startAutoUpdate(icao) {
-        isAutoUpdateActive = true;
-        updateButton.style.color = "blue"; // Change the text/icon color to blue
-        const icon = updateButton.querySelector("i"); // Find the icon inside the button
-        if (icon) icon.classList.add("spin"); // Add the spinning animation
+    function startAutoUpdate() {
+    isAutoUpdateActive = true;
 
-        const countdownTimer = document.getElementById("countdownTimer");
-        countdownTimer.style.display = "inline";
-        let countdown = 5;
+            // Highlight that auto-update is active (e.g., change button style)
+            updateButton.style.color = "blue";
+            const countdownTimer = document.getElementById("countdownTimer");
+            countdownTimer.style.display = "inline";
 
-        // Auto-update logic every 5 seconds
-        updateInterval = setInterval(async () => {
-            await fetchAndUpdateFlights(icao);
-            await fetchControllers(icao);
-            await fetchActiveATCAirports();
-            renderFlightsTable(allFlights, hideOtherAircraft);
-            countdown = 5; // Reset countdown
-        }, 5000);
+            // Start fetching data for main and secondary airports
+            const mainAirport = document.getElementById("mainAirportIcao").value.trim().toUpperCase();
+            const secondaryAirports = Array.from(document.querySelectorAll(".secondaryAirport"))
+                .map((el) => el.id.replace("secondary-", "").toUpperCase())
+                .filter((code) => code);
+
+            // Combine main and secondary airports
+            const airportsToUpdate = [mainAirport, ...secondaryAirports].filter(Boolean);
+
+            // Fetch data for each airport every 5 seconds
+            updateInterval = setInterval(async () => {
+                for (const icao of airportsToUpdate) {
+                    await fetchAndUpdateFlights(icao);
+                    await fetchAirportATIS(icao);
+                    await fetchControllers(icao);
+                }
+            }, 5000);
+        }
 
         // Countdown timer logic
         countdownInterval = setInterval(() => {
