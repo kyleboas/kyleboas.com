@@ -1421,15 +1421,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     let countdownInterval = null; // Stores countdown interval
 
     // Update button logic (start/stop auto-update)
-        if (updateButton) {
+    if (updateButton) {
         updateButton.addEventListener("click", () => {
-            const mainAirportIcao = document.getElementById("mainAirportIcao").value.trim().toUpperCase(); // Main airport input
-            const secondaryAirportIcao = document.getElementById("icao").value.trim().toUpperCase(); // Secondary airport input
-
-            // Check if either main or secondary airport is filled
-            if (!mainAirportIcao && !secondaryAirportIcao) {
-                alert("Please enter an airport.");
-                return; // Exit if both fields are empty
+            const icao = icaoInput.value.trim().toUpperCase();
+            if (!icao) {
+                alert("Please enter a valid ICAO code before updating.");
+                return;
             }
 
             if (isAutoUpdateActive) {
@@ -1437,7 +1434,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 stopAutoUpdate();
             } else {
                 // If auto-update is not active, start it
-                const icao = mainAirportIcao || secondaryAirportIcao; // Use main if available, else secondary
                 startAutoUpdate(icao);
             }
         });
