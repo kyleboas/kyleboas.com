@@ -29,41 +29,25 @@ permalink: /inbounds/
         </div>
         <div class="nav-right" id="atcAirportsList">
         </div>
-    </div>
-    
-    <div class="settings-menu hidden">
-        <div class="dropdown" style="display:none;">
-            <button class="dropdown-toggle">Set Defaults ▼</button>
-            <div class="dropdown-menu">
-                <h2>Set Defaults</h2>
-                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum">
-                <br>
-                <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
-                <br>
-                <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
-                <br>
-                <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
-                <br>
-                <button type="button" id="saveDefaultsButton">Save Defaults</button>
-            </div>
+         
+        <div class="settings-menu hidden">
+            <!-- Filter Form -->
+            <form id="filterForm">
+                <div class="HeadingFilter">
+                    <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
+                    <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
+                    <button type="button" id="boldHeadingButton">Enable</button>
+                    <button type="button" id="toggleHeadingButton">Hide</button>
+                </div> 
+                <div class="DistanceFilter">
+                    <input type="number" id="minDistance" min="0" placeholder="Minimum">
+                    <input type="number" id="maxDistance" min="0" placeholder="Maximum">
+                    <button type="button" id="applyDistanceFilterButton">Enable</button>
+                    <button type="button" id="resetDistanceFilterButton">Reset</button>
+                </div>
+                <button type="button" id="filterHeadingHighlightButton" style="display:none;">Filter</button>
+            </form>
         </div>
-
-        <!-- Filter Form -->
-        <form id="filterForm">
-            <div class="HeadingFilter">
-                <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
-                <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
-                <button type="button" id="boldHeadingButton">Enable</button>
-                <button type="button" id="toggleHeadingButton">Hide</button>
-            </div> 
-            <div class="DistanceFilter">
-                <input type="number" id="minDistance" min="0" placeholder="Minimum">
-                <input type="number" id="maxDistance" min="0" placeholder="Maximum">
-                <button type="button" id="applyDistanceFilterButton">Enable</button>
-                <button type="button" id="resetDistanceFilterButton">Reset</button>
-            </div>
-            <button type="button" id="filterHeadingHighlightButton" style="display:none;">Filter</button>
-        </form>
     </div>
     
     <!-- Secondary Airport Section -->
@@ -94,6 +78,22 @@ permalink: /inbounds/
   </div>
 
 <div style="display: none;">
+<div class="dropdown" style="display:none;">
+            <button class="dropdown-toggle">Set Defaults ▼</button>
+            <div class="dropdown-menu">
+                <h2>Set Defaults</h2>
+                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum">
+                <br>
+                <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
+                <br>
+                <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
+                <br>
+                <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
+                <br>
+                <button type="button" id="saveDefaultsButton">Save Defaults</button>
+            </div>
+        </div>
+
        <button id="manualUpdateButton">Update Information</button>
 
         <!-- Secondary Airport Search -->
