@@ -62,9 +62,9 @@ permalink: /infiniteflight/inbounds/
                 <input type="number" id="minDistance" min="0" placeholder="Minimum">
                 <input type="number" id="maxDistance" min="0" placeholder="Maximum">
                 <button type="button" id="applyDistanceFilterButton">Enable</button>
-                <button type="button" id="resetDistanceFilterButton">Reset</button>
+                <button type="button" id="filterHeadingHighlightButton">Split</button>
             </div>
-            <button type="button" id="filterHeadingHighlightButton" style="display:none;">Filter</button>
+            <button type="button" id="resetDistanceFilterButton" style="display:none;">Filter</button>
         </form>
     </div>
     
