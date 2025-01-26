@@ -80,7 +80,6 @@ document.getElementById('saveDefaultsButton').addEventListener('click', () => {
     if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 30);
     if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 30);
 
-    alert('Defaults saved!');
 });
 
 // ============================
@@ -1059,7 +1058,6 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
     // Save minHeading and maxHeading as defaults
     setCookie('defaultMinHeading', minHeading, 30);
     setCookie('defaultMaxHeading', maxHeading, 30);
-    alert('Heading filter defaults saved!');
 
     headingHighlightEnabled = !headingHighlightEnabled;
 
@@ -1137,7 +1135,6 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     // Save minDistance and maxDistance as defaults
     setCookie('defaultMinDistance', minDistance, 30);
     setCookie('defaultMaxDistance', maxDistance, 30);
-    alert('Distance filter defaults saved!');
 
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
 
