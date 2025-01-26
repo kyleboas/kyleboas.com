@@ -421,6 +421,14 @@ body.dark-mode .nav-container {
     color: #e0e0e0;
 }
 
+body.dark-mode .nav-left input {
+   background-color: transparent;
+}
+
+body.dark-mode thead th {
+   background-color: #1e1e1e;
+} 
+
 /* Responsive */
 
 @media (min-width: 710px) {
