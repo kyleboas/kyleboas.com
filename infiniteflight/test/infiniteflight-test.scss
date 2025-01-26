@@ -412,31 +412,36 @@ th {
 
 /* Dark Mode Styles */
 body.dark-mode {
-    background-color: #1C1D23;
+    background-color: #1e1e1e;
     color: #e0e0e0;
 }
 
 body.dark-mode .nav-container {
-    background-color: #1e1e1e;
+    background-color: #002727;
     color: #e0e0e0;
 }
 
 body.dark-mode .settings-menu {
-    background-color: #1e1e1e;
+    background-color: #002727;
     color: #e0e0e0;
 }
 
-body.dark-mode .nav-left input {
+body.dark-mode input {
    background-color: transparent;
+   color: #e0e0e0;
 }
 
 body.dark-mode thead th {
-   background-color: #1e1e1e;
+   background-color: #002727;
 }
 
 body.dark-mode tbody td {
    border-bottom: 1px solid rgb(130, 130, 130);
    color: #e0e0e0;
+}
+
+body.dark-mode .highlighted {
+   color: rgb(130, 130, 130);
 } 
 
 body.dark-mode .secondaryAirport,
