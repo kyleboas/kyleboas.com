@@ -293,7 +293,7 @@ async function fetchActiveATCAirports() {
         const atcData = await fetchATCData();
 
         // Map airports to their facilities
-        const activeATCAirports = (atcData.result || []).reduce((acc, atcFacility) => {
+        const activeATCAirports = (atcData || []).reduce((acc, atcFacility) => {
             const airportIcao = atcFacility.airportIcao;
 
             if (!acc[airportIcao]) {
