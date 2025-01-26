@@ -1538,54 +1538,15 @@ document.getElementById('manualUpdateButton').addEventListener('click', async ()
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
-    // Apply default settings
+    // Apply default settings from cookies
     applyDefaults();
 
-    const hasDefaults =
-        getCookie('defaultMinHeading') ||
-        getCookie('defaultMaxHeading') ||
-        getCookie('defaultMinDistance') ||
-        getCookie('defaultMaxDistance');
-
-    if (hasDefaults) {
-        document.getElementById('toggleDefaultsButton').textContent = '▲ Set Defaults';
-        document.getElementById('defaultSettingsForm').style.display = 'block';
-    }
-    
     try {
+        // Initialize data fetching and rendering
         await fetchActiveATCAirports();
         await renderATCTable();
     } catch (error) {
         console.error('Error initializing ATC table:', error.message);
-    }
-
-    // Manual update button logic
-    const manualUpdateButton = document.getElementById('manualUpdateButton');
-    if (manualUpdateButton) {
-        manualUpdateButton.addEventListener('click', async () => {
-            const icaoInput = document.getElementById('icao');
-            const icao = icaoInput ? icaoInput.value.trim().toUpperCase() : null;
-
-            if (!icao) {
-                alert('Please enter a valid ICAO code.');
-                return;
-            }
-
-            try {
-                await fetchAirportATIS(icao);
-                await fetchControllers(icao);
-            } catch (error) {
-                console.error('Error during manual update:', error.message);
-                alert('Failed to update ATIS and Controllers.');
-            }
-        });
-    }
-
-    // Fetch and display active ATC airports on page load
-    try {
-        await fetchActiveATCAirports();
-    } catch (error) {
-        console.error('Error initializing page:', error.message);
     }
 
     // Search form submission logic
@@ -1603,30 +1564,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         await fetchAndUpdateFlights(icao); // Fetch and update flights
     }
 
-    // Add an event listener for the search button
     if (searchButton) {
         searchButton.addEventListener("click", async () => {
-            await handleSearch(); // Trigger search logic
+            await handleSearch();
         });
     }
 
-    // Trigger search when Enter is pressed in the input field
     if (icaoInput) {
         icaoInput.addEventListener("keydown", async (event) => {
             if (event.key === "Enter") {
-                event.preventDefault(); // Prevent form submission or default behavior
-                await handleSearch(); // Trigger search logic
+                event.preventDefault();
+                await handleSearch();
             }
         });
     }
 
-    // Update button logic
+    // Auto-update functionality
     const updateButton = document.getElementById("update");
-    let isAutoUpdateActive = false; // Tracks auto-update state
-    let updateInterval = null; // Stores auto-update interval
-    let countdownInterval = null; // Stores countdown interval
+    let isAutoUpdateActive = false;
+    let updateInterval = null;
+    let countdownInterval = null;
 
-    // Update button logic (start/stop auto-update)
     if (updateButton) {
         updateButton.addEventListener("click", () => {
             const icao = icaoInput.value.trim().toUpperCase();
@@ -1636,37 +1594,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (isAutoUpdateActive) {
-                // If auto-update is active, stop it
                 stopAutoUpdate();
             } else {
-                // If auto-update is not active, start it
                 startAutoUpdate(icao);
             }
         });
     }
 
-    // Starts the auto-update process
     function startAutoUpdate(icao) {
         isAutoUpdateActive = true;
-        updateButton.style.color = "blue"; // Change the text/icon color to blue
-        const icon = updateButton.querySelector("i"); // Find the icon inside the button
-        if (icon) icon.classList.add("spin"); // Add the spinning animation
+        updateButton.style.color = "blue";
+        const icon = updateButton.querySelector("i");
+        if (icon) icon.classList.add("spin");
 
         const countdownTimer = document.getElementById("countdownTimer");
         countdownTimer.style.display = "inline";
         let countdown = 5;
 
-        // Auto-update logic every 5 seconds
         updateInterval = setInterval(async () => {
             await fetchAndUpdateFlights(icao);
             await fetchControllers(icao);
             await fetchActiveATCAirports();
             renderFlightsTable(allFlights, hideOtherAircraft);
             await renderATCTable();
-            countdown = 5; // Reset countdown
+            countdown = 5;
         }, 5000);
 
-        // Countdown timer logic
         countdownInterval = setInterval(() => {
             countdown--;
             countdownTimer.textContent = `${countdown}`;
@@ -1681,11 +1634,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (icon) icon.classList.remove("spin");
         const countdownTimer = document.getElementById("countdownTimer");
 
-        // Clear intervals
         if (updateInterval) clearInterval(updateInterval);
         if (countdownInterval) clearInterval(countdownInterval);
 
-        // Hide countdown timer
         countdownTimer.style.display = "none";
     }
 });
