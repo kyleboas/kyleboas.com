@@ -185,16 +185,94 @@ permalink: /test/inbounds/
 </div>
 
 <script>
-// Toggle the visibility of the settings menu
-document.getElementById('settings').addEventListener('click', () => {
-    const settingsMenu = document.querySelector('.settings-menu');
-    settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
+// Function to save theme preference in localStorage
+function saveThemePreference(theme) {
+    localStorage.setItem('theme', theme);
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 30);
+    localStorage.setItem('themeExpiration', expirationDate.getTime()); // Save expiration time
+}
+
+// Function to load theme preference from localStorage
+function loadThemePreference() {
+    const expirationTime = localStorage.getItem('themeExpiration');
+    const now = new Date().getTime();
+
+    // Check if the saved preference is still valid
+    if (expirationTime && now > expirationTime) {
+        localStorage.removeItem('theme');
+        localStorage.removeItem('themeExpiration');
+        return null;
+    }
+    return localStorage.getItem('theme');
+}
+
+// Detect system dark mode preference and apply on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const checkbox = document.getElementById("themeToggle");
+    const savedTheme = loadThemePreference();
+
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        checkbox.checked = true;
+    } else if (savedTheme === 'light') {
+        document.body.classList.remove('dark-mode');
+        checkbox.checked = false;
+    } else {
+        // No saved preference; use system preference
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('dark-mode');
+            checkbox.checked = true;
+        }
+    }
+
+    // Listen for system theme changes and apply them
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!loadThemePreference()) { // Only apply system theme if no user preference is saved
+            if (e.matches) {
+                document.body.classList.add('dark-mode');
+                checkbox.checked = true;
+            } else {
+                document.body.classList.remove('dark-mode');
+                checkbox.checked = false;
+            }
+        }
+    });
 });
 
+// Toggle dark mode manually and save preference
 const checkbox = document.getElementById("themeToggle");
-
 checkbox.addEventListener("change", () => {
-  document.body.classList.toggle("dark-mode");
+    if (checkbox.checked) {
+        document.body.classList.add('dark-mode');
+        saveThemePreference('dark'); // Save dark mode preference
+    } else {
+        document.body.classList.remove('dark-mode');
+        saveThemePreference('light'); // Save light mode preference
+    }
+});
+
+// Toggle the visibility of the settings menu
+document.getElementById('settings').addEventListener('click', (event) => {
+    const settingsMenu = document.querySelector('.settings-menu');
+    settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
+    event.stopPropagation(); // Prevent the event from reaching the document
+});
+
+// Close the settings menu when clicking the close button
+const closeButton = document.querySelector('.settings-menu .fa-xmark');
+closeButton.addEventListener('click', () => {
+    const settingsMenu = document.querySelector('.settings-menu');
+    settingsMenu.classList.remove('visible'); // Remove the 'visible' class
+});
+
+// Close the settings menu when clicking outside of it
+document.addEventListener('click', (event) => {
+    const settingsMenu = document.querySelector('.settings-menu');
+    const settingsButton = document.getElementById('settings');
+    if (!settingsMenu.contains(event.target) && !settingsButton.contains(event.target)) {
+        settingsMenu.classList.remove('visible'); // Remove the 'visible' class
+    }
 });
 </script>
 <script src="/infiniteflight/test/inbounds-test.js"></script>

@@ -100,17 +100,18 @@ pre {
   align-items: center;
   justify-content: space-between;
   padding: 10px;
+  color: #bbb;
 }
+
+.fa-solid fa-xmark {
+  margin-left: 8px;
+  color: #bbb;
+} 
+  
 
 .settings-header strong {
   font-size: 14px;
   margin-bottom: 5px;
-}
-
-.theme-toggle-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .theme-toggle-wrapper label {
@@ -135,7 +136,6 @@ form button {
 
 .settings-menu {
   position: fixed;
-  width: 150px;
   padding: 20px;
   background-color: white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
