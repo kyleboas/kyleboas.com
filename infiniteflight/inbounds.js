@@ -914,7 +914,7 @@ document.getElementById('add').addEventListener('click', async (event) => {
 
 // Remove secondary airport functionality
 document.getElementById('secondaryAirportContainer').addEventListener('click', (event) => {
-    if (event.target.classList.contains('removeAirportButton')) {
+        if (event.target.classList.contains('removeAirportText')) {
         const icao = event.target.getAttribute('data-icao');
         const airportDiv = document.getElementById(`secondary-${icao}`);
         if (airportDiv) {
