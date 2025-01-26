@@ -432,6 +432,10 @@ body.dark-mode .nav-left input {
 
 body.dark-mode thead th {
    background-color: #1e1e1e;
+}
+
+body.dark-mode tbody td {
+   border-bottom: 1px solid rgb(130, 130, 130);
 } 
 
 body.dark-mode .secondaryAirport,
