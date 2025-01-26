@@ -131,6 +131,7 @@ permalink: /test/inbounds/
 </div>
 
 <script>
+// Toggle the visibility of the settings menu
 document.getElementById('settings').addEventListener('click', () => {
     const settingsMenu = document.querySelector('.settings-menu');
     settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
@@ -139,10 +140,29 @@ document.getElementById('settings').addEventListener('click', () => {
 const themeToggle = document.getElementById('themeToggle');
 const body = document.body;
 
+// Check for saved theme in localStorage
+const savedTheme = localStorage.getItem('theme');
+
+// Apply saved theme if it exists
+if (savedTheme) {
+    body.classList.add(savedTheme);
+    themeToggle.textContent = savedTheme === 'dark-mode' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+} else {
+    // Check system preference if no saved theme
+    const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDarkMode) {
+        body.classList.add('dark-mode');
+        themeToggle.textContent = 'Switch to Light Mode';
+    }
+}
+
+// Add event listener for theme toggle button
 themeToggle.addEventListener('click', () => {
     body.classList.toggle('dark-mode');
     const isDarkMode = body.classList.contains('dark-mode');
     themeToggle.textContent = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    // Save the user's choice in localStorage
+    localStorage.setItem('theme', isDarkMode ? 'dark-mode' : '');
 });
 </script>
 <script src="/infiniteflight/inbounds.js"></script>
