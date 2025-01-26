@@ -88,7 +88,7 @@ permalink: /test/inbounds/
         <tbody>
             <!-- Dynamic rows will be added here -->
         </tbody>
-    </table> 
+    </table>
     
     <!-- Secondary Airport Section -->
     <div id="secondaryAirport">
