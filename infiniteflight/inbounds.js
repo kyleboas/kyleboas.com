@@ -218,12 +218,50 @@ async function fetchAircraftType(aircraftId) {
     }
 }
 
-async function fetchActiveATCAirports() {
-    const endpoint = `/sessions/${SESSION_ID}/atc`;
+// ============================
+// Refactor ATC Fetch Logic
+// ============================
 
+let atcDataCache = null; // Cache for the ATC data
+let atcDataFetchPromise = null; // Promise to avoid duplicate requests
+
+// Fetch ATC data once and cache it
+async function fetchATCData() {
+    if (atcDataCache) {
+        return atcDataCache; // Return cached data if available
+    }
+
+    if (atcDataFetchPromise) {
+        return atcDataFetchPromise; // Return ongoing fetch promise if still resolving
+    }
+
+    atcDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/atc`)
+        .then((data) => {
+            if (!data || data.errorCode !== 0) {
+                throw new Error("Invalid ATC data format.");
+            }
+            atcDataCache = data.result; // Cache the result
+            return atcDataCache;
+        })
+        .catch((error) => {
+            console.error("Error fetching ATC data:", error.message);
+            atcDataCache = null; // Reset cache on failure
+            throw error;
+        });
+
+    return atcDataFetchPromise;
+}
+
+// Clear ATC cache (useful if real-time updates are needed)
+function clearATCDataCache() {
+    atcDataCache = null;
+    atcDataFetchPromise = null;
+}
+
+async function fetchActiveATCAirports() {
     try {
         // Fetch ATC data from the endpoint
-        const atcData = await fetchWithProxy(endpoint);
+        const atcData = await fetchATCData();
 
         // Map airports to their facilities
         const activeATCAirports = (atcData.result || []).reduce((acc, atcFacility) => {
