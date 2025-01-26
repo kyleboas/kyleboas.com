@@ -1405,11 +1405,6 @@ async function renderATCTable() {
         for (const airport of activeATCAirports) {
             const inboundFlightIds = await fetchInboundFlightIds(airport.icao);
 
-            if (!inboundFlightIds || inboundFlightIds.length === 0) {
-                console.warn(`No inbound flights found for airport ${airport.icao}.`);
-                continue;
-            }
-
             // Fetch flight details and calculate distances
             const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
 
