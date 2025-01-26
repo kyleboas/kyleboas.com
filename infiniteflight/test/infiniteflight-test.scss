@@ -411,62 +411,62 @@ th {
 }
 
 /* Dark Mode Styles */
-body.dark-mode {
+.dark-mode {
     background-color: #121212 !important;
     color: #e0e0e0 !important;
 }
 
-body.dark-mode .nav-container,
-body.dark-mode .settings-menu,
-body.dark-mode .dropdown-menu,
-body.dark-mode .secondaryAirport,
-body.dark-mode .mainAirport {
+.dark-mode .nav-container,
+.dark-mode .settings-menu,
+.dark-mode .dropdown-menu,
+.dark-mode .secondaryAirport,
+.dark-mode .mainAirport {
     background-color: #1e1e1e;
     color: #e0e0e0;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
-body.dark-mode .nav-left span,
-body.dark-mode .nav-right,
-body.dark-mode .settings-label {
+.dark-mode .nav-left span,
+.dark-mode .nav-right,
+.dark-mode .settings-label {
     color: #a9a9a9;
 }
 
-body.dark-mode .nav-left input,
-body.dark-mode form input,
-body.dark-mode .dropdown-menu input {
+.dark-mode .nav-left input,
+.dark-mode form input,
+.dark-mode .dropdown-menu input {
     background-color: #2a2a2a;
     color: #e0e0e0;
     border: 1px solid #444;
 }
 
-body.dark-mode .nav-left button,
-body.dark-mode form button,
-body.dark-mode .dropdown-menu button {
+.dark-mode .nav-left button,
+.dark-mode form button,
+.dark-mode .dropdown-menu button {
     background-color: #444;
     color: #e0e0e0;
     border: 1px solid #666;
     transition: background-color 0.3s ease;
 }
 
-body.dark-mode .nav-left button:hover,
-body.dark-mode form button:hover,
-body.dark-mode .dropdown-menu button:hover {
+.dark-mode .nav-left button:hover,
+.dark-mode form button:hover,
+.dark-mode .dropdown-menu button:hover {
     background-color: #555;
 }
 
-body.dark-mode table th,
-body.dark-mode table td {
+.dark-mode table th,
+.dark-mode table td {
     border: 1px solid #444;
 }
 
-body.dark-mode th {
+.dark-mode th {
     background-color: #333;
     color: #e0e0e0;
 }
 
 /* Dark Mode Arrows */
-body.dark-mode .arrow {
+.dark-mode .arrow {
     @include arrowColor(#e0e0e0);
 }
 
