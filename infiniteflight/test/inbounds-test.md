@@ -39,6 +39,7 @@ permalink: /test/inbounds/
         for="themeToggle"
         class="themeToggle st-sunMoonThemeToggleBtn"
         type="checkbox"
+        aria-label="Toggle Dark Mode"
       >
         <input type="checkbox" id="themeToggle" class="themeToggleInput" />
         <svg
@@ -47,7 +48,7 @@ permalink: /test/inbounds/
           viewBox="0 0 20 20"
           fill="currentColor"
           stroke="none"
-        >
+          >
           <mask id="moon-mask">
             <rect x="0" y="0" width="20" height="20" fill="white"></rect>
             <circle cx="11" cy="3" r="8" fill="black"></circle>
@@ -69,30 +70,61 @@ permalink: /test/inbounds/
           </g>
         </svg>
       </label>
-      <i class="fa-solid fa-xmark"></i>
+      <i class="fa-solid fa-xmark" aria-label="Close"></i>
     </div>
   </div>
-</div>
 
-      <!-- Filter Form -->
-      <form id="filterForm">
-        <div class="HeadingFilter">
-          <label class="settings-label">Heading</label>
-          <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
-          <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
-          <button type="button" id="boldHeadingButton">Enable</button>
-          <button type="button" id="toggleHeadingButton">Hide</button>
-        </div>
-        <div class="DistanceFilter">
-          <label class="settings-label">Distance</label>
-          <input type="number" id="minDistance" min="0" placeholder="Minimum">
-          <input type="number" id="maxDistance" min="0" placeholder="Maximum">
-          <button type="button" id="applyDistanceFilterButton">Enable</button>
-          <button type="button" id="filterHeadingHighlightButton">Split</button>
-        </div>
-        <button type="button" id="resetDistanceFilterButton" style="display:none;">Filter</button>
-      </form>
+  <!-- Filter Form -->
+  <form id="filterForm">
+    <div class="HeadingFilter">
+      <label class="settings-label" for="minHeading">Heading</label>
+      <input
+        type="number"
+        id="minHeading"
+        min="0"
+        max="360"
+        placeholder="Minimum"
+        aria-label="Minimum Heading"
+      />
+      <input
+        type="number"
+        id="maxHeading"
+        min="0"
+        max="360"
+        placeholder="Maximum"
+        aria-label="Maximum Heading"
+      />
+      <button type="button" id="boldHeadingButton">Enable</button>
+      <button type="button" id="toggleHeadingButton">Hide</button>
     </div>
+    <div class="DistanceFilter">
+      <label class="settings-label" for="minDistance">Distance</label>
+      <input
+        type="number"
+        id="minDistance"
+        min="0"
+        placeholder="Minimum"
+        aria-label="Minimum Distance"
+      />
+      <input
+        type="number"
+        id="maxDistance"
+        min="0"
+        placeholder="Maximum"
+        aria-label="Maximum Distance"
+      />
+      <button type="button" id="applyDistanceFilterButton">Enable</button>
+      <button type="button" id="filterHeadingHighlightButton">Split</button>
+    </div>
+    <button
+      type="button"
+      id="resetDistanceFilterButton"
+      style="display:none;"
+    >
+      Filter
+    </button>
+  </form>
+</div>
 
     <!-- ATC Table -->
     <table id="atcTable">
