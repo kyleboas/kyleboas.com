@@ -914,11 +914,16 @@ document.getElementById('add').addEventListener('click', async (event) => {
 
 // Remove secondary airport functionality
 document.getElementById('secondaryAirportContainer').addEventListener('click', (event) => {
+    // Check if the clicked element is a "Remove" button
     if (event.target.classList.contains('removeAirportButton')) {
-        const icao = event.target.getAttribute('data-icao');
-        const airportDiv = document.getElementById(`secondary-${icao}`);
+        const icao = event.target.getAttribute('data-icao'); // Get the ICAO code
+        const airportDiv = document.getElementById(`secondary-${icao}`); // Find the corresponding airport div
+
         if (airportDiv) {
-            airportDiv.remove();
+            airportDiv.remove(); // Remove the airport div from the DOM
+            console.log(`Removed secondary airport: ${icao}`);
+        } else {
+            console.warn(`Airport div not found for ICAO: ${icao}`);
         }
     }
 });
