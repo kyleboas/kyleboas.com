@@ -1017,8 +1017,8 @@ function highlightCloseETAs() {
     allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
     // Highlight the two groups separately
-    highlightGroup(boldGroup, rows, '#FFD60AFF'); // Yellow for bold group
-    highlightGroup(nonBoldGroup, rows, '#64D2FFFF'); // Blue for non-bold group
+    highlightGroup(boldGroup, rows, '#fffa9f'); // Yellow for bold group
+    highlightGroup(nonBoldGroup, rows, '#80daeb'); // Blue for non-bold group
 }
 
 // Highlight a specific group of flights
@@ -1091,8 +1091,8 @@ function highlightGroup(group, rows, baseColor) {
 // Determine the highlight color based on the time difference
 function getHighlightColor(timeDiff) {
     if (timeDiff > 120) return null; // No highlight for > 120 seconds
-    if (timeDiff <= 10) return '#FFD60AFF'; // Yellow
-    if (timeDiff <= 30) return '#64D2FFFF'; // Blue
+    if (timeDiff <= 10) return '#fffa9f'; // Yellow
+    if (timeDiff <= 30) return '#80daeb'; // Blue
     if (timeDiff <= 60) return '#daceca'; // Beige
     if (timeDiff <= 120) return '#eaeaea'; // Gray
     return null; // No highlight
@@ -1100,7 +1100,7 @@ function getHighlightColor(timeDiff) {
 
 // Compare and return the higher-priority color
 function getHigherPriorityColor(color1, color2) {
-    const colorPriority = ['#FFD60AFF', '#64D2FFFF', '#daceca', '#eaeaea']; // Define priority order
+    const colorPriority = ['#fffa9f', '#80daeb', '#daceca', '#eaeaea']; // Define priority order
     const index1 = colorPriority.indexOf(color1);
     const index2 = colorPriority.indexOf(color2);
 
