@@ -406,10 +406,11 @@ async function fetchControllers(icao) {
 
     controllersElement.innerHTML = 'Loading controllers...';
 
+    // Check cache
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
         console.log('Using cached controllers for', icao);
-        displayControllersWithTime(cached); // Display cached controllers
+        displayControllers(cached); // Render cached controllers
         return cached;
     }
 
@@ -423,7 +424,7 @@ async function fetchControllers(icao) {
 
         const now = new Date();
 
-        // Map facilities to controllers and calculate minutes online
+        // Process controller data
         const controllers = data.result.atcFacilities.map(facility => {
             const frequencyTypes = {
                 0: "Ground",
@@ -447,13 +448,16 @@ async function fetchControllers(icao) {
             };
         });
 
-        // Sort controllers by a specific order
+        // Sort controllers by frequency type order
         const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
         controllers.sort((a, b) => {
             const indexA = order.indexOf(a.frequencyName);
             const indexB = order.indexOf(b.frequencyName);
             return indexA - indexB;
         });
+
+        // Cache the data
+        setCache(icao, controllers, 'controllers');
 
         // Display controllers
         controllersElement.innerHTML = '';
@@ -463,8 +467,6 @@ async function fetchControllers(icao) {
             controllersElement.appendChild(listItem);
         });
 
-        // Cache the data
-        setCache(icao, controllers, 'controllers');
         return controllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
