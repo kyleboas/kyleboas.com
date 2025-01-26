@@ -260,7 +260,6 @@ function clearATCDataCache() {
 
 async function fetchActiveATCAirports() {
     try {
-        // Fetch ATC data from the endpoint
         const atcData = await fetchATCData();
 
         // Map airports to their facilities
@@ -1244,11 +1243,8 @@ function mapFrequencyType(type) {
 }
 
 async function fetchActiveATCAirportsData() {
-    const endpoint = `/sessions/${SESSION_ID}/atc`;
-
     try {
-
-        const atcData = await fetchWithProxy(endpoint);
+        const atcData = await fetchATCData();
 
         // Validate response structure
         if (!atcData || atcData.errorCode !== 0 || !Array.isArray(atcData.result)) {
