@@ -99,16 +99,15 @@ form input {
 }
 
 form button {
-  background-color: #adadad;
+  background-color: #bbb;
   width: 60px;
   margin-top: 2px;
   margin-bottom: 5px;
 } 
 
 .settings-menu {
-  position: absolute;
-  width: 155px;
-  padding: 10px;
+  position: fixed;
+  padding: 20px;
   background-color: white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   flex-direction: column;
@@ -125,6 +124,10 @@ form button {
   opacity: 1;
   pointer-events: auto;
   z-index: 2;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%; 
 }
 
 
@@ -548,7 +551,7 @@ body.dark-mode .highlighted .arrow::after {
 }
 
 body.dark-mode form button {
-  background-color: 848484;
+  bbbcolor: #bbb;
 } 
 
 
