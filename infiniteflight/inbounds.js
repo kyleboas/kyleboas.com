@@ -1227,6 +1227,7 @@ function getHeadingArrow(heading) {
 // ============================
 
 // Helper function to map frequency type codes to descriptive names
+// Map frequency type to short codes
 function mapFrequencyType(type) {
     const frequencyMap = {
         0: "G", // Ground
@@ -1241,6 +1242,7 @@ function mapFrequencyType(type) {
     return frequencyMap[type] || null;
 }
 
+// Fetch and process active ATC data
 async function fetchActiveATCAirportsData() {
     try {
         const atcData = await fetchATCData();
@@ -1251,32 +1253,33 @@ async function fetchActiveATCAirportsData() {
             throw new Error("Invalid ATC data format.");
         }
 
-        // Define fixed order of frequencies
+        // Define fixed frequency order
         const frequencyOrder = ["G", "T", "A", "D", "S"];
 
         // Group ATC data by airport and aggregate frequencies
         const airports = atcData.result.reduce((acc, facility) => {
-            const icao = facility.airportName;
-            const frequencyCode = mapFrequencyType(facility.type);
+            const icao = facility.airportName; // ICAO code of the airport
+            const frequencyCode = mapFrequencyType(facility.type); // Frequency type
 
-            if (!icao) {
-                console.warn("Skipping facility with missing airportName:", facility);
-                return acc;
-            }
+            // Skip entries without a valid airport name
+            if (!icao) return acc;
 
+            // Initialize airport entry if it doesn't exist
             if (!acc[icao]) {
                 acc[icao] = { icao, frequencies: [] };
             }
 
+            // Add frequency code if valid
             if (frequencyCode) acc[icao].frequencies.push(frequencyCode);
 
             return acc;
         }, {});
-        
+
+        // Process and sort frequencies for each airport
         const processedAirports = Object.values(airports).map((airport) => {
             airport.frequencies = frequencyOrder
-                .filter((freq) => airport.frequencies.includes(freq)) // Keep only valid frequencies
-                .join(""); // Join sorted frequency codes into a single string
+                .filter((freq) => airport.frequencies.includes(freq)) // Retain valid frequencies
+                .join(""); // Concatenate sorted frequencies
             return airport;
         });
 
