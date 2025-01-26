@@ -411,63 +411,14 @@ th {
 }
 
 /* Dark Mode Styles */
-.dark-mode {
-    background-color: #121212 !important;
-    color: #e0e0e0 !important;
+body.dark {
+    background-color: #121212;
+    color: #e0e0e0;
 }
 
-.dark-mode .nav-container,
-.dark-mode .settings-menu,
-.dark-mode .dropdown-menu,
-.dark-mode .secondaryAirport,
-.dark-mode .mainAirport {
+body.dark .nav-container {
     background-color: #1e1e1e;
     color: #e0e0e0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-}
-
-.dark-mode .nav-left span,
-.dark-mode .nav-right,
-.dark-mode .settings-label {
-    color: #a9a9a9;
-}
-
-.dark-mode .nav-left input,
-.dark-mode form input,
-.dark-mode .dropdown-menu input {
-    background-color: #2a2a2a;
-    color: #e0e0e0;
-    border: 1px solid #444;
-}
-
-.dark-mode .nav-left button,
-.dark-mode form button,
-.dark-mode .dropdown-menu button {
-    background-color: #444;
-    color: #e0e0e0;
-    border: 1px solid #666;
-    transition: background-color 0.3s ease;
-}
-
-.dark-mode .nav-left button:hover,
-.dark-mode form button:hover,
-.dark-mode .dropdown-menu button:hover {
-    background-color: #555;
-}
-
-.dark-mode table th,
-.dark-mode table td {
-    border: 1px solid #444;
-}
-
-.dark-mode th {
-    background-color: #333;
-    color: #e0e0e0;
-}
-
-/* Dark Mode Arrows */
-.dark-mode .arrow {
-    @include arrowColor(#e0e0e0);
 }
 
 /* Responsive */

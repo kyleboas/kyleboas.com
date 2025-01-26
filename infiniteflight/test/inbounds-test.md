@@ -68,10 +68,11 @@ permalink: /test/inbounds/
         </form>
     </div>
     
-    <div class="toggle-container">
-    <button id="themeToggle">Switch to Dark Mode</button>
-</div>
-    
+    <label>
+    <input type="checkbox" id="checkbox" />
+    Enable Dark Mode
+</label>
+
     <!-- ATC Table -->
     <table id="atcTable">
         <thead>
@@ -137,32 +138,10 @@ document.getElementById('settings').addEventListener('click', () => {
     settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
 });
 
-const themeToggle = document.getElementById('themeToggle');
-const body = document.body;
+const checkbox = document.getElementById("checkbox");
 
-// Check for saved theme in localStorage
-const savedTheme = localStorage.getItem('theme');
-
-// Apply saved theme if it exists
-if (savedTheme) {
-    body.classList.add(savedTheme);
-    themeToggle.textContent = savedTheme === 'dark-mode' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-} else {
-    // Check system preference if no saved theme
-    const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (prefersDarkMode) {
-        body.classList.add('dark-mode');
-        themeToggle.textContent = 'Switch to Light Mode';
-    }
-}
-
-// Add event listener for theme toggle button
-themeToggle.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    const isDarkMode = body.classList.contains('dark-mode');
-    themeToggle.textContent = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-    // Save the user's choice in localStorage
-    localStorage.setItem('theme', isDarkMode ? 'dark-mode' : '');
+checkbox.addEventListener("change", () => {
+  document.body.classList.toggle("dark");
 });
 </script>
 <script src="/infiniteflight/test/inbounds.js"></script>
