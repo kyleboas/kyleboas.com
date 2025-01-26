@@ -441,10 +441,10 @@ async function fetchControllers(icao) {
             const minutesOnline = Math.floor((now - startTime) / 60000); // Convert milliseconds to minutes
 
             return {
-                frequencyName,
-                username: facility.username,
+                frequencyName: frequencyName || "Unknown", // Fallback to avoid undefined
+                username: facility.username || "Unknown", // Fallback for username
                 type: facility.type,
-                minutesOnline,
+                minutesOnline: !isNaN(minutesOnline) ? minutesOnline : 0, // Ensure valid number
             };
         });
 
@@ -460,7 +460,7 @@ async function fetchControllers(icao) {
         setCache(icao, controllers, 'controllers');
 
         // Display controllers
-        controllersElement.innerHTML = '';
+        controllersElement.innerHTML = ''; // Clear loading text
         controllers.forEach(controller => {
             const listItem = document.createElement('li');
             listItem.textContent = `${controller.frequencyName}: ${controller.username} (${controller.minutesOnline} mins)`;
