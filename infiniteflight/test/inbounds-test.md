@@ -144,4 +144,4 @@ checkbox.addEventListener("change", () => {
   document.body.classList.toggle("dark-mode");
 });
 </script>
-<script src="/infiniteflight/test/inbounds.js"></script>
+<script src="/infiniteflight/test/inbounds-test.js"></script>
