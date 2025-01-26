@@ -445,8 +445,15 @@ async function fetchInboundFlightIds(icao) {
     }
 
     try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
-        const inboundFlights = data.result.inboundFlights || [];
+        const allStatusData = await fetchStatusData();
+        const airportStatus = allStatusData.find((status) => status.icao === icao);
+
+        if (!airportStatus || !Array.isArray(airportStatus.inboundFlights)) {
+            console.error('Invalid status data for the specified ICAO:', icao);
+            return [];
+        }
+
+        const inboundFlights = airportStatus.inboundFlights;
         setCache(icao, inboundFlights, 'inboundFlightIds');
         return inboundFlights;
     } catch (error) {
