@@ -1681,7 +1681,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error('Error during flight updates:', error.message);
 
                 if (error.message.includes('rate limit') || error.message.includes('fetch')) {
-                    alert('Rate limit or network error encountered. Flight updates stopped.');
+                    alert('Rate limit or network error encountered. Flight updates stopped. Alert @kyleboas on Discord.');
                     stopAutoUpdate();
                 }
             }
