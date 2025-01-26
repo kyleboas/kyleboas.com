@@ -1,6 +1,6 @@
 ---
 Title: Infinite Flight Inbound Search
-layout: infiniteflight
+layout: infiniteflight-test
 permalink: /test/inbounds/
 ---
 
