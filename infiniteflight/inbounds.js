@@ -397,7 +397,7 @@ async function fetchAirportATIS(icao) {
     }
 }
 
-async function fetchAndDisplayControllers(icao) {
+async function fetchControllers(icao) {
     const controllersElement = document.getElementById('controllersList');
     if (!controllersElement) {
         console.error('Controllers display element not found.');
