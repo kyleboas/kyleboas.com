@@ -421,6 +421,11 @@ body.dark-mode .nav-container {
     color: #e0e0e0;
 }
 
+body.dark-mode .settings-menu {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
 body.dark-mode .nav-left input {
    background-color: transparent;
 }
@@ -428,6 +433,14 @@ body.dark-mode .nav-left input {
 body.dark-mode thead th {
    background-color: #1e1e1e;
 } 
+
+body.dark-mode .secondaryAirport,
+body.dark-mode .mainAirport {
+   background-color: #1e1e1e;
+   color: #BEBFC5;
+}
+
+
 
 /* Responsive */
 
