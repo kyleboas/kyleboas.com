@@ -450,6 +450,17 @@ body.dark-mode .mainAirport {
    color: #BEBFC5;
 }
 
+body.dark-mode .highlighted {
+  color: #1C1D23;
+}
+
+body.dark-mode .highlighted .arrow::before {
+  background-color: #1C1D23;
+}
+
+body.dark-mode .highlighted .arrow::after {
+  background-color: #1C1D23;
+}
 
 
 /* Responsive */
