@@ -41,10 +41,9 @@ function getCookie(name) {
 // ============================
 
 function applyDefaults() {
+    // Load and apply default headings
     const defaultMinHeading = parseFloat(getCookie('defaultMinHeading'));
     const defaultMaxHeading = parseFloat(getCookie('defaultMaxHeading'));
-    const defaultMinDistance = parseFloat(getCookie('defaultMinDistance'));
-    const defaultMaxDistance = parseFloat(getCookie('defaultMaxDistance'));
 
     if (!isNaN(defaultMinHeading) && !isNaN(defaultMaxHeading)) {
         document.getElementById('minHeading').value = defaultMinHeading;
@@ -53,6 +52,10 @@ function applyDefaults() {
         boldedHeadings.minHeading = defaultMinHeading;
         boldedHeadings.maxHeading = defaultMaxHeading;
     }
+
+    // Load and apply default distances
+    const defaultMinDistance = parseFloat(getCookie('defaultMinDistance'));
+    const defaultMaxDistance = parseFloat(getCookie('defaultMaxDistance'));
 
     if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
         document.getElementById('minDistance').value = defaultMinDistance;
@@ -1053,6 +1056,11 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
         return;
     }
 
+    // Save minHeading and maxHeading as defaults
+    setCookie('defaultMinHeading', minHeading, 30);
+    setCookie('defaultMaxHeading', maxHeading, 30);
+    alert('Heading filter defaults saved!');
+
     headingHighlightEnabled = !headingHighlightEnabled;
 
     const button = document.getElementById('filterHeadingHighlightButton');
@@ -1115,24 +1123,31 @@ boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2
 
 // Apply Distance Filter
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
-    const minDistance = parseFloat(document.getElementById('minDistance').value);
-    const maxDistance = parseFloat(document.getElementById('maxDistance').value);
+    const minDistanceInput = document.getElementById('minDistance').value;
+    const maxDistanceInput = document.getElementById('maxDistance').value;
 
-    // Toggle state
+    const minDistance = parseFloat(minDistanceInput);
+    const maxDistance = parseFloat(maxDistanceInput);
+
+    if (isNaN(minDistance) || isNaN(maxDistance) || minDistance > maxDistance) {
+        alert('Please enter valid Min Distance and Max Distance values.');
+        return;
+    }
+
+    // Save minDistance and maxDistance as defaults
+    setCookie('defaultMinDistance', minDistance, 30);
+    setCookie('defaultMaxDistance', maxDistance, 30);
+    alert('Distance filter defaults saved!');
+
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
 
-    // Update button text
-    document.getElementById('applyDistanceFilterButton').textContent = applyDistanceFilterEnabled
-        ? 'Disable'
-        : 'Enable';
+    const button = document.getElementById('applyDistanceFilterButton');
+    button.textContent = applyDistanceFilterEnabled ? 'Disable' : 'Enable';
+    button.style.backgroundColor = applyDistanceFilterEnabled ? 'blue' : '#c2c2c2';
 
-applyDistanceFilterButton.style.backgroundColor = applyDistanceFilterEnabled ? 'blue' : '#c2c2c2';
-
-    // Update distance filter ranges
     hiddenDistance.minDistance = minDistance;
     hiddenDistance.maxDistance = maxDistance;
 
-    // Re-render the table
     renderFlightsTable(allFlights);
 });
 
