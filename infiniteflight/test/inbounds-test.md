@@ -165,4 +165,4 @@ themeToggle.addEventListener('click', () => {
     localStorage.setItem('theme', isDarkMode ? 'dark-mode' : '');
 });
 </script>
-<script src="/infiniteflight/inbounds.js"></script>
+<script src="/infiniteflight/test/inbounds.js"></script>
