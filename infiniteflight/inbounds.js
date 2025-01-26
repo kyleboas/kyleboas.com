@@ -1278,11 +1278,13 @@ async function fetchActiveATCAirportsData() {
     try {
         const atcData = await fetchATCData();
 
-        // Validate response structure
-        if (!atcData || atcData.errorCode !== 0 || !Array.isArray(atcData.result)) {
+        if (!Array.isArray(atcData)) {
             console.error("Invalid ATC data received:", atcData);
             throw new Error("Invalid ATC data format.");
         }
+
+        console.log("Valid ATC data:", atcData);
+        return atcData;
 
         // Define fixed frequency order
         const frequencyOrder = ["G", "T", "A", "D", "S"];
