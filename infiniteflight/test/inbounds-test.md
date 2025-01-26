@@ -31,77 +31,67 @@ permalink: /test/inbounds/
         </div>
     </div>
     
-    <div class="settings-menu hidden">
-        <div class="dropdown" style="display:none;">
-            <button class="dropdown-toggle">Set Defaults ▼</button>
-            <div class="dropdown-menu">
-                <h2>Set Defaults</h2>
-                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum">
-                <br>
-                <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
-                <br>
-                <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
-                <br>
-                <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
-                <br>
-                <button type="button" id="saveDefaultsButton">Save Defaults</button>
-            </div>
+   <div class="settings-menu hidden">
+  <div class="settings-header">
+    <strong>Settings</strong>
+    <div class="theme-toggle-wrapper">
+      <label
+        for="themeToggle"
+        class="themeToggle st-sunMoonThemeToggleBtn"
+        type="checkbox"
+      >
+        <input type="checkbox" id="themeToggle" class="themeToggleInput" />
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          stroke="none"
+        >
+          <mask id="moon-mask">
+            <rect x="0" y="0" width="20" height="20" fill="white"></rect>
+            <circle cx="11" cy="3" r="8" fill="black"></circle>
+          </mask>
+          <circle
+            class="sunMoon"
+            cx="10"
+            cy="10"
+            r="8"
+            mask="url(#moon-mask)"
+          ></circle>
+          <g>
+            <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
+            <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
+            <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
+            <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
+            <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
+            <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
+          </g>
+        </svg>
+      </label>
+      <i class="fa-solid fa-xmark"></i>
+    </div>
+  </div>
+</div>
+
+      <!-- Filter Form -->
+      <form id="filterForm">
+        <div class="HeadingFilter">
+          <label class="settings-label">Heading</label>
+          <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
+          <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
+          <button type="button" id="boldHeadingButton">Enable</button>
+          <button type="button" id="toggleHeadingButton">Hide</button>
         </div>
-        
-        <label
-  for="themeToggle"
-  class="themeToggle st-sunMoonThemeToggleBtn"
-  type="checkbox"
->
-  <input type="checkbox" id="themeToggle" class="themeToggleInput" />
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 20 20"
-    fill="currentColor"
-    stroke="none"
-  >
-    <mask id="moon-mask">
-      <rect x="0" y="0" width="20" height="20" fill="white"></rect>
-      <circle cx="11" cy="3" r="8" fill="black"></circle>
-    </mask>
-    <circle
-      class="sunMoon"
-      cx="10"
-      cy="10"
-      r="8"
-      mask="url(#moon-mask)"
-    ></circle>
-    <g>
-      <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
-      <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
-      <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
-      <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
-      <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
-      <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
-    </g>
-  </svg>
-</label>
-
-
-        <!-- Filter Form -->
-        <form id="filterForm">
-            <div class="HeadingFilter">
-              <label class="settings-label">Heading</label>
-                <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
-                <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
-                <button type="button" id="boldHeadingButton">Enable</button>
-                <button type="button" id="toggleHeadingButton">Hide</button>
-            </div> 
-            <div class="DistanceFilter">
-              <label class="settings-label">Distance</label>
-                <input type="number" id="minDistance" min="0" placeholder="Minimum">
-                <input type="number" id="maxDistance" min="0" placeholder="Maximum">
-                <button type="button" id="applyDistanceFilterButton">Enable</button>
-                <button type="button" id="filterHeadingHighlightButton">Split</button>
-            </div>
-            <button type="button" id="resetDistanceFilterButton" style="display:none;">Filter</button>
-        </form>
+        <div class="DistanceFilter">
+          <label class="settings-label">Distance</label>
+          <input type="number" id="minDistance" min="0" placeholder="Minimum">
+          <input type="number" id="maxDistance" min="0" placeholder="Maximum">
+          <button type="button" id="applyDistanceFilterButton">Enable</button>
+          <button type="button" id="filterHeadingHighlightButton">Split</button>
+        </div>
+        <button type="button" id="resetDistanceFilterButton" style="display:none;">Filter</button>
+      </form>
     </div>
 
     <!-- ATC Table -->

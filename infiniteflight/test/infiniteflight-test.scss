@@ -94,6 +94,32 @@ pre {
 
 /* Settings */
 
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.settings-header strong {
+  font-size: 1.2rem;
+}
+
+.theme-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-toggle-wrapper label {
+  cursor: pointer;
+}
+
+.theme-toggle-wrapper i {
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
 form input {
   border: none;
 }
