@@ -219,7 +219,7 @@ async function fetchAircraftType(aircraftId) {
 }
 
 // ============================
-// Refactor ATC Fetch Logic
+// Refactor Fetch Logic
 // ============================
 
 let atcDataCache = null;
@@ -273,20 +273,128 @@ async function fetchATCData() {
     return atcDataFetchPromise;
 }
 
-// Example call to test
-fetchATCData()
-    .then((data) => {
-        console.log("Final ATC Data Output:", data);
-    })
-    .catch((error) => {
-        console.error("Error in fetchATCData:", error.message);
-    });
-
 
 function clearATCDataCache() {
     atcDataCache = null;
     atcDataFetchPromise = null;
 }
+
+
+let flightDataCache = null;
+let flightDataFetchPromise = null;
+
+/**
+ * Fetch flight data once and cache it
+ */
+async function fetchFlightData() {
+    console.log("Starting fetchFlightData...");
+
+    // Return cached data if available
+    if (flightDataCache) {
+        return flightDataCache;
+    }
+
+    // Return the ongoing fetch promise if one exists
+    if (flightDataFetchPromise) {
+        console.log("Returning ongoing fetch promise...");
+        return flightDataFetchPromise;
+    }
+
+    // Start the fetch process
+    console.log("Fetching flight data...");
+    flightDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/flight`)
+        .then((data) => {
+            console.log("Raw data received:", data);
+
+            // Basic validation
+            if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
+                console.error("Invalid flight data received:", data);
+                throw new Error("Invalid flight data format.");
+            }
+
+            // Cache the result
+            flightDataCache = data.result;
+            console.log("Caching flight data:", flightDataCache);
+            return flightDataCache;
+        })
+        .catch((error) => {
+            console.error("Error fetching flight data:", error.message);
+
+            // Clear cache on error
+            flightDataCache = null;
+            flightDataFetchPromise = null;
+            throw error;
+        });
+
+    // Return the fetch promise
+    return flightDataFetchPromise;
+}
+
+function clearFlightDataCache() {
+    flightDataCache = null;
+    flightDataFetchPromise = null;
+}
+
+
+let statusDataCache = null;
+let statusDataFetchPromise = null;
+
+/**
+ * Fetch status data once and cache it
+ */
+async function fetchStatusData() {
+    console.log("Starting fetchStatusData...");
+
+    // Return cached data if available
+    if (statusDataCache) {
+        return statusDataCache;
+    }
+
+    // Return the ongoing fetch promise if one exists
+    if (statusDataFetchPromise) {
+        console.log("Returning ongoing fetch promise...");
+        return statusDataFetchPromise;
+    }
+
+    // Start the fetch process
+    console.log("Fetching status data...");
+    statusDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`)
+        .then((data) => {
+            console.log("Raw data received:", data);
+
+            // Basic validation
+            if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
+                console.error("Invalid status data received:", data);
+                throw new Error("Invalid status data format.");
+            }
+
+            // Cache the result
+            statusDataCache = data.result;
+            console.log("Caching status data:", statusDataCache);
+            return statusDataCache;
+        })
+        .catch((error) => {
+            console.error("Error fetching status data:", error.message);
+
+            // Clear cache on error
+            statusDataCache = null;
+            statusDataFetchPromise = null;
+            throw error;
+        });
+
+    // Return the fetch promise
+    return statusDataFetchPromise;
+}
+
+function clearStatusDataCache() {
+    statusDataCache = null;
+    statusDataFetchPromise = null;
+}
+
+// ============================
+// async functions
+// ============================
+
 
 async function fetchActiveATCAirports() {
     try {
@@ -432,6 +540,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     } catch (error) {
         console.error("Error fetching flight details:", error.message);
         alert("Failed to fetch flight details.");
+        stopAutoUpdate();
         return [];
     }
 }
