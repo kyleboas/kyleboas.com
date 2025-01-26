@@ -138,7 +138,7 @@ document.getElementById('settings').addEventListener('click', () => {
     settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
 });
 
-const checkbox = document.getElementById("checkbox");
+const checkbox = document.getElementById("dark-mode");
 
 checkbox.addEventListener("change", () => {
   document.body.classList.toggle("dark-mode");
