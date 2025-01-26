@@ -69,7 +69,7 @@ permalink: /test/inbounds/
     </div>
     
     <label>
-    <input type="checkbox" id="checkbox" />
+    <input type="checkbox" id="dark-mode" />
     Enable Dark Mode
 </label>
 
@@ -141,7 +141,7 @@ document.getElementById('settings').addEventListener('click', () => {
 const checkbox = document.getElementById("checkbox");
 
 checkbox.addEventListener("change", () => {
-  document.body.classList.toggle("dark");
+  document.body.classList.toggle("dark-mode");
 });
 </script>
 <script src="/infiniteflight/test/inbounds.js"></script>
