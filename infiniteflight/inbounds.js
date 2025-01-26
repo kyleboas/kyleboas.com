@@ -290,7 +290,7 @@ function clearATCDataCache() {
 
 async function fetchActiveATCAirports() {
     try {
-        const atcData = await fetchATCData();
+        const atcData = await fetchATCData(); // atcData is already the result array
 
         // Map airports to their facilities
         const activeATCAirports = (atcData || []).reduce((acc, atcFacility) => {
@@ -1278,19 +1278,19 @@ async function fetchActiveATCAirportsData() {
     try {
         const atcData = await fetchATCData();
 
+        // Validate the ATC data
         if (!Array.isArray(atcData)) {
             console.error("Invalid ATC data received:", atcData);
             throw new Error("Invalid ATC data format.");
         }
 
         console.log("Valid ATC data:", atcData);
-        return atcData;
 
         // Define fixed frequency order
         const frequencyOrder = ["G", "T", "A", "D", "S"];
 
         // Group ATC data by airport and aggregate frequencies
-        const airports = atcData.result.reduce((acc, facility) => {
+        const airports = atcData.reduce((acc, facility) => {
             const icao = facility.airportName; // ICAO code of the airport
             const frequencyCode = mapFrequencyType(facility.type); // Frequency type
 
@@ -1316,6 +1316,9 @@ async function fetchActiveATCAirportsData() {
             return airport;
         });
 
+        console.log("Processed ATC data:", processedAirports);
+
+        // Return the processed airports
         return processedAirports;
     } catch (error) {
         console.error("Error in fetchActiveATCAirportsData:", error.message);
