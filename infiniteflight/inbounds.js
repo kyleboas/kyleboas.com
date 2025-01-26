@@ -171,7 +171,7 @@ const aircraftIds = allFlights.map(flight => flight.aircraftId);
 
 // Pair the aircraft data
 pairAircraftData(aircraftIds).then(pairedData => {
-    console.log("Paired Aircraft Data:", pairedData);
+
 });
 
 // ============================
@@ -303,7 +303,6 @@ async function fetchActiveATCAirports() {
 async function fetchAirportCoordinates(icao) {
     const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);
     if (cached) {
-        console.log('Using cached coordinates for', icao);
         return cached;
     }
 
@@ -323,7 +322,6 @@ async function fetchAirportCoordinates(icao) {
 async function fetchInboundFlightIds(icao) {
     const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
     if (cached) {
-        console.log('Using cached inbound flight IDs for', icao);
         return cached;
     }
 
@@ -380,7 +378,6 @@ async function fetchAirportATIS(icao) {
 
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
     if (cached) {
-        console.log('Using cached ATIS for', icao);
         displayATIS(cached); // Display cached ATIS
         return cached;
     }
@@ -402,7 +399,6 @@ async function fetchAirportATIS(icao) {
 async function fetchControllers(icao) {
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
-        console.log('Using cached controllers for', icao);
         displayControllers(cached); // Display cached controllers
         return cached;
     }
@@ -714,7 +710,6 @@ function parseETAInSeconds(eta) {
 async function fetchSecondaryATIS(icao) {
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
     if (cached) {
-        console.log(`Using cached ATIS for secondary airport ${icao}`);
         return cached;
     }
 
@@ -733,7 +728,6 @@ async function fetchSecondaryATIS(icao) {
 async function fetchSecondaryControllers(icao) {
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
-        console.log(`Using cached controllers for secondary airport ${icao}`);
         return cached;
     }
 
@@ -1215,12 +1209,8 @@ async function fetchActiveATCAirportsData() {
     const endpoint = `/sessions/${SESSION_ID}/atc`;
 
     try {
-        console.log("Fetching ATC data from:", endpoint); // Debug the endpoint being called
 
         const atcData = await fetchWithProxy(endpoint);
-
-        // Log the raw API response
-        console.log("Raw ATC API response:", atcData);
 
         // Validate response structure
         if (!atcData || atcData.errorCode !== 0 || !Array.isArray(atcData.result)) {
@@ -1230,15 +1220,11 @@ async function fetchActiveATCAirportsData() {
 
         // Define fixed order of frequencies
         const frequencyOrder = ["G", "T", "A", "D", "S"];
-        console.log("Frequency order:", frequencyOrder);
 
         // Group ATC data by airport and aggregate frequencies
         const airports = atcData.result.reduce((acc, facility) => {
             const icao = facility.airportName;
             const frequencyCode = mapFrequencyType(facility.type);
-
-            // Log each facility being processed
-            console.log("Processing facility:", facility);
 
             if (!icao) {
                 console.warn("Skipping facility with missing airportName:", facility);
@@ -1253,20 +1239,13 @@ async function fetchActiveATCAirportsData() {
 
             return acc;
         }, {});
-
-        // Log grouped airport data before sorting
-        console.log("Grouped airport data (unsorted):", airports);
-
-        // Convert grouped airports into an array and sort frequencies
+        
         const processedAirports = Object.values(airports).map((airport) => {
             airport.frequencies = frequencyOrder
                 .filter((freq) => airport.frequencies.includes(freq)) // Keep only valid frequencies
                 .join(""); // Join sorted frequency codes into a single string
             return airport;
         });
-
-        // Log the final processed data
-        console.log("Processed ATC airport data:", processedAirports);
 
         return processedAirports;
     } catch (error) {
@@ -1303,7 +1282,6 @@ async function renderATCTable() {
     }
 
     try {
-        console.log("Fetching active ATC airport data...");
         const activeATCAirports = await fetchActiveATCAirportsData();
 
         if (!activeATCAirports || activeATCAirports.length === 0) {
@@ -1316,11 +1294,7 @@ async function renderATCTable() {
         const airportData = [];
 
         for (const airport of activeATCAirports) {
-            console.log(`Fetching inbound flight IDs for airport: ${airport.icao}`);
-
-            // Fetch inbound flight IDs for the airport
             const inboundFlightIds = await fetchInboundFlightIds(airport.icao);
-            console.log(`Inbound flight IDs for ${airport.icao}:`, inboundFlightIds);
 
             if (!inboundFlightIds || inboundFlightIds.length === 0) {
                 console.warn(`No inbound flights found for airport ${airport.icao}.`);
@@ -1328,7 +1302,6 @@ async function renderATCTable() {
             }
 
             // Fetch flight details and calculate distances
-            console.log(`Fetching flight details for airport: ${airport.icao}`);
             const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
 
             const airportCoordinates = await fetchAirportCoordinates(airport.icao);
@@ -1341,7 +1314,6 @@ async function renderATCTable() {
 
             // Count flights based on distance ranges
             const distanceCounts = countInboundFlightsByDistance(airportFlights);
-            console.log(`Distance counts for ${airport.icao}:`, distanceCounts);
 
             // Total number of inbound flights for the airport
             const totalInbounds = airportFlights.length;
@@ -1387,7 +1359,6 @@ async function renderATCTable() {
             }
         });
 
-        console.log("ATC table successfully updated.");
     } catch (error) {
         console.error("Error in renderATCTable:", error.message);
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
@@ -1410,7 +1381,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
     if (!Array.isArray(allFlights) || allFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
-        console.log('No inbound flights found.');
         return;
     }
 
