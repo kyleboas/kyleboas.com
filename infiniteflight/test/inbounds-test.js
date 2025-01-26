@@ -1027,8 +1027,9 @@ function highlightGroup(group, rows, baseColor) {
         const currentRow = rows[allFlights.indexOf(flight)];
 
         // Skip if the row is hidden
-        const isHidden = currentRow.style.display === 'none' || 
-                         window.getComputedStyle(currentRow).display === 'none';
+        const isHidden =
+            currentRow.style.display === 'none' ||
+            window.getComputedStyle(currentRow).display === 'none';
         if (isHidden) {
             return;
         }
@@ -1046,17 +1047,18 @@ function highlightGroup(group, rows, baseColor) {
             return;
         }
 
-        let closestTimeDiff = Number.MAX_SAFE_INTEGER;
         let highlightColor = null;
 
         // Compare with the next flight in the group
         if (index + 1 < group.length) {
             const nextFlight = group[index + 1];
-            const timeDiff = Math.abs(parseETAInSeconds(flight.etaMinutes) - parseETAInSeconds(nextFlight.etaMinutes));
+            const timeDiff = Math.abs(
+                parseETAInSeconds(flight.etaMinutes) -
+                parseETAInSeconds(nextFlight.etaMinutes)
+            );
             const color = getHighlightColor(timeDiff);
 
             if (color) {
-                closestTimeDiff = Math.min(closestTimeDiff, timeDiff);
                 highlightColor = getHigherPriorityColor(highlightColor, color);
             }
         }
@@ -1064,11 +1066,13 @@ function highlightGroup(group, rows, baseColor) {
         // Compare with the previous flight in the group
         if (index > 0) {
             const prevFlight = group[index - 1];
-            const timeDiff = Math.abs(parseETAInSeconds(flight.etaMinutes) - parseETAInSeconds(prevFlight.etaMinutes));
+            const timeDiff = Math.abs(
+                parseETAInSeconds(flight.etaMinutes) -
+                parseETAInSeconds(prevFlight.etaMinutes)
+            );
             const color = getHighlightColor(timeDiff);
 
             if (color) {
-                closestTimeDiff = Math.min(closestTimeDiff, timeDiff);
                 highlightColor = getHigherPriorityColor(highlightColor, color);
             }
         }
@@ -1079,9 +1083,8 @@ function highlightGroup(group, rows, baseColor) {
             etaCell.innerHTML = `${flight.distanceToDestination}nm<br>${flight.etaMinutes}`; // Show NM and MM:SS
         }
 
-        if (highlightColor) {
-            applyHighlight(currentRow, highlightColor);
-        }
+        // Apply or clear highlight
+        applyHighlight(currentRow, highlightColor);
     });
 }
 
@@ -1108,11 +1111,19 @@ function getHigherPriorityColor(color1, color2) {
 
 // Apply highlights to a row
 function applyHighlight(row, color) {
-    const currentColor = rgbToHex(row.style.backgroundColor); // Convert current color to hex
-
-    // Apply the new color only if it has higher priority
+    const currentColor = rgbToHex(row.style.backgroundColor);
+    
     if (!currentColor || getHigherPriorityColor(color, currentColor) === color) {
         row.style.backgroundColor = color;
+        
+        if (color) {
+            row.classList.add('highlighted');
+        }
+    }
+
+    if (!color) {
+        row.style.backgroundColor = '';
+        row.classList.remove('highlighted');
     }
 }
 
