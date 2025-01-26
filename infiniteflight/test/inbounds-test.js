@@ -48,7 +48,7 @@ function applyDefaults() {
     if (!isNaN(defaultMinHeading) && !isNaN(defaultMaxHeading)) {
         document.getElementById('minHeading').value = defaultMinHeading;
         document.getElementById('maxHeading').value = defaultMaxHeading;
-        boldHeadingEnabled = true;
+        boldHeadingEnabled = false;
         boldedHeadings.minHeading = defaultMinHeading;
         boldedHeadings.maxHeading = defaultMaxHeading;
     }
@@ -60,7 +60,7 @@ function applyDefaults() {
     if (!isNaN(defaultMinDistance) && !isNaN(defaultMaxDistance)) {
         document.getElementById('minDistance').value = defaultMinDistance;
         document.getElementById('maxDistance').value = defaultMaxDistance;
-        applyDistanceFilterEnabled = true;
+        applyDistanceFilterEnabled = false;
         hiddenDistance.minDistance = defaultMinDistance;
         hiddenDistance.maxDistance = defaultMaxDistance;
     }
