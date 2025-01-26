@@ -279,63 +279,6 @@ function clearATCDataCache() {
     atcDataFetchPromise = null;
 }
 
-
-let flightDataCache = null;
-let flightDataFetchPromise = null;
-
-/**
- * Fetch flight data once and cache it
- */
-async function fetchFlightData() {
-    console.log("Starting fetchFlightData...");
-
-    // Return cached data if available
-    if (flightDataCache) {
-        return flightDataCache;
-    }
-
-    // Return the ongoing fetch promise if one exists
-    if (flightDataFetchPromise) {
-        console.log("Returning ongoing fetch promise...");
-        return flightDataFetchPromise;
-    }
-
-    // Start the fetch process
-    console.log("Fetching flight data...");
-    flightDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/flight`)
-        .then((data) => {
-            console.log("Raw data received:", data);
-
-            // Basic validation
-            if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
-                console.error("Invalid flight data received:", data);
-                throw new Error("Invalid flight data format.");
-            }
-
-            // Cache the result
-            flightDataCache = data.result;
-            console.log("Caching flight data:", flightDataCache);
-            return flightDataCache;
-        })
-        .catch((error) => {
-            console.error("Error fetching flight data:", error.message);
-
-            // Clear cache on error
-            flightDataCache = null;
-            flightDataFetchPromise = null;
-            throw error;
-        });
-
-    // Return the fetch promise
-    return flightDataFetchPromise;
-}
-
-function clearFlightDataCache() {
-    flightDataCache = null;
-    flightDataFetchPromise = null;
-}
-
-
 let statusDataCache = null;
 let statusDataFetchPromise = null;
 
@@ -390,6 +333,7 @@ function clearStatusDataCache() {
     statusDataCache = null;
     statusDataFetchPromise = null;
 }
+
 
 // ============================
 // async functions
