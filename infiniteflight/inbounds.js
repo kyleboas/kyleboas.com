@@ -1634,7 +1634,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const updateButton = document.getElementById("update");
 
     let isAutoUpdateActive = false;
-    let updateInterval = null;
+    let flightUpdateInterval = null;
+    let atcUpdateInterval = null;
 
     // Handle Search
     async function handleSearch() {
@@ -1676,23 +1677,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         const icon = updateButton.querySelector("i");
         if (icon) icon.classList.add("spin");
 
-        updateInterval = setInterval(async () => {
+        // Update flights every 5 seconds
+        flightUpdateInterval = setInterval(async () => {
             try {
                 await fetchAndUpdateFlights(icao);
-                await fetchControllers(icao);
-                await fetchActiveATCAirports();
                 renderFlightsTable(allFlights, hideOtherAircraft);
-                await renderATCTable();
             } catch (error) {
-                console.error('Error during auto-update:', error.message);
+                console.error('Error during flight updates:', error.message);
 
-                // Stop auto-update on errors like rate limits
                 if (error.message.includes('rate limit') || error.message.includes('fetch')) {
-                    alert('Rate limit or network error encountered. Auto-update stopped.');
+                    alert('Rate limit or network error encountered. Flight updates stopped.');
                     stopAutoUpdate();
                 }
             }
         }, 5000);
+
+        // Update ATC data every 60 seconds
+        atcUpdateInterval = setInterval(async () => {
+            try {
+                await fetchControllers(icao);
+                await fetchActiveATCAirports();
+                await renderATCTable();
+            } catch (error) {
+                console.error('Error during ATC updates:', error.message);
+
+                if (error.message.includes('rate limit') || error.message.includes('fetch')) {
+                    alert('Rate limit or network error encountered. ATC updates stopped.');
+                    stopAutoUpdate();
+                }
+            }
+        }, 60000);
     }
 
     // Stop auto-update
@@ -1702,7 +1716,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const icon = updateButton.querySelector("i");
         if (icon) icon.classList.remove("spin");
 
-        if (updateInterval) clearInterval(updateInterval);
+        if (flightUpdateInterval) clearInterval(flightUpdateInterval);
+        if (atcUpdateInterval) clearInterval(atcUpdateInterval);
     }
 
     // Add event listener for the update button
