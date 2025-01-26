@@ -372,7 +372,6 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
 }
 
 
-
 // Fetch ATIS
 async function fetchAirportATIS(icao) {
     const atisElement = document.getElementById('atisMessage');
@@ -398,52 +397,78 @@ async function fetchAirportATIS(icao) {
     }
 }
 
-// Fetch Controllers
-async function fetchControllers(icao) {
+async function fetchAndDisplayControllers(icao) {
+    const controllersElement = document.getElementById('controllersList');
+    if (!controllersElement) {
+        console.error('Controllers display element not found.');
+        return;
+    }
+
+    controllersElement.innerHTML = 'Loading controllers...';
+
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
         console.log('Using cached controllers for', icao);
-        displayControllers(cached); // Display cached controllers
+        displayControllersWithTime(cached); // Display cached controllers
         return cached;
     }
 
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
-        const controllers = (data.result.atcFacilities || [])
-            .map(facility => {
-                const frequencyTypes = {
-                    0: "Ground",
-                    1: "Tower",
-                    2: "Unicom",
-                    3: "Clearance",
-                    4: "Approach",
-                    5: "Departure",
-                    6: "Center", // Center frequency
-                    7: "ATIS",
-                };
-                const frequencyName = frequencyTypes[facility.type] || "Unknown";
-                return { frequencyName, username: facility.username, type: facility.type };
-            });
+        if (!data.result || !Array.isArray(data.result.atcFacilities)) {
+            console.error('Invalid controller data received:', data);
+            controllersElement.innerHTML = 'No active controllers available.';
+            return [];
+        }
+
+        const now = new Date();
+
+        // Map facilities to controllers and calculate minutes online
+        const controllers = data.result.atcFacilities.map(facility => {
+            const frequencyTypes = {
+                0: "Ground",
+                1: "Tower",
+                2: "Unicom",
+                3: "Clearance",
+                4: "Approach",
+                5: "Departure",
+                6: "Center",
+                7: "ATIS",
+            };
+            const frequencyName = frequencyTypes[facility.type] || "Unknown";
+            const startTime = new Date(facility.startTime);
+            const minutesOnline = Math.floor((now - startTime) / 60000); // Convert milliseconds to minutes
+
+            return {
+                frequencyName,
+                username: facility.username,
+                type: facility.type,
+                minutesOnline,
+            };
+        });
 
         // Sort controllers by a specific order
-        const sortedControllers = controllers.sort((a, b) => {
-            const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
+        const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
+        controllers.sort((a, b) => {
             const indexA = order.indexOf(a.frequencyName);
             const indexB = order.indexOf(b.frequencyName);
             return indexA - indexB;
-        }).map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
+        });
 
-        // Extract only Center frequencies
-        const centerFrequencies = controllers
-            .filter(ctrl => ctrl.frequencyName === "Center")
-            .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
+        // Display controllers
+        controllersElement.innerHTML = '';
+        controllers.forEach(controller => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${controller.frequencyName}: ${controller.username} (${controller.minutesOnline} mins)`;
+            controllersElement.appendChild(listItem);
+        });
 
-        setCache(icao, sortedControllers, 'controllers');
-        displayControllers(sortedControllers, centerFrequencies); // Pass both sorted controllers and centers
-        return sortedControllers;
+        // Cache the data
+        setCache(icao, controllers, 'controllers');
+        return controllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
-        displayControllers(['No active controllers available'], []);
+        controllersElement.innerHTML = 'No active controllers available.';
         return [];
     }
 }
