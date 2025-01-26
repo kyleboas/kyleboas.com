@@ -584,6 +584,14 @@ body.dark-mode tr.highlighted td {
   color: #000000;
 }
 
+body.dark-mode .arrow::before {
+  background-color: #000000;
+}
+
+body.dark-mode .arrow::before {
+  border-left-color: #000000;
+}
+
 body.dark-mode tr.highlighted .arrow::before {
   background-color: #e0e0e0;
 }
