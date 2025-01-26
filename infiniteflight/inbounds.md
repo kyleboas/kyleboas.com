@@ -31,43 +31,101 @@ permalink: /infiniteflight/inbounds/
         </div>
     </div>
     
-    <div class="settings-menu hidden">
-        <div class="dropdown" style="display:none;">
-            <button class="dropdown-toggle">Set Defaults ▼</button>
-            <div class="dropdown-menu">
-                <h2>Set Defaults</h2>
-                <input type="number" id="defaultMinHeading" min="0" max="360" placeholder="Minimum">
-                <br>
-                <input type="number" id="defaultMaxHeading" min="0" max="360" placeholder="Maximum e.g., 360">
-                <br>
-                <input type="number" id="defaultMinDistance" min="0" placeholder="Minimum e.g., 50">
-                <br>
-                <input type="number" id="defaultMaxDistance" min="0" placeholder="Maximum e.g., 500">
-                <br>
-                <button type="button" id="saveDefaultsButton">Save Defaults</button>
-            </div>
-        </div>
-
-        <!-- Filter Form -->
-        <form id="filterForm">
-            <div class="HeadingFilter">
-              <label class="settings-label">Heading</label>
-                <input type="number" id="minHeading" min="0" max="360" placeholder="Minimum">
-                <input type="number" id="maxHeading" min="0" max="360" placeholder="Maximum">
-                <button type="button" id="boldHeadingButton">Enable</button>
-                <button type="button" id="toggleHeadingButton">Hide</button>
-            </div> 
-            <div class="DistanceFilter">
-              <label class="settings-label">Distance</label>
-                <input type="number" id="minDistance" min="0" placeholder="Minimum">
-                <input type="number" id="maxDistance" min="0" placeholder="Maximum">
-                <button type="button" id="applyDistanceFilterButton">Enable</button>
-                <button type="button" id="filterHeadingHighlightButton">Split</button>
-            </div>
-            <button type="button" id="resetDistanceFilterButton" style="display:none;">Filter</button>
-        </form>
+   <div class="settings-menu hidden">
+  <div class="settings-header">
+    <strong>Settings</strong>
+    <div class="theme-toggle-wrapper">
+      <label
+        for="themeToggle"
+        class="themeToggle st-sunMoonThemeToggleBtn"
+        type="checkbox"
+        aria-label="Toggle Dark Mode"
+      >
+        <input type="checkbox" id="themeToggle" class="themeToggleInput" />
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          stroke="none"
+          >
+          <mask id="moon-mask">
+            <rect x="0" y="0" width="20" height="20" fill="white"></rect>
+            <circle cx="11" cy="3" r="8" fill="black"></circle>
+          </mask>
+          <circle
+            class="sunMoon"
+            cx="10"
+            cy="10"
+            r="8"
+            mask="url(#moon-mask)"
+          ></circle>
+          <g>
+            <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
+            <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
+            <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
+            <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
+            <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
+            <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
+          </g>
+        </svg>
+      </label>
+      <i class="fa-solid fa-xmark" aria-label="Close"></i>
     </div>
-    
+  </div>
+
+  <!-- Filter Form -->
+  <form id="filterForm">
+    <div class="HeadingFilter">
+      <label class="settings-label" for="minHeading">Heading</label>
+      <input
+        type="number"
+        id="minHeading"
+        min="0"
+        max="360"
+        placeholder="Minimum"
+        aria-label="Minimum Heading"
+      />
+      <input
+        type="number"
+        id="maxHeading"
+        min="0"
+        max="360"
+        placeholder="Maximum"
+        aria-label="Maximum Heading"
+      />
+      <button type="button" id="boldHeadingButton">Enable</button>
+      <button type="button" id="toggleHeadingButton">Hide</button>
+    </div>
+    <div class="DistanceFilter">
+      <label class="settings-label" for="minDistance">Distance</label>
+      <input
+        type="number"
+        id="minDistance"
+        min="0"
+        placeholder="Minimum"
+        aria-label="Minimum Distance"
+      />
+      <input
+        type="number"
+        id="maxDistance"
+        min="0"
+        placeholder="Maximum"
+        aria-label="Maximum Distance"
+      />
+      <button type="button" id="applyDistanceFilterButton">Enable</button>
+      <button type="button" id="filterHeadingHighlightButton">Split</button>
+    </div>
+    <button
+      type="button"
+      id="resetDistanceFilterButton"
+      style="display:none;"
+    >
+      Filter
+    </button>
+  </form>
+</div>
+
     <!-- ATC Table -->
     <table id="atcTable">
         <thead>
@@ -127,9 +185,94 @@ permalink: /infiniteflight/inbounds/
 </div>
 
 <script>
-document.getElementById('settings').addEventListener('click', () => {
+// Function to save theme preference in localStorage
+function saveThemePreference(theme) {
+    localStorage.setItem('theme', theme);
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 30);
+    localStorage.setItem('themeExpiration', expirationDate.getTime()); // Save expiration time
+}
+
+// Function to load theme preference from localStorage
+function loadThemePreference() {
+    const expirationTime = localStorage.getItem('themeExpiration');
+    const now = new Date().getTime();
+
+    // Check if the saved preference is still valid
+    if (expirationTime && now > expirationTime) {
+        localStorage.removeItem('theme');
+        localStorage.removeItem('themeExpiration');
+        return null;
+    }
+    return localStorage.getItem('theme');
+}
+
+// Detect system dark mode preference and apply on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const checkbox = document.getElementById("themeToggle");
+    const savedTheme = loadThemePreference();
+
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        checkbox.checked = true;
+    } else if (savedTheme === 'light') {
+        document.body.classList.remove('dark-mode');
+        checkbox.checked = false;
+    } else {
+        // No saved preference; use system preference
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('dark-mode');
+            checkbox.checked = true;
+        }
+    }
+
+    // Listen for system theme changes and apply them
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!loadThemePreference()) { // Only apply system theme if no user preference is saved
+            if (e.matches) {
+                document.body.classList.add('dark-mode');
+                checkbox.checked = true;
+            } else {
+                document.body.classList.remove('dark-mode');
+                checkbox.checked = false;
+            }
+        }
+    });
+});
+
+// Toggle dark mode manually and save preference
+const checkbox = document.getElementById("themeToggle");
+checkbox.addEventListener("change", () => {
+    if (checkbox.checked) {
+        document.body.classList.add('dark-mode');
+        saveThemePreference('dark'); // Save dark mode preference
+    } else {
+        document.body.classList.remove('dark-mode');
+        saveThemePreference('light'); // Save light mode preference
+    }
+});
+
+// Toggle the visibility of the settings menu
+document.getElementById('settings').addEventListener('click', (event) => {
     const settingsMenu = document.querySelector('.settings-menu');
     settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
+    event.stopPropagation(); // Prevent the event from reaching the document
+});
+
+// Close the settings menu when clicking the close button
+const closeButton = document.querySelector('.settings-menu .fa-xmark');
+closeButton.addEventListener('click', () => {
+    const settingsMenu = document.querySelector('.settings-menu');
+    settingsMenu.classList.remove('visible'); // Remove the 'visible' class
+});
+
+// Close the settings menu when clicking outside of it
+document.addEventListener('click', (event) => {
+    const settingsMenu = document.querySelector('.settings-menu');
+    const settingsButton = document.getElementById('settings');
+    if (!settingsMenu.contains(event.target) && !settingsButton.contains(event.target)) {
+        settingsMenu.classList.remove('visible'); // Remove the 'visible' class
+    }
 });
 </script>
 <script src="/infiniteflight/inbounds.js"></script>

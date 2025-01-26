@@ -10,6 +10,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -94,21 +95,50 @@ pre {
 
 /* Settings */
 
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  color: #828282;
+}
+
+.settings-header i {
+  margin-left: 10px;
+  color: #828282;
+  font-size: 19px;
+} 
+  
+
+.settings-header strong {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.theme-toggle-wrapper label {
+  cursor: pointer;
+}
+
+.theme-toggle-wrapper i {
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
 form input {
   border: none;
 }
 
 form button {
-  background-color: #adadad;
+  background-color: #bbb;
   width: 60px;
   margin-top: 2px;
   margin-bottom: 5px;
+  width: 75%;
 } 
 
 .settings-menu {
-  position: absolute;
-  width: 155px;
-  padding: 10px;
+  position: fixed;
+  padding: 20px;
   background-color: white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   flex-direction: column;
@@ -119,6 +149,10 @@ form button {
   opacity: 0;
   transition: transform 0.1s ease-in-out, opacity 0.2s ease-in-out;
   pointer-events: none;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
 }
 
 .settings-menu.visible {
@@ -129,7 +163,7 @@ form button {
 
 
 .settings-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #828282;
 }
 
@@ -233,6 +267,7 @@ form {
         border-radius: 4px;
         outline: none;
         text-align: center;
+        background-color: transparent;
     }
 
     button {
@@ -312,6 +347,91 @@ th {
     font-family: Helvetica Neue, sans-serif;
     padding-top: 1px;
     padding-bottom: 1px;
+}
+
+/* Dark Mode Button */
+/* From Uiverse.io by Type-Delta */ 
+/* a clone from joshwcomeau.com 
+ * but this version runs on pure CSS
+ */
+
+.themeToggle {
+  color: #828282;
+  width: 5px;
+}
+
+.st-sunMoonThemeToggleBtn {
+  position: relative;
+  cursor: pointer;
+}
+
+.st-sunMoonThemeToggleBtn .themeToggleInput {
+  opacity: 0;
+  width: 10px;
+  aspect-ratio: 1;
+}
+
+.st-sunMoonThemeToggleBtn svg {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s ease;
+  transform: rotate(40deg);
+}
+
+.st-sunMoonThemeToggleBtn svg .sunMoon {
+  transform-origin: center center;
+  transition: inherit;
+  transform: scale(1);
+}
+
+.st-sunMoonThemeToggleBtn svg .sunRay {
+  transform-origin: center center;
+  transform: scale(0);
+}
+
+.st-sunMoonThemeToggleBtn svg mask > circle {
+  transition: transform 0.64s cubic-bezier(0.41, 0.64, 0.32, 1.575);
+  transform: translate(0px, 0px);
+}
+
+.st-sunMoonThemeToggleBtn svg .sunRay2 {
+  animation-delay: 0.05s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay3 {
+  animation-delay: 0.1s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay4 {
+  animation-delay: 0.17s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay5 {
+  animation-delay: 0.25s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay5 {
+  animation-delay: 0.29s !important;
+}
+
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg {
+  transform: rotate(90deg);
+}
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg mask > circle {
+  transform: translate(16px, -3px);
+}
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunMoon {
+  transform: scale(0.55);
+}
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunRay {
+  animation: showRay1832 0.4s ease 0s 1 forwards;
+}
+
+@keyframes showRay1832 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Arrow xmins */
@@ -409,6 +529,79 @@ th {
     margin-bottom: 1px;
     margin-left: 7px;
 }
+
+/* Dark Mode Styles */
+
+.nav-container,
+.settings-menu,
+.secondaryAirport,
+.mainAirport,
+thead th,
+tbody td {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* General transition for body */
+body {
+    font-family: Helvetica, sans-serif;
+    margin: 20px;
+    line-height: 1.6;
+    background-color: #f7f7f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Transition for elements affected by dark mode */
+.nav-container,
+.settings-menu,
+.secondaryAirport,
+.mainAirport,
+thead th,
+tbody td, form button {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-mode {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+body.dark-mode .nav-container {
+    background-color: #002727;
+    color: #e0e0e0;
+}
+
+body.dark-mode .settings-menu {
+    background-color: #002727;
+    color: #e0e0e0;
+}
+
+body.dark-mode input {
+    background-color: transparent;
+    color: #e0e0e0;
+}
+
+body.dark-mode thead th {
+    background-color: #002727;
+}
+
+body.dark-mode tbody td {
+    border-bottom: 1px solid rgb(130, 130, 130);
+    color: #e0e0e0;
+}
+
+body.dark-mode .secondaryAirport,
+body.dark-mode .mainAirport {
+    background-color: #1e1e1e;
+    color: #BEBFC5;
+}
+
+body.dark-mode form button {
+  color: #000000;
+} 
+
 
 /* Responsive */
 
