@@ -397,6 +397,7 @@ async function fetchAirportATIS(icao) {
     }
 }
 
+
 async function fetchControllers(icao) {
     const controllersElement = document.getElementById('controllersList');
     if (!controllersElement) {
@@ -406,11 +407,13 @@ async function fetchControllers(icao) {
 
     controllersElement.innerHTML = 'Loading controllers...';
 
-    // Check cache
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
         console.log('Using cached controllers for', icao);
-        displayControllers(cached); // Render cached controllers
+        displayControllers(
+            cached,
+            cached.filter(ctrl => ctrl.frequencyName === "Center")
+        );
         return cached;
     }
 
@@ -423,8 +426,6 @@ async function fetchControllers(icao) {
         }
 
         const now = new Date();
-
-        // Process controller data
         const controllers = data.result.atcFacilities.map(facility => {
             const frequencyTypes = {
                 0: "Ground",
@@ -438,35 +439,23 @@ async function fetchControllers(icao) {
             };
             const frequencyName = frequencyTypes[facility.type] || "Unknown";
             const startTime = new Date(facility.startTime);
-            const minutesOnline = Math.floor((now - startTime) / 60000); // Convert milliseconds to minutes
+            const minutesOnline = Math.floor((now - startTime) / 60000);
 
             return {
-                frequencyName: frequencyName || "Unknown", // Fallback to avoid undefined
-                username: facility.username || "Unknown", // Fallback for username
-                type: facility.type,
-                minutesOnline: !isNaN(minutesOnline) ? minutesOnline : 0, // Ensure valid number
+                frequencyName,
+                username: facility.username || "Unknown",
+                minutesOnline: !isNaN(minutesOnline) ? minutesOnline : 0,
             };
-        });
-
-        // Sort controllers by frequency type order
-        const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
-        controllers.sort((a, b) => {
-            const indexA = order.indexOf(a.frequencyName);
-            const indexB = order.indexOf(b.frequencyName);
-            return indexA - indexB;
         });
 
         // Cache the data
         setCache(icao, controllers, 'controllers');
 
         // Display controllers
-        controllersElement.innerHTML = ''; // Clear loading text
-        controllers.forEach(controller => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `${controller.frequencyName}: ${controller.username} (${controller.minutesOnline} mins)`;
-            controllersElement.appendChild(listItem);
-        });
-
+        displayControllers(
+            controllers,
+            controllers.filter(ctrl => ctrl.frequencyName === "Center")
+        );
         return controllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
@@ -868,30 +857,27 @@ function displayATIS(atis) {
 
 function displayControllers(controllers, centerFrequencies = []) {
     const controllersElement = document.getElementById('controllersList');
-    const mainAirportElement = document.querySelector('.mainAirport');
-
-    if (!controllersElement || !mainAirportElement) {
-        console.error('Controllers display element or mainAirport element not found.');
+    if (!controllersElement) {
+        console.error('Controllers display element not found.');
         return;
     }
 
     // Ensure the main airport section is visible
-    mainAirportElement.style.display = 'block';
+    const mainAirportElement = document.querySelector('.mainAirport');
+    if (mainAirportElement) mainAirportElement.style.display = 'block';
 
-    // Separate Center frequencies and other controllers
-    const otherControllers = controllers.length
-        ? controllers.filter(ctrl => !centerFrequencies.includes(ctrl)).map(ctrl => `${ctrl}<br>`).join('')
-        : 'No active controllers available.';
+    // Separate and format controllers
+    const otherControllers = controllers.filter(ctrl => !centerFrequencies.includes(ctrl))
+        .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username} (${ctrl.minutesOnline} mins)`)
+        .join('<br>');
 
-    const centerControllers = centerFrequencies.length
-        ? centerFrequencies.map(ctrl => `${ctrl}<br>`).join('')
-        : 'No active Center frequencies available.';
+    const centerControllersText = centerFrequencies.map(ctrl =>
+        `${ctrl.frequencyName}: ${ctrl.username} (${ctrl.minutesOnline} mins)`
+    ).join('<br>');
 
-    // Combine other controllers first, followed by Center frequencies
-    controllersElement.style.display = 'block';
     controllersElement.innerHTML = `
-        <p>${otherControllers}</p>
-        <p>${centerControllers}</p>
+        <p>${otherControllers || 'No active controllers available.'}</p>
+        <p>${centerControllersText || 'No active Center frequencies available.'}</p>
     `;
 }
 
