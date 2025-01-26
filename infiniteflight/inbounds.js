@@ -229,19 +229,26 @@ let atcDataFetchPromise = null;
  * Fetch ATC data once and cache it
  */
 async function fetchATCData() {
+    console.log("Starting fetchATCData...");
+
     // Return cached data if available
     if (atcDataCache) {
+        console.log("Returning cached ATC data:", atcDataCache);
         return atcDataCache;
     }
 
     // Return the ongoing fetch promise if one exists
     if (atcDataFetchPromise) {
+        console.log("Returning ongoing fetch promise...");
         return atcDataFetchPromise;
     }
 
     // Start the fetch process
+    console.log("Fetching ATC data...");
     atcDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/atc`)
         .then((data) => {
+            console.log("Raw data received:", data);
+
             // Basic validation
             if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
                 console.error("Invalid ATC data received:", data);
@@ -250,6 +257,7 @@ async function fetchATCData() {
 
             // Cache the result
             atcDataCache = data.result;
+            console.log("Caching ATC data:", atcDataCache);
             return atcDataCache;
         })
         .catch((error) => {
@@ -257,11 +265,22 @@ async function fetchATCData() {
 
             // Clear cache on error
             atcDataCache = null;
+            atcDataFetchPromise = null;
             throw error;
         });
 
+    // Return the fetch promise
     return atcDataFetchPromise;
 }
+
+// Example call to test
+fetchATCData()
+    .then((data) => {
+        console.log("Final ATC Data Output:", data);
+    })
+    .catch((error) => {
+        console.error("Error in fetchATCData:", error.message);
+    });
 
 
 function clearATCDataCache() {
