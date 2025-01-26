@@ -68,6 +68,11 @@ permalink: /test/inbounds/
         </form>
     </div>
     
+    <div class="toggle-container">
+    <button id="themeToggle">Switch to Dark Mode</button>
+</div>
+    
+    <!-- ATC Table -->
     <table id="atcTable">
         <thead>
             <tr>
@@ -82,7 +87,7 @@ permalink: /test/inbounds/
         <tbody>
             <!-- Dynamic rows will be added here -->
         </tbody>
-    </table>
+    </table> 
     
     <!-- Secondary Airport Section -->
     <div id="secondaryAirport">
@@ -130,5 +135,14 @@ document.getElementById('settings').addEventListener('click', () => {
     const settingsMenu = document.querySelector('.settings-menu');
     settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
 });
+
+const themeToggle = document.getElementById('themeToggle');
+const body = document.body;
+
+themeToggle.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    const isDarkMode = body.classList.contains('dark-mode');
+    themeToggle.textContent = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+});
 </script>
-<script src="/infiniteflight/test/inbounds-test.js"></script>
+<script src="/infiniteflight/inbounds.js"></script>
