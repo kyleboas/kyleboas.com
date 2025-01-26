@@ -103,9 +103,10 @@ pre {
   color: #bbb;
 }
 
-.fa-solid fa-xmark {
+.settings-header i {
   margin-left: 8px;
   color: #bbb;
+  font-size: 19px;
 } 
   
 
@@ -147,16 +148,16 @@ form button {
   opacity: 0;
   transition: transform 0.1s ease-in-out, opacity 0.2s ease-in-out;
   pointer-events: none;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
 }
 
 .settings-menu.visible {
   opacity: 1;
   pointer-events: auto;
   z-index: 2;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  height: 100%; 
 }
 
 
@@ -596,7 +597,7 @@ body.dark-mode .mainAirport {
 }
 
 body.dark-mode form button {
-  color: #bbb;
+  color: #ffffff;
 } 
 
 
