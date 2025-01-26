@@ -222,36 +222,53 @@ async function fetchAircraftType(aircraftId) {
 // Refactor ATC Fetch Logic
 // ============================
 
-let atcDataCache = null;
-let atcDataFetchPromise = null;
+let atcDataCache = null; // Cache for the ATC data
+let atcDataFetchPromise = null; // Promise to avoid duplicate requests
 
-// Fetch ATC data once and cache it
+/**
+ * Fetch ATC data once and cache it
+ */
 async function fetchATCData() {
+    // Return cached data if available
     if (atcDataCache) {
-        return atcDataCache; // Return cached data if available
+        return atcDataCache;
     }
 
+    // Return the ongoing fetch promise if one exists
     if (atcDataFetchPromise) {
         return atcDataFetchPromise;
     }
 
+    // Start the fetch process
     atcDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/atc`)
         .then((data) => {
-            if (!data || data.errorCode !== 0) {
+            // Validate the response
+            if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
                 throw new Error("Invalid ATC data format.");
             }
+
+            // Cache the result and return it
             atcDataCache = data.result;
             return atcDataCache;
         })
         .catch((error) => {
             console.error("Error fetching ATC data:", error.message);
+
+            // Clear cache and promise on failure
             atcDataCache = null;
-            throw error;
+            throw error; // Propagate the error
+        })
+        .finally(() => {
+            // Ensure the fetch promise is reset after completion
+            atcDataFetchPromise = null;
         });
 
     return atcDataFetchPromise;
 }
 
+/**
+ * Clear the ATC data cache (useful for real-time updates)
+ */
 function clearATCDataCache() {
     atcDataCache = null;
     atcDataFetchPromise = null;
