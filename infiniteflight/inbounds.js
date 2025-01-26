@@ -222,8 +222,8 @@ async function fetchAircraftType(aircraftId) {
 // Refactor ATC Fetch Logic
 // ============================
 
-let atcDataCache = null; // Cache for the ATC data
-let atcDataFetchPromise = null; // Promise to avoid duplicate requests
+let atcDataCache = null;
+let atcDataFetchPromise = null;
 
 /**
  * Fetch ATC data once and cache it
@@ -242,32 +242,10 @@ async function fetchATCData() {
     // Start the fetch process
     atcDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/atc`)
         .then((data) => {
-            // Check if the response structure is valid
-            if (!data || typeof data.errorCode !== "number" || !Array.isArray(data.result)) {
+            // Basic validation
+            if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
                 console.error("Invalid ATC data received:", data);
                 throw new Error("Invalid ATC data format.");
-            }
-
-            // Ensure the errorCode is 0
-            if (data.errorCode !== 0) {
-                console.error("ATC API returned error code:", data.errorCode);
-                throw new Error(`ATC API Error: ${data.errorCode}`);
-            }
-
-            // Validate individual entries in the result array
-            const isValidResult = data.result.every((entry) => {
-                return (
-                    typeof entry === "object" &&
-                    entry !== null &&
-                    "frequencyId" in entry &&
-                    "airportName" in entry &&
-                    "type" in entry
-                );
-            });
-
-            if (!isValidResult) {
-                console.error("Invalid entries in ATC data result:", data.result);
-                throw new Error("Invalid ATC data result entries.");
             }
 
             // Cache the result
@@ -277,21 +255,15 @@ async function fetchATCData() {
         .catch((error) => {
             console.error("Error fetching ATC data:", error.message);
 
-            // Clear cache and promise on failure
+            // Clear cache on error
             atcDataCache = null;
             throw error;
-        })
-        .finally(() => {
-            // Ensure the fetch promise is reset after completion
-            atcDataFetchPromise = null;
         });
 
     return atcDataFetchPromise;
 }
 
-/**
- * Clear the ATC data cache (useful for real-time updates)
- */
+
 function clearATCDataCache() {
     atcDataCache = null;
     atcDataFetchPromise = null;
