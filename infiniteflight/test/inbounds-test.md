@@ -103,11 +103,6 @@ permalink: /test/inbounds/
             <button type="button" id="resetDistanceFilterButton" style="display:none;">Filter</button>
         </form>
     </div>
-    
-    <label>
-    <input type="checkbox" id="dark-mode" />
-    Enable Dark Mode
-</label>
 
     <!-- ATC Table -->
     <table id="atcTable">
@@ -174,7 +169,7 @@ document.getElementById('settings').addEventListener('click', () => {
     settingsMenu.classList.toggle('visible'); // Toggle the 'visible' class
 });
 
-const checkbox = document.getElementById("dark-mode");
+const checkbox = document.getElementById("themeToggle");
 
 checkbox.addEventListener("change", () => {
   document.body.classList.toggle("dark-mode");
