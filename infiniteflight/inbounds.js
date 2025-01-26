@@ -68,20 +68,6 @@ function applyDefaults() {
     renderFlightsTable(allFlights);
 }
 
-// Save default settings to cookies
-document.getElementById('saveDefaultsButton').addEventListener('click', () => {
-    const defaultMinHeading = document.getElementById('defaultMinHeading').value.trim();
-    const defaultMaxHeading = document.getElementById('defaultMaxHeading').value.trim();
-    const defaultMinDistance = document.getElementById('defaultMinDistance').value.trim();
-    const defaultMaxDistance = document.getElementById('defaultMaxDistance').value.trim();
-
-    if (defaultMinHeading !== '') setCookie('defaultMinHeading', defaultMinHeading, 30);
-    if (defaultMaxHeading !== '') setCookie('defaultMaxHeading', defaultMaxHeading, 30);
-    if (defaultMinDistance !== '') setCookie('defaultMinDistance', defaultMinDistance, 30);
-    if (defaultMaxDistance !== '') setCookie('defaultMaxDistance', defaultMaxDistance, 30);
-
-});
-
 // ============================
 // Utility Functions
 // ============================
