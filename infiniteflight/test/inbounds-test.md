@@ -173,8 +173,8 @@ permalink: /test/inbounds/
         aria-label="Maximum distance..."
       />
       </div>
-  <div class="setting-container" id="boldHeadingContainer">
-    <div class="setting-border">
+  <div class="setting-container">
+    <div class="setting-border" id="boldHeadingContainer">
       <button class="overlay-button" id="boldHeadingButton"></button>    
       <span class="setting-button"></span> 
       <p class="setting-title">Bold Aircraft by Heading</p>
