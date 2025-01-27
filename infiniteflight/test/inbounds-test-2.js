@@ -23,6 +23,10 @@ let isAutoUpdateActive = false;
 let interpolatedFlights = [];
 let lastApiUpdateTime = null;
 
+function getFlights() {
+    return allFlights && allFlights.length > 0 ? allFlights : interpolatedFlights;
+}
+
 // ============================
 // Cookie Utility Functions
 // ============================
@@ -959,8 +963,7 @@ function interpolateNextPositions() {
     const currentTime = Date.now();
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
-    // Update interpolated positions for each flight
-    interpolatedFlights.forEach(flight => {
+    getFlights.forEach(flight => {
         if (flight.interpolatedPositions && flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
             const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
             flight.latitude = interpolatedPosition.latitude;
@@ -968,82 +971,7 @@ function interpolateNextPositions() {
         }
     });
 
-    renderFlightsTable(interpolatedFlights);
-}
-
-// ============================
-// Calculations
-// ============================
-
-// Calculate distance using the Haversine formula
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440; // Earth's radius in nautical miles
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
-    const Δφ = toRadians(lat2 - lat1), Δλ = toRadians(lon2 - lon1);
-
-    const a = Math.sin(Δφ / 2) ** 2 +
-              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-// Calculate bearing
-function calculateBearing(lat1, lon1, lat2, lon2) {
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const toDegrees = (radians) => radians * (180 / Math.PI);
-
-    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
-    const Δλ = toRadians(lon2 - lon1);
-
-    const y = Math.sin(Δλ) * Math.cos(φ2);
-    const x = Math.cos(φ1) * Math.sin(φ2) -
-              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-
-    return (toDegrees(Math.atan2(y, x)) + 360) % 360;
-}
-
-// Calculate ETA
-function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
-    if (!groundSpeed || groundSpeed <= 0 || heading == null) {
-        return 'N/A'; // Cannot calculate ETA without valid inputs
-    }
-
-    // Calculate the distance to the destination
-    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
-    if (!distance || distance <= 0) {
-        return 'N/A'; // Cannot calculate ETA with invalid distance
-    }
-
-    // Calculate ETA in hours
-    const timeInHours = distance / groundSpeed;
-
-    // Convert hours to minutes and seconds
-    const totalSeconds = Math.round(timeInHours * 3600);
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const remainingSeconds = totalSeconds % 60;
-
-    // Represent ETA above 12 hours
-    if (totalMinutes > 720) {
-        return '>12hrs';
-    }
-
-    // Format ETA as "minutes:seconds"
-    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
-
-// Parses ETA string in "minutes:seconds" format to total seconds
-function parseETAInSeconds(eta) {
-    if (typeof eta !== 'string' || eta === 'N/A' || eta.startsWith('>')) {
-        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid or undefined ETAs
-    }
-
-    const [minutes, seconds] = eta.split(':').map(Number);
-    if (isNaN(minutes) || isNaN(seconds)) {
-        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid formats
-    }
-
-    return minutes * 60 + seconds;
+    renderFlightsTable(getFlights);
 }
 
 
@@ -1063,12 +991,12 @@ function clearHighlights() {
 
 function highlightCloseETAs() {
     clearHighlights();
-    
+
     const rows = document.querySelectorAll('#flightsTable tbody tr');
     if (!rows.length) return; // Exit if no rows exist
 
     // Determine groups: All flights if no filter, or split into bold/non-bold based on heading
-    let boldGroup = allFlights;
+    let boldGroup = getFlights;
     let nonBoldGroup = [];
 
     if (headingHighlightEnabled) {
@@ -1081,27 +1009,26 @@ function highlightCloseETAs() {
         }
 
         // Split flights into bold and non-bold groups based on heading
-        boldGroup = allFlights.filter(flight =>
+        boldGroup = getFlights.filter(flight =>
             flight.headingFromAirport >= minHeading && flight.headingFromAirport <= maxHeading
         );
 
-        nonBoldGroup = allFlights.filter(flight =>
+        nonBoldGroup = getFlights.filter(flight =>
             flight.headingFromAirport < minHeading || flight.headingFromAirport > maxHeading
         );
     }
 
-    // Sort all flights by ETA before highlighting
-    allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+    // Sort flights by ETA before highlighting
+    getFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
     // Highlight the two groups separately
     highlightGroup(boldGroup, rows, '#fffa9f'); // Yellow for bold group
     highlightGroup(nonBoldGroup, rows, '#80daeb'); // Blue for non-bold group
 }
 
-// Highlight a specific group of flights
 function highlightGroup(group, rows, baseColor) {
     group.forEach((flight, index) => {
-        const currentRow = rows[allFlights.indexOf(flight)];
+        const currentRow = rows[getFlights.indexOf(flight)];
 
         // Skip if the row is hidden
         const isHidden =
@@ -1189,10 +1116,10 @@ function getHigherPriorityColor(color1, color2) {
 // Apply highlights to a row
 function applyHighlight(row, color) {
     const currentColor = rgbToHex(row.style.backgroundColor);
-    
+
     if (!currentColor || getHigherPriorityColor(color, currentColor) === color) {
         row.style.backgroundColor = color;
-        
+
         if (color) {
             row.classList.add('highlighted');
         }
@@ -1571,18 +1498,18 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
     tableBody.innerHTML = "";
 
-    if (!Array.isArray(allFlights) || allFlights.length === 0) {
+    if (!Array.isArray(getFlights) || getFlights.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
         return;
     }
 
     try {
-        const aircraftIds = allFlights.map(flight => flight.aircraftId);
+        const aircraftIds = getFlights.map(flight => flight.aircraftId);
         const aircraftMachDetails = await pairAircraftData(aircraftIds);
 
-        allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
+        getFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        allFlights.forEach(flight => {
+        getFlights.forEach(flight => {
             const row = document.createElement("tr");
 
             // Handle visibility and filtering

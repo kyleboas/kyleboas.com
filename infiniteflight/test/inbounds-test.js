@@ -177,6 +177,8 @@ pairAircraftData(aircraftIds).then(pairedData => {
 
 });
 
+
+
 // ============================
 // Fetch Functions
 // ============================
@@ -202,27 +204,64 @@ async function fetchWithProxy(endpoint) {
     }
 }
 
-// Fetch Aircraft Type
-async function fetchAircraftType(aircraftId) {
-    const endpoint = `/aircraft/${aircraftId}/liveries`;
-    try {
-        const response = await fetchWithProxy(endpoint);
-        const result = response.result;
 
-        if (result && result.length > 0) {
-            return result[0].aircraftName; // Return the first result's aircraft name
-        } else {
-            console.warn(`No data found for aircraftId: ${aircraftId}`);
-            return "Unknown Aircraft";
-        }
-    } catch (error) {
-        console.error(`Error fetching aircraft type for ID ${aircraftId}:`, error.message);
-        return "Unknown Aircraft";
+
+let statusDataCache = null;
+let statusDataFetchPromise = null;
+
+/**
+ * Fetch status data once and cache it
+ */
+async function fetchStatusData() {
+    
+    // Return cached data if available
+    if (statusDataCache) {
+        return statusDataCache;
     }
+
+    // Return the ongoing fetch promise if one exists
+    if (statusDataFetchPromise) {
+        return statusDataFetchPromise;
+    }
+
+    // Start the fetch process
+    statusDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`)
+        .then((data) => {
+
+            // Basic validation
+            if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
+                console.error("Invalid status data received:", data);
+                throw new Error("Invalid status data format.");
+            }
+
+            // Cache the result
+            statusDataCache = data.result;
+            return statusDataCache;
+        })
+        .catch((error) => {
+            console.error("Error fetching status data:", error.message);
+
+            // Clear cache on error
+            statusDataCache = null;
+            statusDataFetchPromise = null;
+            throw error;
+        });
+
+    // Return the fetch promise
+    return statusDataFetchPromise;
+}
+
+function clearStatusDataCache() {
+    statusDataCache = null;
+    statusDataFetchPromise = null;
 }
 
 // ============================
-// Refactor Fetch Logic
+// World
+// ============================
+
+// ============================
+// ATC
 // ============================
 
 let atcDataCache = null;
@@ -276,60 +315,6 @@ function clearATCDataCache() {
     atcDataFetchPromise = null;
 }
 
-let statusDataCache = null;
-let statusDataFetchPromise = null;
-
-/**
- * Fetch status data once and cache it
- */
-async function fetchStatusData() {
-    
-    // Return cached data if available
-    if (statusDataCache) {
-        return statusDataCache;
-    }
-
-    // Return the ongoing fetch promise if one exists
-    if (statusDataFetchPromise) {
-        return statusDataFetchPromise;
-    }
-
-    // Start the fetch process
-    statusDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`)
-        .then((data) => {
-
-            // Basic validation
-            if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
-                console.error("Invalid status data received:", data);
-                throw new Error("Invalid status data format.");
-            }
-
-            // Cache the result
-            statusDataCache = data.result;
-            return statusDataCache;
-        })
-        .catch((error) => {
-            console.error("Error fetching status data:", error.message);
-
-            // Clear cache on error
-            statusDataCache = null;
-            statusDataFetchPromise = null;
-            throw error;
-        });
-
-    // Return the fetch promise
-    return statusDataFetchPromise;
-}
-
-function clearStatusDataCache() {
-    statusDataCache = null;
-    statusDataFetchPromise = null;
-}
-
-
-// ============================
-// async functions
-// ============================
 
 async function fetchActiveATCAirports() {
     try {
@@ -409,6 +394,10 @@ async function fetchActiveATCAirports() {
     }
 }
 
+// ============================
+// Airport
+// ============================
+
 // Fetch airport latitude and longitude
 async function fetchAirportCoordinates(icao) {
     const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);
@@ -427,452 +416,6 @@ async function fetchAirportCoordinates(icao) {
         return null;
     }
 }
-
-// Fetch inbound flight IDs
-async function fetchInboundFlightIds(icao) {
-    const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
-    if (cached) {
-        return cached;
-    }
-
-    try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
-        const inboundFlights = data.result.inboundFlights || [];
-        setCache(icao, inboundFlights, 'inboundFlightIds');
-        return inboundFlights;
-    } catch (error) {
-        console.error('Error fetching inbound flight IDs:', error.message);
-        alert('Failed to fetch inbound flight IDs.');
-        return [];
-    }
-}
-
-// Fetch inbound flight details
-async function fetchInboundFlightDetails(inboundFlightIds) {
-    try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
-        
-        // Filter flights based on the provided IDs
-        const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
-
-        // Ensure only unique flight details are returned
-        const uniqueFlights = [...new Map(flightsFromApi.map(f => [f.flightId, f])).values()];
-
-        // Map relevant details
-        return uniqueFlights.map(flight => ({
-            flightId: flight.flightId,
-            callsign: flight.callsign || "N/A",
-            aircraftId: flight.aircraftId || "N/A",
-            aircraftName: aircraftMachDetails[flight.aircraftId]?.name || "UNKN",
-            latitude: flight.latitude || null,
-            longitude: flight.longitude || null,
-            altitude: Math.round(flight.altitude) || "N/A",
-            speed: Math.round(flight.speed) || "N/A",
-            heading: Math.round(flight.heading) || "N/A",
-            lastReport: flight.lastReport || "N/A",
-            virtualOrganization: flight.virtualOrganization || "N/A",
-        }));
-    } catch (error) {
-        console.error("Error fetching flight details:", error.message);
-        alert("Failed to fetch flight details.");
-        stopAutoUpdate();
-        return [];
-    }
-}
-
-// ============================
-// Fill Gaps Between API Updates
-// ============================
-
-function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 20) {
-    const positions = [];
-    let currentLat = startLat;
-    let currentLon = startLon;
-
-    // Fill positions for each second until the next API update
-    for (let t = 0; t < interval; t++) {
-        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // 1-second step
-        positions.push({ time: t, latitude: newPosition.latitude, longitude: newPosition.longitude });
-        currentLat = newPosition.latitude;
-        currentLon = newPosition.longitude;
-    }
-
-    return positions;
-}
-
-// Fetch ATIS
-async function fetchAirportATIS(icao) {
-    const atisElement = document.getElementById('atisMessage');
-    if (atisElement) atisElement.textContent = 'Fetching ATIS...';
-
-    const cached = getCache(icao, 'atis', cacheExpiration.atis);
-    if (cached) {
-        displayATIS(cached); // Display cached ATIS
-        return cached;
-    }
-
-    try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`);
-        const atis = data.result || 'ATIS not available'; // Use `data.result`
-        setCache(icao, atis, 'atis');
-        displayATIS(atis); // Display fetched ATIS
-        return atis;
-    } catch (error) {
-        console.error('Error fetching ATIS:', error.message);
-        displayATIS('ATIS not available');
-        return 'ATIS not available';
-    }
-}
-
-// Fetch Controllers
-async function fetchControllers(icao) {
-    const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
-    if (cached) {
-        displayControllers(cached); // Display cached controllers
-        return cached;
-    }
-
-    try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
-        const controllers = (data.result.atcFacilities || [])
-            .map(facility => {
-                const frequencyTypes = {
-                    0: "Ground",
-                    1: "Tower",
-                    2: "Unicom",
-                    3: "Clearance",
-                    4: "Approach",
-                    5: "Departure",
-                    6: "Center", // Center frequency
-                    7: "ATIS",
-                };
-                const frequencyName = frequencyTypes[facility.type] || "Unknown";
-                return { frequencyName, username: facility.username, type: facility.type };
-            });
-
-        // Sort controllers by a specific order
-        const sortedControllers = controllers.sort((a, b) => {
-            const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
-            const indexA = order.indexOf(a.frequencyName);
-            const indexB = order.indexOf(b.frequencyName);
-            return indexA - indexB;
-        }).map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
-
-        // Extract only Center frequencies
-        const centerFrequencies = controllers
-            .filter(ctrl => ctrl.frequencyName === "Center")
-            .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
-
-        setCache(icao, sortedControllers, 'controllers');
-        displayControllers(sortedControllers, centerFrequencies); // Pass both sorted controllers and centers
-        return sortedControllers;
-    } catch (error) {
-        console.error('Error fetching controllers:', error.message);
-        displayControllers(['No active controllers available'], []);
-        return [];
-    }
-}
-
-// ============================
-// Update distances, ETA, and headings
-// ============================
-
-async function updateDistancesAndETAs(flights, airportCoordinates) {
-    for (const flight of flights) {
-        try {
-            if (
-                !airportCoordinates ||
-                !flight.latitude ||
-                !flight.longitude ||
-                !flight.speed ||
-                flight.speed <= 0
-            ) {
-                flight.distanceToDestination = 'N/A';
-                flight.etaMinutes = 'N/A';
-                flight.headingFromAirport = 'N/A';
-                continue;
-            }
-
-            flight.distanceToDestination = Math.ceil(
-                calculateDistance(
-                    flight.latitude,
-                    flight.longitude,
-                    airportCoordinates.latitude,
-                    airportCoordinates.longitude
-                )
-            );
-
-            flight.etaMinutes = calculateETA(
-                flight.latitude,
-                flight.longitude,
-                airportCoordinates.latitude,
-                airportCoordinates.longitude,
-                flight.speed,
-                flight.heading
-            );
-
-            flight.headingFromAirport = calculateBearing(
-                airportCoordinates.latitude,
-                airportCoordinates.longitude,
-                flight.latitude,
-                flight.longitude
-            );
-        } catch (error) {
-            console.error(`Error updating flight ${flight.callsign || 'Unknown'}:`, error.message);
-            flight.distanceToDestination = 'N/A';
-            flight.etaMinutes = 'N/A';
-            flight.headingFromAirport = 'N/A';
-        }
-    }
-}
-
-// Helper functions with validations
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    // Validate coordinates
-    if (
-        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
-        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
-    ) {
-        throw new Error("Invalid coordinates provided for distance calculation.");
-    }
-
-    const R = 3440; // Earth's radius in nautical miles
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
-    const Δφ = toRadians(lat2 - lat1), Δλ = toRadians(lon2 - lon1);
-
-    const a = Math.sin(Δφ / 2) ** 2 +
-              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-function calculateBearing(lat1, lon1, lat2, lon2) {
-    // Validate coordinates
-    if (
-        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
-        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
-    ) {
-        throw new Error("Invalid coordinates provided for bearing calculation.");
-    }
-
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const toDegrees = (radians) => radians * (180 / Math.PI);
-
-    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
-    const Δλ = toRadians(lon2 - lon1);
-
-    const y = Math.sin(Δλ) * Math.cos(φ2);
-    const x = Math.cos(φ1) * Math.sin(φ2) -
-              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-
-    return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360
-}
-
-function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
-    // Validate inputs
-    if (
-        !groundSpeed || groundSpeed <= 0 ||
-        currentLat == null || currentLon == null || destLat == null || destLon == null ||
-        isNaN(currentLat) || isNaN(currentLon) || isNaN(destLat) || isNaN(destLon)
-    ) {
-        return 'N/A'; // Cannot calculate ETA without valid inputs
-    }
-
-    // Calculate the distance to the destination
-    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
-    if (!distance || distance <= 0) {
-        return 'N/A'; // Cannot calculate ETA with invalid distance
-    }
-
-    // Calculate ETA in hours
-    const timeInHours = distance / groundSpeed;
-
-    // Convert hours to minutes and seconds
-    const totalSeconds = Math.round(timeInHours * 3600);
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const remainingSeconds = totalSeconds % 60;
-
-    // Represent ETA above 12 hours
-    if (totalMinutes > 720) {
-        return '>12hrs';
-    }
-
-    // Format ETA as "minutes:seconds"
-    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
-
-// ============================
-// Fetch and update flights
-// ============================
-
-async function fetchAndUpdateFlights(icao) {
-    try {
-        // Ensure the main airport section is visible
-        document.querySelector('.mainAirport').style.display = 'block';
-        document.getElementById('atisMessage').style.display = 'block';
-        document.getElementById('controllersList').style.display = 'block';
-
-        // Fetch ATIS and Controllers
-        const atis = await fetchAirportATIS(icao, 'atisMessage');
-        const controllers = await fetchControllers(icao, 'controllersList');
-
-        // Display ATIS and Controllers
-        displayATIS(atis);
-        displayControllers(controllers);
-
-        // Fetch flights and update the table
-        const inboundFlightIds = await fetchInboundFlightIds(icao);
-        if (!inboundFlightIds.length) {
-            console.warn("No inbound flights found for ICAO:", icao);
-            allFlights = [];
-            interpolatedFlights = [];
-            renderFlightsTable(allFlights);
-            return;
-        }
-
-        const flights = await fetchInboundFlightDetails(inboundFlightIds);
-        const airportCoordinates = await fetchAirportCoordinates(icao);
-
-        if (!airportCoordinates) {
-            console.warn("No coordinates found for airport ICAO:", icao);
-            throw new Error("Failed to fetch airport coordinates.");
-        }
-
-        await updateDistancesAndETAs(flights, airportCoordinates);
-
-        // Prepare interpolation data
-        flights.forEach(flight => {
-            if (flight.latitude && flight.longitude && flight.speed > 0 && flight.heading != null) {
-                flight.interpolatedPositions = fillGapsBetweenUpdates(
-                    flight.latitude,
-                    flight.longitude,
-                    flight.speed,
-                    flight.heading,
-                    20 // 20-second interval
-                );
-            } else {
-                flight.interpolatedPositions = [];
-            }
-        });
-
-        // Update global state
-        allFlights = flights;
-        interpolatedFlights = JSON.parse(JSON.stringify(flights)); // Clone for interpolation
-        lastApiUpdateTime = Date.now();
-
-        renderFlightsTable(allFlights);
-    } catch (error) {
-        console.error("Error fetching flights or controllers:", error.message);
-        allFlights = [];
-        interpolatedFlights = [];
-        renderFlightsTable(allFlights);
-        document.getElementById('atisMessage').textContent = "ATIS not available.";
-        document.getElementById('controllersList').textContent = "No controllers online.";
-    }
-}
-
-
-function interpolateNextPositions() {
-    const currentTime = Date.now();
-    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
-
-    // Update interpolated positions for each flight
-    interpolatedFlights.forEach(flight => {
-        if (flight.interpolatedPositions && flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
-            const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
-            flight.latitude = interpolatedPosition.latitude;
-            flight.longitude = interpolatedPosition.longitude;
-        }
-    });
-
-    renderFlightsTable(interpolatedFlights);
-}
-
-// ============================
-// Calculations
-// ============================
-
-// Calculate distance using the Haversine formula
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440; // Earth's radius in nautical miles
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
-    const Δφ = toRadians(lat2 - lat1), Δλ = toRadians(lon2 - lon1);
-
-    const a = Math.sin(Δφ / 2) ** 2 +
-              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-// Calculate bearing
-function calculateBearing(lat1, lon1, lat2, lon2) {
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const toDegrees = (radians) => radians * (180 / Math.PI);
-
-    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
-    const Δλ = toRadians(lon2 - lon1);
-
-    const y = Math.sin(Δλ) * Math.cos(φ2);
-    const x = Math.cos(φ1) * Math.sin(φ2) -
-              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-
-    return (toDegrees(Math.atan2(y, x)) + 360) % 360;
-}
-
-// Calculate ETA
-function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
-    if (!groundSpeed || groundSpeed <= 0 || heading == null) {
-        return 'N/A'; // Cannot calculate ETA without valid inputs
-    }
-
-    // Calculate the distance to the destination
-    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
-    if (!distance || distance <= 0) {
-        return 'N/A'; // Cannot calculate ETA with invalid distance
-    }
-
-    // Calculate ETA in hours
-    const timeInHours = distance / groundSpeed;
-
-    // Convert hours to minutes and seconds
-    const totalSeconds = Math.round(timeInHours * 3600);
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const remainingSeconds = totalSeconds % 60;
-
-    // Represent ETA above 12 hours
-    if (totalMinutes > 720) {
-        return '>12hrs';
-    }
-
-    // Format ETA as "minutes:seconds"
-    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
-
-// Parses ETA string in "minutes:seconds" format to total seconds
-function parseETAInSeconds(eta) {
-    if (typeof eta !== 'string' || eta === 'N/A' || eta.startsWith('>')) {
-        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid or undefined ETAs
-    }
-
-    const [minutes, seconds] = eta.split(':').map(Number);
-    if (isNaN(minutes) || isNaN(seconds)) {
-        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid formats
-    }
-
-    return minutes * 60 + seconds;
-}
-
-
-// ============================
-// Display Functions
-// ============================
-
-// ============================
-// Secondary Airport Functions
-// ============================
 
 // Fetch ATIS for secondary airports using shared cache
 async function fetchSecondaryATIS(icao) {
@@ -1035,6 +578,474 @@ function displayControllers(controllers, centerFrequencies = []) {
         <p>${centerControllers}</p>
     `;
 }
+
+
+// ============================
+// ATIS
+// ============================
+
+
+// Fetch ATIS
+async function fetchAirportATIS(icao) {
+    const atisElement = document.getElementById('atisMessage');
+    if (atisElement) atisElement.textContent = 'Fetching ATIS...';
+
+    const cached = getCache(icao, 'atis', cacheExpiration.atis);
+    if (cached) {
+        displayATIS(cached); // Display cached ATIS
+        return cached;
+    }
+
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`);
+        const atis = data.result || 'ATIS not available'; // Use `data.result`
+        setCache(icao, atis, 'atis');
+        displayATIS(atis); // Display fetched ATIS
+        return atis;
+    } catch (error) {
+        console.error('Error fetching ATIS:', error.message);
+        displayATIS('ATIS not available');
+        return 'ATIS not available';
+    }
+}
+
+// Fetch Controllers
+async function fetchControllers(icao) {
+    const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
+    if (cached) {
+        displayControllers(cached); // Display cached controllers
+        return cached;
+    }
+
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const controllers = (data.result.atcFacilities || [])
+            .map(facility => {
+                const frequencyTypes = {
+                    0: "Ground",
+                    1: "Tower",
+                    2: "Unicom",
+                    3: "Clearance",
+                    4: "Approach",
+                    5: "Departure",
+                    6: "Center", // Center frequency
+                    7: "ATIS",
+                };
+                const frequencyName = frequencyTypes[facility.type] || "Unknown";
+                return { frequencyName, username: facility.username, type: facility.type };
+            });
+
+        // Sort controllers by a specific order
+        const sortedControllers = controllers.sort((a, b) => {
+            const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
+            const indexA = order.indexOf(a.frequencyName);
+            const indexB = order.indexOf(b.frequencyName);
+            return indexA - indexB;
+        }).map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
+
+        // Extract only Center frequencies
+        const centerFrequencies = controllers
+            .filter(ctrl => ctrl.frequencyName === "Center")
+            .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
+
+        setCache(icao, sortedControllers, 'controllers');
+        displayControllers(sortedControllers, centerFrequencies); // Pass both sorted controllers and centers
+        return sortedControllers;
+    } catch (error) {
+        console.error('Error fetching controllers:', error.message);
+        displayControllers(['No active controllers available'], []);
+        return [];
+    }
+}
+
+// ============================
+// Status
+// ============================
+
+async function fetchStatusData() {
+    
+    // Return cached data if available
+    if (statusDataCache) {
+        return statusDataCache;
+    }
+
+    // Return the ongoing fetch promise if one exists
+    if (statusDataFetchPromise) {
+        return statusDataFetchPromise;
+    }
+
+    // Start the fetch process
+    statusDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`)
+        .then((data) => {
+
+            // Basic validation
+            if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
+                console.error("Invalid status data received:", data);
+                throw new Error("Invalid status data format.");
+            }
+
+            // Cache the result
+            statusDataCache = data.result;
+            return statusDataCache;
+        })
+        .catch((error) => {
+            console.error("Error fetching status data:", error.message);
+
+            // Clear cache on error
+            statusDataCache = null;
+            statusDataFetchPromise = null;
+            throw error;
+        });
+
+    // Return the fetch promise
+    return statusDataFetchPromise;
+}
+
+function clearStatusDataCache() {
+    statusDataCache = null;
+    statusDataFetchPromise = null;
+}
+
+// ============================
+// Flights
+// ============================
+
+// Fetch inbound flight details
+async function fetchInboundFlightDetails(inboundFlightIds) {
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        
+        // Filter flights based on the provided IDs
+        const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
+
+        // Ensure only unique flight details are returned
+        const uniqueFlights = [...new Map(flightsFromApi.map(f => [f.flightId, f])).values()];
+
+        // Map relevant details
+        return uniqueFlights.map(flight => ({
+            flightId: flight.flightId,
+            callsign: flight.callsign || "N/A",
+            aircraftId: flight.aircraftId || "N/A",
+            aircraftName: aircraftMachDetails[flight.aircraftId]?.name || "UNKN",
+            latitude: flight.latitude || null,
+            longitude: flight.longitude || null,
+            altitude: Math.round(flight.altitude) || "N/A",
+            speed: Math.round(flight.speed) || "N/A",
+            heading: Math.round(flight.heading) || "N/A",
+            lastReport: flight.lastReport || "N/A",
+            virtualOrganization: flight.virtualOrganization || "N/A",
+        }));
+    } catch (error) {
+        console.error("Error fetching flight details:", error.message);
+        alert("Failed to fetch flight details.");
+        stopAutoUpdate();
+        return [];
+    }
+}
+
+function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 20) {
+    const positions = [];
+    let currentLat = startLat;
+    let currentLon = startLon;
+
+    // Fill positions for each second until the next API update
+    for (let t = 0; t < interval; t++) {
+        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // 1-second step
+        positions.push({ time: t, latitude: newPosition.latitude, longitude: newPosition.longitude });
+        currentLat = newPosition.latitude;
+        currentLon = newPosition.longitude;
+    }
+
+    return positions;
+}
+
+async function updateDistancesAndETAs(flights, airportCoordinates) {
+    for (const flight of flights) {
+        try {
+            if (
+                !airportCoordinates ||
+                !flight.latitude ||
+                !flight.longitude ||
+                !flight.speed ||
+                flight.speed <= 0
+            ) {
+                flight.distanceToDestination = 'N/A';
+                flight.etaMinutes = 'N/A';
+                flight.headingFromAirport = 'N/A';
+                continue;
+            }
+
+            flight.distanceToDestination = Math.ceil(
+                calculateDistance(
+                    flight.latitude,
+                    flight.longitude,
+                    airportCoordinates.latitude,
+                    airportCoordinates.longitude
+                )
+            );
+
+            flight.etaMinutes = calculateETA(
+                flight.latitude,
+                flight.longitude,
+                airportCoordinates.latitude,
+                airportCoordinates.longitude,
+                flight.speed,
+                flight.heading
+            );
+
+            flight.headingFromAirport = calculateBearing(
+                airportCoordinates.latitude,
+                airportCoordinates.longitude,
+                flight.latitude,
+                flight.longitude
+            );
+        } catch (error) {
+            console.error(`Error updating flight ${flight.callsign || 'Unknown'}:`, error.message);
+            flight.distanceToDestination = 'N/A';
+            flight.etaMinutes = 'N/A';
+            flight.headingFromAirport = 'N/A';
+        }
+    }
+}
+
+// Helper functions with validations
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    // Validate coordinates
+    if (
+        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
+        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
+    ) {
+        throw new Error("Invalid coordinates provided for distance calculation.");
+    }
+
+    const R = 3440; // Earth's radius in nautical miles
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+    const Δφ = toRadians(lat2 - lat1), Δλ = toRadians(lon2 - lon1);
+
+    const a = Math.sin(Δφ / 2) ** 2 +
+              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function calculateBearing(lat1, lon1, lat2, lon2) {
+    // Validate coordinates
+    if (
+        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
+        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
+    ) {
+        throw new Error("Invalid coordinates provided for bearing calculation.");
+    }
+
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const toDegrees = (radians) => radians * (180 / Math.PI);
+
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) -
+              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+    return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360
+}
+
+function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
+    // Validate inputs
+    if (
+        !groundSpeed || groundSpeed <= 0 ||
+        currentLat == null || currentLon == null || destLat == null || destLon == null ||
+        isNaN(currentLat) || isNaN(currentLon) || isNaN(destLat) || isNaN(destLon)
+    ) {
+        return 'N/A'; // Cannot calculate ETA without valid inputs
+    }
+
+    // Calculate the distance to the destination
+    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
+    if (!distance || distance <= 0) {
+        return 'N/A'; // Cannot calculate ETA with invalid distance
+    }
+
+    // Calculate ETA in hours
+    const timeInHours = distance / groundSpeed;
+
+    // Convert hours to minutes and seconds
+    const totalSeconds = Math.round(timeInHours * 3600);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+
+    // Represent ETA above 12 hours
+    if (totalMinutes > 720) {
+        return '>12hrs';
+    }
+
+    // Format ETA as "minutes:seconds"
+    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+
+// Fetch and update flights
+
+async function fetchAndUpdateFlights(icao) {
+    try {
+        // Ensure the main airport section is visible
+        document.querySelector('.mainAirport').style.display = 'block';
+        document.getElementById('atisMessage').style.display = 'block';
+        document.getElementById('controllersList').style.display = 'block';
+
+        // Fetch ATIS and Controllers
+        const atis = await fetchAirportATIS(icao, 'atisMessage');
+        const controllers = await fetchControllers(icao, 'controllersList');
+
+        // Display ATIS and Controllers
+        displayATIS(atis);
+        displayControllers(controllers);
+
+        // Fetch flights and update the table
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        if (!inboundFlightIds.length) {
+            console.warn("No inbound flights found for ICAO:", icao);
+            allFlights = [];
+            interpolatedFlights = [];
+            renderFlightsTable(allFlights);
+            return;
+        }
+
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
+        const airportCoordinates = await fetchAirportCoordinates(icao);
+
+        if (!airportCoordinates) {
+            console.warn("No coordinates found for airport ICAO:", icao);
+            throw new Error("Failed to fetch airport coordinates.");
+        }
+
+        await updateDistancesAndETAs(flights, airportCoordinates);
+
+        // Prepare interpolation data
+        flights.forEach(flight => {
+            if (flight.latitude && flight.longitude && flight.speed > 0 && flight.heading != null) {
+                flight.interpolatedPositions = fillGapsBetweenUpdates(
+                    flight.latitude,
+                    flight.longitude,
+                    flight.speed,
+                    flight.heading,
+                    20 // 20-second interval
+                );
+            } else {
+                flight.interpolatedPositions = [];
+            }
+        });
+
+        // Update global state
+        allFlights = flights;
+        interpolatedFlights = JSON.parse(JSON.stringify(flights)); // Clone for interpolation
+        lastApiUpdateTime = Date.now();
+
+        renderFlightsTable(allFlights);
+    } catch (error) {
+        console.error("Error fetching flights or controllers:", error.message);
+        allFlights = [];
+        interpolatedFlights = [];
+        renderFlightsTable(allFlights);
+        document.getElementById('atisMessage').textContent = "ATIS not available.";
+        document.getElementById('controllersList').textContent = "No controllers online.";
+    }
+}
+
+
+function interpolateNextPositions() {
+    const currentTime = Date.now();
+    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
+
+    // Update interpolated positions for each flight
+    interpolatedFlights.forEach(flight => {
+        if (flight.interpolatedPositions && flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
+            const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
+            flight.latitude = interpolatedPosition.latitude;
+            flight.longitude = interpolatedPosition.longitude;
+        }
+    });
+
+    renderFlightsTable(interpolatedFlights);
+}
+
+// ============================
+// Calculations
+// ============================
+
+// Calculate distance using the Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 3440; // Earth's radius in nautical miles
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+    const Δφ = toRadians(lat2 - lat1), Δλ = toRadians(lon2 - lon1);
+
+    const a = Math.sin(Δφ / 2) ** 2 +
+              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Calculate bearing
+function calculateBearing(lat1, lon1, lat2, lon2) {
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const toDegrees = (radians) => radians * (180 / Math.PI);
+
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) -
+              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+    return (toDegrees(Math.atan2(y, x)) + 360) % 360;
+}
+
+// Calculate ETA
+function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
+    if (!groundSpeed || groundSpeed <= 0 || heading == null) {
+        return 'N/A'; // Cannot calculate ETA without valid inputs
+    }
+
+    // Calculate the distance to the destination
+    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
+    if (!distance || distance <= 0) {
+        return 'N/A'; // Cannot calculate ETA with invalid distance
+    }
+
+    // Calculate ETA in hours
+    const timeInHours = distance / groundSpeed;
+
+    // Convert hours to minutes and seconds
+    const totalSeconds = Math.round(timeInHours * 3600);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+
+    // Represent ETA above 12 hours
+    if (totalMinutes > 720) {
+        return '>12hrs';
+    }
+
+    // Format ETA as "minutes:seconds"
+    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+// Parses ETA string in "minutes:seconds" format to total seconds
+function parseETAInSeconds(eta) {
+    if (typeof eta !== 'string' || eta === 'N/A' || eta.startsWith('>')) {
+        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid or undefined ETAs
+    }
+
+    const [minutes, seconds] = eta.split(':').map(Number);
+    if (isNaN(minutes) || isNaN(seconds)) {
+        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid formats
+    }
+
+    return minutes * 60 + seconds;
+}
+
 
 // ============================
 // Highlights
@@ -1207,6 +1218,11 @@ function rgbToHex(rgb) {
     return `#${r}${g}${b}`;
 }
 
+// ============================
+// Buttons
+// ============================
+
+
 // Toggle Heading Highlight and reapply highlights
 document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
     const minHeadingInput = document.getElementById('minHeading').value;
@@ -1233,9 +1249,7 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
     highlightCloseETAs(); // Reapply highlighting with the heading filter
 });
 
-// ============================
 // Toggle Heading Button Functionality
-// ============================
 
 // Modify the toggleHeadingButton click listener
 document.getElementById('toggleHeadingButton').addEventListener('click', () => {
@@ -1251,9 +1265,7 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     renderFlightsTable(allFlights, hideOtherAircraft);
 });
 
-// ============================
 // Bold Heading Button Functionality
-// ============================
 
 const boldHeadingBorder = document.getElementById('boldHeadingBorder');
 const boldHeadingButton = document.getElementById('boldHeadingButton');
@@ -1281,9 +1293,8 @@ boldHeadingButton.addEventListener('click', () => {
     renderFlightsTable(allFlights);
 });
 
-// ============================
+
 // Toggle Apply Distance Filter
-// ============================
 
 // Apply Distance Filter
 document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
@@ -1328,12 +1339,10 @@ document.getElementById('resetDistanceFilterButton').addEventListener('click', (
     document.getElementById('applyDistanceFilterButton').textContent = 'Enable';
 
     // Re-render the table without any filters
-    renderFlightsTable(allFlights);
+    renderFlightsTable(getFlights);
 });
 
-// ============================
 // Helper Function: Update row visibility and styling
-// ============================
 
 function updateRowVisibility(row, flight) {
     const isWithinHeadingRange =
@@ -1372,6 +1381,7 @@ function getHeadingArrow(heading) {
     const index = Math.round(heading / 45) % 8; // Determine direction index
     return `<span class="arrow ${directions[index]}"></span>`; // Add arrow class
 }
+
 
 // ============================
 // ATC Table Rendering
@@ -1587,12 +1597,6 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                  flight.headingFromAirport > boldedHeadings.maxHeading));
 
             const isVisible = isWithinDistanceRange;
-
-        row.style.display = isVisible ? '' : 'none';
-            // Determine if the row represents an "other" aircraft
-const isOtherAircraft = !hideFilter || (boldHeadingEnabled &&
-    (flight.headingFromAirport < boldedHeadings.minHeading ||
-     flight.headingFromAirport > boldedHeadings.maxHeading));
             
             // Apply styles for hidden or visible aircraft
             row.style.display = isVisible ? '' : 'none';
@@ -1662,23 +1666,8 @@ const isOtherAircraft = !hideFilter || (boldHeadingEnabled &&
 }
 
 // ============================
-// Reset Distance Filter
+// Auto-Update
 // ============================
-
-document.getElementById('resetDistanceFilterButton').addEventListener('click', () => {
-    minDistance = null;
-    maxDistance = null;
-
-    document.getElementById('minDistance').value = '';
-    document.getElementById('maxDistance').value = '';
-
-    // Disable the distance filter
-    applyDistanceFilterEnabled = false;
-    document.getElementById('applyDistanceFilterButton').textContent = 'Enable Distance Filter';
-
-    // Re-render the table without any filters
-    renderFlightsTable(allFlights);
-});
 
 // Stop auto-update
 function stopAutoUpdate() {
@@ -1687,29 +1676,6 @@ function stopAutoUpdate() {
     if (countdownInterval) clearInterval(countdownInterval);
 
     updateInterval = null;
-    updateTimeout = null;
-    countdownInterval = null;
-
-    document.getElementById('stopUpdateButton').style.display = 'none';
-    document.getElementById('countdownTimer').style.display = 'none';
-}
-
-// Manual update ATIS and Controllers
-document.getElementById('manualUpdateButton').addEventListener('click', async () => {
-    const icao = document.getElementById('icao').value.trim().toUpperCase();
-    if (!icao) {
-        alert('Please enter a valid ICAO code.');
-        return;
-    }
-
-    try {
-        await fetchAirportATIS(icao);
-        await fetchControllers(icao);
-    } catch (error) {
-        console.error('Error during manual update:', error.message);
-        alert('Failed to update ATIS and Controllers. Check console for details.');
-    }
-});
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
