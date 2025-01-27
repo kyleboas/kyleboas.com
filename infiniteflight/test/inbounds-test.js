@@ -20,9 +20,6 @@ let boldHeadingEnabled = false;
 let applyDistanceFilterEnabled = false;
 let isAutoUpdateActive = false;
 
-let interpolatedFlights = [];
-let lastApiUpdateTime = null;
-
 // ============================
 // Cookie Utility Functions
 // ============================
@@ -480,26 +477,6 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
-// ============================
-// Fill Gaps Between API Updates
-// ============================
-
-function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 20) {
-    const positions = [];
-    let currentLat = startLat;
-    let currentLon = startLon;
-
-    // Fill positions for each second until the next API update
-    for (let t = 0; t < interval; t++) {
-        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // 1-second step
-        positions.push({ time: t, latitude: newPosition.latitude, longitude: newPosition.longitude });
-        currentLat = newPosition.latitude;
-        currentLon = newPosition.longitude;
-    }
-
-    return positions;
-}
-
 // Fetch ATIS
 async function fetchAirportATIS(icao) {
     const atisElement = document.getElementById('atisMessage');
@@ -626,6 +603,83 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
     }
 }
 
+// Helper functions with validations
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    // Validate coordinates
+    if (
+        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
+        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
+    ) {
+        throw new Error("Invalid coordinates provided for distance calculation.");
+    }
+
+    const R = 3440; // Earth's radius in nautical miles
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+    const Δφ = toRadians(lat2 - lat1), Δλ = toRadians(lon2 - lon1);
+
+    const a = Math.sin(Δφ / 2) ** 2 +
+              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function calculateBearing(lat1, lon1, lat2, lon2) {
+    // Validate coordinates
+    if (
+        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
+        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
+    ) {
+        throw new Error("Invalid coordinates provided for bearing calculation.");
+    }
+
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const toDegrees = (radians) => radians * (180 / Math.PI);
+
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) -
+              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+    return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360
+}
+
+function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
+    // Validate inputs
+    if (
+        !groundSpeed || groundSpeed <= 0 ||
+        currentLat == null || currentLon == null || destLat == null || destLon == null ||
+        isNaN(currentLat) || isNaN(currentLon) || isNaN(destLat) || isNaN(destLon)
+    ) {
+        return 'N/A'; // Cannot calculate ETA without valid inputs
+    }
+
+    // Calculate the distance to the destination
+    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
+    if (!distance || distance <= 0) {
+        return 'N/A'; // Cannot calculate ETA with invalid distance
+    }
+
+    // Calculate ETA in hours
+    const timeInHours = distance / groundSpeed;
+
+    // Convert hours to minutes and seconds
+    const totalSeconds = Math.round(timeInHours * 3600);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
+
+    // Represent ETA above 12 hours
+    if (totalMinutes > 720) {
+        return '>12hrs';
+    }
+
+    // Format ETA as "minutes:seconds"
+    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
 // ============================
 // Fetch and update flights
 // ============================
@@ -650,7 +704,6 @@ async function fetchAndUpdateFlights(icao) {
         if (!inboundFlightIds.length) {
             console.warn("No inbound flights found for ICAO:", icao);
             allFlights = [];
-            interpolatedFlights = [];
             renderFlightsTable(allFlights);
             return;
         }
@@ -664,53 +717,15 @@ async function fetchAndUpdateFlights(icao) {
         }
 
         await updateDistancesAndETAs(flights, airportCoordinates);
-
-        // Prepare interpolation data
-        flights.forEach(flight => {
-            if (flight.latitude && flight.longitude && flight.speed > 0 && flight.heading != null) {
-                flight.interpolatedPositions = fillGapsBetweenUpdates(
-                    flight.latitude,
-                    flight.longitude,
-                    flight.speed,
-                    flight.heading,
-                    20 // 20-second interval
-                );
-            } else {
-                flight.interpolatedPositions = [];
-            }
-        });
-
-        // Update global state
         allFlights = flights;
-        interpolatedFlights = JSON.parse(JSON.stringify(flights)); // Clone for interpolation
-        lastApiUpdateTime = Date.now();
-
         renderFlightsTable(allFlights);
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
         allFlights = [];
-        interpolatedFlights = [];
         renderFlightsTable(allFlights);
         document.getElementById('atisMessage').textContent = "ATIS not available.";
         document.getElementById('controllersList').textContent = "No controllers online.";
     }
-}
-
-
-function interpolateNextPositions() {
-    const currentTime = Date.now();
-    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
-
-    // Update interpolated positions for each flight
-    interpolatedFlights.forEach(flight => {
-        if (flight.interpolatedPositions && flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
-            const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
-            flight.latitude = interpolatedPosition.latitude;
-            flight.longitude = interpolatedPosition.longitude;
-        }
-    });
-
-    renderFlightsTable(interpolatedFlights);
 }
 
 // ============================
@@ -719,14 +734,6 @@ function interpolateNextPositions() {
 
 // Calculate distance using the Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    // Validate coordinates
-    if (
-        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
-        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
-    ) {
-        throw new Error("Invalid coordinates provided for distance calculation.");
-    }
-
     const R = 3440; // Earth's radius in nautical miles
     const toRadians = (degrees) => degrees * (Math.PI / 180);
     const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
@@ -740,14 +747,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 // Calculate bearing
 function calculateBearing(lat1, lon1, lat2, lon2) {
-    // Validate coordinates
-    if (
-        lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
-        isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)
-    ) {
-        throw new Error("Invalid coordinates provided for bearing calculation.");
-    }
-
     const toRadians = (degrees) => degrees * (Math.PI / 180);
     const toDegrees = (radians) => radians * (180 / Math.PI);
 
@@ -758,17 +757,12 @@ function calculateBearing(lat1, lon1, lat2, lon2) {
     const x = Math.cos(φ1) * Math.sin(φ2) -
               Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
 
-    return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360
+    return (toDegrees(Math.atan2(y, x)) + 360) % 360;
 }
 
 // Calculate ETA
 function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
-    // Validate inputs
-    if (
-        !groundSpeed || groundSpeed <= 0 ||
-        currentLat == null || currentLon == null || destLat == null || destLon == null ||
-        isNaN(currentLat) || isNaN(currentLon) || isNaN(destLat) || isNaN(destLon)
-    ) {
+    if (!groundSpeed || groundSpeed <= 0 || heading == null) {
         return 'N/A'; // Cannot calculate ETA without valid inputs
     }
 
@@ -1496,6 +1490,7 @@ async function renderATCTable() {
 // Table Rendering
 // ============================
 
+// Update renderFlightsTable to handle row styling for hidden aircraft
 async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
@@ -1516,30 +1511,27 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        allFlights.forEach(flight => {
+        allFlights.forEach((flight) => {
             const row = document.createElement("tr");
-
-            // Handle visibility and filtering
+            
             const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
-                typeof flight.distanceToDestination === 'number' &&
-                flight.distanceToDestination >= (minDistance ?? 0) &&
-                flight.distanceToDestination <= (maxDistance ?? Infinity)
-            );
-
-            const isOtherAircraft = !hideFilter || (boldHeadingEnabled &&
-                (flight.headingFromAirport < boldedHeadings.minHeading ||
-                 flight.headingFromAirport > boldedHeadings.maxHeading));
-
+            typeof flight.distanceToDestination === 'number' &&
+            flight.distanceToDestination >= (minDistance ?? 0) &&
+            flight.distanceToDestination <= (maxDistance ?? Infinity)
+        );
+            
             const isVisible = isWithinDistanceRange;
 
-            row.style.display = isVisible ? '' : 'none';
+        row.style.display = isVisible ? '' : 'none';
+            // Determine if the row represents an "other" aircraft
+const isOtherAircraft = !hideFilter || (boldHeadingEnabled &&
+    (flight.headingFromAirport < boldedHeadings.minHeading ||
+     flight.headingFromAirport > boldedHeadings.maxHeading));
             
             // Apply styles for hidden or visible aircraft
-            row.style.display = isVisible ? '' : 'none';
             row.style.opacity = isOtherAircraft && hideFilter ? '0.3' : '1';
             row.style.pointerEvents = isOtherAircraft && hideFilter ? 'none' : 'auto';
 
-            // Add flight data
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
@@ -1574,27 +1566,11 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
                 </td>
             `;
 
-            // Append interpolated positions (optional: display on hover or as details)
-            if (flight.interpolatedPositions && flight.interpolatedPositions.length) {
-                const interpolatedRow = document.createElement("tr");
-                interpolatedRow.innerHTML = `
-                    <td colspan="5">
-                        Interpolated Positions: ${flight.interpolatedPositions
-                            .map(pos => `[${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}]`)
-                            .join(", ")}
-                    </td>
-                `;
-                interpolatedRow.style.fontSize = "small";
-                interpolatedRow.style.color = "#888";
-                tableBody.appendChild(interpolatedRow);
-            }
-
-            // Update row visibility and append to table
             updateRowVisibility(row, flight);
             tableBody.appendChild(row);
         });
 
-        highlightCloseETAs(); // Highlight rows based on close ETAs
+        highlightCloseETAs();
     } catch (error) {
         console.error("Error rendering the flights table:", error.message);
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
@@ -1713,22 +1689,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const icon = updateButton.querySelector("i");
         if (icon) icon.classList.add("spin");
 
-        // Call API every 20 seconds
-        fetchAndUpdateFlights(icao);
-        const apiUpdateInterval = 20; // 20 seconds
+        // Update flights every 5 seconds
+        flightUpdateInterval = setInterval(async () => {
+            try {
+                await fetchAndUpdateFlights(icao);
+                renderFlightsTable(allFlights, hideOtherAircraft);
+            } catch (error) {
+                console.error('Error during flight updates:', error.message);
 
-        flightUpdateInterval = setInterval(() => {
-            const timeSinceLastApi = Math.floor((Date.now() - lastApiUpdateTime) / 1000);
-
-            if (timeSinceLastApi >= apiUpdateInterval) {
-                // Fetch fresh API data
-                fetchAndUpdateFlights(icao);
-            } else {
-                // Use interpolated positions for smooth updates
-                interpolateNextPositions();
+                if (error.message.includes('rate limit') || error.message.includes('fetch')) {
+                    alert('Rate limit or network error encountered. Flight updates stopped. Alert @kyleboas on Discord.');
+                    stopAutoUpdate();
+                }
             }
-        }, 1000); // Update every second
-    }
+        }, 5000);
 
         // Update ATC data every 60 seconds
         atcUpdateInterval = setInterval(async () => {
@@ -1756,8 +1730,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (flightUpdateInterval) clearInterval(flightUpdateInterval);
         if (atcUpdateInterval) clearInterval(atcUpdateInterval);
-        flightUpdateInterval = null;
-        atcUpdateInterval = null;
     }
 
     // Add event listener for the update button
@@ -1773,7 +1745,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (isAutoUpdateActive) {
                 stopAutoUpdate();
             } else {
-                startAutoUpdate(icao); 
+                startAutoUpdate(icao);
             }
         });
     }
