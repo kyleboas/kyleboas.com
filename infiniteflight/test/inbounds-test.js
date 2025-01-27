@@ -958,7 +958,7 @@ async function fetchAndUpdateFlights(icao) {
         displayControllers(controllers);
 
         // Fetch inbound flights
-        const allInboundFlights = await fetchInboundFlightDetails(); // Corrected call
+        const allInboundFlights = await fetchInboundFlightDetails(); // Fetch flight data
         if (!Array.isArray(allInboundFlights) || !allInboundFlights.length) {
             console.warn("No inbound flights found for ICAO:", icao);
             allFlights = [];
@@ -976,7 +976,7 @@ async function fetchAndUpdateFlights(icao) {
         // Calculate distances and ETAs
         await updateDistancesAndETAs(allInboundFlights, airportCoordinates);
 
-        // Prepare interpolation data
+        // Prepare interpolation data for real-time updates
         allInboundFlights.forEach(flight => {
             if (flight.latitude && flight.longitude && flight.speed > 0 && flight.heading != null) {
                 flight.interpolatedPositions = fillGapsBetweenUpdates(
@@ -996,6 +996,7 @@ async function fetchAndUpdateFlights(icao) {
         interpolatedFlights = JSON.parse(JSON.stringify(allInboundFlights)); // Clone for interpolation
         lastApiUpdateTime = Date.now();
 
+        // Render the updated table
         renderFlightsTable(getFlights);
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
@@ -1012,16 +1013,54 @@ function interpolateNextPositions() {
     const currentTime = Date.now();
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
-    // Update interpolated positions for each flight
-    interpolatedFlights.forEach(flight => {
-        if (flight.interpolatedPositions && flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
-            const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
+    interpolatedFlights.forEach((flight) => {
+        if (
+            flight.interpolatedPositions &&
+            flight.interpolatedPositions.length > secondsSinceLastApiUpdate
+        ) {
+            const interpolatedPosition =
+                flight.interpolatedPositions[secondsSinceLastApiUpdate];
+
+            // Update flight's latitude and longitude
             flight.latitude = interpolatedPosition.latitude;
             flight.longitude = interpolatedPosition.longitude;
+
+            // Recalculate distance and ETA
+            if (flight.latitude && flight.longitude && flight.speed > 0) {
+                try {
+                    flight.distanceToDestination = Math.ceil(
+                        calculateDistance(
+                            flight.latitude,
+                            flight.longitude,
+                            airportCoordinates.latitude,
+                            airportCoordinates.longitude
+                        )
+                    );
+
+                    flight.etaMinutes = calculateETA(
+                        flight.latitude,
+                        flight.longitude,
+                        airportCoordinates.latitude,
+                        airportCoordinates.longitude,
+                        flight.speed,
+                        flight.heading
+                    );
+                } catch (error) {
+                    console.error(
+                        `Error recalculating for flight ${flight.callsign || 'Unknown'}:`,
+                        error.message
+                    );
+                    flight.distanceToDestination = 'N/A';
+                    flight.etaMinutes = 'N/A';
+                }
+            } else {
+                flight.distanceToDestination = 'N/A';
+                flight.etaMinutes = 'N/A';
+            }
         }
     });
 
-    renderFlightsTable(interpolatedFlights);
+    renderFlightsTable(getFlights);
 }
 
 // ============================
@@ -1633,6 +1672,7 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
         const aircraftIds = allFlights.map(flight => flight.aircraftId);
         const aircraftMachDetails = await pairAircraftData(aircraftIds);
 
+        // Sort flights by ETA
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
         allFlights.forEach(flight => {
@@ -1650,13 +1690,45 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
                  flight.headingFromAirport > boldedHeadings.maxHeading));
 
             const isVisible = isWithinDistanceRange;
-            
+
             // Apply styles for hidden or visible aircraft
             row.style.display = isVisible ? '' : 'none';
             row.style.opacity = isOtherAircraft && hideFilter ? '0.3' : '1';
             row.style.pointerEvents = isOtherAircraft && hideFilter ? 'none' : 'auto';
 
-            // Add flight data
+            // Recalculate distance and ETA dynamically if interpolated positions exist
+            if (flight.interpolatedPositions && flight.interpolatedPositions.length) {
+                const currentTime = Date.now();
+                const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
+
+                if (secondsSinceLastApiUpdate < flight.interpolatedPositions.length) {
+                    const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
+                    flight.latitude = interpolatedPosition.latitude;
+                    flight.longitude = interpolatedPosition.longitude;
+
+                    // Recalculate distance and ETA
+                    if (flight.latitude && flight.longitude && flight.speed > 0) {
+                        flight.distanceToDestination = Math.ceil(
+                            calculateDistance(
+                                flight.latitude,
+                                flight.longitude,
+                                airportCoordinates.latitude,
+                                airportCoordinates.longitude
+                            )
+                        );
+                        flight.etaMinutes = calculateETA(
+                            flight.latitude,
+                            flight.longitude,
+                            airportCoordinates.latitude,
+                            airportCoordinates.longitude,
+                            flight.speed,
+                            flight.heading
+                        );
+                    }
+                }
+            }
+
+            // Add flight data to the table row
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
@@ -1690,21 +1762,6 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
                     ${eta}
                 </td>
             `;
-
-            // Append interpolated positions (optional: display on hover or as details)
-            if (flight.interpolatedPositions && flight.interpolatedPositions.length) {
-                const interpolatedRow = document.createElement("tr");
-                interpolatedRow.innerHTML = `
-                    <td colspan="5">
-                        Interpolated Positions: ${flight.interpolatedPositions
-                            .map(pos => `[${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}]`)
-                            .join(", ")}
-                    </td>
-                `;
-                interpolatedRow.style.fontSize = "small";
-                interpolatedRow.style.color = "#888";
-                tableBody.appendChild(interpolatedRow);
-            }
 
             // Update row visibility and append to table
             updateRowVisibility(row, flight);
@@ -1792,26 +1849,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Start auto-update
     function startAutoUpdate(icao) {
-        isAutoUpdateActive = true;
-        updateButton.style.color = "blue";
-        const icon = updateButton.querySelector("i");
-        if (icon) icon.classList.add("spin");
+    isAutoUpdateActive = true;
+    updateButton.style.color = "blue";
+    const icon = updateButton.querySelector("i");
+    if (icon) icon.classList.add("spin");
 
-        // Call API every 20 seconds
+    // Fetch fresh API data initially and every 20 seconds
+    fetchAndUpdateFlights(icao);
+    const apiUpdateInterval = 20000; // 20 seconds in milliseconds
+
+    flightUpdateInterval = setInterval(() => {
         fetchAndUpdateFlights(icao);
-        const apiUpdateInterval = 20; // 20 seconds
+    }, apiUpdateInterval);
 
-        flightUpdateInterval = setInterval(() => {
-            const timeSinceLastApi = Math.floor((Date.now() - lastApiUpdateTime) / 1000);
+    // Update the table using interpolated positions every second
+    countdownInterval = setInterval(() => {
+        interpolateNextPositions();
+    }, 1000); // 1 second in milliseconds
 
-            if (timeSinceLastApi >= apiUpdateInterval) {
-                // Fetch fresh API data
-                fetchAndUpdateFlights(icao);
-            } else {
-                // Use interpolated positions for smooth updates
-                interpolateNextPositions();
-            }
-        }, 1000); // Update every second
 
         // Update ATC data every 60 seconds
         atcUpdateInterval = setInterval(async () => {
@@ -1832,15 +1887,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Stop auto-update
     function stopAutoUpdate() {
-        isAutoUpdateActive = false;
-        updateButton.style.color = "#828282";
-        const icon = updateButton.querySelector("i");
-        if (icon) icon.classList.remove("spin");
+    isAutoUpdateActive = false;
+    updateButton.style.color = "#828282";
+    const icon = updateButton.querySelector("i");
+    if (icon) icon.classList.remove("spin");
 
-        if (flightUpdateInterval) clearInterval(flightUpdateInterval);
-        if (atcUpdateInterval) clearInterval(atcUpdateInterval);
-        flightUpdateInterval = null;
-        atcUpdateInterval = null;
+    if (flightUpdateInterval) clearInterval(flightUpdateInterval);
+    if (countdownInterval) clearInterval(countdownInterval);
+    flightUpdateInterval = null;
+    countdownInterval = null;
     }
 
     // Add event listener for the update button
