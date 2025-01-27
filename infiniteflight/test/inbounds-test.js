@@ -1207,7 +1207,7 @@ boldHeadingButton.addEventListener('click', () => {
 
     // Toggle boldHeadingEnabled and update button text
     boldHeadingEnabled = !boldHeadingEnabled;
-    boldHeadingBorder.style.borderLeftColor = boldHeadingEnabled ? '#c2c2c2' : '#bbb';
+    boldHeadingBorder.style.borderLeftColor = boldHeadingEnabled ? 'blue' : '#bbb';
     boldHeadingBorder.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
     boldHeadingBorder.style.borderLeftStyle = 'solid';
 
