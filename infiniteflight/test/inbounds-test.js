@@ -1833,7 +1833,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (isAutoUpdateActive) {
                 stopAutoUpdate();
             } else {
-                startAutoUpdate(icao);
+                startAutoUpdate(icao); 
             }
         });
     }
