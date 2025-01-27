@@ -125,7 +125,7 @@ permalink: /test/inbounds/
     </button>
   </form>
   <div class="setting-container">
-    <div class="setting">
+    <div class="setting-border">
     <button class="overlay-button"></button>
     <span class="setting-button"></span>
       <p class="setting-title">Heading and Distance</p>
@@ -134,6 +134,7 @@ permalink: /test/inbounds/
     </p>
     </div>
   </div>
+  <div class="setting-container">
   <div class="setting">
   <p class="setting-title">Seperation</p>
   <p class="setting-description">

@@ -27,7 +27,7 @@ button, .overlay-button {
   -webkit-tap-highlight-color: transparent;
 }
 
-.setting {
+.setting-border {
   flex-direction: column;
   justify-content: center;
   flex-grow: 1;
@@ -37,6 +37,16 @@ button, .overlay-button {
   border-left: 5px solid grey;
   transition: border-left 0.3s ease;
 }
+
+.setting {
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  width: 200px;
+  padding-left: 5px;
+  margin-top: 10px;
+}
+
 
 .setting-title {
   font-weight: 600;
