@@ -33,6 +33,7 @@ permalink: /test/inbounds/
    <div class="settings-menu hidden">
   <div class="settings-header">
     <strong>Settings</strong>
+    <i class="fa-solid fa-info"></i>
     <div class="theme-toggle-wrapper">
       <label
         for="themeToggle"
@@ -135,8 +136,8 @@ permalink: /test/inbounds/
         information is shown in the inbounds table.
       </p>
     </div>
-  </div>
-
+  </div>  
+ <div class="information">
   <div class="setting-container">
     <div class="setting">
       <p class="setting-title">Separation</p>
@@ -161,8 +162,8 @@ permalink: /test/inbounds/
         <p class="setting-description">120 seconds separation.</p>
       </div>
     </div>
+   </div>
   </div>
-  
 </div>
 
     <!-- ATC Table -->
@@ -312,6 +313,12 @@ document.addEventListener('click', (event) => {
     if (!settingsMenu.contains(event.target) && !settingsButton.contains(event.target)) {
         settingsMenu.classList.remove('visible'); // Remove the 'visible' class
     }
+});
+
+document.querySelector('.fa-solid.fa-info').addEventListener('click', () => {
+    document.querySelectorAll('.setting-description, .information').forEach(element => {
+        element.style.display = element.style.display === 'block' ? 'none' : 'block';
+    });
 });
 
 document.querySelector('.overlay-button').addEventListener('click', () => {
