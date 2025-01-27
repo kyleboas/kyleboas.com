@@ -161,6 +161,7 @@ permalink: /test/inbounds/
       120 seconds seperation.
     </p>
   </div>
+  </div>
 </div>
 
     <!-- ATC Table -->
