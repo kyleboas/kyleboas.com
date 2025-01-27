@@ -1193,7 +1193,7 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Bold Heading Button Functionality
 // ============================
 
-const boldHeadingSetting = document.getElementById('boldHeadingSetting');
+const boldHeadingBorder = document.getElementById('boldHeadingBorder');
 const boldHeadingButton = document.getElementById('boldHeadingButton');
 
 boldHeadingButton.addEventListener('click', () => {
@@ -1207,9 +1207,9 @@ boldHeadingButton.addEventListener('click', () => {
 
     // Toggle boldHeadingEnabled and update button text
     boldHeadingEnabled = !boldHeadingEnabled;
-    boldHeadingSetting.style.borderLeftColor = boldHeadingEnabled ? '#c2c2c2' : '#bbb';
-    boldHeadingSetting.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
-    boldHeadingSetting.style.borderLeftStyle = 'solid';
+    boldHeadingBorder.style.borderLeftColor = boldHeadingEnabled ? '#c2c2c2' : '#bbb';
+    boldHeadingBorder.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
+    boldHeadingBorder.style.borderLeftStyle = 'solid';
 
     // Update boldedHeadings range
     boldedHeadings.minHeading = minHeading;
