@@ -61,14 +61,12 @@ button, .overlay-button {
 
 .setting-description, .information {
     opacity: 0;
-    transform: translateY(-10px);
     transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
     visibility: hidden;
 }
 
 .setting-description.show, .information.show {
     opacity: 1;
-    transform: translateY(0);
     visibility: visible;
 }
 
