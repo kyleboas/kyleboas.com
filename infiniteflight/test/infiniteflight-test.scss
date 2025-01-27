@@ -5,7 +5,7 @@
 .setting-container {
   position: relative;
   display: flex;
-  align-items: stretch; /* Stretch all children to match the container's height */
+  align-items: stretch;
   cursor: pointer;
   flex-direction: column;
 }
@@ -28,12 +28,12 @@ button, .overlay-button {
 }
 
 .setting {
-  display: flex;
   flex-direction: column;
   justify-content: center;
   flex-grow: 1;
   width: 200px;
   padding-left: 5px;
+  margin-top: 10px;
   border-left: 5px solid grey;
   transition: border-left 0.3s ease;
 }
