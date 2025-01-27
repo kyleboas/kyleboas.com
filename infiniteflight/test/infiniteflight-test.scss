@@ -234,6 +234,7 @@ form button {
   align-items: center;
   justify-content: center;
   height: auto;
+  overflow-y: auto;
   text-align: left;
   opacity: 0;
   transition: transform 0.1s ease-in-out, opacity 0.2s ease-in-out;
