@@ -1712,7 +1712,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error('Error during ATC updates:', error.message);
 
                 if (error.message.includes('rate limit') || error.message.includes('fetch')) {
-                    alert('Rate limit or network error encountered. ATC updates stopped.');
+                    alert('Rate limit or network error encountered. ATC updates stopped. Alert @kyleboas on Discord.');
                     stopAutoUpdate();
                 }
             }
