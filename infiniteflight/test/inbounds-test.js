@@ -1588,11 +1588,7 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
             const isVisible = isWithinDistanceRange;
 
-        row.style.display = isVisible ? '' : 'none';
-            // Determine if the row represents an "other" aircraft
-const isOtherAircraft = !hideFilter || (boldHeadingEnabled &&
-    (flight.headingFromAirport < boldedHeadings.minHeading ||
-     flight.headingFromAirport > boldedHeadings.maxHeading));
+            row.style.display = isVisible ? '' : 'none';
             
             // Apply styles for hidden or visible aircraft
             row.style.display = isVisible ? '' : 'none';
