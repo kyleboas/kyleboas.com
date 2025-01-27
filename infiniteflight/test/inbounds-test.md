@@ -77,10 +77,10 @@ permalink: /test/inbounds/
   <!-- Filter Form -->
   <form id="filterForm" style="display:none;">
     <div class="HeadingFilter">
-      <label class="settings-label" for="minHeading">Heading</label>
+      <label class="settings-label">Heading</label>
       <input
         type="number"
-        id="minHeading"
+
         min="0"
         max="360"
         placeholder="Minimum"
@@ -88,7 +88,7 @@ permalink: /test/inbounds/
       />
       <input
         type="number"
-        id="maxHeading"
+        
         min="0"
         max="360"
         placeholder="Maximum"
@@ -98,17 +98,17 @@ permalink: /test/inbounds/
       <button type="button" id="toggleHeadingButton">Hide</button>
     </div>
     <div class="DistanceFilter">
-      <label class="settings-label" for="minDistance">Distance</label>
+      <label class="settings-label">Distance</label>
       <input
         type="number"
-        id="minDistance"
+        
         min="0"
         placeholder="Minimum"
         aria-label="Minimum Distance"
       />
       <input
         type="number"
-        id="maxDistance"
+        
         min="0"
         placeholder="Maximum"
         aria-label="Maximum Distance"
