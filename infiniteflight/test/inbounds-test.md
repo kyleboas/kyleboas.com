@@ -127,7 +127,7 @@ permalink: /test/inbounds/
 
   <!-- Setting Containers -->
   <div class="setting-container">
-    <div class="setting-border">
+    <div class="setting">
       <button class="overlay-button"></button>
       <span class="setting-button"></span>
       <p class="setting-title">Heading and Distance</p>
@@ -135,6 +135,42 @@ permalink: /test/inbounds/
         Input the minimum and maximum heading and distance to adjust what
         information is shown in the inbounds table.
       </p>
+     <div class="HeadingFilter"> 
+      <label class="settings-label" for="minHeading">Heading</label>
+      <input
+        type="number"
+        id="minHeading"
+        min="0"
+        max="360"
+        placeholder="Minimum heading..."
+        aria-label="Minimum heading..."
+      />
+      <input
+        type="number"
+        id="maxHeading"
+        min="0"
+        max="360"
+        placeholder="Minimum heading..."
+        aria-label="Maximum heading..."
+      />
+     </div> 
+     <div class="DistanceFilter"> 
+      <label class="settings-label" for="minDistance">Distance</label>
+      <input
+        type="number"
+        id="minDistance"
+        min="0"
+        placeholder="Minimum"
+        aria-label="Minimum Distance"
+      />
+      <input
+        type="number"
+        id="maxDistance"
+        min="0"
+        placeholder="Maximum"
+        aria-label="Maximum Distance"
+      />
+     </div> 
     </div>
   </div>  
  <div class="setting-information">
