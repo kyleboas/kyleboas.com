@@ -72,7 +72,6 @@ permalink: /test/inbounds/
       </label>
       <i class="fa-solid fa-xmark" aria-label="Close"></i>
     </div>
-  </div>
 
   <!-- Filter Form -->
   <form id="filterForm" style="display:none;">
@@ -164,7 +163,6 @@ permalink: /test/inbounds/
     </p>
   </div>
   </div>
-</div>
 </div>
 
     <!-- ATC Table -->
