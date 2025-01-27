@@ -22,19 +22,6 @@
   z-index: 5;
 }
 
-.setting-button {
-  display: inline-block;
-  width: 50px;
-  height: 100%;
-  background-color: #ccc; 
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.setting-button.blue {
-  background-color: blue;
-}
-
 .setting {
   display: flex;
   flex-direction: column;

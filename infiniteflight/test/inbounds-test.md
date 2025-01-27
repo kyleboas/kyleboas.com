@@ -286,11 +286,12 @@ document.addEventListener('click', (event) => {
 });
 
 document.querySelector('.overlay-button').addEventListener('click', () => {
-  const settingButton = document.querySelector('.setting-button');
-  if (settingButton.classList.contains('blue')) {
-    settingButton.classList.remove('blue');
+  const settingContainer = document.querySelector('.setting-container');
+
+  if (settingContainer.style.borderLeft === '5px solid blue') {
+    settingContainer.style.borderLeft = '5px solid grey';
   } else {
-    settingButton.classList.add('blue');
+    settingContainer.style.borderLeft = '5px solid blue';
   }
 });
 </script>
