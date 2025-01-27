@@ -1193,7 +1193,15 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Bold Heading Button Functionality
 // ============================
 
-document.getElementById('boldHeadingButton').addEventListener('click', () => {
+let boldHeadingEnabled = false;
+const boldedHeadings = {
+    minHeading: null,
+    maxHeading: null,
+};
+const boldHeadingContainer = document.getElementById('boldHeadingContainer');
+const boldHeadingButton = document.getElementById('boldHeadingButton');
+
+boldHeadingButton.addEventListener('click', () => {
     const minHeading = parseFloat(document.getElementById('minHeading').value);
     const maxHeading = parseFloat(document.getElementById('maxHeading').value);
 
@@ -1204,11 +1212,9 @@ document.getElementById('boldHeadingButton').addEventListener('click', () => {
 
     // Toggle boldHeadingEnabled and update button text
     boldHeadingEnabled = !boldHeadingEnabled;
-    document.getElementById('boldHeadingButton').textContent = boldHeadingEnabled
-        ? 'Disable'
-        : 'Enable';
-        
-boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2';
+    boldHeadingContainer.style.borderLeftColor = boldHeadingEnabled ? '#c2c2c2' : '#bbb';
+    boldHeadingContainer.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
+    boldHeadingContainer.style.borderLeftStyle = 'solid';
 
     // Update boldedHeadings range
     boldedHeadings.minHeading = minHeading;

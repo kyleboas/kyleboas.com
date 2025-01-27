@@ -173,7 +173,7 @@ permalink: /test/inbounds/
         aria-label="Maximum distance..."
       />
       </div>
-  <div class="setting-container">
+  <div class="setting-container" id="boldHeadingContainer">
     <div class="setting-border">
       <button class="overlay-button" id="boldHeadingButton"></button>    
       <span class="setting-button"></span> 
