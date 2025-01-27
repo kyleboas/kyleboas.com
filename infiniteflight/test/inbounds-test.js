@@ -714,23 +714,31 @@ function clearStatusDataCache() {
 // /Flights
 // ============================
 
-// Fetch inbound flight details
-async function fetchInboundFlightDetails(inboundFlightIds) {
+async function fetchInboundFlightDetails(inboundFlightIds = []) {
     try {
+        // Fetch flights data from the proxy API
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
-        
+
+        // Validate API response
+        if (!data || !data.result || !Array.isArray(data.result)) {
+            throw new Error("Invalid flight data received from the API.");
+        }
+
         // Filter flights based on the provided IDs
-        const flightsFromApi = data.result.filter(flight => inboundFlightIds.includes(flight.flightId));
+        let flightsFromApi = data.result;
+        if (inboundFlightIds.length) {
+            flightsFromApi = flightsFromApi.filter(flight => inboundFlightIds.includes(flight.flightId));
+        }
 
         // Ensure only unique flight details are returned
         const uniqueFlights = [...new Map(flightsFromApi.map(f => [f.flightId, f])).values()];
 
-        // Map relevant details
+        // Map relevant details for each flight
         return uniqueFlights.map(flight => ({
             flightId: flight.flightId,
             callsign: flight.callsign || "N/A",
             aircraftId: flight.aircraftId || "N/A",
-            aircraftName: aircraftMachDetails[flight.aircraftId]?.name || "UNKN",
+            aircraftName: aircraftMachDetails[flight.aircraftId]?.name || "UNKN", // Aircraft name lookup
             latitude: flight.latitude || null,
             longitude: flight.longitude || null,
             altitude: Math.round(flight.altitude) || "N/A",
@@ -738,6 +746,7 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
             heading: Math.round(flight.heading) || "N/A",
             lastReport: flight.lastReport || "N/A",
             virtualOrganization: flight.virtualOrganization || "N/A",
+            interpolatedPositions: [], // Placeholder for interpolated data
         }));
     } catch (error) {
         console.error("Error fetching flight details:", error.message);
@@ -747,6 +756,9 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
+/**
+ * Fill gaps between updates by predicting positions
+ */
 function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 20) {
     const positions = [];
     let currentLat = startLat;
@@ -754,7 +766,7 @@ function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interv
 
     // Fill positions for each second until the next API update
     for (let t = 0; t < interval; t++) {
-        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // 1-second step
+        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // Predict 1-second step
         positions.push({ time: t, latitude: newPosition.latitude, longitude: newPosition.longitude });
         currentLat = newPosition.latitude;
         currentLon = newPosition.longitude;
@@ -763,6 +775,9 @@ function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interv
     return positions;
 }
 
+/**
+ * Update distances and ETAs for flights
+ */
 async function updateDistancesAndETAs(flights, airportCoordinates) {
     for (const flight of flights) {
         try {
@@ -779,6 +794,7 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
                 continue;
             }
 
+            // Calculate distance to destination
             flight.distanceToDestination = Math.ceil(
                 calculateDistance(
                     flight.latitude,
@@ -788,6 +804,7 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
                 )
             );
 
+            // Calculate ETA
             flight.etaMinutes = calculateETA(
                 flight.latitude,
                 flight.longitude,
@@ -797,6 +814,7 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
                 flight.heading
             );
 
+            // Calculate heading from airport
             flight.headingFromAirport = calculateBearing(
                 airportCoordinates.latitude,
                 airportCoordinates.longitude,
