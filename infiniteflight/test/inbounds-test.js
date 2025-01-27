@@ -756,6 +756,38 @@ async function fetchInboundFlightDetails(inboundFlightIds = []) {
     }
 }
 
+
+/**
+ * Predict the next position of an object based on its current position, speed, and heading.
+ */
+function predictPosition(lat, lon, groundSpeed, heading, seconds) {
+    const R = 3440; // Earth's radius in nautical miles
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const toDegrees = (radians) => radians * (180 / Math.PI);
+
+    const distance = (groundSpeed / 3600) * seconds; // Distance traveled in nautical miles
+    const bearing = toRadians(heading);
+
+    const φ1 = toRadians(lat);
+    const λ1 = toRadians(lon);
+
+    const φ2 = Math.asin(
+        Math.sin(φ1) * Math.cos(distance / R) +
+        Math.cos(φ1) * Math.sin(distance / R) * Math.cos(bearing)
+    );
+
+    const λ2 = λ1 + Math.atan2(
+        Math.sin(bearing) * Math.sin(distance / R) * Math.cos(φ1),
+        Math.cos(distance / R) - Math.sin(φ1) * Math.sin(φ2)
+    );
+
+    return {
+        latitude: toDegrees(φ2),
+        longitude: (toDegrees(λ2) + 540) % 360 - 180, // Normalize to -180 to 180 degrees
+    };
+}
+
+
 /**
  * Fill gaps between updates by predicting positions
  */
