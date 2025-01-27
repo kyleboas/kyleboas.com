@@ -94,7 +94,7 @@ permalink: /test/inbounds/
         placeholder="Maximum"
         aria-label="Maximum Heading"
       />
-      <button type="button" id="boldHeadingButton">Enable</button>
+      <button type="button">Enable</button>
       <button type="button" id="toggleHeadingButton">Hide</button>
     </div>
     <div class="DistanceFilter">
@@ -113,8 +113,8 @@ permalink: /test/inbounds/
         placeholder="Maximum"
         aria-label="Maximum Distance"
       />
-      <button type="button" id="applyDistanceFilterButton">Enable</button>
-      <button type="button" id="filterHeadingHighlightButton">Split</button>
+      <button type="button"">Enable</button>
+      <button type="button">Split</button>
     </div>
     <button
       type="button"
@@ -185,7 +185,7 @@ permalink: /test/inbounds/
    </div>
    <div class="setting-container">
     <div class="setting">
-      <button class="overlay-button"></button>    
+      <button class="overlay-button" id="applyDistanceFilterButton"></button>    
       <span class="setting-button"></span> 
       <p class="setting-title">Distance Filter</p>
       <p class="setting-description">
@@ -195,7 +195,7 @@ permalink: /test/inbounds/
    </div>
    <div class="setting-container">
     <div class="setting">
-      <button class="overlay-button"></button>    
+      <button class="overlay-button" id="filterHeadingHighlightButton"></button>    
       <span class="setting-button"></span> 
       <p class="setting-title">Split Filter</p>
       <p class="setting-description">
