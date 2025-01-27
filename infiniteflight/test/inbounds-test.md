@@ -125,13 +125,14 @@ permalink: /test/inbounds/
     </button>
   </form>
   <div class="setting-container">
-  <div class="setting">
-  <button class="overlay-button"></button>
-  <span class="setting-button"></span>
-    <p class="setting-title">Heading and Distance</p>
+    <div class="setting">
+    <button class="overlay-button"></button>
+    <span class="setting-button"></span>
+      <p class="setting-title">Heading and Distance</p>
     <p class="setting-description">
       Input the minimum and maximum heading and distance to adjust what information is shown in the inbounds table.
     </p>
+    </div>
   </div>
   <div class="setting">
   <p class="setting-title">Seperation</p>
@@ -162,6 +163,7 @@ permalink: /test/inbounds/
     </p>
   </div>
   </div>
+</div>
 </div>
 
     <!-- ATC Table -->

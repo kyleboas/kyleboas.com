@@ -7,8 +7,7 @@
   display: flex;
   align-items: stretch; /* Stretch all children to match the container's height */
   cursor: pointer;
-  border-left: 5px solid grey;
-  transition: border-left 0.3s ease;
+  flex-direction: column;
 }
 
 .overlay-button {
@@ -35,6 +34,8 @@ button, .overlay-button {
   flex-grow: 1;
   width: 200px;
   padding-left: 5px;
+  border-left: 5px solid grey;
+  transition: border-left 0.3s ease;
 }
 
 .setting-title {
