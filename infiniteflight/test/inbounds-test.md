@@ -150,7 +150,7 @@ permalink: /test/inbounds/
         id="maxHeading"
         min="0"
         max="360"
-        placeholder="Minimum heading..."
+        placeholder="Maximum heading..."
         aria-label="Maximum heading..."
       />
      </div> 
@@ -160,15 +160,15 @@ permalink: /test/inbounds/
         type="number"
         id="minDistance"
         min="0"
-        placeholder="Minimum"
+        placeholder="Minimum distance..."
         aria-label="Minimum Distance"
       />
       <input
         type="number"
         id="maxDistance"
         min="0"
-        placeholder="Maximum"
-        aria-label="Maximum Distance"
+        placeholder="Maximum distance..."
+        aria-label="Maximum distance..."
       />
      </div> 
     </div>
