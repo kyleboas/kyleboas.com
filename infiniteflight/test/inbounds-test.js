@@ -1193,7 +1193,6 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Bold Heading Button Functionality
 // ============================
 
-let boldHeadingEnabled = false;
 const boldedHeadings = {
     minHeading: null,
     maxHeading: null,
@@ -1247,9 +1246,10 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
 
-    const button = document.getElementById('applyDistanceFilterButton');
-    button.textContent = applyDistanceFilterEnabled ? 'Disable' : 'Enable';
-    button.style.backgroundColor = applyDistanceFilterEnabled ? 'blue' : '#c2c2c2';
+    const button = document.getElementById('DistanceFilterContainer');
+    boldHeadingContainer.style.borderLeftColor = boldHeadingEnabled ? '#c2c2c2' : '#bbb';
+    boldHeadingContainer.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
+    boldHeadingContainer.style.borderLeftStyle = 'solid';
 
     hiddenDistance.minDistance = minDistance;
     hiddenDistance.maxDistance = maxDistance;

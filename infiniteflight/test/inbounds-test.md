@@ -183,7 +183,7 @@ permalink: /test/inbounds/
       </p>
      </div>
    </div>
-   <div class="setting-container">
+   <div class="setting-container" id="DistanceFilterContainer">
     <div class="setting-border">
       <button class="overlay-button" id="applyDistanceFilterButton"></button>    
       <span class="setting-button"></span> 
