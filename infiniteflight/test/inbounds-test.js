@@ -1201,7 +1201,7 @@ boldHeadingButton.addEventListener('click', () => {
     const maxHeading = parseFloat(document.getElementById('maxHeading').value);
 
     if (isNaN(minHeading) || isNaN(maxHeading) || minHeading > maxHeading) {
-        alert('Please enter valid Min and Max Heading values.');
+        alert('Please enter valid minimum and maximum heading values.');
         return;
     }
 

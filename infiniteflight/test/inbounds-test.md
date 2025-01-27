@@ -388,14 +388,5 @@ document.querySelector('.fa-solid.fa-info').addEventListener('click', () => {
     });
 });
 
-document.querySelector('.overlay-button').addEventListener('click', () => {
-  const settingContainer = document.querySelector('.setting-border');
-
-  if (settingContainer.style.borderLeft === '5px solid blue') {
-    settingContainer.style.borderLeft = '2px solid grey';
-  } else {
-    settingContainer.style.borderLeft = '5px solid blue';
-  }
-});
 </script>
 <script src="/infiniteflight/test/inbounds-test.js"></script>
