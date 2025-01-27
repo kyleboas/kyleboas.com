@@ -795,50 +795,6 @@ function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, hea
     return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-// Calculate bearing
-function calculateBearing(lat1, lon1, lat2, lon2) {
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const toDegrees = (radians) => radians * (180 / Math.PI);
-
-    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
-    const Δλ = toRadians(lon2 - lon1);
-
-    const y = Math.sin(Δλ) * Math.cos(φ2);
-    const x = Math.cos(φ1) * Math.sin(φ2) -
-              Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-
-    return (toDegrees(Math.atan2(y, x)) + 360) % 360;
-}
-
-// Calculate ETA
-function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
-    if (!groundSpeed || groundSpeed <= 0 || heading == null) {
-        return 'N/A'; // Cannot calculate ETA without valid inputs
-    }
-
-    // Calculate the distance to the destination
-    const distance = calculateDistance(currentLat, currentLon, destLat, destLon);
-    if (!distance || distance <= 0) {
-        return 'N/A'; // Cannot calculate ETA with invalid distance
-    }
-
-    // Calculate ETA in hours
-    const timeInHours = distance / groundSpeed;
-
-    // Convert hours to minutes and seconds
-    const totalSeconds = Math.round(timeInHours * 3600);
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const remainingSeconds = totalSeconds % 60;
-
-    // Represent ETA above 12 hours
-    if (totalMinutes > 720) {
-        return '>12hrs';
-    }
-
-    // Format ETA as "minutes:seconds"
-    return `${totalMinutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
-
 // Parses ETA string in "minutes:seconds" format to total seconds
 function parseETAInSeconds(eta) {
     if (typeof eta !== 'string' || eta === 'N/A' || eta.startsWith('>')) {
