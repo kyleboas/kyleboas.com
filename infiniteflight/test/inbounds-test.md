@@ -126,7 +126,7 @@ permalink: /test/inbounds/
   </form>
   <div class="setting-container">
   <button class="overlay-button"></button>
-  <button class="setting-button"></button>
+  <span class="setting-button"></span>
   <div class="setting">
     <p class="setting-title">Heading and Distance</p>
     <p class="setting-description">
@@ -288,9 +288,9 @@ document.addEventListener('click', (event) => {
 document.querySelector('.overlay-button').addEventListener('click', () => {
   const settingButton = document.querySelector('.setting-button');
   if (settingButton.classList.contains('blue')) {
-    settingButton.classList.remove('blue'); // Turn gray
+    settingButton.classList.remove('blue');
   } else {
-    settingButton.classList.add('blue'); // Turn blue
+    settingButton.classList.add('blue');
   }
 });
 </script>

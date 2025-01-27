@@ -5,36 +5,34 @@
 .setting-container {
   position: relative;
   display: flex;
-  align-items: stretch;
+  align-items: stretch; /* Stretch all children to match the container's height */
   gap: 5px;
   cursor: pointer;
 }
 
-/* Transparent overlay button */
 .overlay-button {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: transparent; /* Make the button invisible */
+  background: transparent;
   border: none;
   cursor: pointer;
-  z-index: 5; /* Ensures it sits above everything else */
+  z-index: 5;
 }
 
 .setting-button {
-  position: relative;
-  z-index: 1;
-  width: 10px;
-  background-color: lightgrey;
-  border: none;
+  display: inline-block;
+  width: 50px;
+  height: 100%;
+  background-color: #ccc; 
+  border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .setting-button.blue {
-  background-color: blue; /* New color when clicked */
+  background-color: blue;
 }
 
 .setting {
@@ -42,7 +40,7 @@
   flex-direction: column;
   justify-content: center;
   padding: 2px;
-  flex-grow: 1;
+  flex-grow: 1; /* Allow this to grow and fill available space */
   width: 200px;
 }
 
@@ -50,13 +48,11 @@
   font-weight: 600;
   margin: 0;
   font-size: 14px;
-  cursor: pointer;
 }
 
 .setting-description {
   margin: 0;
   font-size: 13px;
-  cursor: pointer;
 }
 
 body {
