@@ -1193,10 +1193,6 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
 // Bold Heading Button Functionality
 // ============================
 
-const boldedHeadings = {
-    minHeading: null,
-    maxHeading: null,
-};
 const boldHeadingContainer = document.getElementById('boldHeadingContainer');
 const boldHeadingButton = document.getElementById('boldHeadingButton');
 
