@@ -707,7 +707,7 @@ function clearStatusDataCache() {
 }
 
 // ============================
-// Flights
+// /Flights
 // ============================
 
 // Fetch inbound flight details
@@ -904,7 +904,7 @@ async function fetchAndUpdateFlights(icao) {
         displayControllers(controllers);
 
         // Fetch flights and update the table
-        const inboundFlightIds = await fetchInboundFlightIds(icao);
+        const inboundFlightIds = await fetchInboundFlightDetails(inboundFlightIds);
         if (!inboundFlightIds.length) {
             console.warn("No inbound flights found for ICAO:", icao);
             allFlights = [];
@@ -1492,7 +1492,7 @@ async function renderATCTable() {
         const airportData = [];
 
         for (const airport of activeATCAirports) {
-            const inboundFlightIds = await fetchInboundFlightIds(airport.icao);
+            const inboundFlightIds = await fetchInboundFlightDetails(inboundFlightIds);
 
             // Fetch flight details and calculate distances
             const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
