@@ -33,9 +33,8 @@
   transition: background-color 0.3s ease;
 }
 
-/* Change the button's background when clicked */
-.setting-container:has(.overlay-button:focus) .setting-button {
-  background-color: blue;
+.setting-button.blue {
+  background-color: blue; /* New color when clicked */
 }
 
 .setting {

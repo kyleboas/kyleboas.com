@@ -284,5 +284,11 @@ document.addEventListener('click', (event) => {
         settingsMenu.classList.remove('visible'); // Remove the 'visible' class
     }
 });
+
+document.querySelector('.overlay-button').addEventListener('click', () => {
+  const settingButton = document.querySelector('.setting-button');
+  settingButton.classList.add('blue');
+});
+
 </script>
 <script src="/infiniteflight/test/inbounds-test.js"></script>
