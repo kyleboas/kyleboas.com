@@ -32,9 +32,9 @@ button, .overlay-button {
   justify-content: center;
   flex-grow: 1;
   width: 200px;
-  padding-left: 5px;
+  padding-left: 10px;
   margin-top: 10px;
-  border-left: 5px solid grey;
+  border-left: 2px solid grey;
   transition: border-left 0.3s ease;
 }
 
@@ -70,7 +70,7 @@ button, .overlay-button {
 
 .box {
   width: 15px;
-  height: 15pxpx;
+  height: 15px;
 }
 
 .box-text {

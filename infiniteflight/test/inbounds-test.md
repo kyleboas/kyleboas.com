@@ -318,7 +318,7 @@ document.querySelector('.overlay-button').addEventListener('click', () => {
   const settingContainer = document.querySelector('.setting-border');
 
   if (settingContainer.style.borderLeft === '5px solid blue') {
-    settingContainer.style.borderLeft = '5px solid grey';
+    settingContainer.style.borderLeft = '2px solid grey';
   } else {
     settingContainer.style.borderLeft = '5px solid blue';
   }
