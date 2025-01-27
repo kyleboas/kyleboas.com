@@ -351,8 +351,9 @@ document.addEventListener('click', (event) => {
     }
 });
 
+
 document.querySelector('.fa-solid.fa-info').addEventListener('click', () => {
-    document.querySelectorAll('.setting-description, .information').forEach(element => {
+    document.querySelectorAll('.setting-description, .setting-information').forEach(element => {
         element.style.display = element.style.display === 'block' ? 'none' : 'block';
     });
 });
