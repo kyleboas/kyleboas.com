@@ -952,7 +952,7 @@ async function fetchAndUpdateFlights(icao) {
         console.error("Error fetching flights or controllers:", error.message);
         allFlights = [];
         interpolatedFlights = [];
-        renderFlightsTable(allFlights);
+        renderFlightsTable(getFlights);
         document.getElementById('atisMessage').textContent = "ATIS not available.";
         document.getElementById('controllersList').textContent = "No controllers online.";
     }
