@@ -30,7 +30,6 @@ permalink: /test/inbounds/
         <div class="nav-right" id="atcAirportsList">
         </div>
     </div>
-    
    <div class="settings-menu hidden">
   <div class="settings-header">
     <strong>Settings</strong>
@@ -48,7 +47,7 @@ permalink: /test/inbounds/
           viewBox="0 0 20 20"
           fill="currentColor"
           stroke="none"
-          >
+        >
           <mask id="moon-mask">
             <rect x="0" y="0" width="20" height="20" fill="white"></rect>
             <circle cx="11" cy="3" r="8" fill="black"></circle>
@@ -72,6 +71,7 @@ permalink: /test/inbounds/
       </label>
       <i class="fa-solid fa-xmark" aria-label="Close"></i>
     </div>
+  </div>
 
   <!-- Filter Form -->
   <form id="filterForm" style="display:none;">
@@ -123,46 +123,46 @@ permalink: /test/inbounds/
       Filter
     </button>
   </form>
+
+  <!-- Setting Containers -->
   <div class="setting-container">
     <div class="setting-border">
-    <button class="overlay-button"></button>
-    <span class="setting-button"></span>
+      <button class="overlay-button"></button>
+      <span class="setting-button"></span>
       <p class="setting-title">Heading and Distance</p>
-    <p class="setting-description">
-      Input the minimum and maximum heading and distance to adjust what information is shown in the inbounds table.
-    </p>
+      <p class="setting-description">
+        Input the minimum and maximum heading and distance to adjust what
+        information is shown in the inbounds table.
+      </p>
     </div>
   </div>
+
   <div class="setting-container">
-  <div class="setting">
-  <p class="setting-title">Seperation</p>
-  <p class="setting-description">
-      The table is color coded based on ETA (Estimated Time of Arrival) seperation.
-    </p>
-  <div class="box-container">
-  <div class="box" style="background-color:#fffa9f;"></div>
-    <p class="setting-description">
-      10 seconds seperation.
-    </p>
+    <div class="setting">
+      <p class="setting-title">Separation</p>
+      <p class="setting-description">
+        The table is color coded based on ETA (Estimated Time of Arrival)
+        separation.
+      </p>
+      <div class="box-container">
+        <div class="box" style="background-color:#fffa9f;"></div>
+        <p class="setting-description">10 seconds separation.</p>
+      </div>
+      <div class="box-container">
+        <div class="box" style="background-color:#80daeb;"></div>
+        <p class="setting-description">30 seconds separation.</p>
+      </div>
+      <div class="box-container">
+        <div class="box" style="background-color:#daceca;"></div>
+        <p class="setting-description">60 seconds separation.</p>
+      </div>
+      <div class="box-container">
+        <div class="box" style="background-color:#eaeaea;"></div>
+        <p class="setting-description">120 seconds separation.</p>
+      </div>
+    </div>
   </div>
-  <div class="box-container">
-  <div class="box" style="background-color:#80daeb;"></div>
-    <p class="setting-description">30 seconds seperation.
-    </p>
-  </div>
-  <div class="box-container">
-  <div class="box" style="background-color:#daceca;"></div>
-    <p class="setting-description">
-      60 seconds seperation.
-    </p>
-  </div>
-  <div class="box-container">
-  <div class="box" style="background-color:#eaeaea;"></div>
-    <p class="setting-description">
-      120 seconds seperation.
-    </p>
-  </div>
-  </div>
+  
 </div>
 
     <!-- ATC Table -->
