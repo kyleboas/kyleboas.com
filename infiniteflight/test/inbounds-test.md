@@ -135,6 +135,8 @@ permalink: /test/inbounds/
         Input the minimum and maximum heading and distance to adjust what
         information is shown in the inbounds table.
       </p>
+    </div> 
+   </div> 
      <div class="HeadingFilter"> 
       <label class="settings-label" for="minHeading">Heading</label>
       <input
@@ -170,9 +172,7 @@ permalink: /test/inbounds/
         placeholder="Maximum distance..."
         aria-label="Maximum distance..."
       />
-     </div> 
-    </div>
-  </div>  
+      </div>
  <div class="setting-information">
   <div class="setting-container">
     <div class="setting">
