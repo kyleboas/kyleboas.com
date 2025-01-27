@@ -19,7 +19,7 @@ let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
 let applyDistanceFilterEnabled = false;
 let isAutoUpdateActive = false;
-
+let airportCoordinates = null;
 let interpolatedFlights = [];
 let lastApiUpdateTime = null;
 
@@ -967,11 +967,12 @@ async function fetchAndUpdateFlights(icao) {
             return;
         }
 
-        const airportCoordinates = await fetchAirportCoordinates(icao);
-        if (!airportCoordinates) {
-            console.warn("No coordinates found for airport ICAO:", icao);
-            throw new Error("Failed to fetch airport coordinates.");
-        }
+        const coordinates = await fetchAirportCoordinates(icao);
+if (!coordinates) {
+    console.warn("No coordinates found for airport ICAO:", icao);
+    throw new Error("Failed to fetch airport coordinates.");
+}
+airportCoordinates = coordinates; // Store globally
 
         // Calculate distances and ETAs
         await updateDistancesAndETAs(allInboundFlights, airportCoordinates);
@@ -1009,7 +1010,12 @@ async function fetchAndUpdateFlights(icao) {
 }
 
 
-function interpolateNextPositions() {
+function interpolateNextPositions(airportCoordinates) {
+    if (!airportCoordinates) {
+        console.error("Airport coordinates not available.");
+        return;
+    }
+
     const currentTime = Date.now();
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
@@ -1667,6 +1673,11 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
         tableBody.innerHTML = '<tr><td colspan="5">No inbound flights found.</td></tr>';
         return;
     }
+    
+    if (!airportCoordinates) {
+    console.error("Airport coordinates are not available.");
+    return;
+    }
 
     try {
         const aircraftIds = allFlights.map(flight => flight.aircraftId);
@@ -1848,42 +1859,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Start auto-update
-    function startAutoUpdate(icao) {
+    // Start auto-update
+function startAutoUpdate(icao) {
     isAutoUpdateActive = true;
     updateButton.style.color = "blue";
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.add("spin");
 
     // Fetch fresh API data initially and every 20 seconds
-    fetchAndUpdateFlights(icao);
-    const apiUpdateInterval = 20000; // 20 seconds in milliseconds
+    fetchAndUpdateFlights(icao).then(() => {
+        // Start the table update using interpolated positions every second
+        setInterval(() => interpolateNextPositions(airportCoordinates), 1000); // Pass global variable
+    });
 
+    const apiUpdateInterval = 20000; // 20 seconds in milliseconds
     flightUpdateInterval = setInterval(() => {
         fetchAndUpdateFlights(icao);
     }, apiUpdateInterval);
 
-    // Update the table using interpolated positions every second
-    countdownInterval = setInterval(() => {
-        interpolateNextPositions();
-    }, 1000); // 1 second in milliseconds
+    // Update ATC data every 60 seconds
+    atcUpdateInterval = setInterval(async () => {
+        try {
+            await fetchControllers(icao);
+            await fetchActiveATCAirports();
+            await renderATCTable();
+        } catch (error) {
+            console.error("Error during ATC updates:", error.message);
 
-
-        // Update ATC data every 60 seconds
-        atcUpdateInterval = setInterval(async () => {
-            try {
-                await fetchControllers(icao);
-                await fetchActiveATCAirports();
-                await renderATCTable();
-            } catch (error) {
-                console.error('Error during ATC updates:', error.message);
-
-                if (error.message.includes('rate limit') || error.message.includes('fetch')) {
-                    alert('Rate limit or network error encountered. ATC updates stopped. Alert @kyleboas on Discord.');
-                    stopAutoUpdate();
-                }
+            if (error.message.includes("rate limit") || error.message.includes("fetch")) {
+                alert("Rate limit or network error encountered. ATC updates stopped. Alert @kyleboas on Discord.");
+                stopAutoUpdate();
             }
-        }, 60000);
-    }
+        }
+    }, 60000);
+}
 
     // Stop auto-update
     function stopAutoUpdate() {
