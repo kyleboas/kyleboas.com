@@ -317,7 +317,11 @@ document.addEventListener('click', (event) => {
 
 document.querySelector('.fa-solid.fa-info').addEventListener('click', () => {
     document.querySelectorAll('.setting-description, .information').forEach(element => {
-        element.style.display = element.style.display === 'block' ? 'none' : 'block';
+        if (element.classList.contains('show')) {
+            element.classList.remove('show');
+        } else {
+            element.classList.add('show');
+        }
     });
 });
 
