@@ -20,6 +20,9 @@ let boldHeadingEnabled = false;
 let applyDistanceFilterEnabled = false;
 let isAutoUpdateActive = false;
 
+let interpolatedFlights = [];
+let lastApiUpdateTime = null;
+
 // ============================
 // Cookie Utility Functions
 // ============================
@@ -477,6 +480,26 @@ async function fetchInboundFlightDetails(inboundFlightIds) {
     }
 }
 
+// ============================
+// Fill Gaps Between API Updates
+// ============================
+
+function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 20) {
+    const positions = [];
+    let currentLat = startLat;
+    let currentLon = startLon;
+
+    // Fill positions for each second until the next API update
+    for (let t = 0; t < interval; t++) {
+        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // 1-second step
+        positions.push({ time: t, latitude: newPosition.latitude, longitude: newPosition.longitude });
+        currentLat = newPosition.latitude;
+        currentLon = newPosition.longitude;
+    }
+
+    return positions;
+}
+
 // Fetch ATIS
 async function fetchAirportATIS(icao) {
     const atisElement = document.getElementById('atisMessage');
@@ -704,6 +727,7 @@ async function fetchAndUpdateFlights(icao) {
         if (!inboundFlightIds.length) {
             console.warn("No inbound flights found for ICAO:", icao);
             allFlights = [];
+            interpolatedFlights = [];
             renderFlightsTable(allFlights);
             return;
         }
@@ -717,15 +741,53 @@ async function fetchAndUpdateFlights(icao) {
         }
 
         await updateDistancesAndETAs(flights, airportCoordinates);
+
+        // Prepare interpolation data
+        flights.forEach(flight => {
+            if (flight.latitude && flight.longitude && flight.speed > 0 && flight.heading != null) {
+                flight.interpolatedPositions = fillGapsBetweenUpdates(
+                    flight.latitude,
+                    flight.longitude,
+                    flight.speed,
+                    flight.heading,
+                    20 // 20-second interval
+                );
+            } else {
+                flight.interpolatedPositions = [];
+            }
+        });
+
+        // Update global state
         allFlights = flights;
+        interpolatedFlights = JSON.parse(JSON.stringify(flights)); // Clone for interpolation
+        lastApiUpdateTime = Date.now();
+
         renderFlightsTable(allFlights);
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
         allFlights = [];
+        interpolatedFlights = [];
         renderFlightsTable(allFlights);
         document.getElementById('atisMessage').textContent = "ATIS not available.";
         document.getElementById('controllersList').textContent = "No controllers online.";
     }
+}
+
+
+function interpolateNextPositions() {
+    const currentTime = Date.now();
+    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
+
+    // Update interpolated positions for each flight
+    interpolatedFlights.forEach(flight => {
+        if (flight.interpolatedPositions && flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
+            const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
+            flight.latitude = interpolatedPosition.latitude;
+            flight.longitude = interpolatedPosition.longitude;
+        }
+    });
+
+    renderFlightsTable(interpolatedFlights);
 }
 
 // ============================
@@ -1490,7 +1552,6 @@ async function renderATCTable() {
 // Table Rendering
 // ============================
 
-// Update renderFlightsTable to handle row styling for hidden aircraft
 async function renderFlightsTable(allFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
@@ -1511,15 +1572,20 @@ async function renderFlightsTable(allFlights, hideFilter = false) {
 
         allFlights.sort((a, b) => parseETAInSeconds(a.etaMinutes) - parseETAInSeconds(b.etaMinutes));
 
-        allFlights.forEach((flight) => {
+        allFlights.forEach(flight => {
             const row = document.createElement("tr");
-            
+
+            // Handle visibility and filtering
             const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (
-            typeof flight.distanceToDestination === 'number' &&
-            flight.distanceToDestination >= (minDistance ?? 0) &&
-            flight.distanceToDestination <= (maxDistance ?? Infinity)
-        );
-            
+                typeof flight.distanceToDestination === 'number' &&
+                flight.distanceToDestination >= (minDistance ?? 0) &&
+                flight.distanceToDestination <= (maxDistance ?? Infinity)
+            );
+
+            const isOtherAircraft = !hideFilter || (boldHeadingEnabled &&
+                (flight.headingFromAirport < boldedHeadings.minHeading ||
+                 flight.headingFromAirport > boldedHeadings.maxHeading));
+
             const isVisible = isWithinDistanceRange;
 
         row.style.display = isVisible ? '' : 'none';
@@ -1529,9 +1595,11 @@ const isOtherAircraft = !hideFilter || (boldHeadingEnabled &&
      flight.headingFromAirport > boldedHeadings.maxHeading));
             
             // Apply styles for hidden or visible aircraft
+            row.style.display = isVisible ? '' : 'none';
             row.style.opacity = isOtherAircraft && hideFilter ? '0.3' : '1';
             row.style.pointerEvents = isOtherAircraft && hideFilter ? 'none' : 'auto';
 
+            // Add flight data
             const aircraftName = flight.aircraftName || "UNKN";
             const machDetails = aircraftMachDetails[flight.aircraftId] || { minMach: "N/A", maxMach: "N/A" };
             const minMach = machDetails.minMach !== "N/A" ? machDetails.minMach.toFixed(2) : "N/A";
@@ -1566,11 +1634,27 @@ const isOtherAircraft = !hideFilter || (boldHeadingEnabled &&
                 </td>
             `;
 
+            // Append interpolated positions (optional: display on hover or as details)
+            if (flight.interpolatedPositions && flight.interpolatedPositions.length) {
+                const interpolatedRow = document.createElement("tr");
+                interpolatedRow.innerHTML = `
+                    <td colspan="5">
+                        Interpolated Positions: ${flight.interpolatedPositions
+                            .map(pos => `[${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)}]`)
+                            .join(", ")}
+                    </td>
+                `;
+                interpolatedRow.style.fontSize = "small";
+                interpolatedRow.style.color = "#888";
+                tableBody.appendChild(interpolatedRow);
+            }
+
+            // Update row visibility and append to table
             updateRowVisibility(row, flight);
             tableBody.appendChild(row);
         });
 
-        highlightCloseETAs();
+        highlightCloseETAs(); // Highlight rows based on close ETAs
     } catch (error) {
         console.error("Error rendering the flights table:", error.message);
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
@@ -1689,20 +1773,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const icon = updateButton.querySelector("i");
         if (icon) icon.classList.add("spin");
 
-        // Update flights every 5 seconds
-        flightUpdateInterval = setInterval(async () => {
-            try {
-                await fetchAndUpdateFlights(icao);
-                renderFlightsTable(allFlights, hideOtherAircraft);
-            } catch (error) {
-                console.error('Error during flight updates:', error.message);
+        // Call API every 20 seconds
+        fetchAndUpdateFlights(icao);
+        const apiUpdateInterval = 20; // 20 seconds
 
-                if (error.message.includes('rate limit') || error.message.includes('fetch')) {
-                    alert('Rate limit or network error encountered. Flight updates stopped. Alert @kyleboas on Discord.');
-                    stopAutoUpdate();
-                }
+        flightUpdateInterval = setInterval(() => {
+            const timeSinceLastApi = Math.floor((Date.now() - lastApiUpdateTime) / 1000);
+
+            if (timeSinceLastApi >= apiUpdateInterval) {
+                // Fetch fresh API data
+                fetchAndUpdateFlights(icao);
+            } else {
+                // Use interpolated positions for smooth updates
+                interpolateNextPositions();
             }
-        }, 5000);
+        }, 1000); // Update every second
+    }
 
         // Update ATC data every 60 seconds
         atcUpdateInterval = setInterval(async () => {
@@ -1730,6 +1816,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (flightUpdateInterval) clearInterval(flightUpdateInterval);
         if (atcUpdateInterval) clearInterval(atcUpdateInterval);
+        flightUpdateInterval = null;
+        atcUpdateInterval = null;
     }
 
     // Add event listener for the update button

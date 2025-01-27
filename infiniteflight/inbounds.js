@@ -20,6 +20,9 @@ let boldHeadingEnabled = false;
 let applyDistanceFilterEnabled = false;
 let isAutoUpdateActive = false;
 
+
+
+
 // ============================
 // Cookie Utility Functions
 // ============================
