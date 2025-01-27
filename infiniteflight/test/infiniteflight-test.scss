@@ -23,13 +23,18 @@
   z-index: 5;
 }
 
+button, .overlay-button {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .setting {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 2px;
-  flex-grow: 1; /* Allow this to grow and fill available space */
+  flex-grow: 1;
   width: 200px;
+  padding-left: 5px;
 }
 
 .setting-title {
@@ -142,6 +147,7 @@ pre {
   justify-content: space-between;
   padding: 10px;
   color: #828282;
+  padding-left: 0;
 }
 
 .settings-header i {
