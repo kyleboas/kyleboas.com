@@ -174,7 +174,7 @@ permalink: /test/inbounds/
       />
       </div>
   <div class="setting-container">
-    <div class="setting">
+    <div class="setting-border">
       <button class="overlay-button" id="boldHeadingButton"></button>    
       <span class="setting-button"></span> 
       <p class="setting-title">Bold Aircraft by Heading</p>
@@ -184,7 +184,7 @@ permalink: /test/inbounds/
      </div>
    </div>
    <div class="setting-container">
-    <div class="setting">
+    <div class="setting-border">
       <button class="overlay-button" id="applyDistanceFilterButton"></button>    
       <span class="setting-button"></span> 
       <p class="setting-title">Distance Filter</p>
@@ -194,7 +194,7 @@ permalink: /test/inbounds/
      </div>
    </div>
    <div class="setting-container">
-    <div class="setting">
+    <div class="setting-border">
       <button class="overlay-button" id="filterHeadingHighlightButton"></button>    
       <span class="setting-button"></span> 
       <p class="setting-title">Split Filter</p>
