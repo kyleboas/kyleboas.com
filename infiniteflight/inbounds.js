@@ -1701,7 +1701,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     stopAutoUpdate();
                 }
             }
-        }, 5000);
+        }, 15000);
 
         // Update ATC data every 60 seconds
         atcUpdateInterval = setInterval(async () => {
