@@ -164,7 +164,6 @@ permalink: /test/inbounds/
   </div>
   </div>
 </div>
-</div>
 
     <!-- ATC Table -->
     <table id="atcTable">
