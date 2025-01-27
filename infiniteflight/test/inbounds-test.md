@@ -287,8 +287,11 @@ document.addEventListener('click', (event) => {
 
 document.querySelector('.overlay-button').addEventListener('click', () => {
   const settingButton = document.querySelector('.setting-button');
-  settingButton.classList.add('blue');
+  if (settingButton.classList.contains('blue')) {
+    settingButton.classList.remove('blue'); // Turn gray
+  } else {
+    settingButton.classList.add('blue'); // Turn blue
+  }
 });
-
 </script>
 <script src="/infiniteflight/test/inbounds-test.js"></script>
