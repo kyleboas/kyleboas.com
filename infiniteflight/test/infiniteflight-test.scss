@@ -8,6 +8,7 @@
   align-items: stretch; /* Stretch all children to match the container's height */
   gap: 5px;
   cursor: pointer;
+  border-left: 5px solid grey;
 }
 
 .overlay-button {
@@ -185,7 +186,7 @@ form button {
   align-items: center;
   justify-content: center;
   height: auto;
-  text-align: center;
+  text-align: left;
   opacity: 0;
   transition: transform 0.1s ease-in-out, opacity 0.2s ease-in-out;
   pointer-events: none;
