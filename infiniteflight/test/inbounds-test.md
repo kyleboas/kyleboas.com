@@ -128,8 +128,8 @@ permalink: /test/inbounds/
   <!-- Setting Containers -->
   <div class="setting-container">
     <div class="setting">
-      <button class="overlay-button"></button>
-      <span class="setting-button"></span>
+      <button class="overlay-button"></button>    
+      <span class="setting-button"></span>    
       <p class="setting-title">Heading and Distance</p>
       <p class="setting-description">
         Input the minimum and maximum heading and distance to adjust what
@@ -173,6 +173,36 @@ permalink: /test/inbounds/
         aria-label="Maximum distance..."
       />
       </div>
+  <div class="setting-container">
+    <div class="setting">
+      <button class="overlay-button"></button>    
+      <span class="setting-button"></span> 
+      <p class="setting-title">Bold Aircraft by Heading</p>
+      <p class="setting-description">
+        Aircraft within the heading range will be bold, to make them stand out in the table. Making it easier to track aircraft coming from one direction.
+      </p>
+     </div>
+   </div>
+   <div class="setting-container">
+    <div class="setting">
+      <button class="overlay-button"></button>    
+      <span class="setting-button"></span> 
+      <p class="setting-title">Distance Filter</p>
+      <p class="setting-description">
+        Filter the table to exclude aircraft outside the distance range.
+      </p>
+     </div>
+   </div>
+   <div class="setting-container">
+    <div class="setting">
+      <button class="overlay-button"></button>    
+      <span class="setting-button"></span> 
+      <p class="setting-title">Split Filter</p>
+      <p class="setting-description">
+        Input both the heading and distance to split traffic based on direction. When it is disabled, the highlighted colors will be associated with the aircraft's direction of travel. For example, if you input 90 and 270 as the heading, aircraft from the North will only be compared to aircraft to the North, and aircraft from the South will only be compared to aircraft from the South.
+      </p>
+     </div>
+   </div>
  <div class="setting-information">
   <div class="setting-container">
     <div class="setting">
