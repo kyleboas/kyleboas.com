@@ -796,10 +796,9 @@ function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interv
     let currentLat = startLat;
     let currentLon = startLon;
 
-    // Fill positions for each second until the next API update
     for (let t = 0; t < interval; t++) {
-        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // Predict 1-second step
-        positions.push({ time: t, latitude: newPosition.latitude, longitude: newPosition.longitude });
+        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // Step = 1 second
+        positions.push({ time: t + 1, latitude: newPosition.latitude, longitude: newPosition.longitude });
         currentLat = newPosition.latitude;
         currentLon = newPosition.longitude;
     }
@@ -814,16 +813,17 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
     for (const flight of flights) {
         try {
             if (
-                !airportCoordinates ||
                 !flight.latitude ||
                 !flight.longitude ||
-                !flight.speed ||
-                flight.speed <= 0
+                flight.speed <= 0 ||
+                !flight.heading ||
+                flight.distanceToDestination === 0
             ) {
+                console.warn(`Skipping flight ${flight.callsign || 'Unknown'} due to invalid data.`);
                 flight.distanceToDestination = 'N/A';
                 flight.etaMinutes = 'N/A';
                 flight.headingFromAirport = 'N/A';
-                continue;
+                continue; // Skip to the next flight
             }
 
             // Calculate distance to destination
@@ -1019,15 +1019,16 @@ function interpolateNextPositions(airportCoordinates) {
     const currentTime = Date.now();
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
-    interpolatedFlights.forEach((flight) => {
-        if (
-            flight.interpolatedPositions &&
-            flight.interpolatedPositions.length > secondsSinceLastApiUpdate
-        ) {
-            const interpolatedPosition =
-                flight.interpolatedPositions[secondsSinceLastApiUpdate];
+    if (secondsSinceLastApiUpdate > 20) {
+        console.warn("Interpolation exceeded 20 seconds. Waiting for next API update.");
+        return;
+    }
 
-            // Update flight's latitude and longitude
+    interpolatedFlights.forEach((flight) => {
+        if (flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
+            const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
+
+            // Update flight position
             flight.latitude = interpolatedPosition.latitude;
             flight.longitude = interpolatedPosition.longitude;
 
