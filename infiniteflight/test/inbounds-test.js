@@ -714,7 +714,7 @@ function clearStatusDataCache() {
 // /Flights
 // ============================
 
-async function fetchInboundFlightDetails(inboundFlightIds = []) {
+async function fetchInboundFlightDetails(inboundFlightIds = [], icao) {
     try {
         // Fetch flights data from the proxy API
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
@@ -729,6 +729,9 @@ async function fetchInboundFlightDetails(inboundFlightIds = []) {
         if (inboundFlightIds.length) {
             flightsFromApi = flightsFromApi.filter(flight => inboundFlightIds.includes(flight.flightId));
         }
+
+        // **Filter only flights inbound to the specified ICAO**
+        flightsFromApi = flightsFromApi.filter(flight => flight.destinationIcao === icao);
 
         // Ensure only unique flight details are returned
         const uniqueFlights = [...new Map(flightsFromApi.map(f => [f.flightId, f])).values()];
@@ -745,7 +748,7 @@ async function fetchInboundFlightDetails(inboundFlightIds = []) {
             speed: Math.round(flight.speed) || "N/A",
             heading: Math.round(flight.heading) || "N/A",
             lastReport: flight.lastReport || "N/A",
-            virtualOrganization: flight.virtualOrganization || "N/A",
+            destinationIcao: flight.destinationIcao || "N/A",
             interpolatedPositions: [], // Placeholder for interpolated data
         }));
     } catch (error) {
@@ -957,8 +960,8 @@ async function fetchAndUpdateFlights(icao) {
         displayATIS(atis);
         displayControllers(controllers);
 
-        // Fetch inbound flights
-        const allInboundFlights = await fetchInboundFlightDetails(); // Fetch flight data
+        // Fetch inbound flights for the specified ICAO
+        const allInboundFlights = await fetchInboundFlightDetails([], icao); // Pass ICAO for filtering
         if (!Array.isArray(allInboundFlights) || !allInboundFlights.length) {
             console.warn("No inbound flights found for ICAO:", icao);
             allFlights = [];
@@ -967,14 +970,15 @@ async function fetchAndUpdateFlights(icao) {
             return;
         }
 
+        // Fetch airport coordinates
         const coordinates = await fetchAirportCoordinates(icao);
-if (!coordinates) {
-    console.warn("No coordinates found for airport ICAO:", icao);
-    throw new Error("Failed to fetch airport coordinates.");
-}
-airportCoordinates = coordinates; // Store globally
+        if (!coordinates) {
+            console.warn("No coordinates found for airport ICAO:", icao);
+            throw new Error("Failed to fetch airport coordinates.");
+        }
+        airportCoordinates = coordinates; // Store globally
 
-        // Calculate distances and ETAs
+        // Calculate distances and ETAs for all inbound flights
         await updateDistancesAndETAs(allInboundFlights, airportCoordinates);
 
         // Prepare interpolation data for real-time updates
