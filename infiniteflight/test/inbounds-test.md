@@ -125,19 +125,22 @@ permalink: /test/inbounds/
     </button>
   </form>
   <div class="setting-container">
+  <div class="setting">
   <button class="overlay-button"></button>
   <span class="setting-button"></span>
-  <div class="setting">
     <p class="setting-title">Heading and Distance</p>
     <p class="setting-description">
       Input the minimum and maximum heading and distance to adjust what information is shown in the inbounds table.
     </p>
   </div>
-</div>
+  <div class="setting">
+  <p class="setting-title">Heading and Distance</p>
   <div class="box-container">
   <div class="box"></div>
-  <span class="text">Box Text Here</span>
-</div>
+    <p class="setting-description">
+      Input the minimum and maximum heading and distance to adjust what information is shown in the inbounds table.
+    </p>
+  </div>
 </div>
 
     <!-- ATC Table -->
@@ -290,7 +293,7 @@ document.addEventListener('click', (event) => {
 });
 
 document.querySelector('.overlay-button').addEventListener('click', () => {
-  const settingContainer = document.querySelector('.setting-container');
+  const settingContainer = document.querySelector('.setting');
 
   if (settingContainer.style.borderLeft === '5px solid blue') {
     settingContainer.style.borderLeft = '5px solid grey';
