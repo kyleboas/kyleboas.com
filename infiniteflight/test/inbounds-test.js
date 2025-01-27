@@ -907,9 +907,9 @@ async function fetchAndUpdateFlights(icao) {
         displayATIS(atis);
         displayControllers(controllers);
 
-        // Fetch flights and update the table
-        const inboundFlightIds = await fetchInboundFlightDetails(inboundFlightIds);
-        if (!inboundFlightIds.length) {
+        // Fetch inbound flights
+        const allInboundFlights = await fetchInboundFlightDetails(); // Corrected call
+        if (!Array.isArray(allInboundFlights) || !allInboundFlights.length) {
             console.warn("No inbound flights found for ICAO:", icao);
             allFlights = [];
             interpolatedFlights = [];
@@ -917,18 +917,17 @@ async function fetchAndUpdateFlights(icao) {
             return;
         }
 
-        const flights = await fetchInboundFlightDetails(inboundFlightIds);
         const airportCoordinates = await fetchAirportCoordinates(icao);
-
         if (!airportCoordinates) {
             console.warn("No coordinates found for airport ICAO:", icao);
             throw new Error("Failed to fetch airport coordinates.");
         }
 
-        await updateDistancesAndETAs(flights, airportCoordinates);
+        // Calculate distances and ETAs
+        await updateDistancesAndETAs(allInboundFlights, airportCoordinates);
 
         // Prepare interpolation data
-        flights.forEach(flight => {
+        allInboundFlights.forEach(flight => {
             if (flight.latitude && flight.longitude && flight.speed > 0 && flight.heading != null) {
                 flight.interpolatedPositions = fillGapsBetweenUpdates(
                     flight.latitude,
@@ -943,8 +942,8 @@ async function fetchAndUpdateFlights(icao) {
         });
 
         // Update global state
-        allFlights = flights;
-        interpolatedFlights = JSON.parse(JSON.stringify(flights)); // Clone for interpolation
+        allFlights = allInboundFlights;
+        interpolatedFlights = JSON.parse(JSON.stringify(allInboundFlights)); // Clone for interpolation
         lastApiUpdateTime = Date.now();
 
         renderFlightsTable(getFlights);
