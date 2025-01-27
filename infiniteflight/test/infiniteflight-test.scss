@@ -2,6 +2,42 @@
 # Front matter comment to ensure Jekyll properly reads file.
 ---
 
+  position: relative;
+  z-index: 1;
+  width: 10px;
+  background-color: lightgrey;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Change the button's background when clicked */
+.setting-container:has(.overlay-button:focus) .setting-button {
+  background-color: blue;
+}
+
+.setting {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2px;
+  flex-grow: 1;
+  width: 200px;
+}
+
+.setting-title {
+  font-weight: 600;
+  margin: 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.setting-description {
+  margin: 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 body {
     font-family: Helvetica, sans-serif;
     margin: 20px;

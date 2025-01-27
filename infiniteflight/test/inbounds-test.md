@@ -75,7 +75,7 @@ permalink: /test/inbounds/
   </div>
 
   <!-- Filter Form -->
-  <form id="filterForm">
+  <form id="filterForm" style="display:none;">
     <div class="HeadingFilter">
       <label class="settings-label" for="minHeading">Heading</label>
       <input
@@ -124,6 +124,16 @@ permalink: /test/inbounds/
       Filter
     </button>
   </form>
+  <div class="setting-container">
+  <button class="overlay-button"></button>
+  <button class="setting-button"></button>
+  <div class="setting">
+    <p class="setting-title">Heading and Distance</p>
+    <p class="setting-description">
+      Input the minimum and maximum heading and distance to adjust what information is shown in the inbounds table.
+    </p>
+  </div>
+</div>
 </div>
 
     <!-- ATC Table -->
