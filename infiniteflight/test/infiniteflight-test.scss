@@ -63,12 +63,14 @@ button, .overlay-button {
   display: flex;
   align-items: left;
   gap: 5px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  align-items: center;
 }
 
 .box {
-  width: 5px;
-  height: 5px;
-  background-color: yellow;
+  width: 15px;
+  height: 15pxpx;
 }
 
 .box-text {
@@ -173,6 +175,7 @@ pre {
   align-items: center;
   justify-content: space-between;
   padding: 10px;
+  padding-bottom: 0px;
   color: #828282;
   padding-left: 0;
 }
