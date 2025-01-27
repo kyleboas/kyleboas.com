@@ -47,7 +47,6 @@ button, .overlay-button {
   margin-top: 10px;
 }
 
-
 .setting-title {
   font-weight: 600;
   margin: 0;
@@ -59,15 +58,8 @@ button, .overlay-button {
   font-size: 13px;
 }
 
-.setting-description, .information {
-    opacity: 0;
-    transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
-    visibility: hidden;
-}
-
-.setting-description.show, .information.show {
-    opacity: 1;
-    visibility: visible;
+.setting-description, .setting-information {
+  display:none;
 }
 
 .box-container {

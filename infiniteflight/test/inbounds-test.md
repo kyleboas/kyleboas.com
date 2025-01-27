@@ -137,7 +137,7 @@ permalink: /test/inbounds/
       </p>
     </div>
   </div>  
- <div class="information">
+ <div class="setting-information">
   <div class="setting-container">
     <div class="setting">
       <p class="setting-title">Separation</p>
@@ -317,11 +317,7 @@ document.addEventListener('click', (event) => {
 
 document.querySelector('.fa-solid.fa-info').addEventListener('click', () => {
     document.querySelectorAll('.setting-description, .information').forEach(element => {
-        if (element.classList.contains('show')) {
-            element.classList.remove('show');
-        } else {
-            element.classList.add('show');
-        }
+        element.style.display = element.style.display === 'block' ? 'none' : 'block';
     });
 });
 
