@@ -1676,6 +1676,11 @@ function stopAutoUpdate() {
     if (countdownInterval) clearInterval(countdownInterval);
 
     updateInterval = null;
+    updateTimeout = null;
+    countdownInterval = null;
+
+    isAutoUpdateActive = false;
+}
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
