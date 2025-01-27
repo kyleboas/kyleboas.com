@@ -23,6 +23,10 @@ let isAutoUpdateActive = false;
 let interpolatedFlights = [];
 let lastApiUpdateTime = null;
 
+function getFlights() {
+    return allFlights && allFlights.length > 0 ? allFlights : interpolatedFlights;
+}
+
 // ============================
 // Cookie Utility Functions
 // ============================
@@ -68,7 +72,7 @@ function applyDefaults() {
         hiddenDistance.maxDistance = defaultMaxDistance;
     }
 
-    renderFlightsTable(allFlights);
+    renderFlightsTable(getFlights);
 }
 
 // ============================
@@ -909,7 +913,7 @@ async function fetchAndUpdateFlights(icao) {
             console.warn("No inbound flights found for ICAO:", icao);
             allFlights = [];
             interpolatedFlights = [];
-            renderFlightsTable(allFlights);
+            renderFlightsTable(getFlights);
             return;
         }
 
@@ -943,7 +947,7 @@ async function fetchAndUpdateFlights(icao) {
         interpolatedFlights = JSON.parse(JSON.stringify(flights)); // Clone for interpolation
         lastApiUpdateTime = Date.now();
 
-        renderFlightsTable(allFlights);
+        renderFlightsTable(getFlights);
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
         allFlights = [];
@@ -1262,7 +1266,7 @@ document.getElementById('toggleHeadingButton').addEventListener('click', () => {
     boldHeadingButton.style.backgroundColor = boldHeadingEnabled ? 'blue' : '#c2c2c2';
 
     // Re-render the table with the hideFilter flag
-    renderFlightsTable(allFlights, hideOtherAircraft);
+    renderFlightsTable(getFlights, hideOtherAircraft);
 });
 
 // Bold Heading Button Functionality
@@ -1290,7 +1294,7 @@ boldHeadingButton.addEventListener('click', () => {
     boldedHeadings.maxHeading = maxHeading;
 
     // Re-render the table
-    renderFlightsTable(allFlights);
+    renderFlightsTable(getFlights);
 });
 
 
@@ -1323,7 +1327,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
     hiddenDistance.minDistance = minDistance;
     hiddenDistance.maxDistance = maxDistance;
 
-    renderFlightsTable(allFlights);
+    renderFlightsTable(getFlights);
 });
 
 // Reset Distance Filter
@@ -1562,7 +1566,7 @@ async function renderATCTable() {
 // Table Rendering
 // ============================
 
-async function renderFlightsTable(allFlights, hideFilter = false) {
+async function renderFlightsTable(getFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
     if (!tableBody) {
         console.error("Flights table body not found in DOM.");
