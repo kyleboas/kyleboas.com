@@ -175,7 +175,7 @@ permalink: /test/inbounds/
       </div>
   <div class="setting-container">
     <div class="setting">
-      <button class="overlay-button"></button>    
+      <button class="overlay-button" id="boldHeadingButton"></button>    
       <span class="setting-button"></span> 
       <p class="setting-title">Bold Aircraft by Heading</p>
       <p class="setting-description">
