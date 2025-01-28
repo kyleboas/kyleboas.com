@@ -997,60 +997,62 @@ function interpolateNextPositions(airportCoordinates) {
     const currentTime = Date.now();
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
-    // Handle interpolation only if auto-update is active and within the update threshold
-    if (isAutoUpdateActive) {
-        if (secondsSinceLastApiUpdate > 20) {
-            console.warn("Interpolation exceeded 20 seconds. Waiting for the next API update.");
-            return;
-        }
+    // Skip interpolation if auto-update is inactive
+    if (!isAutoUpdateActive) {
+        console.warn("Interpolation skipped as auto-update is off.");
+        return;
+    }
 
-        interpolatedFlights.forEach((flight) => {
-            if (flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
-                const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
+    // Skip interpolation if too much time has passed since the last API update
+    if (secondsSinceLastApiUpdate > 20) {
+        console.warn("Interpolation exceeded 20 seconds. Waiting for the next API update.");
+        return;
+    }
 
-                // Update flight position
-                flight.latitude = interpolatedPosition.latitude;
-                flight.longitude = interpolatedPosition.longitude;
+    interpolatedFlights.forEach((flight) => {
+        if (flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
+            const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
 
-                // Recalculate distance and ETA
-                try {
-                    if (flight.latitude && flight.longitude && flight.speed > 0) {
-                        flight.distanceToDestination = Math.ceil(
-                            calculateDistance(
-                                flight.latitude,
-                                flight.longitude,
-                                airportCoordinates.latitude,
-                                airportCoordinates.longitude
-                            )
-                        );
+            // Update flight position
+            flight.latitude = interpolatedPosition.latitude;
+            flight.longitude = interpolatedPosition.longitude;
 
-                        flight.etaMinutes = calculateETA(
+            // Recalculate distance and ETA
+            try {
+                if (flight.latitude && flight.longitude && flight.speed > 0) {
+                    flight.distanceToDestination = Math.ceil(
+                        calculateDistance(
                             flight.latitude,
                             flight.longitude,
                             airportCoordinates.latitude,
-                            airportCoordinates.longitude,
-                            flight.speed,
-                            flight.heading
-                        );
-                    } else {
-                        flight.distanceToDestination = 'N/A';
-                        flight.etaMinutes = 'N/A';
-                    }
-                } catch (error) {
-                    console.error(
-                        `Error recalculating for flight ${flight.callsign || 'Unknown'}:`,
-                        error.message
+                            airportCoordinates.longitude
+                        )
                     );
+
+                    flight.etaMinutes = calculateETA(
+                        flight.latitude,
+                        flight.longitude,
+                        airportCoordinates.latitude,
+                        airportCoordinates.longitude,
+                        flight.speed,
+                        flight.heading
+                    );
+                } else {
                     flight.distanceToDestination = 'N/A';
                     flight.etaMinutes = 'N/A';
                 }
+            } catch (error) {
+                console.error(
+                    `Error recalculating for flight ${flight.callsign || 'Unknown'}:`,
+                    error.message
+                );
+                flight.distanceToDestination = 'N/A';
+                flight.etaMinutes = 'N/A';
             }
-        });
-    } else {
-        console.warn("Interpolation skipped as auto-update is off.");
-    }
+        }
+    });
 
-    renderFlightsTable(getFlights);
+    renderFlightsTable(getFlights());
 }
 
 // ============================
@@ -1869,23 +1871,29 @@ function startAutoUpdate(icao) {
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.add("spin");
 
-    // Fetch fresh API data initially and every 20 seconds
+    // Fetch fresh API data initially and start interpolation
     fetchAndUpdateFlights(icao).then(() => {
-        // Start interpolation only when auto-update is active
+        if (!isAutoUpdateActive) return; // Ensure auto-update is still active
+
+        // Start interpolation every 1 second
         flightUpdateInterval = setInterval(() => {
             if (isAutoUpdateActive) {
                 interpolateNextPositions(airportCoordinates);
             }
-        }, 1000); // 1-second interval for real-time updates
+        }, 1000); // 1-second interval
     });
 
     const apiUpdateInterval = 20000; // 20 seconds in milliseconds
     flightUpdateInterval = setInterval(() => {
-        fetchAndUpdateFlights(icao);
+        if (isAutoUpdateActive) {
+            fetchAndUpdateFlights(icao);
+        }
     }, apiUpdateInterval);
 
     // Update ATC data every 60 seconds
     atcUpdateInterval = setInterval(async () => {
+        if (!isAutoUpdateActive) return; // Ensure auto-update is still active
+
         try {
             await fetchControllers(icao);
             await fetchActiveATCAirports();
@@ -1894,41 +1902,23 @@ function startAutoUpdate(icao) {
             console.error("Error during ATC updates:", error.message);
 
             if (error.message.includes("rate limit") || error.message.includes("fetch")) {
-                alert("Rate limit or network error encountered. ATC updates stopped. Alert @kyleboas on Discord.");
-                stopAutoUpdate();
+                alert("Rate limit or network error encountered. ATC updates stopped.");
+                stopAutoUpdate(); // Stop updates if a critical error occurs
             }
         }
     }, 60000);
-}
+   }
 
-    // Stop auto-update
-    function stopAutoUpdate() {
-    isAutoUpdateActive = false;
+function stopAutoUpdate() {
+    isAutoUpdateActive = false; // Set the state to inactive
     updateButton.style.color = "#828282";
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.remove("spin");
 
+    // Clear all intervals
     if (flightUpdateInterval) clearInterval(flightUpdateInterval);
-    if (countdownInterval) clearInterval(countdownInterval);
+    if (atcUpdateInterval) clearInterval(atcUpdateInterval);
     flightUpdateInterval = null;
-    countdownInterval = null;
-    }
-
-    // Add event listener for the update button
-    if (updateButton) {
-        updateButton.addEventListener("click", () => {
-            const icao = icaoInput.value.trim().toUpperCase();
-
-            if (!icao) {
-                alert("Please enter a valid ICAO code before updating.");
-                return;
-            }
-
-            if (isAutoUpdateActive) {
-                stopAutoUpdate();
-            } else {
-                startAutoUpdate(icao);
-            }
-        });
-    }
+    atcUpdateInterval = null;
+   }
 });
