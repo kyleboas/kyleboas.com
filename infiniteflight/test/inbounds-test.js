@@ -1810,7 +1810,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let isAutoUpdateActive = false;
     let flightUpdateInterval = null;
-    let 
+    let interpolateInterval = null;
     let atcUpdateInterval = null;
 
     // Handle Search
