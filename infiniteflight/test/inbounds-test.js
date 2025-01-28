@@ -1609,6 +1609,7 @@ async function renderATCTable() {
 
     try {
         const activeATCAirports = await fetchActiveATCAirportsData();
+        console.log("Active ATC Airports:", activeATCAirports);
 
         if (!Array.isArray(activeATCAirports) || activeATCAirports.length === 0) {
             console.warn("No active ATC airports to display.");
@@ -1619,9 +1620,14 @@ async function renderATCTable() {
         const airportData = [];
         for (const airport of activeATCAirports) {
             try {
+                console.log(`Processing airport: ${airport.icao}`);
+
                 // Fetch status data for the airport
                 const statusData = await fetchStatusData(airport.icao);
+                console.log(`Status data for ${airport.icao}:`, statusData);
+
                 const inboundFlightIds = statusData?.inboundFlights || [];
+                console.log(`Inbound flight IDs for ${airport.icao}:`, inboundFlightIds);
 
                 if (!inboundFlightIds.length) {
                     console.warn(`No inbound flights for airport ${airport.icao}.`);
@@ -1630,17 +1636,21 @@ async function renderATCTable() {
 
                 // Fetch flight details and calculate distances
                 const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
+                console.log(`Fetched ${airportFlights.length} flights for ${airport.icao}:`, airportFlights);
 
                 const airportCoordinates = await fetchAirportCoordinates(airport.icao);
                 if (!airportCoordinates) {
                     console.warn(`No coordinates found for airport ${airport.icao}.`);
                     continue;
                 }
+                console.log(`Coordinates for ${airport.icao}:`, airportCoordinates);
 
                 await updateDistancesAndETAs(airportFlights, airportCoordinates);
+                console.log(`Updated distances and ETAs for flights at ${airport.icao}.`);
 
                 // Count flights based on distance ranges
                 const distanceCounts = countInboundFlightsByDistance(airportFlights);
+                console.log(`Distance counts for ${airport.icao}:`, distanceCounts);
 
                 // Total number of inbound flights for the airport
                 const totalInbounds = airportFlights.length;
@@ -1694,6 +1704,8 @@ async function renderATCTable() {
                 atcTableBody.appendChild(row);
             }
         });
+
+        console.log("Finished rendering ATC table.");
     } catch (error) {
         console.error("Error in renderATCTable:", error.message);
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
