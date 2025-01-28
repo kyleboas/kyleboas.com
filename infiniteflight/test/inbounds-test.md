@@ -33,8 +33,8 @@ permalink: /test/inbounds/
    <div class="settings-menu hidden">
   <div class="settings-header">
     <strong>Settings</strong>
-    <div class="theme-toggle-wrapper">
     <i class="fa-solid fa-info" aria-hidden="true" style="font-size: 16px;margin-bottom: 10px;margin-right: 10px;"></i>
+    <div class="theme-toggle-wrapper">    
       <label
         for="themeToggle"
         class="themeToggle st-sunMoonThemeToggleBtn"
