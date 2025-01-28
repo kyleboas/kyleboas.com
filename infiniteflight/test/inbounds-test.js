@@ -1861,7 +1861,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Start auto-update
     // Start auto-update
 function startAutoUpdate(icao) {
-    isAutoUpdateActive = true;
+    isAutoUpdateActive = false;
     updateButton.style.color = "blue";
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.add("spin");
