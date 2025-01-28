@@ -208,16 +208,13 @@ async function fetchWithProxy(endpoint) {
     }
 }
 
-
-
 let statusDataCache = null;
 let statusDataFetchPromise = null;
 
 /**
  * Fetch status data once and cache it
  */
-async function fetchStatusData() {
-    
+async function fetchStatusData(icao) {
     // Return cached data if available
     if (statusDataCache) {
         return statusDataCache;
@@ -231,7 +228,6 @@ async function fetchStatusData() {
     // Start the fetch process
     statusDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`)
         .then((data) => {
-
             // Basic validation
             if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
                 console.error("Invalid status data received:", data);
@@ -251,7 +247,6 @@ async function fetchStatusData() {
             throw error;
         });
 
-    // Return the fetch promise
     return statusDataFetchPromise;
 }
 
@@ -663,53 +658,28 @@ async function fetchControllers(icao) {
 }
 
 // ============================
-// Status
-// ============================
-
-async function fetchStatusData(icao) {
-    // Return cached data if available
-    if (statusDataCache) {
-        return statusDataCache;
-    }
-
-    // Return the ongoing fetch promise if one exists
-    if (statusDataFetchPromise) {
-        return statusDataFetchPromise;
-    }
-
-    // Start the fetch process
-    statusDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`)
-        .then((data) => {
-            // Basic validation
-            if (!data || data.errorCode !== 0 || !data.result) {
-                console.error("Invalid status data received:", data);
-                throw new Error("Invalid status data format.");
-            }
-
-            // Cache the result
-            statusDataCache = data.result;
-            return statusDataCache;
-        })
-        .catch((error) => {
-            console.error("Error fetching status data:", error.message);
-
-            // Clear cache on error
-            statusDataCache = null;
-            statusDataFetchPromise = null;
-            throw error;
-        });
-
-    return statusDataFetchPromise;
-}
-
-function clearStatusDataCache() {
-    statusDataCache = null;
-    statusDataFetchPromise = null;
-}
-
-// ============================
 // /Flights
 // ============================
+
+
+// Fetch inbound flight IDs
+async function fetchInboundFlightIds(icao) {
+    const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
+    if (cached) {
+        return cached;
+    }
+
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const inboundFlights = data.result.inboundFlights || [];
+        setCache(icao, inboundFlights, 'inboundFlightIds');
+        return inboundFlights;
+    } catch (error) {
+        console.error('Error fetching inbound flight IDs:', error.message);
+        alert('Failed to fetch inbound flight IDs.');
+        return [];
+    }
+}
 
 async function fetchInboundFlightDetails(inboundFlightIds = []) {
     try {
@@ -1495,25 +1465,6 @@ function getHeadingArrow(heading) {
 // ATC Table Rendering
 // ============================
 
-// Fetch inbound flight IDs
-async function fetchInboundFlightIds(icao) {
-    const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
-    if (cached) {
-        return cached;
-    }
-
-    try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
-        const inboundFlights = data.result.inboundFlights || [];
-        setCache(icao, inboundFlights, 'inboundFlightIds');
-        return inboundFlights;
-    } catch (error) {
-        console.error('Error fetching inbound flight IDs:', error.message);
-        alert('Failed to fetch inbound flight IDs.');
-        return [];
-    }
-}
-
 // Helper function to map frequency type codes to descriptive names
 // Map frequency type to short codes
 function mapFrequencyType(type) {
@@ -1609,80 +1560,55 @@ async function renderATCTable() {
 
     try {
         const activeATCAirports = await fetchActiveATCAirportsData();
-        console.log("Active ATC Airports:", activeATCAirports);
 
-        if (!Array.isArray(activeATCAirports) || activeATCAirports.length === 0) {
+        if (!activeATCAirports || activeATCAirports.length === 0) {
             console.warn("No active ATC airports to display.");
             atcTableBody.innerHTML = '<tr><td colspan="6">No active ATC airports available.</td></tr>';
             return;
         }
 
-        // Use Promise.all to process all airports concurrently
-        const airportData = await Promise.all(
-            activeATCAirports.map(async (airport) => {
-                try {
-                    console.log(`Fetching status data for airport: ${airport.icao}`);
+        // Collect data for each airport, including total inbound flights
+        const airportData = [];
 
-                    const statusData = await fetchStatusData(airport.icao);
+        for (const airport of activeATCAirports) {
+            const inboundFlightIds = await fetchInboundFlightIds(airport.icao);
 
-                    // Validate if the returned ICAO matches the requested ICAO
-                    if (statusData.airportIcao !== airport.icao) {
-                        console.error(`Mismatch: Fetched status data ICAO (${statusData.airportIcao}) does not match requested ICAO (${airport.icao}).`);
-                        return null; // Skip this airport
-                    }
+            // Fetch flight details and calculate distances
+            const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
 
-                    console.log(`Status data for ${airport.icao}:`, statusData);
+            const airportCoordinates = await fetchAirportCoordinates(airport.icao);
+            if (!airportCoordinates) {
+                console.warn(`No coordinates found for airport ${airport.icao}.`);
+                continue;
+            }
 
-                    const inboundFlightIds = statusData?.inboundFlights || [];
-                    if (!inboundFlightIds.length) {
-                        console.warn(`No inbound flights for airport ${airport.icao}.`);
-                        return null;
-                    }
+            await updateDistancesAndETAs(airportFlights, airportCoordinates);
 
-                    const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
-                    const airportCoordinates = await fetchAirportCoordinates(airport.icao);
+            // Count flights based on distance ranges
+            const distanceCounts = countInboundFlightsByDistance(airportFlights);
 
-                    if (!airportCoordinates) {
-                        console.warn(`No coordinates found for airport ${airport.icao}.`);
-                        return null;
-                    }
+            // Total number of inbound flights for the airport
+            const totalInbounds = airportFlights.length;
 
-                    await updateDistancesAndETAs(airportFlights, airportCoordinates);
-
-                    const distanceCounts = countInboundFlightsByDistance(airportFlights);
-                    const totalInbounds = airportFlights.length;
-
-                    // Collect and return data for this airport
-                    return {
-                        icao: airport.icao,
-                        frequencies: airport.frequencies || "N/A",
-                        distanceCounts,
-                        totalInbounds,
-                    };
-                } catch (innerError) {
-                    console.error(`Error processing airport ${airport.icao}:`, innerError.message);
-                    return null; // Skip this airport on error
-                }
-            })
-        );
-
-        // Filter out null results (failed airports)
-        const validAirportData = airportData.filter((data) => data !== null);
-
-        if (!validAirportData.length) {
-            console.warn("No valid airport data to display.");
-            atcTableBody.innerHTML = '<tr><td colspan="6">No data available for active ATC airports.</td></tr>';
-            return;
+            // Store airport data with total inbound flights
+            airportData.push({
+                icao: airport.icao,
+                frequencies: airport.frequencies || "N/A",
+                distanceCounts,
+                totalInbounds,
+            });
         }
 
         // Sort the airports by total inbound flights (descending order)
-        validAirportData.sort((a, b) => b.totalInbounds - a.totalInbounds);
+        airportData.sort((a, b) => b.totalInbounds - a.totalInbounds);
 
-        // Render or update rows in the table
-        validAirportData.forEach((airport) => {
+        // Update rows dynamically
+        airportData.forEach((airport) => {
+            // Check if a row for this airport already exists
             const existingRow = document.querySelector(`#atcTable tbody tr[data-icao="${airport.icao}"]`);
 
             if (existingRow) {
+                // Update the existing row's cells
                 const cells = existingRow.children;
                 cells[1].textContent = airport.frequencies;
                 cells[2].textContent = airport.distanceCounts["50nm"] || 0;
@@ -1690,6 +1616,7 @@ async function renderATCTable() {
                 cells[4].textContent = airport.distanceCounts["500nm"] || 0;
                 cells[5].textContent = airport.totalInbounds || 0;
             } else {
+                // Create a new row if it doesn't exist
                 const row = document.createElement("tr");
                 row.setAttribute("data-icao", airport.icao);
                 row.innerHTML = `
@@ -1704,7 +1631,6 @@ async function renderATCTable() {
             }
         });
 
-        console.log("Finished rendering ATC table.");
     } catch (error) {
         console.error("Error in renderATCTable:", error.message);
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
