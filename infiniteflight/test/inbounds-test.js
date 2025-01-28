@@ -1386,7 +1386,7 @@ boldHeadingButton.addEventListener('click', () => {
 // Toggle Apply Distance Filter
 
 const DistanceFilterBorder = document.getElementById('DistanceFilterBorder');
-const applyDistanceFilterButton'); = document.getElementById('applyDistanceFilterButton');
+const applyDistanceFilterButton = document.getElementById('applyDistanceFilterButton');
 
 // Apply Distance Filter
 document.getElementById('applyDistanceFilterButton');').addEventListener('click', () => {
