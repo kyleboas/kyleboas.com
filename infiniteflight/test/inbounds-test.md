@@ -156,8 +156,8 @@ permalink: /test/inbounds/
       </p>
      </div>
    </div>
-   <div class="setting-container" id="DistanceFilterContainer">
-    <div class="setting-border">
+   <div class="setting-container">
+    <div class="setting-border" id="DistanceFilterBorder">
       <button class="overlay-button" id="applyDistanceFilterButton"></button>    
       <span class="setting-button"></span> 
       <p class="setting-title">Distance Filter</p>
@@ -167,12 +167,12 @@ permalink: /test/inbounds/
      </div>
    </div>
    <div class="setting-container">
-    <div class="setting-border">
+    <div class="setting-border" id="SplitFilterBorder">
       <button class="overlay-button" id="filterHeadingHighlightButton"></button>    
       <span class="setting-button"></span> 
       <p class="setting-title">Split Filter</p>
       <p class="setting-description">
-        Input both the heading and distance to split traffic based on direction. When it is disabled, the highlighted colors will be associated with the aircraft's direction of travel. For example, if you input 90 and 270 as the heading, aircraft from the North will only be compared to aircraft to the North, and aircraft from the South will only be compared to aircraft from the South.
+        Input both the heading and distance to split traffic based on direction. When it is disabled, the highlighted colors will be associated with the aircraft's direction of travel.
       </p>
      </div>
    </div>
@@ -263,7 +263,7 @@ permalink: /test/inbounds/
     <table id="flightsTable">
         <thead>
             <tr>
-                <th style="padding-left: 25px; padding-right: 25px;">Aircraft</th>
+                <th class="column-one">Aircraft</th>
                 <th>MIN/MAX</th>
                 <th>GS/MACH</th>
                 <th>HDG/ALT</th>

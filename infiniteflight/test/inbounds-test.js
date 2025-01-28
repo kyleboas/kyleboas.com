@@ -1309,6 +1309,10 @@ function rgbToHex(rgb) {
 
 
 // Toggle Heading Highlight and reapply highlights
+
+const SplitFilterBorder = document.getElementById('SplitFilterBorder');
+const filterHeadingHighlightButton = document.getElementById('filterHeadingHighlightButton');
+
 document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
     const minHeadingInput = document.getElementById('minHeading').value;
     const maxHeadingInput = document.getElementById('maxHeading').value;
@@ -1327,9 +1331,9 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
 
     headingHighlightEnabled = !headingHighlightEnabled;
 
-    const button = document.getElementById('filterHeadingHighlightButton');
-    button.textContent = headingHighlightEnabled ? 'Disable' : 'Split';
-    button.style.backgroundColor = headingHighlightEnabled ? 'blue' : '#c2c2c2';
+    SplitFilterBorder.style.borderLeftColor = boldHeadingEnabled ? 'blue' : '#bbb';
+    SplitFilterBorder.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
+    SplitFilterBorder.style.borderLeftStyle = 'solid';
 
     highlightCloseETAs(); // Reapply highlighting with the heading filter
 });
@@ -1381,8 +1385,11 @@ boldHeadingButton.addEventListener('click', () => {
 
 // Toggle Apply Distance Filter
 
+const DistanceFilterBorder = document.getElementById('DistanceFilterBorder');
+const DistanceFilterButton = document.getElementById('DistanceFilterButton');
+
 // Apply Distance Filter
-document.getElementById('applyDistanceFilterButton').addEventListener('click', () => {
+document.getElementById('DistanceFilterButton').addEventListener('click', () => {
     const minDistanceInput = document.getElementById('minDistance').value;
     const maxDistanceInput = document.getElementById('maxDistance').value;
 
@@ -1400,10 +1407,9 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
 
-    const button = document.getElementById('DistanceFilterContainer');
-    boldHeadingContainer.style.borderLeftColor = boldHeadingEnabled ? '#c2c2c2' : '#bbb';
-    boldHeadingContainer.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
-    boldHeadingContainer.style.borderLeftStyle = 'solid';
+    DistanceFilterBorder.style.borderLeftColor = boldHeadingEnabled ? '#c2c2c2' : '#bbb';
+    DistanceFilterBorder.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
+    DistanceFilterBorder.style.borderLeftStyle = 'solid';
 
     hiddenDistance.minDistance = minDistance;
     hiddenDistance.maxDistance = maxDistance;
