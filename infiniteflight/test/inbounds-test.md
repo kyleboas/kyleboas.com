@@ -200,6 +200,42 @@ permalink: /test/inbounds/
         <div class="box" style="background-color:#eaeaea;"></div>
         <p class="setting-description">120 seconds separation.</p>
       </div>
+      <table id="infoTable">
+        <thead>
+            <tr>
+                <th>Aircraft</th>
+                <th>Heading</th>
+                <th>NM/ETA</th>
+                <th>Color</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="yellow-highlight">
+                <td>N623KB</td>
+                <td>30</td>
+                <td>30:10</td>
+                <td>Yellow</td>
+            </tr>
+            <tr class="yellow-highlight">
+                <td>AAL34</td>
+                <td>170</td>
+                <td>30:15</td>
+                <td>Yellow</td>
+            </tr>
+            <tr class="blue-highlight">
+                <td>NT3</td>
+                <td>182</td>
+                <td>30:30</td>
+                <td>Blue</td>
+            </tr>
+            <tr class="beige-highlight">
+                <td>DAL24</td>
+                <td>310</td>
+                <td>30:60</td>
+                <td>Yellow</td>
+            </tr> 
+        </tbody>
+    </table>
     </div>
    </div>
   </div>
