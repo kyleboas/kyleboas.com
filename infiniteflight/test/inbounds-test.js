@@ -587,7 +587,6 @@ function displayControllers(controllers, centerFrequencies = []) {
 // Fetch ATIS
 async function fetchAirportATIS(icao) {
     const atisElement = document.getElementById('atisMessage');
-    if (atisElement) atisElement.textContent = 'Fetching ATIS...';
 
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
     if (cached) {
