@@ -281,7 +281,6 @@ permalink: /test/inbounds/
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
-</div>
         <!-- Secondary Airport Search -->
         <form id="secondarySearchForm" novalidate>
             <input type="text" id="secondaryIcao" name="secondaryIcao" placeholder="Enter Secondary ICAO" required>
@@ -383,5 +382,4 @@ document.addEventListener('click', (event) => {
         settingsMenu.classList.remove('visible'); // Remove the 'visible' class
     }
 });
-
 </script>
