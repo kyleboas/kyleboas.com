@@ -403,7 +403,7 @@ async function fetchAirportCoordinates(icao) {
     if (cached) {
         return cached;
     }
-
+    
     try {
         const data = await fetchWithProxy(`/airport/${icao}`);
         const coordinates = { latitude: data.result.latitude, longitude: data.result.longitude };
@@ -910,31 +910,29 @@ async function fetchAndUpdateFlights(icao) {
     clearStatusDataCache();
 
     try {
-        // Ensure the main airport section is visible
-        document.querySelector('.mainAirport').style.display = 'block';
-        document.getElementById('atisMessage').style.display = 'block';
-        document.getElementById('controllersList').style.display = 'block';
+        // Show the main airport section
+        const mainAirportElement = document.querySelector('.mainAirport');
+        const atisMessageElement = document.getElementById('atisMessage');
+        const controllersListElement = document.getElementById('controllersList');
 
-        // Fetch and update the necessary data
+        if (mainAirportElement) mainAirportElement.style.display = 'block';
+        if (atisMessageElement) atisMessageElement.style.display = 'block';
+        if (controllersListElement) controllersListElement.style.display = 'block';
+
+        // Fetch and display ATIS and controllers
         const atis = await fetchAirportATIS(icao);
         const controllers = await fetchControllers(icao);
-
-        // Display updated ATIS and controllers
         displayATIS(atis);
         displayControllers(controllers);
 
-        // Fetch flights and update table
-        const inboundFlightIds = await fetchInboundFlightIds(airport.icao);
-        const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
-        
-        // Clear previous flights before adding new ones
-        allFlights = [];
-        interpolatedFlights = [];
-
+        // Fetch inbound flights and flight details
+        const inboundFlightIds = await fetchInboundFlightIds(icao);
         const flights = await fetchInboundFlightDetails(inboundFlightIds);
+
+        // Handle case where no flights are found
         if (!flights || flights.length === 0) {
             console.warn(`No inbound flights found for ICAO: ${icao}`);
-            renderFlightsTable(getFlights);
+            renderFlightsTable(getFlights());
             return;
         }
 
@@ -943,7 +941,11 @@ async function fetchAndUpdateFlights(icao) {
         if (!coordinates) throw new Error("Failed to fetch airport coordinates.");
         airportCoordinates = coordinates;
 
-        // Calculate distances and ETAs for all inbound flights
+        // Clear previous flights and reset state
+        allFlights = [];
+        interpolatedFlights = [];
+
+        // Update distances and ETAs for all inbound flights
         await updateDistancesAndETAs(flights, airportCoordinates);
 
         // Prepare interpolation data for real-time updates
@@ -963,26 +965,28 @@ async function fetchAndUpdateFlights(icao) {
 
         // Update global state
         allFlights = flights;
-
-        // Count flights by distance ranges
-        const distanceCounts = countInboundFlightsByDistance(allFlights);
-
-        // Log or use the distance counts
-        console.log("Inbound flight distance counts:", distanceCounts);
-
         interpolatedFlights = JSON.parse(JSON.stringify(flights));
         lastApiUpdateTime = Date.now();
 
+        // Log flight distance counts
+        const distanceCounts = countInboundFlightsByDistance(allFlights);
+        console.log("Inbound flight distance counts:", distanceCounts);
+
         // Render the updated table
-        renderFlightsTable(getFlights);
+        renderFlightsTable(getFlights());
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
+
+        // Handle errors and fallback UI updates
         renderFlightsTable([]);
-        document.getElementById('atisMessage').textContent = "ATIS not available.";
-        document.getElementById('controllersList').textContent = "No controllers online.";
+        if (document.getElementById('atisMessage')) {
+            document.getElementById('atisMessage').textContent = "ATIS not available.";
+        }
+        if (document.getElementById('controllersList')) {
+            document.getElementById('controllersList').textContent = "No controllers online.";
+        }
     }
 }
-
 
 function interpolateNextPositions(airportCoordinates) {
     if (!airportCoordinates) {
