@@ -1495,6 +1495,25 @@ function getHeadingArrow(heading) {
 // ATC Table Rendering
 // ============================
 
+// Fetch inbound flight IDs
+async function fetchInboundFlightIds(icao) {
+    const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
+    if (cached) {
+        return cached;
+    }
+
+    try {
+        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const inboundFlights = data.result.inboundFlights || [];
+        setCache(icao, inboundFlights, 'inboundFlightIds');
+        return inboundFlights;
+    } catch (error) {
+        console.error('Error fetching inbound flight IDs:', error.message);
+        alert('Failed to fetch inbound flight IDs.');
+        return [];
+    }
+}
+
 // Helper function to map frequency type codes to descriptive names
 // Map frequency type to short codes
 function mapFrequencyType(type) {
