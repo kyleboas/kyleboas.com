@@ -261,7 +261,7 @@ permalink: /test/inbounds/
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
     </div>
-   </div> 
+    
    <div class="page-right">
     <table id="flightsTable">
         <thead>
@@ -277,11 +277,11 @@ permalink: /test/inbounds/
             <!-- Dynamic rows will be added here -->
         </tbody>
     </table>
-</div>
+   </div>
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
-
+</div>
         <!-- Secondary Airport Search -->
         <form id="secondarySearchForm" novalidate>
             <input type="text" id="secondaryIcao" name="secondaryIcao" placeholder="Enter Secondary ICAO" required>
