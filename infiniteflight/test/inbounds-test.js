@@ -1863,7 +1863,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Start auto-update
-    // Start auto-update
 function startAutoUpdate(icao) {
     isAutoUpdateActive = true;
     updateButton.style.color = "blue";
@@ -1872,8 +1871,12 @@ function startAutoUpdate(icao) {
 
     // Fetch fresh API data initially and every 20 seconds
     fetchAndUpdateFlights(icao).then(() => {
-        // Start the table update using interpolated positions every second
-        setInterval(() => interpolateNextPositions(airportCoordinates), 1000); // Pass global variable
+        // Start interpolation only when auto-update is active
+        flightUpdateInterval = setInterval(() => {
+            if (isAutoUpdateActive) {
+                interpolateNextPositions(airportCoordinates);
+            }
+        }, 1000); // 1-second interval for real-time updates
     });
 
     const apiUpdateInterval = 20000; // 20 seconds in milliseconds
