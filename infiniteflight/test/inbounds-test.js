@@ -1386,10 +1386,10 @@ boldHeadingButton.addEventListener('click', () => {
 // Toggle Apply Distance Filter
 
 const DistanceFilterBorder = document.getElementById('DistanceFilterBorder');
-const DistanceFilterButton = document.getElementById('DistanceFilterButton');
+const applyDistanceFilterButton'); = document.getElementById('applyDistanceFilterButton');
 
 // Apply Distance Filter
-document.getElementById('DistanceFilterButton').addEventListener('click', () => {
+document.getElementById('applyDistanceFilterButton');').addEventListener('click', () => {
     const minDistanceInput = document.getElementById('minDistance').value;
     const maxDistanceInput = document.getElementById('maxDistance').value;
 

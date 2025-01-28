@@ -249,6 +249,19 @@ permalink: /test/inbounds/
         </tbody>
     </table>
     
+    <table id="infoTable">
+        <thead>
+            <tr>
+                <th>Aircraft</th>
+                <th>NM/ETA</th>
+                <th>Color/th>
+            </tr>
+        </thead>
+        <tbody>
+           
+        </tbody>
+    </table>
+    
     <!-- Secondary Airport Section -->
     <div id="secondaryAirport">
         <div id="secondaryAirportContainer"></div>
