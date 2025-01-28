@@ -1620,10 +1620,17 @@ async function renderATCTable() {
         const airportData = [];
         for (const airport of activeATCAirports) {
             try {
-                console.log(`Processing airport: ${airport.icao}`);
+                console.log(`Fetching status data for airport: ${airport.icao}`);
 
-                // Fetch status data for the airport
+                // Fetch status data for the current airport
                 const statusData = await fetchStatusData(airport.icao);
+                
+                // Validate if the returned ICAO matches the requested ICAO
+                if (statusData.airportIcao !== airport.icao) {
+                    console.error(`Mismatch: Fetched status data ICAO (${statusData.airportIcao}) does not match requested ICAO (${airport.icao}).`);
+                    continue; // Skip processing this airport
+                }
+                
                 console.log(`Status data for ${airport.icao}:`, statusData);
 
                 const inboundFlightIds = statusData?.inboundFlights || [];
