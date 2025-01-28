@@ -279,6 +279,7 @@ permalink: /test/inbounds/
         </tbody>
     </table>
 </div>
+</div>
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
@@ -386,4 +387,3 @@ document.addEventListener('click', (event) => {
 });
 
 </script>
-<script src="/infiniteflight/test/inbounds-test.js"></script>
