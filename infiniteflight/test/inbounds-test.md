@@ -232,8 +232,6 @@ permalink: /test/inbounds/
         <div class="nav-right" id="atcAirportsList">
         </div>
     </div>
-   </div>
-
 
     <!-- ATC Table -->
     <table id="atcTable">
@@ -261,8 +259,10 @@ permalink: /test/inbounds/
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
     </div>
-    
-   <div class="page-right">
+  </div>
+  
+  
+  <div class="page-right">
     <table id="flightsTable">
         <thead>
             <tr>
@@ -278,6 +278,7 @@ permalink: /test/inbounds/
         </tbody>
     </table>
    </div>
+</div> 
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
