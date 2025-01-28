@@ -63,10 +63,6 @@ button, .overlay-button {
   font-size: 13px;
 }
 
-.setting-description, .setting-information {
-  display:none;
-}
-
 .setting-information {
   margin-bottom: 100px;
 }  
@@ -686,7 +682,7 @@ body.dark-mode form button {
         align-items: flex-start;
         gap: 20px;
         width: 100%;
-        max-width: 690px;
+        max-width: 695px;
     }
 
     .nav-right {
