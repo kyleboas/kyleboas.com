@@ -924,9 +924,9 @@ async function fetchAndUpdateFlights(icao) {
         displayControllers(controllers);
 
         // Fetch flights and update table
-        const statusData = await fetchStatusData(icao);
-        const inboundFlightIds = statusData?.inboundFlights || [];
-
+        const inboundFlightIds = await fetchInboundFlightIds(airport.icao);
+        const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
+        
         // Clear previous flights before adding new ones
         allFlights = [];
         interpolatedFlights = [];
