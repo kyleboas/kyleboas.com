@@ -993,6 +993,13 @@ async function fetchAndUpdateFlights(icao) {
 
         // Update global state
         allFlights = flights;
+
+        // Count flights by distance ranges
+        const distanceCounts = countInboundFlightsByDistance(allFlights);
+
+        // Log or use the distance counts
+        console.log("Inbound flight distance counts:", distanceCounts);
+
         interpolatedFlights = JSON.parse(JSON.stringify(flights));
         lastApiUpdateTime = Date.now();
 
@@ -1572,7 +1579,7 @@ function countInboundFlightsByDistance(flights) {
     return counts;
 }
 
-// Render ATC Tablr
+// Render ATC Table
 async function renderATCTable() {
     const atcTableBody = document.querySelector("#atcTable tbody");
 
