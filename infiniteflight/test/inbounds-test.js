@@ -988,73 +988,6 @@ async function fetchAndUpdateFlights(icao) {
     }
 }
 
-
-// interpolatedNextPositions
-function interpolateNextPositions(airportCoordinates) {
-    if (isAutoUpdateActive === true) {
-      console.error("Interpolation skipped as auto-update is off.");
-      return;
-    }
-
-    if (!airportCoordinates) {
-        console.error("Airport coordinates not available.");
-        return;
-    }
-
-    const currentTime = Date.now();
-    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
-
-    if (secondsSinceLastApiUpdate > 20) {
-        console.warn("Interpolation exceeded 20 seconds. Waiting for the next API update.");
-        return;
-    }
-
-    interpolatedFlights.forEach((flight) => {
-        if (flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
-            const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
-
-            // Update flight position
-            flight.latitude = interpolatedPosition.latitude;
-            flight.longitude = interpolatedPosition.longitude;
-
-            // Recalculate distance and ETA
-            try {
-                if (flight.latitude && flight.longitude && flight.speed > 0) {
-                    flight.distanceToDestination = Math.ceil(
-                        calculateDistance(
-                            light.latitude,
-                            flight.longitude,
-                            airportCoordinates.latitude,
-                            airportCoordinates.longitude
-                        )
-                    );
-
-                    flight.etaMinutes = calculateETA(
-                        flight.latitude,
-                        flight.longitude,
-                        airportCoordinates.latitude,
-                        airportCoordinates.longitude,
-                        flight.speed,
-                        flight.heading
-                    );
-                } else {
-                    flight.distanceToDestination = 'N/A';
-                    flight.etaMinutes = 'N/A';
-                }
-            } catch (error) {
-                console.error(
-                    `Error recalculating for flight ${flight.callsign || 'Unknown'}:`,
-                    error.message
-                );
-                flight.distanceToDestination = 'N/A';
-                flight.etaMinutes = 'N/A';
-            }
-        }
-     });
-
-    renderFlightsTable(getFlights());
-}
-
 // ============================
 // Calculations
 // ============================
@@ -1777,20 +1710,71 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
 // Auto-Update
 // ============================
 
-// Stop auto-update
+// ============================
+// Stop Auto-Update
+// ============================
 function stopAutoUpdate() {
-    if (updateInterval) clearInterval(updateInterval);
-    if (updateTimeout) clearTimeout(updateTimeout);
-    if (countdownInterval) clearInterval(countdownInterval);
-
-    updateInterval = null;
-    updateTimeout = null;
-    countdownInterval = null;
     isAutoUpdateActive = false;
+
+    // Update the button style to reflect the stopped state
+    updateButton.style.color = "#828282";
+    const icon = updateButton.querySelector("i");
+    if (icon) icon.classList.remove("spin");
+
+    // Clear all intervals and reset related variables
+    if (flightUpdateInterval) clearInterval(flightUpdateInterval);
+    if (interpolateInterval) clearInterval(interpolateInterval);
+    if (atcUpdateInterval) clearInterval(atcUpdateInterval);
+
+    flightUpdateInterval = null;
+    interpolateInterval = null;
+    atcUpdateInterval = null;
+
+    console.log("Auto-update and interpolation stopped.");
 }
 
-// Event Listeners
-document.addEventListener('DOMContentLoaded', async () => {
+// ============================
+// Start Auto-Update
+// ============================
+function startAutoUpdate(icao) {
+    isAutoUpdateActive = true;
+
+    // Update button style to show active status
+    updateButton.style.color = "blue";
+    const icon = updateButton.querySelector("i");
+    if (icon) icon.classList.add("spin");
+
+    // Fetch fresh API data and set intervals
+    fetchAndUpdateFlights(icao).then(() => {
+        interpolateInterval = setInterval(() => {
+            interpolateNextPositions(airportCoordinates);
+        }, 1000); // Interpolation every second
+    });
+
+    flightUpdateInterval = setInterval(() => {
+        fetchAndUpdateFlights(icao);
+    }, 20000); // API update every 20 seconds
+
+    atcUpdateInterval = setInterval(async () => {
+        try {
+            await fetchControllers(icao);
+            await fetchActiveATCAirports();
+            await renderATCTable();
+        } catch (error) {
+            console.error("Error during ATC updates:", error.message);
+
+            if (error.message.includes("rate limit") || error.message.includes("fetch")) {
+                alert("Rate limit or network error encountered. ATC updates stopped.");
+                stopAutoUpdate();
+            }
+        }
+    }, 60000); // ATC update every 60 seconds
+}
+
+// ============================
+// DOMContentLoaded Event Listener
+// ============================
+document.addEventListener("DOMContentLoaded", async () => {
     // Apply default settings from cookies
     applyDefaults();
 
@@ -1799,7 +1783,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await fetchActiveATCAirports();
         await renderATCTable();
     } catch (error) {
-        console.error('Error initializing ATC table:', error.message);
+        console.error("Error initializing ATC table:", error.message);
     }
 
     // DOM Elements
@@ -1807,48 +1791,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     const icaoInput = document.getElementById("icao");
     const updateButton = document.getElementById("update");
 
-    let isAutoUpdateActive = true;
-    let flightUpdateInterval = null;
-    let interpolateInterval = null;
-    let atcUpdateInterval = null;
-
     // Handle Search
     async function handleSearch() {
-    const icao = icaoInput.value.trim().toUpperCase();
+        const icao = icaoInput.value.trim().toUpperCase();
 
-    if (!icao) {
-        alert("Please enter a valid ICAO code.");
-        return;
+        if (!icao) {
+            alert("Please enter a valid ICAO code.");
+            return;
+        }
+
+        stopAutoUpdate(); // Stop any ongoing updates
+        allFlights = [];
+        interpolatedFlights = [];
+        airportCoordinates = null; // Reset airport coordinates
+        lastApiUpdateTime = null;
+
+        // Show loading state
+        const tableBody = document.querySelector("#flightsTable tbody");
+        if (tableBody) {
+            tableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
+        }
+
+        try {
+            await fetchAndUpdateFlights(icao);
+            startAutoUpdate(icao); // Start updates for the new ICAO
+        } catch (error) {
+            console.error("Error during search:", error.message);
+            alert("Failed to fetch and update flights. Please try again.");
+        }
     }
 
-    // Stop any ongoing updates
-    stopAutoUpdate();
-
-    // Clear previous flight data
-    allFlights = [];
-    interpolatedFlights = [];
-    airportCoordinates = null; // Reset airport coordinates
-    lastApiUpdateTime = null;
-
-    // Clear table to reflect no flights before fetching new data
-    const tableBody = document.querySelector("#flightsTable tbody");
-    if (tableBody) {
-        tableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
-    }
-
-    try {
-        // Fetch and update flights for the new ICAO
-        await fetchAndUpdateFlights(icao);
-
-        // Automatically start updates for the new ICAO
-        startAutoUpdate(icao);
-    } catch (error) {
-        console.error("Error during search:", error.message);
-        alert("Failed to fetch and update flights. Please try again.");
-    }
-}
-
-    // Add event listeners for search functionality
+    // Add event listeners for search and update buttons
     if (searchButton) {
         searchButton.addEventListener("click", async () => {
             await handleSearch();
@@ -1864,76 +1837,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Start auto-update
-function startAutoUpdate(icao) {
-    isAutoUpdateActive = true;
-    updateButton.style.color = "blue";
-    const icon = updateButton.querySelector("i");
-    if (icon) icon.classList.add("spin");
-
-    // Fetch fresh API data initially and every 20 seconds
-    interpolateInterval = fetchAndUpdateFlights(icao).then(() => {
-        setInterval(() => interpolateNextPositions(airportCoordinates), 1000);
-    });
-
-    const apiUpdateInterval = 20000; // 20 seconds in milliseconds
-    flightUpdateInterval = setInterval(() => {
-        fetchAndUpdateFlights(icao);
-    }, apiUpdateInterval);
-
-    // Update ATC data every 60 seconds
-    atcUpdateInterval = setInterval(async () => {
-        try {
-            await fetchControllers(icao);
-            await fetchActiveATCAirports();
-            await renderATCTable();
-        } catch (error) {
-            console.error("Error during ATC updates:", error.message);
-
-            if (error.message.includes("rate limit") || error.message.includes("fetch")) {
-                alert("Rate limit or network error encountered. ATC updates stopped.");
-                stopAutoUpdate();
-            }
-        }
-    }, 60000);
-}
-
-    // Stop auto-update
-    function stopAutoUpdate() {
-     isAutoUpdateActive = false;
-
-    // Update the button style to reflect the stopped state
-    updateButton.style.color = "#828282";
-    const icon = updateButton.querySelector("i");
-    if (icon) icon.classList.remove("spin");
-
-    // Clear all intervals and reset related variables
-    if (flightUpdateInterval) clearInterval(flightUpdateInterval);
-    if (interpolateInterval) clearInterval(interpolateInterval);
-    if (atcUpdateInterval) clearInterval(atcUpdateInterval);
-    
-    flightUpdateInterval = null;
-    interpolateInterval = null;
-    atcUpdateInterval = null;
-
-    console.log("Auto-update and interpolation stopped.");
-    }
-
-    // Add event listener for the update button
     if (updateButton) {
         updateButton.addEventListener("click", () => {
-    const icao = icaoInput.value.trim().toUpperCase();
+            const icao = icaoInput.value.trim().toUpperCase();
 
-        if (!icao) {
-          alert("Please enter a valid ICAO code before updating.");
-         return;
-        }
+            if (!icao) {
+                alert("Please enter a valid ICAO code before updating.");
+                return;
+            }
 
-        if (isAutoUpdateActive) {
-         stopAutoUpdate();
-        } else {
-         startAutoUpdate(icao); 
-        }
-      });
+            if (isAutoUpdateActive) {
+                stopAutoUpdate();
+            } else {
+                startAutoUpdate(icao);
+            }
+        });
     }
 });
