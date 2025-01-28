@@ -383,12 +383,5 @@ document.addEventListener('click', (event) => {
     }
 });
 
-
-document.querySelector('.fa-solid.fa-info').addEventListener('click', () => {
-    document.querySelectorAll('.setting-description, .setting-information').forEach(element => {
-        element.style.display = element.style.display === 'block' ? 'none' : 'block';
-    });
-});
-
 </script>
 <script src="/infiniteflight/test/inbounds-test.js"></script>
