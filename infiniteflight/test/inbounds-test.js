@@ -1008,6 +1008,11 @@ async function fetchAndUpdateFlights(icao) {
 
 
 function interpolateNextPositions(airportCoordinates) {
+    if (!isAutoUpdateActive) {
+        console.warn("Interpolation skipped as auto-update is off.");
+        return;
+    }
+
     if (!airportCoordinates) {
         console.error("Airport coordinates not available.");
         return;
