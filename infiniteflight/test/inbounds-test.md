@@ -131,7 +131,7 @@ permalink: /test/inbounds/
       <button class="overlay-button"></button>    
       <span class="setting-button"></span>    
       <p class="setting-title">Heading and Distance</p>
-      <p class="setting-description">
+      <p class="setting-description-info">
         Input the minimum and maximum heading and distance to adjust what
         information is shown in the inbounds table.
       </p>
