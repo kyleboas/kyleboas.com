@@ -670,7 +670,12 @@ body.dark-mode .mainAirport {
 
 body.dark-mode form button {
   color: #000000;
-} 
+}
+
+.column-one {
+  padding-left: 25px; 
+  padding-right: 25px;
+}  
 
 
 /* Responsive */
@@ -716,6 +721,13 @@ body.dark-mode form button {
         max-width: 90%;
         float: right;
     }
+    
+    .column-one {
+        padding-left: 50px; 
+        padding-right: 505px;
+    }  
+
+ 
 
     .page-right {
         right: 0;
