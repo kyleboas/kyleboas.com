@@ -1005,7 +1005,8 @@ function interpolateNextPositions(airportCoordinates) {
 
     if (secondsSinceLastApiUpdate > 20) {
         console.error("Interpolation exceeded 20 seconds. Waiting for the next API update.");
-        await fetchAndUpdateFlights(icao);
+       
+        fetchAndUpdateFlights(icao);
         
         return;
     }

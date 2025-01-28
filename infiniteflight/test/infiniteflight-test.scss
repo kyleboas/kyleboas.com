@@ -695,7 +695,16 @@ body.dark-mode form button {
 
     .page-left {
         width: 270px;
-        position: fixed; 
+        position: fixed;
+        height: 100%;
+        overflow-y: auto;
+        padding-bottom: 40px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .page-left::-webkit-scrollbar {
+      display: none;
     }
 
     #flightsTable {
