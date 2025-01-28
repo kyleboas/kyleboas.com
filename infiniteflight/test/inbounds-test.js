@@ -1618,49 +1618,39 @@ async function renderATCTable() {
 
         const airportData = [];
         for (const airport of activeATCAirports) {
-            const statusData = await fetchStatusData(airport.icao);
-            const inboundFlightIds = statusData?.inboundFlights || [];
-
-            // Fetch flight details and calculate distances
-            const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
-
-            const airportCoordinates = await fetchAirportCoordinates(airport.icao);
-            if (!airportCoordinates) {
-                console.warn(`No coordinates found for airport ${airport.icao}.`);
-                continue;
-            }
-
-            await updateDistancesAndETAs(airportFlights, airportCoordinates);
             try {
+                // Fetch status data for the airport
                 const statusData = await fetchStatusData(airport.icao);
-                const inboundFlightIds = Array.isArray(statusData?.inboundFlights)
-                    ? statusData.inboundFlights
-                    : [];
+                const inboundFlightIds = statusData?.inboundFlights || [];
 
                 if (!inboundFlightIds.length) {
                     console.warn(`No inbound flights for airport ${airport.icao}.`);
                     continue;
                 }
 
+                // Fetch flight details and calculate distances
                 const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
-                const airportCoordinates = await fetchAirportCoordinates(airport.icao);
 
-            // Total number of inbound flights for the airport
-                const totalInbounds = airportFlights.length;
-            
+                const airportCoordinates = await fetchAirportCoordinates(airport.icao);
                 if (!airportCoordinates) {
                     console.warn(`No coordinates found for airport ${airport.icao}.`);
                     continue;
                 }
 
                 await updateDistancesAndETAs(airportFlights, airportCoordinates);
+
+                // Count flights based on distance ranges
                 const distanceCounts = countInboundFlightsByDistance(airportFlights);
 
+                // Total number of inbound flights for the airport
+                const totalInbounds = airportFlights.length;
+
+                // Collect data for this airport
                 airportData.push({
                     icao: airport.icao,
                     frequencies: airport.frequencies || "N/A",
                     distanceCounts,
-                    totalInbounds: airportFlights.length,
+                    totalInbounds,
                 });
             } catch (innerError) {
                 console.error(`Error processing airport ${airport.icao}:`, innerError.message);
@@ -1672,37 +1662,38 @@ async function renderATCTable() {
             atcTableBody.innerHTML = '<tr><td colspan="6">No data available for active ATC airports.</td></tr>';
             return;
         }
-        
+
         // Sort the airports by total inbound flights (descending order)
         airportData.sort((a, b) => b.totalInbounds - a.totalInbounds);
 
+        // Render or update rows in the table
         airportData.forEach((airport) => {
-    // Check if a row for this airport already exists
-    const existingRow = document.querySelector(`#atcTable tbody tr[data-icao="${airport.icao}"]`);
+            // Check if a row for this airport already exists
+            const existingRow = document.querySelector(`#atcTable tbody tr[data-icao="${airport.icao}"]`);
 
-    if (existingRow) {
-        // Update the existing row's cells
-        const cells = existingRow.children;
-        cells[1].textContent = airport.frequencies;
-        cells[2].textContent = airport.distanceCounts["50nm"] || 0;
-        cells[3].textContent = airport.distanceCounts["200nm"] || 0;
-        cells[4].textContent = airport.distanceCounts["500nm"] || 0;
-        cells[5].textContent = airport.totalInbounds || 0;
-    } else {
-        // Create a new row if it doesn't exist
-        const row = document.createElement("tr");
-        row.setAttribute("data-icao", airport.icao);
-        row.innerHTML = `
-            <td>${airport.icao}</td>
-            <td>${airport.frequencies}</td>
-            <td>${airport.distanceCounts["50nm"] || 0}</td>
-            <td>${airport.distanceCounts["200nm"] || 0}</td>
-            <td>${airport.distanceCounts["500nm"] || 0}</td>
-            <td>${airport.totalInbounds || 0}</td>
-        `;
-        atcTableBody.appendChild(row);
-    }
-});
+            if (existingRow) {
+                // Update the existing row's cells
+                const cells = existingRow.children;
+                cells[1].textContent = airport.frequencies;
+                cells[2].textContent = airport.distanceCounts["50nm"] || 0;
+                cells[3].textContent = airport.distanceCounts["200nm"] || 0;
+                cells[4].textContent = airport.distanceCounts["500nm"] || 0;
+                cells[5].textContent = airport.totalInbounds || 0;
+            } else {
+                // Create a new row if it doesn't exist
+                const row = document.createElement("tr");
+                row.setAttribute("data-icao", airport.icao);
+                row.innerHTML = `
+                    <td>${airport.icao}</td>
+                    <td>${airport.frequencies}</td>
+                    <td>${airport.distanceCounts["50nm"] || 0}</td>
+                    <td>${airport.distanceCounts["200nm"] || 0}</td>
+                    <td>${airport.distanceCounts["500nm"] || 0}</td>
+                    <td>${airport.totalInbounds || 0}</td>
+                `;
+                atcTableBody.appendChild(row);
+            }
+        });
     } catch (error) {
         console.error("Error in renderATCTable:", error.message);
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
