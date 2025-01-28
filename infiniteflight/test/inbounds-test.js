@@ -490,8 +490,8 @@ document.getElementById('add').addEventListener('click', async (event) => {
         airportDiv.className = 'secondaryAirport';
         airportDiv.innerHTML = `
             <p><strong>${secondaryIcao}</strong></p>
-            <p class="secondary-atis" id="secondary-${secondaryIcao}-atis">Fetching ATIS...</p>
-            <p class="secondary-controllers" id="secondary-${secondaryIcao}-controllers">Fetching controllers...</p>
+            <p class="secondary-atis" id="secondary-${secondaryIcao}-atis"></p>
+            <p class="secondary-controllers" id="secondary-${secondaryIcao}-controllers"></p>
             <button type="button" class="removeAirportButton" data-icao="${secondaryIcao}">Remove</button>
         `;
         secondaryAirportContainer.appendChild(airportDiv);
