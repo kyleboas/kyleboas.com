@@ -1642,8 +1642,6 @@ async function renderATCTable() {
                     continue;
                 }
 
-            // Count flights based on distance ranges
-            const distanceCounts = countInboundFlightsByDistance(airportFlights);
                 const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
                 const airportCoordinates = await fetchAirportCoordinates(airport.icao);
 
