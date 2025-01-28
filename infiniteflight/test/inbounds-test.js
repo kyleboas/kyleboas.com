@@ -1707,12 +1707,13 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
 }
 
 // ============================
-// Auto-Update
-// ============================
-
-// ============================
 // Stop Auto-Update
 // ============================
+
+let flightUpdateInterval = null;
+let interpolateInterval = null;
+let atcUpdateInterval = null;
+
 function stopAutoUpdate() {
     isAutoUpdateActive = false;
 
