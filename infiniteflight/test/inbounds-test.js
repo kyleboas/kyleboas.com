@@ -1572,6 +1572,7 @@ function countInboundFlightsByDistance(flights) {
     return counts;
 }
 
+// Render ATC Tablr
 async function renderATCTable() {
     const atcTableBody = document.querySelector("#atcTable tbody");
 
@@ -1589,11 +1590,12 @@ async function renderATCTable() {
             return;
         }
 
-        // Collect data for each airport, including total inbound flights
-        const airportData = [];
+        const airportData = []; // Store data for sorting or other use
 
+        // Collect data for each airport, including total inbound flights
         for (const airport of activeATCAirports) {
-            const inboundFlightIds = await fetchInboundFlightDetails(inboundFlightIds);
+            const statusData = await fetchStatusData(airport.icao);
+            const inboundFlightIds = statusData?.inboundFlights || [];
 
             // Fetch flight details and calculate distances
             const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
@@ -1652,7 +1654,6 @@ async function renderATCTable() {
                 atcTableBody.appendChild(row);
             }
         });
-
     } catch (error) {
         console.error("Error in renderATCTable:", error.message);
         atcTableBody.innerHTML = '<tr><td colspan="6">Error loading ATC data. Check console for details.</td></tr>';
