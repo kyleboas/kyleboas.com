@@ -991,11 +991,12 @@ async function fetchAndUpdateFlights(icao) {
 
 // interpolatedNextPositions
 function interpolateNextPositions(airportCoordinates) {
-    if (!isAutoUpdateActive) {
-        console.warn("Interpolation skipped as auto-update is off.");
-        return;
+    if (isAutoUpdateActive === false) {
+      console.error("Interpolation skipped as auto-update is off.");
+      return;
     }
-    
+
+
     if (!airportCoordinates) {
         console.error("Airport coordinates not available.");
         return;
@@ -1807,7 +1808,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const icaoInput = document.getElementById("icao");
     const updateButton = document.getElementById("update");
 
-    let isAutoUpdateActive = false;
+    let isAutoUpdateActive = true;
     let flightUpdateInterval = null;
     let interpolateInterval = null;
     let atcUpdateInterval = null;
