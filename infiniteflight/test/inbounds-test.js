@@ -988,6 +988,8 @@ async function fetchAndUpdateFlights(icao) {
     }
 }
 
+
+// interpolatedNextPositions
 function interpolateNextPositions(airportCoordinates) {
     if (!airportCoordinates) {
         console.error("Airport coordinates not available.");
@@ -997,11 +999,11 @@ function interpolateNextPositions(airportCoordinates) {
     const currentTime = Date.now();
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
-    // Skip interpolation if too much time has passed since the last API update
-    if (secondsSinceLastApiUpdate > 20) {
-        console.warn("Interpolation exceeded 20 seconds. Waiting for the next API update.");
-        return;
-    }
+    if (isAutoUpdateActive) {
+        if (secondsSinceLastApiUpdate > 20) {
+            console.warn("Interpolation exceeded 20 seconds. Waiting for the next API update.");
+            return;
+        }
 
     interpolatedFlights.forEach((flight) => {
         if (flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
@@ -1044,7 +1046,10 @@ function interpolateNextPositions(airportCoordinates) {
                 flight.etaMinutes = 'N/A';
             }
         }
-    });
+     });
+    } else {
+        console.warn("Interpolation skipped as auto-update is off.");
+    }
 
     renderFlightsTable(getFlights());
 }
