@@ -233,7 +233,6 @@ permalink: /test/inbounds/
         </div>
     </div>
    </div>
-  </div>      
 
 
     <!-- ATC Table -->
@@ -278,7 +277,6 @@ permalink: /test/inbounds/
             <!-- Dynamic rows will be added here -->
         </tbody>
     </table>
-</div>
 </div>
 
 <div style="display: none;">
