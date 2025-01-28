@@ -936,55 +936,48 @@ function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, hea
 
 // Fetch and update flights
 async function fetchAndUpdateFlights(icao) {
+    // Reset the cache for the new ICAO
+    clearStatusDataCache();
+
     try {
         // Ensure the main airport section is visible
         document.querySelector('.mainAirport').style.display = 'block';
         document.getElementById('atisMessage').style.display = 'block';
         document.getElementById('controllersList').style.display = 'block';
 
-        // Fetch ATIS and Controllers
+        // Fetch and update the necessary data
         const atis = await fetchAirportATIS(icao);
         const controllers = await fetchControllers(icao);
 
-        // Display ATIS and Controllers
+        // Display updated ATIS and controllers
         displayATIS(atis);
         displayControllers(controllers);
 
-        // Fetch status data
+        // Fetch flights and update table
         const statusData = await fetchStatusData(icao);
-        if (!statusData || !statusData.inboundFlights || !statusData.inboundFlights.length) {
+        const inboundFlightIds = statusData?.inboundFlights || [];
+
+        // Clear previous flights before adding new ones
+        allFlights = [];
+        interpolatedFlights = [];
+
+        const flights = await fetchInboundFlightDetails(inboundFlightIds);
+        if (!flights || flights.length === 0) {
             console.warn(`No inbound flights found for ICAO: ${icao}`);
-            allFlights = [];
-            interpolatedFlights = [];
             renderFlightsTable(getFlights);
             return;
         }
 
-        const inboundFlightIds = statusData.inboundFlights;
-
-        // Fetch inbound flights based on the flight IDs from status
-        const allInboundFlights = await fetchInboundFlightDetails(inboundFlightIds);
-        if (!Array.isArray(allInboundFlights) || !allInboundFlights.length) {
-            console.warn(`No matching inbound flights found for ICAO: ${icao}`);
-            allFlights = [];
-            interpolatedFlights = [];
-            renderFlightsTable(getFlights);
-            return;
-        }
-
-        // Fetch airport coordinates
+        // Fetch and set airport coordinates
         const coordinates = await fetchAirportCoordinates(icao);
-        if (!coordinates) {
-            console.warn(`No coordinates found for ICAO: ${icao}`);
-            throw new Error("Failed to fetch airport coordinates.");
-        }
+        if (!coordinates) throw new Error("Failed to fetch airport coordinates.");
         airportCoordinates = coordinates;
 
         // Calculate distances and ETAs for all inbound flights
-        await updateDistancesAndETAs(allInboundFlights, airportCoordinates);
+        await updateDistancesAndETAs(flights, airportCoordinates);
 
         // Prepare interpolation data for real-time updates
-        allInboundFlights.forEach((flight) => {
+        flights.forEach((flight) => {
             if (flight.latitude && flight.longitude && flight.speed > 0 && flight.heading != null) {
                 flight.interpolatedPositions = fillGapsBetweenUpdates(
                     flight.latitude,
@@ -999,17 +992,15 @@ async function fetchAndUpdateFlights(icao) {
         });
 
         // Update global state
-        allFlights = allInboundFlights;
-        interpolatedFlights = JSON.parse(JSON.stringify(allInboundFlights)); // Clone for interpolation
+        allFlights = flights;
+        interpolatedFlights = JSON.parse(JSON.stringify(flights));
         lastApiUpdateTime = Date.now();
 
         // Render the updated table
         renderFlightsTable(getFlights);
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
-        allFlights = [];
-        interpolatedFlights = [];
-        renderFlightsTable(getFlights);
+        renderFlightsTable([]);
         document.getElementById('atisMessage').textContent = "ATIS not available.";
         document.getElementById('controllersList').textContent = "No controllers online.";
     }
@@ -1834,20 +1825,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Handle Search
     async function handleSearch() {
-        const icao = icaoInput.value.trim().toUpperCase();
+    const icao = icaoInput.value.trim().toUpperCase();
 
-        if (!icao) {
-            alert("Please enter a valid ICAO code.");
-            return;
-        }
-
-        try {
-            await fetchAndUpdateFlights(icao); // Fetch and update flights
-        } catch (error) {
-            console.error('Error during search:', error.message);
-            alert('Failed to fetch and update flights. Please try again.');
-        }
+    if (!icao) {
+        alert("Please enter a valid ICAO code.");
+        return;
     }
+
+    // Stop any ongoing updates
+    stopAutoUpdate();
+
+    // Clear previous flight data
+    allFlights = [];
+    interpolatedFlights = [];
+    airportCoordinates = null; // Reset airport coordinates
+    lastApiUpdateTime = null;
+
+    // Clear table to reflect no flights before fetching new data
+    const tableBody = document.querySelector("#flightsTable tbody");
+    if (tableBody) {
+        tableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
+    }
+
+    try {
+        // Fetch and update flights for the new ICAO
+        await fetchAndUpdateFlights(icao);
+
+        // Automatically start updates for the new ICAO
+        startAutoUpdate(icao);
+    } catch (error) {
+        console.error("Error during search:", error.message);
+        alert("Failed to fetch and update flights. Please try again.");
+    }
+}
 
     // Add event listeners for search functionality
     if (searchButton) {
