@@ -1015,11 +1015,6 @@ async function fetchAndUpdateFlights(icao) {
 
 
 function interpolateNextPositions(airportCoordinates) {
-    if (!isAutoUpdateActive) {
-        console.warn("Interpolation skipped as auto-update is off.");
-        return;
-    }
-
     if (!airportCoordinates) {
         console.error("Airport coordinates not available.");
         return;
@@ -1028,39 +1023,45 @@ function interpolateNextPositions(airportCoordinates) {
     const currentTime = Date.now();
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
-    if (secondsSinceLastApiUpdate > 20) {
-        console.warn("Interpolation exceeded 20 seconds. Waiting for next API update.");
-        return;
-    }
+    // Handle interpolation only if auto-update is active and within the update threshold
+    if (isAutoUpdateActive) {
+        if (secondsSinceLastApiUpdate > 20) {
+            console.warn("Interpolation exceeded 20 seconds. Waiting for the next API update.");
+            return;
+        }
 
-    interpolatedFlights.forEach((flight) => {
-        if (flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
-            const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
+        interpolatedFlights.forEach((flight) => {
+            if (flight.interpolatedPositions.length > secondsSinceLastApiUpdate) {
+                const interpolatedPosition = flight.interpolatedPositions[secondsSinceLastApiUpdate];
 
-            // Update flight position
-            flight.latitude = interpolatedPosition.latitude;
-            flight.longitude = interpolatedPosition.longitude;
+                // Update flight position
+                flight.latitude = interpolatedPosition.latitude;
+                flight.longitude = interpolatedPosition.longitude;
 
-            // Recalculate distance and ETA
-            if (flight.latitude && flight.longitude && flight.speed > 0) {
+                // Recalculate distance and ETA
                 try {
-                    flight.distanceToDestination = Math.ceil(
-                        calculateDistance(
+                    if (flight.latitude && flight.longitude && flight.speed > 0) {
+                        flight.distanceToDestination = Math.ceil(
+                            calculateDistance(
+                                flight.latitude,
+                                flight.longitude,
+                                airportCoordinates.latitude,
+                                airportCoordinates.longitude
+                            )
+                        );
+
+                        flight.etaMinutes = calculateETA(
                             flight.latitude,
                             flight.longitude,
                             airportCoordinates.latitude,
-                            airportCoordinates.longitude
-                        )
-                    );
-
-                    flight.etaMinutes = calculateETA(
-                        flight.latitude,
-                        flight.longitude,
-                        airportCoordinates.latitude,
-                        airportCoordinates.longitude,
-                        flight.speed,
-                        flight.heading
-                    );
+                            airportCoordinates.longitude,
+                            flight.speed,
+                            flight.heading
+                        );
+                    } else {
+                        flight.distanceToDestination = 'N/A';
+                        flight.etaMinutes = 'N/A';
+                    }
                 } catch (error) {
                     console.error(
                         `Error recalculating for flight ${flight.callsign || 'Unknown'}:`,
@@ -1069,12 +1070,11 @@ function interpolateNextPositions(airportCoordinates) {
                     flight.distanceToDestination = 'N/A';
                     flight.etaMinutes = 'N/A';
                 }
-            } else {
-                flight.distanceToDestination = 'N/A';
-                flight.etaMinutes = 'N/A';
             }
-        }
-    });
+        });
+    } else {
+        console.warn("Interpolation skipped as auto-update is off.");
+    }
 
     renderFlightsTable(getFlights);
 }
