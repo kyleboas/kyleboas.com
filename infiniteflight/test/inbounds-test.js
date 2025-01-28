@@ -1873,8 +1873,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     interpolateInterval = setInterval(async () => {
         try {
-            await fetchAndUpdateFlights(icao);
-            interpolateNextPositions(airportCoordinates);
+interpolateNextPositions(airportCoordinates);
         } catch (error) {
             console.error("Error during interpolated flight updates:", error.message);
 
