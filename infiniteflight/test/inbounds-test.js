@@ -941,11 +941,6 @@ async function fetchAndUpdateFlights(icao) {
         if (!coordinates) throw new Error("Failed to fetch airport coordinates.");
         airportCoordinates = coordinates;
         
-        
-        // Fetch flights and update table
-        const statusData = await fetchStatusData(icao);
-        const inboundFlightIds = statusData?.inboundFlights || [];
-
         // Clear previous flights and reset state
         allFlights = [];
         interpolatedFlights = [];
