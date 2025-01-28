@@ -1786,7 +1786,6 @@ function stopAutoUpdate() {
     updateInterval = null;
     updateTimeout = null;
     countdownInterval = null;
-    interpolateInterval = null;
     isAutoUpdateActive = false;
 }
 
