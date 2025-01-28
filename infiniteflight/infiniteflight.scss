@@ -604,10 +604,12 @@ body.dark-mode tr.highlighted .arrow::after {
 
 @media (min-width: 710px) {
     .container {
+        display: block;
         flex-direction: row;
         align-items: flex-start;
         gap: 20px;
-        width: 610px;
+        width: 100%;
+        max-width: 690px;
     }
 
     .nav-right {
@@ -616,6 +618,7 @@ body.dark-mode tr.highlighted .arrow::after {
 
     .page-left {
         width: 270px;
+        position: fixed; 
     }
 
     #flightsTable {
@@ -634,7 +637,7 @@ body.dark-mode tr.highlighted .arrow::after {
     }
 
     .page-right {
-        flex: 1;
-        max-width: 40%;
+        right: 0;
+        float: right;
     }
 }
