@@ -1873,9 +1873,8 @@ function startAutoUpdate(icao) {
 
     // Fetch fresh API data initially and start interpolation
     fetchAndUpdateFlights(icao).then(() => {
-        if (!isAutoUpdateActive) return; // Ensure auto-update is still active
-
-        // Start interpolation every 1 second
+        if (!isAutoUpdateActive) return;
+        
         flightUpdateInterval = setInterval(() => {
             if (isAutoUpdateActive) {
                 interpolateNextPositions(airportCoordinates);
@@ -1892,7 +1891,7 @@ function startAutoUpdate(icao) {
 
     // Update ATC data every 60 seconds
     atcUpdateInterval = setInterval(async () => {
-        if (!isAutoUpdateActive) return; // Ensure auto-update is still active
+        if (!isAutoUpdateActive) return;
 
         try {
             await fetchControllers(icao);
@@ -1903,22 +1902,39 @@ function startAutoUpdate(icao) {
 
             if (error.message.includes("rate limit") || error.message.includes("fetch")) {
                 alert("Rate limit or network error encountered. ATC updates stopped.");
-                stopAutoUpdate(); // Stop updates if a critical error occurs
+                stopAutoUpdate();
             }
         }
     }, 60000);
    }
 
 function stopAutoUpdate() {
-    isAutoUpdateActive = false; // Set the state to inactive
+    isAutoUpdateActive = false;
     updateButton.style.color = "#828282";
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.remove("spin");
 
-    // Clear all intervals
     if (flightUpdateInterval) clearInterval(flightUpdateInterval);
     if (atcUpdateInterval) clearInterval(atcUpdateInterval);
     flightUpdateInterval = null;
     atcUpdateInterval = null;
    }
+   
+   
+   if (updateButton) {
+        updateButton.addEventListener("click", () => {
+            const icao = icaoInput.value.trim().toUpperCase();
+
+            if (!icao) {
+                alert("Please enter a valid ICAO code before updating.");
+                return;
+            }
+
+            if (isAutoUpdateActive) {
+                stopAutoUpdate();
+            } else {
+                startAutoUpdate(icao);
+            }
+        });
+    }
 });
