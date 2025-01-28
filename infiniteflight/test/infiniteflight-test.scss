@@ -679,7 +679,7 @@ body.dark-mode form button {
 
 /* Responsive */
 
-@media (min-width: 710px) {
+@media (min-width: 695px) {
     .container {
         display: block;
         flex-direction: row;
@@ -717,8 +717,8 @@ body.dark-mode form button {
     }
 
     #flightsTable {
-        max-width: 100%;
-        margin-right: 50px;
+        max-width: 90%;
+        float: right;
     }
 
     .page-right {
@@ -726,3 +726,16 @@ body.dark-mode form button {
         float: right;
     }
 }
+
+@media (min-width: 715px) {
+    #flightsTable {
+        max-width: 95%;
+    }
+}
+
+@media (min-width: 735px) {
+    #flightsTable {
+        max-width: 100%;
+    }
+}
+
