@@ -1786,7 +1786,7 @@ function stopAutoUpdate() {
     updateInterval = null;
     updateTimeout = null;
     countdownInterval = null;
-
+    interpolateInterval = null;
     isAutoUpdateActive = false;
 }
 
@@ -1810,6 +1810,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let isAutoUpdateActive = false;
     let flightUpdateInterval = null;
+    let 
     let atcUpdateInterval = null;
 
     // Handle Search
@@ -1871,28 +1872,18 @@ function startAutoUpdate(icao) {
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.add("spin");
 
-    // Fetch fresh API data initially and start interpolation
-    fetchAndUpdateFlights(icao).then(() => {
-        if (!isAutoUpdateActive) return;
-        
-        flightUpdateInterval = setInterval(() => {
-            if (isAutoUpdateActive) {
-                interpolateNextPositions(airportCoordinates);
-            }
-        }, 1000); // 1-second interval
+    // Fetch fresh API data initially and every 20 seconds
+    interpolateInterval = fetchAndUpdateFlights(icao).then(() => {
+        setInterval(() => interpolateNextPositions(airportCoordinates), 1000);
     });
 
     const apiUpdateInterval = 20000; // 20 seconds in milliseconds
     flightUpdateInterval = setInterval(() => {
-        if (isAutoUpdateActive) {
-            fetchAndUpdateFlights(icao);
-        }
+        fetchAndUpdateFlights(icao);
     }, apiUpdateInterval);
 
     // Update ATC data every 60 seconds
     atcUpdateInterval = setInterval(async () => {
-        if (!isAutoUpdateActive) return;
-
         try {
             await fetchControllers(icao);
             await fetchActiveATCAirports();
@@ -1906,22 +1897,26 @@ function startAutoUpdate(icao) {
             }
         }
     }, 60000);
-   }
+}
 
-function stopAutoUpdate() {
+    // Stop auto-update
+    function stopAutoUpdate() {
     isAutoUpdateActive = false;
     updateButton.style.color = "#828282";
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.remove("spin");
 
     if (flightUpdateInterval) clearInterval(flightUpdateInterval);
+    if (interpolateInterval)
+clearInterval(interpolateInterval);
     if (atcUpdateInterval) clearInterval(atcUpdateInterval);
     flightUpdateInterval = null;
+    interpolateInterval = null;
     atcUpdateInterval = null;
-   }
-   
-   
-   if (updateButton) {
+    }
+
+    // Add event listener for the update button
+    if (updateButton) {
         updateButton.addEventListener("click", () => {
             const icao = icaoInput.value.trim().toUpperCase();
 
