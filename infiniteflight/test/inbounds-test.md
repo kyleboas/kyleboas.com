@@ -203,8 +203,9 @@ permalink: /test/inbounds/
       </div>
     </div>
   </div>
+</div> 
 
-  <div class="container">
+<div class="container">
    <div class="page-left">
     <div class="nav-container">
         <div class="nav-left">

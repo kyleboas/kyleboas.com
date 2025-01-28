@@ -3,6 +3,13 @@
         const inboundFlightIds = statusData?.inboundFlights || [];
 
 
+document.querySelector('.fa-solid.fa-info').addEventListener('click', () => {
+    document.querySelectorAll('.setting-description, .setting-information').forEach(element => {
+        element.style.display = element.style.display === 'block' ? 'none' : 'block';
+    });
+});
+
+
 
 // ============================
 // Constants and Global State
