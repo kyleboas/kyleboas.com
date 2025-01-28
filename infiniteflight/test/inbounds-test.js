@@ -1022,7 +1022,7 @@ function interpolateNextPositions(airportCoordinates) {
                 if (flight.latitude && flight.longitude && flight.speed > 0) {
                     flight.distanceToDestination = Math.ceil(
                         calculateDistance(
-                            light.latitude,
+                            flight.latitude,
                             flight.longitude,
                             airportCoordinates.latitude,
                             airportCoordinates.longitude

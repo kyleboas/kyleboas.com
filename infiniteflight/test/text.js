@@ -1,3 +1,9 @@
+// Fetch flights and update table
+        const statusData = await fetchStatusData(icao);
+        const inboundFlightIds = statusData?.inboundFlights || [];
+
+
+
 // ============================
 // Constants and Global State
 // ============================
