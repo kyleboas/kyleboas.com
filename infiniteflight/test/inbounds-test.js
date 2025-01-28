@@ -943,13 +943,13 @@ async function fetchAndUpdateFlights(icao) {
         document.getElementById('controllersList').style.display = 'block';
 
         // Fetch ATIS and Controllers
-        const atis = await fetchAirportATIS(icao, 'atisMessage');
-        const controllers = await fetchControllers(icao, 'controllersList');
+        const atis = await fetchAirportATIS(icao);
+        const controllers = await fetchControllers(icao);
 
         // Display ATIS and Controllers
         displayATIS(atis);
         displayControllers(controllers);
-        
+
         // Fetch status data
         const statusData = await fetchStatusData(icao);
         if (!statusData || !statusData.inboundFlights || !statusData.inboundFlights.length) {
@@ -960,8 +960,10 @@ async function fetchAndUpdateFlights(icao) {
             return;
         }
 
-        // Fetch inbound flights based on status data
-        const allInboundFlights = await fetchInboundFlightDetails(statusData.inboundFlights);
+        const inboundFlightIds = statusData.inboundFlights;
+
+        // Fetch inbound flights based on the flight IDs from status
+        const allInboundFlights = await fetchInboundFlightDetails(inboundFlightIds);
         if (!Array.isArray(allInboundFlights) || !allInboundFlights.length) {
             console.warn(`No matching inbound flights found for ICAO: ${icao}`);
             allFlights = [];
@@ -978,11 +980,11 @@ async function fetchAndUpdateFlights(icao) {
         }
         airportCoordinates = coordinates;
 
-        // Calculate distances and ETAs
+        // Calculate distances and ETAs for all inbound flights
         await updateDistancesAndETAs(allInboundFlights, airportCoordinates);
 
         // Prepare interpolation data for real-time updates
-        allInboundFlights.forEach(flight => {
+        allInboundFlights.forEach((flight) => {
             if (flight.latitude && flight.longitude && flight.speed > 0 && flight.heading != null) {
                 flight.interpolatedPositions = fillGapsBetweenUpdates(
                     flight.latitude,
