@@ -4,33 +4,8 @@ layout: infiniteflight-test
 permalink: /test/inbounds/
 ---
 
-<div class="container">
-  <div class="page-left">
-    <div class="nav-container">
-        <div class="nav-left">
-            <input 
-                type="text" 
-                id="icao" 
-                name="icao" 
-                placeholder="Airport"
-            />
-            <button id="search">
-                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-            </button>
-            <button id="add">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i>
-            </button>
-            <button id="settings">
-                <i class="fa-solid fa-sliders" aria-hidden="true"></i>
-            </button>
-            <button id="update">
-                <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
-            </button>
-        </div>
-        <div class="nav-right" id="atcAirportsList">
-        </div>
-    </div>
-   <div class="settings-menu hidden">
+
+<div class="settings-menu hidden">
   <div class="settings-header">
     <strong>Settings</strong>
     <div class="theme-toggle-wrapper">    
@@ -227,9 +202,37 @@ permalink: /test/inbounds/
         <p class="setting-description">120 seconds separation.</p>
       </div>
     </div>
-   </div>
   </div>
-</div>
+
+  <div class="container">
+   <div class="page-left">
+    <div class="nav-container">
+        <div class="nav-left">
+            <input 
+                type="text" 
+                id="icao" 
+                name="icao" 
+                placeholder="Airport"
+            />
+            <button id="search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            </button>
+            <button id="add">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            </button>
+            <button id="settings">
+                <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+            </button>
+            <button id="update">
+                <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="nav-right" id="atcAirportsList">
+        </div>
+    </div>
+   </div>
+  </div>      
+
 
     <!-- ATC Table -->
     <table id="atcTable">
@@ -273,7 +276,7 @@ permalink: /test/inbounds/
             <!-- Dynamic rows will be added here -->
         </tbody>
     </table>
-  </div>
+</div>
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
