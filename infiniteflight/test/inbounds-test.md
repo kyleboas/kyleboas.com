@@ -180,7 +180,7 @@ permalink: /test/inbounds/
   <div class="setting-container">
     <div class="setting">
       <p class="setting-title">Key</p>
-      <table id="keyTable">
+      <table id="keyTable" style="margin-top: 10px;">
         <thead>
             <tr>
                 <th>Aircraft</th>
