@@ -2,6 +2,109 @@
 # Front matter comment to ensure Jekyll properly reads file.
 ---
 
+.setting-container {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  cursor: pointer;
+  flex-direction: column;
+  padding-bottom: 10px;
+}
+
+.overlay-button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 5;
+}
+
+button, .overlay-button {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.setting-border {
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  width: 200px;
+  padding-left: 10px;
+  margin-top: 10px;
+  border-left: 2px solid #bbb;
+  transition: border-left 0.3s ease;
+}
+
+.setting {
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  width: 200px;
+  margin-top: 20px;
+}
+
+.setting-title {
+  font-weight: 600;
+  margin: 0;
+  font-size: 14px;
+}
+
+.setting-description {
+  margin: 0;
+  font-size: 13px;
+}
+
+.setting-description-info {
+  margin: 0;
+  font-size: 13px;
+}
+
+.setting-information {
+  margin-bottom: 100px;
+}  
+
+.box-container {
+  display: flex;
+  align-items: left;
+  gap: 5px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  align-items: center;
+}
+
+.box {
+  width: 15px;
+  height: 15px;
+}
+
+.box-text {
+  font-size: 16px;
+}
+
+#infoTable {
+  margin-top: 10px;
+}
+
+.yellow-highlight {
+  background-color: #fffa9f;
+}
+
+.blue-highlight {
+  background-color: #80daeb;
+}
+
+.beige-highlight {
+  background-color: #daceca;
+}
+
+.grey-highlight {
+  background-color: #eaeaea;
+}
+
 body {
     font-family: Helvetica, sans-serif;
     margin: 20px;
@@ -61,6 +164,7 @@ pre {
     font-size: 10px;
     color: #828282;
     line-height: 1.5;
+    margin-left: 10px;
 }
 
 .nav-left input {
@@ -99,12 +203,11 @@ pre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px;
   color: #828282;
 }
 
 .settings-header i {
-  margin-left: 10px;
+  margin-left: 15px;
   color: #828282;
   font-size: 19px;
 } 
@@ -112,7 +215,6 @@ pre {
 
 .settings-header strong {
   font-size: 14px;
-  margin-bottom: 5px;
 }
 
 .theme-toggle-wrapper label {
@@ -138,6 +240,7 @@ form button {
 
 .settings-menu {
   position: fixed;
+  width: 210px;
   padding: 20px;
   background-color: white;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -145,7 +248,8 @@ form button {
   align-items: center;
   justify-content: center;
   height: auto;
-  text-align: center;
+  overflow-y: auto;
+  text-align: left;
   opacity: 0;
   transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   transform: translateX(-20px);
@@ -165,8 +269,10 @@ form button {
 
 
 .settings-label {
-  font-size: 13px;
+  font-size: 12px;
   color: #828282;
+  font-weight: 600; 
+  margin-right: 10px; 
 }
 
 .dropdown {
@@ -179,16 +285,17 @@ form button {
   text-align: center;
 }
 
-.HeadingFilter, .DistanceFilter {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+.HeadingFilter input, .DistanceFilter input {
+ width: 30px;
+ font-weight: 600;
+} 
 
 input {
     border: none;
-    width: 60px;
     outline: none;
+    background-color: transparent;
+    padding: 10px;
+    padding-left: 0px;
 }
 
 
@@ -268,7 +375,7 @@ form {
         font-size: 10px;
         border-radius: 4px;
         outline: none;
-        text-align: center;
+        text-align: left;
         background-color: transparent;
     }
 
@@ -301,12 +408,15 @@ tbody {
     font-size: 12px; 
 }
 
+#flightsTable thead th {
+    position: sticky;
+    z-index: 1;
+}
+
 thead th {
     padding: 5px;
     text-align: center;
-    position: sticky;
-    top: 0; 
-    z-index: 1;
+    top: 0;
     border-bottom-style: none; 
 }
 
@@ -377,9 +487,10 @@ th {
   position: absolute;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 17px;
   transition: transform 0.4s ease;
   transform: rotate(40deg);
+  top: 0;
 }
 
 .st-sunMoonThemeToggleBtn svg .sunMoon {
@@ -595,6 +706,10 @@ body.dark-mode .arrow::after {
 body.dark-mode tr.highlighted .arrow::before {
   background-color: #000000;
 }
+.column-one {
+  padding-left: 25px; 
+  padding-right: 25px;
+}  
 
 body.dark-mode tr.highlighted .arrow::after {
   border-left-color: #000000;
@@ -602,12 +717,14 @@ body.dark-mode tr.highlighted .arrow::after {
 
 /* Responsive */
 
-@media (min-width: 710px) {
+@media (min-width: 700px) {
     .container {
+        display: block;
         flex-direction: row;
         align-items: flex-start;
         gap: 20px;
-        width: 610px;
+        width: 100%;
+        max-width: 700px;
     }
 
     .nav-right {
@@ -615,7 +732,17 @@ body.dark-mode tr.highlighted .arrow::after {
     }
 
     .page-left {
-        width: 270px;
+        width: 290px;
+        position: fixed;
+        height: 100%;
+        overflow-y: auto;
+        padding-bottom: 40px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .page-left::-webkit-scrollbar {
+      display: none;
     }
 
     #flightsTable {
@@ -628,13 +755,30 @@ body.dark-mode tr.highlighted .arrow::after {
     }
 
     #flightsTable {
-        max-width: 80%;
-        margin-right: 50px;
-        margin-left: 10px;
+        max-width: 90%;
+        float: right;
+    } 
+    
+    .column-one {
+        padding-left: 50px; 
+        padding-right: 50px;
     }
 
     .page-right {
-        flex: 1;
-        max-width: 40%;
+        right: 0;
+        float: right;
     }
 }
+
+@media (min-width: 720px) {
+    #flightsTable {
+        max-width: 95%;
+    }
+}
+
+@media (min-width: 740px) {
+    #flightsTable {
+        max-width: 100%;
+    }
+}  
+  
