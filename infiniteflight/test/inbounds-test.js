@@ -362,28 +362,30 @@ async function fetchActiveATCAirports() {
         const topAirports = combinedAirports.slice(0, 4);
 
         // Format the output
-        const formattedAirports = topAirports.map((airport) => {
-            let icao = airport.icao;
+        const formattedAirports = topAirports.map((airport, index) => {
+        let icao = airport.icao;
 
-            // Add bold for airports with ATC
-            if (airport.hasATC) {
-                icao = `<strong>${icao}</strong>`;
-            }
+    // Add bold for airports with ATC
+    if (airport.hasATC) {
+        icao = `<strong>${icao}</strong>`;
+    }
 
-            // Add an asterisk for airports with approach
-            if (airport.hasApproach) {
-                icao += "*";
-            }
+    // Add an asterisk for airports with approach
+    if (airport.hasApproach) {
+        icao += "*";
+    }
 
-            return `${icao}: ${airport.inboundCount}`;
-        });
+        return `${icao}: ${airport.inboundCount}`;
+    });
 
-        // Join the output with commas
-        const formattedOutput = formattedAirports.join(", ");
+    // Insert a <br> after the second airport if there are at least three
+    if (formattedAirports.length > 2) {
+        formattedAirports.splice(2, 0, "<br>");
+    }
 
-        // Update the DOM
-        const atcAirportsListElement = document.getElementById("atcAirportsList");
-        atcAirportsListElement.innerHTML = formattedOutput || "No active ATC airports found.";
+    // Update the DOM
+    const atcAirportsListElement = document.getElementById("atcAirportsList");
+    atcAirportsListElement.innerHTML = formattedOutput || "Inbound data unavailable.";
     } catch (error) {
         console.error("Error fetching active ATC airports:", error.message);
 
