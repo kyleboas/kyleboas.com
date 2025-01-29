@@ -302,6 +302,7 @@ input {
 .removeAirportButton {
   margin-bottom: 10px;
   background-color: transparent;
+  border-color: transparent;
   color: #000000;
 } 
 
@@ -685,6 +686,10 @@ body.dark-mode .mainAirport {
     background-color: #002727;
     color: #BEBFC5;
 }
+
+body-dark-mode .removeAirportButton {
+  color: #e0e0e0;
+} 
 
 body.dark-mode form button {
   color: #000;
