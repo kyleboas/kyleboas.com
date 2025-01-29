@@ -396,6 +396,11 @@ tbody {
     font-size: 12px; 
 }
 
+#flightsTable thead th {
+    position: sticky;
+    z-index: 1;
+}
+
 thead th {
     padding: 5px;
     text-align: center;
