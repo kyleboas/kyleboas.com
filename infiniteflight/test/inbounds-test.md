@@ -309,7 +309,6 @@ permalink: /test/inbounds/
        <p class="setting-description" style="margin-top: 10px;">
         Aircraft's distance to destination (nm) and estimated time arrival will be updated every second, based on projected position. Their ground speed, mach speed, heading, and altitude will update every 20 seconds. 
       </p>
-      </div>
     </div>
    </div>
   </div>
