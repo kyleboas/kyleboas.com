@@ -1,4 +1,4 @@
-import { getFlights } from "infiniteflight/test/inbounds-test.js"; // Import flight data
+import { getFlights } from "https://kyleboas.com/infiniteflight/test/inbounds-test.js"; // Import flight data
 
 export function showMap(flight) {
     const mapContainer = document.getElementById("mapContainer");
