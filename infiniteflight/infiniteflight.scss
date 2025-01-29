@@ -714,22 +714,38 @@ body.dark-mode tr.highlighted .arrow::after {
   color: #000;
 }
 
-.yellow-highlight td {
+.yellow-highlight tbody td {
   color: #000;
 }
 
-.blue-highlight td {
+.blue-highlight tbody td {
   color: #000;
 }
 
-.beige-highlight td {
+.beige-highlight tbody td {
   color: #000;
 }
 
-.grey-highlight td {
+.grey-highlight tbody td {
   color: #000;
 }
 
+
+body.dark-mode .yellow-highlight tbody td {
+  color: #000;
+}
+
+body.dark-mode .blue-highlight tbody td {
+  color: #000;
+}
+
+body.dark-mode .beige-highlight tbody td {
+  color: #000;
+}
+
+body.dark-mode .grey-highlight tbody td {
+  color: #000;
+}
 
 /* Responsive */
 
