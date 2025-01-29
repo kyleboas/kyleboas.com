@@ -1407,7 +1407,7 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
 
-    DistanceFilterBorder.style.borderLeftColor = boldHeadingEnabled ? '#c2c2c2' : '#bbb';
+    DistanceFilterBorder.style.borderLeftColor = boldHeadingEnabled ? 'blue' : '#bbb';
     DistanceFilterBorder.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
     DistanceFilterBorder.style.borderLeftStyle = 'solid';
 
