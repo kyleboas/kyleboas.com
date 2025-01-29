@@ -687,11 +687,11 @@ body.dark-mode .mainAirport {
 }
 
 body.dark-mode form button {
-  color: #000000;
+  color: #000;
 } 
 
 body.dark-mode tr.highlighted td {
-  color: #000000;
+  color: #000;
 }
 
 body.dark-mode .arrow::before {
@@ -703,7 +703,7 @@ body.dark-mode .arrow::after {
 }
 
 body.dark-mode tr.highlighted .arrow::before {
-  background-color: #000000;
+  background-color: #000;
 }
 .column-one {
   padding-left: 25px; 
@@ -711,7 +711,7 @@ body.dark-mode tr.highlighted .arrow::before {
 }  
 
 body.dark-mode tr.highlighted .arrow::after {
-  color: #000;
+  border-left-color: #000;
 }
 
 .yellow-highlight td {
