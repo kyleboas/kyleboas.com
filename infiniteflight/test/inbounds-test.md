@@ -192,7 +192,6 @@ permalink: /test/inbounds/
                 <td>N623KB</br><small>B737</small></td>
                 <td>Aircraft's callsign and type.</td>
             </tr>
-            </tr>
          </tbody>
        </table>
        <table id="keyTable">
@@ -207,14 +206,13 @@ permalink: /test/inbounds/
                 <td>0.70</br>0.82</td>
                 <td>Aircraft's minimum and maximum Mach speed.</td>
             </tr>
-            </tr>
          </tbody>
        </table>
-      <p class="setting-title">Separation</p>
+      <p class="setting-title" style="margin-top: 20px;">Separation</p>
       <p class="setting-description">
         The table is color coded based on ETA (Estimated Time of Arrival) separation.
       </p>
-      <div class="box-container" style="margin-top: 10px;">
+      <div class="box-container" style="margin-top: 20px;">
         <div class="box" style="background-color:#fffa9f;"></div>
         <p class="setting-description">10 seconds separation</p>
       </div>
@@ -226,11 +224,11 @@ permalink: /test/inbounds/
         <div class="box" style="background-color:#daceca;"></div>
         <p class="setting-description">60 seconds separation</p>
       </div>
-      <div class="box-container" style="margin-bottom: 10px;">
+      <div class="box-container" style="margin-bottom: 20px;">
         <div class="box" style="background-color:#eaeaea;"></div>
         <p class="setting-description">120 seconds separation</p>
       </div>
-     <p class="setting-description">
+     <p class="setting-description" style="margin-bottom: 20px;">
         If you do not have any filters enabled, all inbounds will be shown. This is an example of how the color highlights are applied.
       </p> 
       <table id="infoTable">
