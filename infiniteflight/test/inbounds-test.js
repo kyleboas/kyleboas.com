@@ -197,11 +197,7 @@ pairAircraftData(aircraftIds).then(pairedData => {
 async function fetchWithProxy(endpoint) {
     try {
         const response = await fetch(`${PROXY_URL}${endpoint}`);
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error('Error from proxy:', errorData);
-            throw new Error(`Error fetching data: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Error fetching data: ${response.status}`);
 
         const textResponse = await response.text();
         try {
@@ -211,7 +207,7 @@ async function fetchWithProxy(endpoint) {
         }
     } catch (error) {
         console.error('Error communicating with proxy:', error.message);
-        throw error;
+        return null; // Prevents further crashes
     }
 }
 
@@ -766,18 +762,21 @@ function predictPosition(lat, lon, groundSpeed, heading, seconds) {
 
     let σ = distance / (b * A);
     let σP, sinσ, cosσ, Δσ;
+    let iterationCount = 0; // Track iterations
+    const maxIterations = 100; // Prevent infinite loops
+
     do {
         sinσ = Math.sin(σ);
         cosσ = Math.cos(σ);
-        Δσ =
-            B *
-            sinσ *
-            (cos2α +
-                (B / 4) *
-                    (cosσ * (-1 + 2 * cos2α) -
-                        (B / 6) * cos2α * (-3 + 4 * sinσ * sinσ) * (-3 + 4 * cos2α)));
+        Δσ = B * sinσ * (cos2α + (B / 4) * (cosσ * (-1 + 2 * cos2α) - (B / 6) * cos2α * (-3 + 4 * sinσ * sinσ) * (-3 + 4 * cos2α)));
         σP = σ;
         σ = distance / (b * A) + Δσ;
+
+        iterationCount++;
+        if (iterationCount >= maxIterations) {
+            console.warn("Vincenty's formula failed to converge within 100 iterations.");
+            break;
+        }
     } while (Math.abs(σ - σP) > 1e-12);
 
     const tmp = sinU1 * sinσ - cosU1 * cosσ * cosα1;
@@ -795,22 +794,27 @@ function predictPosition(lat, lon, groundSpeed, heading, seconds) {
     return { latitude: lat2, longitude: lon2 };
 }
 
+
 /**
  * Fill gaps between updates by predicting positions
  */
 function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, lastApiUpdateTime) {
     const positions = [];
-    let currentLat = startLat;
-    let currentLon = startLon;
+    let currentLat = startLat; // Initialize with the starting latitude
+    let currentLon = startLon; // Initialize with the starting longitude
 
     // Get actual seconds since the last API update
     const currentTime = Date.now();
-    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
+    const secondsSinceLastApiUpdate = getAdjustedElapsedTime(lastApiUpdateTime);
 
     // Only predict up to the actual elapsed time
     for (let t = 0; t < secondsSinceLastApiUpdate; t++) {
         const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1);
+
+        // Store the new predicted position
         positions.push({ time: t + 1, latitude: newPosition.latitude, longitude: newPosition.longitude });
+
+        // Update `currentLat` and `currentLon` to the new position
         currentLat = newPosition.latitude;
         currentLon = newPosition.longitude;
     }
@@ -1045,8 +1049,6 @@ function interpolateNextPositions(airportCoordinates) {
         console.error("Airport coordinates not available.");
         return;
     }
-
-    const secondsSinceLastApiUpdate = getAdjustedElapsedTime(lastApiUpdateTime);
 
     if (secondsSinceLastApiUpdate > 18) {
         console.error("Interpolation exceeded API update interval. Waiting for new data.");
