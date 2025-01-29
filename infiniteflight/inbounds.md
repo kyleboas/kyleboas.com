@@ -305,7 +305,7 @@ permalink: /infiniteflight/inbounds/
             <tr class="beige-highlight">
                 <td>DAL24</td>
                 <td>310</td>
-                <td>30:60</td>
+                <td>30:70</td>
                 <td>Beige</td>
             </tr> 
          </tbody>
@@ -344,7 +344,7 @@ permalink: /infiniteflight/inbounds/
             <tr class="beige-highlight">
                 <td>DAL24</td>
                 <td>310</td>
-                <td>30:60</td>
+                <td>30:70</td>
                 <td>Beige</td>
             </tr> 
          </tbody>
