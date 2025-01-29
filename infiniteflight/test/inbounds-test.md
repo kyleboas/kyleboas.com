@@ -179,6 +179,7 @@ permalink: /test/inbounds/
  <div class="setting-information">
   <div class="setting-container">
     <div class="setting">
+      
       <p class="setting-title">Separation</p>
       <p class="setting-description">
         The table is color coded based on ETA (Estimated Time of Arrival) separation.
@@ -240,7 +241,7 @@ permalink: /test/inbounds/
          </tbody>
        </table>
       </div>
-      <p class="setting-description" style="margin-top: 10px;">
+      <p class="setting-description" style="margin-top: 10px;"> 
         If you enable the <strong>Split Filter</strong> the highlighted colors will change dependent on your heading settings. For example, if you wanted to see what the separation of the aircraft from the North compared to the South, you would set the minimum heading to 90 and maximum heading to 270. This is what the same table will look like. N623KB is compared to DAL24 and AAL34 is compared to NT3.
       </p>
       <div class="info-table-container"> 
@@ -280,6 +281,9 @@ permalink: /test/inbounds/
             </tr> 
          </tbody>
        </table>
+       <p class="setting-description" style="margin-top: 10px;">
+        Aircraft's distance to destination (nm) and estimated time arrival will be updated every second, based on projected position. Their ground speed, mach speed, heading, and altitude will update every 20 seconds. 
+      </p>
       </div>
     </div>
    </div>
