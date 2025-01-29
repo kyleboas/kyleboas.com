@@ -4,37 +4,10 @@ layout: infiniteflight
 permalink: /infiniteflight/inbounds/
 ---
 
-<div class="container">
-  <div class="page-left">
-    <div class="nav-container">
-        <div class="nav-left">
-            <input 
-                type="text" 
-                id="icao" 
-                name="icao" 
-                placeholder="Airport"
-            />
-            <button id="search">
-                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-            </button>
-            <button id="add">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i>
-            </button>
-            <button id="settings">
-                <i class="fa-solid fa-sliders" aria-hidden="true"></i>
-            </button>
-            <button id="update">
-                <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
-            </button>
-        </div>
-        <div class="nav-right" id="atcAirportsList">
-        </div>
-    </div>
-    
-   <div class="settings-menu hidden">
+<div class="settings-menu hidden">
   <div class="settings-header">
     <strong>Settings</strong>
-    <div class="theme-toggle-wrapper">
+    <div class="theme-toggle-wrapper">    
       <label
         for="themeToggle"
         class="themeToggle st-sunMoonThemeToggleBtn"
@@ -48,7 +21,7 @@ permalink: /infiniteflight/inbounds/
           viewBox="0 0 20 20"
           fill="currentColor"
           stroke="none"
-          >
+        >
           <mask id="moon-mask">
             <rect x="0" y="0" width="20" height="20" fill="white"></rect>
             <circle cx="11" cy="3" r="8" fill="black"></circle>
@@ -75,12 +48,12 @@ permalink: /infiniteflight/inbounds/
   </div>
 
   <!-- Filter Form -->
-  <form id="filterForm">
+  <form id="filterForm" style="display:none;">
     <div class="HeadingFilter">
-      <label class="settings-label" for="minHeading">Heading</label>
+      <label class="settings-label">Heading</label>
       <input
         type="number"
-        id="minHeading"
+
         min="0"
         max="360"
         placeholder="Minimum"
@@ -88,33 +61,33 @@ permalink: /infiniteflight/inbounds/
       />
       <input
         type="number"
-        id="maxHeading"
+        
         min="0"
         max="360"
         placeholder="Maximum"
         aria-label="Maximum Heading"
       />
-      <button type="button" id="boldHeadingButton">Enable</button>
+      <button type="button">Enable</button>
       <button type="button" id="toggleHeadingButton">Hide</button>
     </div>
     <div class="DistanceFilter">
-      <label class="settings-label" for="minDistance">Distance</label>
+      <label class="settings-label">Distance</label>
       <input
         type="number"
-        id="minDistance"
+        
         min="0"
         placeholder="Minimum"
         aria-label="Minimum Distance"
       />
       <input
         type="number"
-        id="maxDistance"
+        
         min="0"
         placeholder="Maximum"
         aria-label="Maximum Distance"
       />
-      <button type="button" id="applyDistanceFilterButton">Enable</button>
-      <button type="button" id="filterHeadingHighlightButton">Split</button>
+      <button type="button"">Enable</button>
+      <button type="button">Split</button>
     </div>
     <button
       type="button"
@@ -124,7 +97,143 @@ permalink: /infiniteflight/inbounds/
       Filter
     </button>
   </form>
+
+  <!-- Setting Containers -->
+  <div class="setting-container">
+    <div class="setting">
+      <button class="overlay-button"></button>    
+      <span class="setting-button"></span>    
+      <p class="setting-title">Heading and Distance</p>
+      <p class="setting-description-info">
+        Input the minimum and maximum heading and distance to adjust what
+        information is shown in the inbounds table.
+      </p>
+    </div> 
+   </div> 
+     <div class="HeadingFilter"> 
+      <label class="settings-label" for="minHeading">Heading</label>
+      <input
+        type="number"
+        id="minHeading"
+        min="0"
+        max="360"
+        placeholder="Minimum heading..."
+        aria-label="Minimum heading..."
+      />
+      <input
+        type="number"
+        id="maxHeading"
+        min="0"
+        max="360"
+        placeholder="Maximum heading..."
+        aria-label="Maximum heading..."
+      />
+     </div> 
+     <div class="DistanceFilter"> 
+      <label class="settings-label" for="minDistance">Distance</label>
+      <input
+        type="number"
+        id="minDistance"
+        min="0"
+        placeholder="Minimum distance..."
+        aria-label="Minimum Distance"
+      />
+      <input
+        type="number"
+        id="maxDistance"
+        min="0"
+        placeholder="Maximum distance..."
+        aria-label="Maximum distance..."
+      />
+      </div>
+  <div class="setting-container">
+    <div class="setting-border" id="boldHeadingBorder">
+      <button class="overlay-button" id="boldHeadingButton"></button>    
+      <span class="setting-button"></span> 
+      <p class="setting-title">Bold Aircraft by Heading</p>
+      <p class="setting-description">
+        Aircraft within the heading range will be bold, to make them stand out in the table. Making it easier to track aircraft coming from one direction.
+      </p>
+     </div>
+   </div>
+   <div class="setting-container" id="DistanceFilterContainer">
+    <div class="setting-border">
+      <button class="overlay-button" id="applyDistanceFilterButton"></button>    
+      <span class="setting-button"></span> 
+      <p class="setting-title">Distance Filter</p>
+      <p class="setting-description">
+        Filter the table to exclude aircraft outside the distance range.
+      </p>
+     </div>
+   </div>
+   <div class="setting-container">
+    <div class="setting-border">
+      <button class="overlay-button" id="filterHeadingHighlightButton"></button>    
+      <span class="setting-button"></span> 
+      <p class="setting-title">Split Filter</p>
+      <p class="setting-description">
+        Input both the heading and distance to split traffic based on direction. When it is disabled, the highlighted colors will be associated with the aircraft's direction of travel. For example, if you input 90 and 270 as the heading, aircraft from the North will only be compared to aircraft to the North, and aircraft from the South will only be compared to aircraft from the South.
+      </p>
+     </div>
+   </div>
+ <div class="setting-information">
+  <div class="setting-container">
+    <div class="setting">
+      <p class="setting-title">Separation</p>
+      <p class="setting-description">
+        The table is color coded based on ETA (Estimated Time of Arrival)
+        separation.
+      </p>
+      <div class="box-container">
+        <div class="box" style="background-color:#fffa9f;"></div>
+        <p class="setting-description">10 seconds separation.</p>
+      </div>
+      <div class="box-container">
+        <div class="box" style="background-color:#80daeb;"></div>
+        <p class="setting-description">30 seconds separation.</p>
+      </div>
+      <div class="box-container">
+        <div class="box" style="background-color:#daceca;"></div>
+        <p class="setting-description">60 seconds separation.</p>
+      </div>
+      <div class="box-container">
+        <div class="box" style="background-color:#eaeaea;"></div>
+        <p class="setting-description">120 seconds separation.</p>
+      </div>
+    </div>
+  </div>
+</div> 
 </div>
+
+<div class="container">
+   <div class="page-left">
+    <div class="nav-container">
+        <div class="nav-left">
+            <input 
+                type="text" 
+                id="icao" 
+                name="icao" 
+                placeholder="Airport"
+            />
+            <button id="search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            </button>
+            <button id="add">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            </button>
+            <button id="settings">
+                <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+            </button>
+            <button id="update">
+                <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="nav-right" id="atcAirportsList">
+        </div>
+    </div>
+   </div>
+  </div>      
+
 
     <!-- ATC Table -->
     <table id="atcTable">
@@ -157,7 +266,7 @@ permalink: /infiniteflight/inbounds/
     <table id="flightsTable">
         <thead>
             <tr>
-                <th style="padding-left: 25px; padding-right: 25px;">Aircraft</th>
+                <th class="column-one">Aircraft</th>
                 <th>MIN/MAX</th>
                 <th>GS/MACH</th>
                 <th>HDG/ALT</th>
@@ -168,7 +277,7 @@ permalink: /infiniteflight/inbounds/
             <!-- Dynamic rows will be added here -->
         </tbody>
     </table>
-  </div>
+</div>
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
@@ -274,5 +383,5 @@ document.addEventListener('click', (event) => {
         settingsMenu.classList.remove('visible'); // Remove the 'visible' class
     }
 });
+
 </script>
-<script src="/infiniteflight/inbounds.js"></script>
