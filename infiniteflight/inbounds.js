@@ -1995,4 +1995,16 @@ interpolateNextPositions(airportCoordinates);
 
 // Export
 
-export { getFlights, allFlights }
+export {
+    getFlights,
+    allFlights,
+    fetchAndUpdateFlights,
+    fetchInboundFlightDetails,
+    fetchAirportCoordinates,
+    fetchControllers,
+    fetchAirportATIS,
+    fetchActiveATCAirports,
+    renderFlightsTable,
+    startAutoUpdate,
+    stopAutoUpdate
+};
