@@ -362,30 +362,34 @@ async function fetchActiveATCAirports() {
         const topAirports = combinedAirports.slice(0, 4);
 
         // Format the output
-        const formattedAirports = topAirports.map((airport, index) => {
-        let icao = airport.icao;
+        // Format the output
+        const formattedAirports = topAirports.map((airport) => {
+            let icao = airport.icao;
 
-    // Add bold for airports with ATC
-    if (airport.hasATC) {
-        icao = `<strong>${icao}</strong>`;
-    }
+            // Add bold for airports with ATC
+            if (airport.hasATC) {
+                icao = `<strong>${icao}</strong>`;
+            }
 
-    // Add an asterisk for airports with approach
-    if (airport.hasApproach) {
-        icao += "*";
-    }
+            // Add an asterisk for airports with approach
+            if (airport.hasApproach) {
+                icao += "*";
+            }
 
-        return `${icao}: ${airport.inboundCount}`;
-    });
+            return `${icao}: ${airport.inboundCount}`;
+        });
 
-    // Insert a <br> after the second airport if there are at least three
-    if (formattedAirports.length > 2) {
-        formattedAirports.splice(2, 0, "<br>");
-    }
+        // Insert a `<br>` after the second airport if there are at least three
+        if (formattedAirports.length > 2) {
+            formattedAirports[1] += "<br>"; // Append <br> after the second airport
+        }
 
-    // Update the DOM
-    const atcAirportsListElement = document.getElementById("atcAirportsList");
-    atcAirportsListElement.innerHTML = formattedOutput || "Inbound data unavailable.";
+        // Join the output with spaces only (no commas)
+        const formattedOutput = formattedAirports.join(" ");
+
+        // Update the DOM
+        const atcAirportsListElement = document.getElementById("atcAirportsList");
+        atcAirportsListElement.innerHTML = formattedOutput || "No active ATC airports found.";
     } catch (error) {
         console.error("Error fetching active ATC airports:", error.message);
 
