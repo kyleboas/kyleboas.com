@@ -1,4 +1,4 @@
-import { getFlights } from "./inbounds.js"; // Import flight data
+import { getFlights } from "./inbounds-test.js"; // Import flight data
 
 export function showMap(flight) {
     const mapContainer = document.getElementById("mapContainer");
