@@ -689,13 +689,31 @@ body.dark-mode .mainAirport {
 
 body.dark-mode form button {
   color: #000000;
+} 
+
+body.dark-mode tr.highlighted td {
+  color: #000000;
 }
 
+body.dark-mode .arrow::before {
+  background-color: #e0e0e0;
+}
+
+body.dark-mode .arrow::after {
+  border-left-color: #e0e0e0;
+}
+
+body.dark-mode tr.highlighted .arrow::before {
+  background-color: #000000;
+}
 .column-one {
   padding-left: 25px; 
   padding-right: 25px;
 }  
 
+body.dark-mode tr.highlighted .arrow::after {
+  border-left-color: #000000;
+}
 
 /* Responsive */
 
@@ -762,5 +780,5 @@ body.dark-mode form button {
     #flightsTable {
         max-width: 100%;
     }
-}
-
+}  
+  
