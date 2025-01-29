@@ -791,7 +791,7 @@ function predictPosition(lat, lon, groundSpeed, heading, seconds) {
 /**
  * Fill gaps between updates by predicting positions
  */
-function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 20) {
+function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 18) {
     const positions = [];
     let currentLat = startLat;
     let currentLon = startLon;
@@ -993,7 +993,7 @@ async function fetchAndUpdateFlights(icao) {
                     flight.longitude,
                     flight.speed,
                     flight.heading,
-                    20 // 20-second interval
+                    18 // 18-second interval
                 );
             } else {
                 flight.interpolatedPositions = [];
@@ -1041,8 +1041,8 @@ function interpolateNextPositions(airportCoordinates) {
     const currentTime = Date.now();
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
-    if (secondsSinceLastApiUpdate > 20) {
-        console.error("Interpolation exceeded 20 seconds. Waiting for the next API update.");
+    if (secondsSinceLastApiUpdate > 18) {
+        console.error("Interpolation exceeded 18 seconds. Waiting for the next API update.");
         
         return;
     }
@@ -1933,7 +1933,7 @@ interpolateNextPositions(airportCoordinates);
                 clearInterval(flightUpdateInterval); // Stop the interval if there's an issue
             }
         }
-    }, 20000); // API updates every 20 seconds
+    }, 18000); // API updates every 18 seconds
 
     // Update ATC data every 60 seconds
         atcUpdateInterval = setInterval(async () => {
