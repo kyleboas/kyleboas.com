@@ -1989,8 +1989,22 @@ interpolateNextPositions(airportCoordinates);
          startAutoUpdate(icao); 
         }
       });
-    }
+    } 
 });
 
 
-export { allFlights, fetchAndUpdateFlights, getFlights };
+// Export
+
+export {
+    getFlights,
+    allFlights,
+    fetchAndUpdateFlights,
+    fetchInboundFlightDetails,
+    fetchAirportCoordinates,
+    fetchControllers,
+    fetchAirportATIS,
+    fetchActiveATCAirports,
+    renderFlightsTable,
+    startAutoUpdate,
+    stopAutoUpdate
+};
