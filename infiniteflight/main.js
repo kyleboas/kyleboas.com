@@ -1,5 +1,5 @@
 import { showMap } from "/infiniteflight/js/map.js";
-import { getFlights } from "/infiniteflight/test/inbounds-test.js";
+import { getFlights } from "https://kyleboas.com/infiniteflight/test/inbounds-test.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const flightsTable = document.getElementById("flightsTable");
