@@ -361,12 +361,14 @@ permalink: /infiniteflight/inbounds/
   <div class="page-left">
     <div class="nav-container">
         <div class="nav-left">
-            <input 
-                type="text" 
-                id="icao" 
-                name="icao" 
-                placeholder="Airport"
-            />
+        <input 
+           type="text" 
+           id="icao" 
+           name="icao" 
+           placeholder="Airport"
+           minlength="4" 
+           required
+          />
             <button id="search">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             </button>
