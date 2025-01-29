@@ -311,7 +311,7 @@ permalink: /infiniteflight/inbounds/
          </tbody>
        </table>
       <p class="setting-description" style="margin-top: 20px;"> 
-        If you enable the <strong>Split Filter</strong> the highlighted colors will change dependent on your heading settings. For example, if you wanted to see what the separation of the aircraft from the North compared to the South, you would set the minimum heading to 90 and maximum heading to 270. This is what the same table will look like. N623KB is compared to DAL24 and AAL34 is compared to NT3.
+        If you enable the <strong>Split Filter</strong> the highlighted colors will change dependent on your heading settings. For example, if you wanted to separate aircraft into two groups aircraft coming the North and aircraft coming from the South, you would set the minimum heading to 90 and maximum heading to 270. This is what the same table will look like. N623KB is compared to DAL24 and AAL34 is compared to NT3.
       </p>
       <table id="infoTable">
         <thead>
