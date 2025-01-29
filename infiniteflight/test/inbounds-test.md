@@ -100,9 +100,7 @@ permalink: /test/inbounds/
 
   <!-- Setting Containers -->
   <div class="setting-container">
-    <div class="setting-border" id="boldHeadingBorder">
-      <button class="overlay-button" id="boldHeadingButton"></button>    
-      <span class="setting-button"></span>   
+    <div class="setting">   
       <p class="setting-title">Heading and Distance</p>
       <p class="setting-description-info">
         Input the minimum and maximum heading and distance to adjust what
