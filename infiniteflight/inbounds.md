@@ -100,33 +100,31 @@ permalink: /infiniteflight/inbounds/
 
   <!-- Setting Containers -->
   <div class="setting-container">
-    <div class="setting">
-      <button class="overlay-button"></button>    
-      <span class="setting-button"></span>    
+    <div class="setting">   
       <p class="setting-title">Heading and Distance</p>
       <p class="setting-description-info">
         Input the minimum and maximum heading and distance to adjust what
         information is shown in the inbounds table.
       </p>
-    </div> 
-   </div> 
+    </div>
+   </div>
      <div class="HeadingFilter"> 
-      <label class="settings-label" for="minHeading">Heading</label>
+      <label class="settings-label" for="minHeading" style="margin-right: 13px">Heading</label>
       <input
         type="number"
         id="minHeading"
         min="0"
         max="360"
-        placeholder="Minimum heading..."
-        aria-label="Minimum heading..."
+        placeholder="MIN"
+        aria-label="MAX"
       />
       <input
         type="number"
         id="maxHeading"
         min="0"
         max="360"
-        placeholder="Maximum heading..."
-        aria-label="Maximum heading..."
+        placeholder="MIN"
+        aria-label="MAX"
       />
      </div> 
      <div class="DistanceFilter"> 
@@ -135,18 +133,19 @@ permalink: /infiniteflight/inbounds/
         type="number"
         id="minDistance"
         min="0"
-        placeholder="Minimum distance..."
-        aria-label="Minimum Distance"
+        placeholder="MIN"
+        aria-label="MAX"
       />
       <input
         type="number"
         id="maxDistance"
         min="0"
-        placeholder="Maximum distance..."
-        aria-label="Maximum distance..."
+        placeholder="MIN"
+        aria-label="MAX"
       />
-      </div>
-  <div class="setting-container">
+     </div>
+     
+    <div class="setting-container">
     <div class="setting-border" id="boldHeadingBorder">
       <button class="overlay-button" id="boldHeadingButton"></button>    
       <span class="setting-button"></span> 
@@ -155,58 +154,211 @@ permalink: /infiniteflight/inbounds/
         Aircraft within the heading range will be bold, to make them stand out in the table. Making it easier to track aircraft coming from one direction.
       </p>
      </div>
-   </div>
-   <div class="setting-container" id="DistanceFilterContainer">
-    <div class="setting-border">
+     </div>
+     
+     <div class="setting-container">
+     <div class="setting-border" id="applyDistanceFilterBorder">
       <button class="overlay-button" id="applyDistanceFilterButton"></button>    
-      <span class="setting-button"></span> 
+      <span class="setting-button"></span>
       <p class="setting-title">Distance Filter</p>
       <p class="setting-description">
         Filter the table to exclude aircraft outside the distance range.
       </p>
-     </div>
-   </div>
-   <div class="setting-container">
-    <div class="setting-border">
+    </div>
+    </div>
+    
+    <div class="setting-container">
+     <div class="setting-border" id="filterHeadingHighlightBorder">
       <button class="overlay-button" id="filterHeadingHighlightButton"></button>    
-      <span class="setting-button"></span> 
       <p class="setting-title">Split Filter</p>
       <p class="setting-description">
-        Input both the heading and distance to split traffic based on direction. When it is disabled, the highlighted colors will be associated with the aircraft's direction of travel. For example, if you input 90 and 270 as the heading, aircraft from the North will only be compared to aircraft to the North, and aircraft from the South will only be compared to aircraft from the South.
+        When enabled, aircraft are separated by heading range. When disabled, all aircraft are compared regardless of direction. Enable this for multiple runways; disable this for single runway airports.
       </p>
      </div>
-   </div>
- <div class="setting-information">
-  <div class="setting-container">
+     </div>
+     
+  <div class="setting-information">
+   <div class="setting-container">
     <div class="setting">
-      <p class="setting-title">Separation</p>
+      <p class="setting-title">Key</p>
+      <table id="keyTable" style="margin-top: 10px;">
+        <thead>
+            <tr>
+                <th>Aircraft</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>N623KB<br><small>A320</small></td>
+                <td class="table-description">Aircraft's callsign and aircraft type.</td>
+            </tr>
+         </tbody>
+       </table>
+       <table id="keyTable">
+        <thead>
+            <tr>
+                <th>MIN/MAX</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0.70<br>0.82</td>
+                <td class="table-description">Aircraft type's minimum and maximum Mach speed.</td>
+            </tr>
+         </tbody>
+       </table>
+       <table id="keyTable">
+        <thead>
+            <tr>
+                <th>MIN/MAX</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>445knts<br>0.67</td>
+                <td class="table-description">Ground speed and Mach speed, not based off autopilot.</td>
+            </tr>
+         </tbody>
+       </table>
+        <table id="keyTable">
+        <thead>
+            <tr>
+                <th>HDG/ALT</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>49<span class="arrow is-northeast"></span><br>37000ft</td>
+                <td class="table-description">Heading from the airport to the aircraft and altitude (MSL).</td>
+            </tr>
+         </tbody>
+       </table>
+        <table id="keyTable">
+        <thead>
+            <tr>
+                <th>NM/ETA</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>288nm<br>38:49</td>
+                <td class="table-description">Distance to Destination and Estimated Time of Arrival.</td>
+            </tr>
+         </tbody>
+       </table>
+      <p class="setting-title" style="margin-top: 20px;">Separation</p>
       <p class="setting-description">
-        The table is color coded based on ETA (Estimated Time of Arrival)
-        separation.
+        The table is color coded based on ETA (Estimated Time of Arrival) separation.
       </p>
-      <div class="box-container">
+      <div class="box-container" style="margin-top: 20px;">
         <div class="box" style="background-color:#fffa9f;"></div>
-        <p class="setting-description">10 seconds separation.</p>
+        <p class="setting-description">10 seconds separation</p>
       </div>
       <div class="box-container">
         <div class="box" style="background-color:#80daeb;"></div>
-        <p class="setting-description">30 seconds separation.</p>
+        <p class="setting-description">30 seconds separation</p>
       </div>
       <div class="box-container">
         <div class="box" style="background-color:#daceca;"></div>
-        <p class="setting-description">60 seconds separation.</p>
+        <p class="setting-description">60 seconds separation</p>
       </div>
-      <div class="box-container">
+      <div class="box-container" style="margin-bottom: 20px;">
         <div class="box" style="background-color:#eaeaea;"></div>
-        <p class="setting-description">120 seconds separation.</p>
+        <p class="setting-description">120 seconds separation</p>
       </div>
+     <p class="setting-description" style="margin-bottom: 20px;">
+        If you do not have any filters enabled, all inbounds will be shown. This is an example of how the color highlights are applied.
+      </p> 
+      <table id="infoTable">
+        <thead>
+            <tr>
+                <th>Aircraft</th>
+                <th>Heading</th>
+                <th>NM/ETA</th>
+                <th>Color</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="yellow-highlight">
+                <td>N623KB</td>
+                <td>30</td>
+                <td>30:10</td>
+                <td>Yellow</td>
+            </tr>
+            <tr class="yellow-highlight">
+                <td>AAL34</td>
+                <td>170</td>
+                <td>30:15</td>
+                <td>Yellow</td>
+            </tr>
+            <tr class="blue-highlight">
+                <td>NT3</td>
+                <td>182</td>
+                <td>30:30</td>
+                <td>Blue</td>
+            </tr>
+            <tr class="beige-highlight">
+                <td>DAL24</td>
+                <td>310</td>
+                <td>30:60</td>
+                <td>Beige</td>
+            </tr> 
+         </tbody>
+       </table>
+      <p class="setting-description" style="margin-top: 20px;"> 
+        If you enable the <strong>Split Filter</strong> the highlighted colors will change dependent on your heading settings. For example, if you wanted to see what the separation of the aircraft from the North compared to the South, you would set the minimum heading to 90 and maximum heading to 270. This is what the same table will look like. N623KB is compared to DAL24 and AAL34 is compared to NT3.
+      </p>
+      <table id="infoTable">
+        <thead>
+            <tr>
+                <th>Aircraft</th>
+                <th>Heading</th>
+                <th>NM/ETA</th>
+                <th>Color</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="beige-highlight">
+                <td>N623KB</td>
+                <td>30</td>
+                <td>30:10</td>
+                <td>Beige</td>
+            </tr>
+            <tr class="yellow-highlight">
+                <td>AAL34</td>
+                <td>170</td>
+                <td>30:15</td>
+                <td>Blue</td>
+            </tr>
+            <tr class="yellow-highlight">
+                <td>NT3</td>
+                <td>182</td>
+                <td>30:30</td>
+                <td>Blue</td>
+            </tr>
+            <tr class="beige-highlight">
+                <td>DAL24</td>
+                <td>310</td>
+                <td>30:60</td>
+                <td>Beige</td>
+            </tr> 
+         </tbody>
+       </table>
+       <p class="setting-description" style="margin-top: 20px;">
+        Each aircraft's Distance to Destination (NM) and Estimated Time of Arrival will be updated every second, based on projected position. Their ground speed, mach speed, heading, altitude, and actual position will update every 20 seconds.
+      </p>
     </div>
+   </div>
   </div>
-</div> 
 </div>
 
 <div class="container">
-   <div class="page-left">
+  <div class="page-left">
     <div class="nav-container">
         <div class="nav-left">
             <input 
@@ -231,9 +383,6 @@ permalink: /infiniteflight/inbounds/
         <div class="nav-right" id="atcAirportsList">
         </div>
     </div>
-   </div>
-  </div>      
-
 
     <!-- ATC Table -->
     <table id="atcTable">
@@ -277,7 +426,7 @@ permalink: /infiniteflight/inbounds/
             <!-- Dynamic rows will be added here -->
         </tbody>
     </table>
-</div>
+  </div>
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
