@@ -146,36 +146,27 @@ permalink: /test/inbounds/
         aria-label="MAX"
       />
      </div>
-  <div class="setting-container">
     <div class="setting-border" id="boldHeadingBorder">
-      <button class="overlay-button" id="boldHeadingButton"></button>    
-      <span class="setting-button"></span> 
+      <button class="overlay-button" id="boldHeadingButton"></button>
       <p class="setting-title">Bold Aircraft by Heading</p>
       <p class="setting-description">
         Aircraft within the heading range will be bold, to make them stand out in the table. Making it easier to track aircraft coming from one direction.
       </p>
      </div>
-   </div>
-   <div class="setting-container">
     <div class="setting-border" id="DistanceFilterBorder">
-      <button class="overlay-button" id="applyDistanceFilterButton"></button>    
-      <span class="setting-button"></span> 
+      <button class="overlay-button" id="applyDistanceFilterButton"></button>
       <p class="setting-title">Distance Filter</p>
       <p class="setting-description">
         Filter the table to exclude aircraft outside the distance range.
       </p>
-     </div>
-   </div>
-   <div class="setting-container">
+    </div>
     <div class="setting-border" id="SplitFilterBorder">
       <button class="overlay-button" id="filterHeadingHighlightButton"></button>    
-      <span class="setting-button"></span> 
       <p class="setting-title">Split Filter</p>
       <p class="setting-description">
         When enabled, aircraft are separated by heading range. When disabled, all aircraft are compared regardless of direction. Enable this for multiple runways; disable this for single runway airports.
       </p>
      </div>
-   </div>
  <div class="setting-information">
   <div class="setting-container">
     <div class="setting">
