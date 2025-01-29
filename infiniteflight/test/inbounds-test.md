@@ -125,8 +125,8 @@ permalink: /test/inbounds/
         id="maxHeading"
         min="0"
         max="360"
-        placeholder="Maximum heading..."
-        aria-label="Maximum heading..."
+        placeholder="MIN"
+        aria-label="MAX"
       />
      </div> 
      <div class="DistanceFilter"> 
@@ -135,15 +135,15 @@ permalink: /test/inbounds/
         type="number"
         id="minDistance"
         min="0"
-        placeholder="Minimum distance..."
-        aria-label="Minimum Distance"
+        placeholder="MIN"
+        aria-label="MAX"
       />
       <input
         type="number"
         id="maxDistance"
         min="0"
-        placeholder="Maximum distance..."
-        aria-label="Maximum distance..."
+        placeholder="MIN"
+        aria-label="MAX"
       />
      </div>
   <div class="setting-container">
