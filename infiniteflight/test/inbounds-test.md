@@ -189,8 +189,8 @@ permalink: /test/inbounds/
         </thead>
         <tbody>
             <tr>
-                <td>N623KB<br><small>B737</small></td>
-                <td class="table-description">Aircraft's callsign and type.</td>
+                <td>N623KB<br><small>A320</small></td>
+                <td class="table-description">Aircraft's callsign and aircraft type.</td>
             </tr>
          </tbody>
        </table>
@@ -217,7 +217,7 @@ permalink: /test/inbounds/
         </thead>
         <tbody>
             <tr>
-                <td>426knts<br>0.72</td>
+                <td>445knts<br>0.67</td>
                 <td class="table-description">Ground speed and Mach speed, not based off autopilot.</td>
             </tr>
          </tbody>
@@ -231,7 +231,7 @@ permalink: /test/inbounds/
         </thead>
         <tbody>
             <tr>
-                <td>426knts<br>0.72</td>
+                <td>49<span class="arrow is-northeast"></span><br>37000ft</td>
                 <td class="table-description">Heading from the airport to the aircraft and altitude (MSL).</td>
             </tr>
          </tbody>
@@ -245,7 +245,7 @@ permalink: /test/inbounds/
         </thead>
         <tbody>
             <tr>
-                <td>426knts<br>0.72</td>
+                <td>288nm<br>38:49</td>
                 <td class="table-description">Distance to Destination and Estimated Time of Arrival.</td>
             </tr>
          </tbody>
