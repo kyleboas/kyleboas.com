@@ -109,7 +109,7 @@ permalink: /infiniteflight/inbounds/
     </div>
    </div>
      <div class="HeadingFilter"> 
-      <label class="settings-label" for="minHeading" style="margin-right: 13px">Heading</label>
+      <label class="settings-label" for="minHeading" style="margin-right: 12px;">Heading</label>
       <input
         type="number"
         id="minHeading"
