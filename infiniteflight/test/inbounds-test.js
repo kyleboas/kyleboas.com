@@ -1818,7 +1818,6 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
 
 let flightUpdateFrame = null;
 let atcUpdateFrame = null;
-let lastApiUpdateTime = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
     applyDefaults();
