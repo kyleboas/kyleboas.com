@@ -1816,7 +1816,6 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
 // Auto-Update
 // ============================
 
-let isAutoUpdateActive = false;
 let flightUpdateFrame = null;
 let atcUpdateFrame = null;
 let lastApiUpdateTime = null;
