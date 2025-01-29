@@ -329,13 +329,13 @@ permalink: /infiniteflight/inbounds/
                 <td>30:10</td>
                 <td>Beige</td>
             </tr>
-            <tr class="yellow-highlight">
+            <tr class="blue-highlight">
                 <td>AAL34</td>
                 <td>170</td>
                 <td>30:15</td>
                 <td>Blue</td>
             </tr>
-            <tr class="yellow-highlight">
+            <tr class="blue-highlight">
                 <td>NT3</td>
                 <td>182</td>
                 <td>30:30</td>
