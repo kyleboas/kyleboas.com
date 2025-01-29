@@ -1761,7 +1761,6 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
 let flightUpdateInterval = null;
 let interpolateInterval = null;
 let atcUpdateInterval = null;
-let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
 
