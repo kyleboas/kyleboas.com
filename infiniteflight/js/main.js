@@ -43,3 +43,41 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 });
+
+
+// Auto-Update
+
+
+import { autoUpdate } from "./autoUpdate.js";
+
+// Get UI elements
+const updateButton = document.getElementById("update");
+const icaoInput = document.getElementById("icao");
+
+// Auto-update instance
+const autoUpdate = new autoUpdate(
+    updateButton,
+    fetchAndUpdateFlights,
+    interpolateNextPositions,
+    fetchControllers,
+    fetchActiveATCAirports,
+    renderATCTable
+);
+
+// Add event listener for the update button
+if (updateButton) {
+    updateButton.addEventListener("click", () => {
+        const icao = icaoInput.value.trim().toUpperCase();
+
+        if (!icao) {
+            alert("Please enter a valid ICAO code before updating.");
+            return;
+        }
+
+        if (autoUpdate.isAutoUpdateActive) {
+            autoUpdate.stop();
+        } else {
+            autoUpdate.start(icao);
+        }
+    });
+}
