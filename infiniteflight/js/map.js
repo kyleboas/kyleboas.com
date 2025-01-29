@@ -1,6 +1,11 @@
-import { getFlights } from "https://kyleboas.com/infiniteflight/test/inbounds-test.js"; // Import flight data
+import { getFlights } from "https://kyleboas.com/infiniteflight/test/inbounds-test.js";
 
 export function showMap(flight) {
+    if (!flight || !flight.latitude || !flight.longitude || !flight.heading) {
+        console.error("Invalid flight data:", flight);
+        return;
+    }
+
     const mapContainer = document.getElementById("mapContainer");
     const canvas = document.getElementById("flightCanvas");
     const ctx = canvas.getContext("2d");
@@ -57,7 +62,6 @@ export function showMap(flight) {
         let lastTouch = null;
         let lastDist = 0;
 
-        // Pan (Dragging)
         canvas.addEventListener("touchstart", (e) => {
             if (e.touches.length === 1) {
                 lastTouch = e.touches[0];
@@ -93,14 +97,12 @@ export function showMap(flight) {
             lastDist = 0;
         });
 
-        // Zoom with mouse wheel
         canvas.addEventListener("wheel", (e) => {
             zoomLevel += e.deltaY * -0.001;
             zoomLevel = Math.max(0.5, Math.min(3, zoomLevel));
             drawAircraft();
         });
 
-        // Helper: Get distance between two touch points
         function getTouchDistance(touches) {
             const dx = touches[0].clientX - touches[1].clientX;
             const dy = touches[0].clientY - touches[1].clientY;
@@ -113,8 +115,11 @@ export function showMap(flight) {
     drawAircraft();
 
     let updateCounter = 0;
-    setInterval(() => {
-        if (updateCounter >= flight.interpolatedPositions.length) return;
+    let updateInterval = setInterval(() => {
+        if (updateCounter >= flight.interpolatedPositions.length) {
+            clearInterval(updateInterval); // Stop interval when out of data
+            return;
+        }
 
         targetPos = flight.interpolatedPositions[updateCounter];
         animateMovement();
