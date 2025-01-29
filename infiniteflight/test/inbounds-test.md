@@ -109,7 +109,7 @@ permalink: /test/inbounds/
     </div>
    </div>
      <div class="HeadingFilter"> 
-      <label class="settings-label" for="minHeading" style="margin-right: 13px">Heading</label>
+      <label class="settings-label" for="minHeading" style="margin-right: 12px;">Heading</label>
       <input
         type="number"
         id="minHeading"
@@ -329,13 +329,13 @@ permalink: /test/inbounds/
                 <td>30:10</td>
                 <td>Beige</td>
             </tr>
-            <tr class="yellow-highlight">
+            <tr class="blue-highlight">
                 <td>AAL34</td>
                 <td>170</td>
                 <td>30:15</td>
                 <td>Blue</td>
             </tr>
-            <tr class="yellow-highlight">
+            <tr class="blue-highlight">
                 <td>NT3</td>
                 <td>182</td>
                 <td>30:30</td>
@@ -361,12 +361,14 @@ permalink: /test/inbounds/
   <div class="page-left">
     <div class="nav-container">
         <div class="nav-left">
-            <input 
-                type="text" 
-                id="icao" 
-                name="icao" 
-                placeholder="Airport"
-            />
+        <input 
+           type="text" 
+           id="icao" 
+           name="icao" 
+           placeholder="Airport"
+           minlength="4" 
+           required
+          />
             <button id="search">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             </button>

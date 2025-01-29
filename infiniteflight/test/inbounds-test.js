@@ -113,6 +113,13 @@ function getUncachedIds(ids, type) {
     return ids.filter(id => !cache[type][id]);
 }
 
+
+function getAdjustedElapsedTime(lastUpdateTime) {
+    const now = Date.now();
+    const driftCorrectedTime = Math.max(0, Math.floor((now - lastUpdateTime) / 1000));
+    return Math.min(driftCorrectedTime, 18); // Cap at 18 seconds
+}
+
 // ============================
 // Aircraft
 // ============================
@@ -726,47 +733,83 @@ async function fetchInboundFlightDetails(inboundFlightIds = []) {
 }
 
 
-/**
- * Predict the next position of an object based on its current position, speed, and heading.
- */
-function predictPosition(lat, lon, groundSpeed, heading, seconds) {
-    const R = 3440; // Earth's radius in nautical miles
-    const toRadians = (degrees) => degrees * (Math.PI / 180);
-    const toDegrees = (radians) => radians * (180 / Math.PI);
+// Vincenty's Formula to predict position 
 
-    const distance = (groundSpeed / 3600) * seconds; // Distance traveled in nautical miles
-    const bearing = toRadians(heading);
+function predictPosition(lat, lon, groundSpeed, heading, seconds) {
+    const a = 6378137.0; // WGS-84 semi-major axis (meters)
+    const f = 1 / 298.257223563; // WGS-84 flattening
+    const b = (1 - f) * a;
+    const toRadians = (degrees) => (degrees * Math.PI) / 180;
+    const toDegrees = (radians) => (radians * 180) / Math.PI;
+
+    // Convert ground speed from knots to meters per second
+    const speed_mps = (groundSpeed * 1852) / 3600;
+    const distance = speed_mps * seconds; // Distance traveled in meters
 
     const φ1 = toRadians(lat);
     const λ1 = toRadians(lon);
+    const α1 = toRadians(heading);
 
-    const φ2 = Math.asin(
-        Math.sin(φ1) * Math.cos(distance / R) +
-        Math.cos(φ1) * Math.sin(distance / R) * Math.cos(bearing)
+    const sinα1 = Math.sin(α1);
+    const cosα1 = Math.cos(α1);
+    
+    const tanU1 = (1 - f) * Math.tan(φ1);
+    const cosU1 = 1 / Math.sqrt(1 + tanU1 * tanU1);
+    const sinU1 = tanU1 * cosU1;
+
+    let σ1 = Math.atan2(tanU1, cosα1);
+    let sinα = cosU1 * sinα1;
+    let cos2α = 1 - sinα * sinα;
+    let uSq = (cos2α * (a * a - b * b)) / (b * b);
+    let A = 1 + (uSq / 16384) * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
+    let B = (uSq / 1024) * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
+
+    let σ = distance / (b * A);
+    let σP, sinσ, cosσ, Δσ;
+    do {
+        sinσ = Math.sin(σ);
+        cosσ = Math.cos(σ);
+        Δσ =
+            B *
+            sinσ *
+            (cos2α +
+                (B / 4) *
+                    (cosσ * (-1 + 2 * cos2α) -
+                        (B / 6) * cos2α * (-3 + 4 * sinσ * sinσ) * (-3 + 4 * cos2α)));
+        σP = σ;
+        σ = distance / (b * A) + Δσ;
+    } while (Math.abs(σ - σP) > 1e-12);
+
+    const tmp = sinU1 * sinσ - cosU1 * cosσ * cosα1;
+    const φ2 = Math.atan2(sinU1 * cosσ + cosU1 * sinσ * cosα1, (1 - f) * Math.sqrt(sinα * sinα + tmp * tmp));
+    const λ = Math.atan2(
+        sinσ * sinα1,
+        cosU1 * cosσ - sinU1 * sinσ * cosα1
     );
+    const C = (f / 16) * cos2α * (4 + f * (4 - 3 * cos2α));
+    const L = λ - (1 - C) * f * sinα * (σ + C * sinσ * (cos2α + C * cosσ * (-1 + 2 * cos2α)));
 
-    const λ2 = λ1 + Math.atan2(
-        Math.sin(bearing) * Math.sin(distance / R) * Math.cos(φ1),
-        Math.cos(distance / R) - Math.sin(φ1) * Math.sin(φ2)
-    );
+    const lon2 = (toDegrees(λ1 + L) + 540) % 360 - 180;
+    const lat2 = toDegrees(φ2);
 
-    return {
-        latitude: toDegrees(φ2),
-        longitude: (toDegrees(λ2) + 540) % 360 - 180, // Normalize to -180 to 180 degrees
-    };
+    return { latitude: lat2, longitude: lon2 };
 }
-
 
 /**
  * Fill gaps between updates by predicting positions
  */
-function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 20) {
+function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, lastApiUpdateTime) {
     const positions = [];
     let currentLat = startLat;
     let currentLon = startLon;
 
-    for (let t = 0; t < interval; t++) {
-        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // Step = 1 second
+    // Get actual seconds since the last API update
+    const currentTime = Date.now();
+    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
+
+    // Only predict up to the actual elapsed time
+    for (let t = 0; t < secondsSinceLastApiUpdate; t++) {
+        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1);
         positions.push({ time: t + 1, latitude: newPosition.latitude, longitude: newPosition.longitude });
         currentLat = newPosition.latitude;
         currentLon = newPosition.longitude;
@@ -962,7 +1005,7 @@ async function fetchAndUpdateFlights(icao) {
                     flight.longitude,
                     flight.speed,
                     flight.heading,
-                    20 // 20-second interval
+                    18 // 18-second interval
                 );
             } else {
                 flight.interpolatedPositions = [];
@@ -998,21 +1041,19 @@ async function fetchAndUpdateFlights(icao) {
 // interpolatedNextPositions
 function interpolateNextPositions(airportCoordinates) {
     if (isAutoUpdateActive === true) {
-      console.error("Interpolation skipped as auto-update is off.");
-      return;
+        console.error("Skipping interpolation as auto-update is active.");
+        return;
     }
-
+    
     if (!airportCoordinates) {
         console.error("Airport coordinates not available.");
         return;
     }
 
-    const currentTime = Date.now();
-    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
+    const secondsSinceLastApiUpdate = getAdjustedElapsedTime(lastApiUpdateTime);
 
-    if (secondsSinceLastApiUpdate > 20) {
-        console.error("Interpolation exceeded 20 seconds. Waiting for the next API update.");
-        
+    if (secondsSinceLastApiUpdate > 18) {
+        console.error("Interpolation exceeded API update interval. Waiting for new data.");
         return;
     }
 
@@ -1035,7 +1076,6 @@ function interpolateNextPositions(airportCoordinates) {
                             airportCoordinates.longitude
                         )
                     );
-
                     flight.etaMinutes = calculateETA(
                         flight.latitude,
                         flight.longitude,
@@ -1049,15 +1089,12 @@ function interpolateNextPositions(airportCoordinates) {
                     flight.etaMinutes = 'N/A';
                 }
             } catch (error) {
-                console.error(
-                    `Error recalculating for flight ${flight.callsign || 'Unknown'}:`,
-                    error.message
-                );
+                console.error(`Error recalculating for flight ${flight.callsign || 'Unknown'}:`, error.message);
                 flight.distanceToDestination = 'N/A';
                 flight.etaMinutes = 'N/A';
             }
         }
-     });
+    });
 
     renderFlightsTable(getFlights());
 }
@@ -1902,7 +1939,7 @@ interpolateNextPositions(airportCoordinates);
                 clearInterval(flightUpdateInterval); // Stop the interval if there's an issue
             }
         }
-    }, 20000); // API updates every 20 seconds
+    }, 18000); // API updates every 18 seconds
 
     // Update ATC data every 60 seconds
         atcUpdateInterval = setInterval(async () => {
