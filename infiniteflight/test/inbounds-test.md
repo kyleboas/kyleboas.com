@@ -189,8 +189,8 @@ permalink: /test/inbounds/
         </thead>
         <tbody>
             <tr>
-                <td>N623KB</br><small>B737</small></td>
-                <td>Aircraft's callsign and type.</td>
+                <td>N623KB<br><small>B737</small></td>
+                <td class="table-description">Aircraft's callsign and type.</td>
             </tr>
          </tbody>
        </table>
@@ -203,8 +203,8 @@ permalink: /test/inbounds/
         </thead>
         <tbody>
             <tr>
-                <td>0.70</br>0.82</td>
-                <td>Aircraft's minimum and maximum Mach speed.</td>
+                <td>0.70<br>0.82</td>
+                <td class="table-description">Aircraft's minimum and maximum Mach speed.</td>
             </tr>
          </tbody>
        </table>
