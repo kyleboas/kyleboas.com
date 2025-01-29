@@ -1656,6 +1656,9 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
 
         allFlights.forEach(flight => {
             const row = document.createElement("tr");
+            
+            // Ensure flightId is added to the row
+            row.setAttribute("flight-id", flight.flightId);
 
             // Handle visibility and filtering
             const isWithinDistanceRange = (minDistance === null && maxDistance === null) || (

@@ -117,7 +117,7 @@ export function showMap(flight) {
     let updateCounter = 0;
     let updateInterval = setInterval(() => {
         if (updateCounter >= flight.interpolatedPositions.length) {
-            clearInterval(updateInterval); // Stop interval when out of data
+            clearInterval(updateInterval);
             return;
         }
 
