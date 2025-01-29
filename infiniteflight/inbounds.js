@@ -771,7 +771,7 @@ function predictPosition(lat, lon, groundSpeed, heading, seconds) {
                         (B / 6) * cos2α * (-3 + 4 * sinσ * sinσ) * (-3 + 4 * cos2α)));
         σP = σ;
         σ = distance / (b * A) + Δσ;
-    } while (Math.abs(σ - σP) > 1e-12); // Converges in ~5 iterations
+    } while (Math.abs(σ - σP) > 1e-12);
 
     const tmp = sinU1 * sinσ - cosU1 * cosσ * cosα1;
     const φ2 = Math.atan2(sinU1 * cosσ + cosU1 * sinσ * cosα1, (1 - f) * Math.sqrt(sinα * sinα + tmp * tmp));
