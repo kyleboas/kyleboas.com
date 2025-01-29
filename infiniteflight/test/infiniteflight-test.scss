@@ -269,10 +269,13 @@ form button {
 }
 
 .HeadingFilter, .DistanceFilter {
-  display: flex;
-  flex-direction: column;
   margin-top: 10px;
 }
+
+.HeadingFilter input, .DistanceFilter input {
+ width: 30px;
+ font-weight: 600;
+} 
 
 .DistanceFilter {
   margin-bottom: 10px;
