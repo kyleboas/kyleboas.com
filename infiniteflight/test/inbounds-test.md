@@ -179,7 +179,37 @@ permalink: /test/inbounds/
  <div class="setting-information">
   <div class="setting-container">
     <div class="setting">
-      
+      <p class="setting-title">Key</p>
+      <table id="keyTable">
+        <thead>
+            <tr>
+                <th>Aircraft</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>N623KB</br><small>B737</small></td>
+                <td>Aircraft's callsign and type.</td>
+            </tr>
+            </tr>
+         </tbody>
+       </table>
+       <table id="keyTable">
+        <thead>
+            <tr>
+                <th>MIN/MAX</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0.70</br>0.82</td>
+                <td>Aircraft's minimum and maximum Mach speed.</td>
+            </tr>
+            </tr>
+         </tbody>
+       </table>
       <p class="setting-title">Separation</p>
       <p class="setting-description">
         The table is color coded based on ETA (Estimated Time of Arrival) separation.
@@ -203,7 +233,6 @@ permalink: /test/inbounds/
      <p class="setting-description">
         If you do not have any filters enabled, all inbounds will be shown. This is an example of how the color highlights are applied.
       </p> 
-     <div class="info-table-container"> 
       <table id="infoTable">
         <thead>
             <tr>
@@ -240,11 +269,9 @@ permalink: /test/inbounds/
             </tr> 
          </tbody>
        </table>
-      </div>
       <p class="setting-description" style="margin-top: 10px;"> 
         If you enable the <strong>Split Filter</strong> the highlighted colors will change dependent on your heading settings. For example, if you wanted to see what the separation of the aircraft from the North compared to the South, you would set the minimum heading to 90 and maximum heading to 270. This is what the same table will look like. N623KB is compared to DAL24 and AAL34 is compared to NT3.
       </p>
-      <div class="info-table-container"> 
       <table id="infoTable">
         <thead>
             <tr>
