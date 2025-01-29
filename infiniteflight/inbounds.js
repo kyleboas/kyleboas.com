@@ -113,6 +113,13 @@ function getUncachedIds(ids, type) {
     return ids.filter(id => !cache[type][id]);
 }
 
+
+function getAdjustedElapsedTime(lastUpdateTime) {
+    const now = Date.now();
+    const driftCorrectedTime = Math.max(0, Math.floor((now - lastUpdateTime) / 1000));
+    return Math.min(driftCorrectedTime, 18); // Cap at 18 seconds
+}
+
 // ============================
 // Aircraft
 // ============================
@@ -791,13 +798,18 @@ function predictPosition(lat, lon, groundSpeed, heading, seconds) {
 /**
  * Fill gaps between updates by predicting positions
  */
-function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 18) {
+function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, lastApiUpdateTime) {
     const positions = [];
     let currentLat = startLat;
     let currentLon = startLon;
 
-    for (let t = 0; t < interval; t++) {
-        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // Step = 1 second
+    // Get actual seconds since the last API update
+    const currentTime = Date.now();
+    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
+
+    // Only predict up to the actual elapsed time
+    for (let t = 0; t < secondsSinceLastApiUpdate; t++) {
+        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1);
         positions.push({ time: t + 1, latitude: newPosition.latitude, longitude: newPosition.longitude });
         currentLat = newPosition.latitude;
         currentLon = newPosition.longitude;
@@ -1029,21 +1041,19 @@ async function fetchAndUpdateFlights(icao) {
 // interpolatedNextPositions
 function interpolateNextPositions(airportCoordinates) {
     if (isAutoUpdateActive === true) {
-      console.error("Interpolation skipped as auto-update is off.");
-      return;
+        console.error("Skipping interpolation as auto-update is active.");
+        return;
     }
-
+    
     if (!airportCoordinates) {
         console.error("Airport coordinates not available.");
         return;
     }
 
-    const currentTime = Date.now();
-    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
+    const secondsSinceLastApiUpdate = getAdjustedElapsedTime(lastApiUpdateTime);
 
     if (secondsSinceLastApiUpdate > 18) {
-        console.error("Interpolation exceeded 18 seconds. Waiting for the next API update.");
-        
+        console.error("Interpolation exceeded API update interval. Waiting for new data.");
         return;
     }
 
@@ -1066,7 +1076,6 @@ function interpolateNextPositions(airportCoordinates) {
                             airportCoordinates.longitude
                         )
                     );
-
                     flight.etaMinutes = calculateETA(
                         flight.latitude,
                         flight.longitude,
@@ -1080,15 +1089,12 @@ function interpolateNextPositions(airportCoordinates) {
                     flight.etaMinutes = 'N/A';
                 }
             } catch (error) {
-                console.error(
-                    `Error recalculating for flight ${flight.callsign || 'Unknown'}:`,
-                    error.message
-                );
+                console.error(`Error recalculating for flight ${flight.callsign || 'Unknown'}:`, error.message);
                 flight.distanceToDestination = 'N/A';
                 flight.etaMinutes = 'N/A';
             }
         }
-     });
+    });
 
     renderFlightsTable(getFlights());
 }
