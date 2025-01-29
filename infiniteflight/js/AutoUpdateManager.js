@@ -1,6 +1,6 @@
 
 
-export class autoUpdate {
+export class AutoUpdateManager {
     constructor(updateButton, fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable) {
         this.updateButton = updateButton;
         this.fetchAndUpdateFlights = fetchAndUpdateFlights;

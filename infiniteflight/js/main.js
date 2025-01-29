@@ -47,15 +47,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // Auto-Update
 
-
-import { autoUpdate } from "./autoUpdate.js";
+import { AutoUpdateManager } from "./autoUpdate.js";
 
 // Get UI elements
 const updateButton = document.getElementById("update");
 const icaoInput = document.getElementById("icao");
 
-// Auto-update instance
-const autoUpdate = new autoUpdate(
+// Create AutoUpdateManager instance
+const autoUpdateManager = new AutoUpdateManager(
     updateButton,
     fetchAndUpdateFlights,
     interpolateNextPositions,
@@ -64,7 +63,7 @@ const autoUpdate = new autoUpdate(
     renderATCTable
 );
 
-// Add event listener for the update button
+// Add event listener to update button
 if (updateButton) {
     updateButton.addEventListener("click", () => {
         const icao = icaoInput.value.trim().toUpperCase();
@@ -74,10 +73,10 @@ if (updateButton) {
             return;
         }
 
-        if (autoUpdate.isAutoUpdateActive) {
-            autoUpdate.stop();
+        if (autoUpdateManager.isAutoUpdateActive) {
+            autoUpdateManager.stop();
         } else {
-            autoUpdate.start(icao);
+            autoUpdateManager.start(icao);
         }
     });
 }
