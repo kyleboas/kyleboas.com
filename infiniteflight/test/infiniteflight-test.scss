@@ -699,14 +699,14 @@ body.dark-mode form button {
 
 /* Responsive */
 
-@media (min-width: 695px) {
+@media (min-width: 700px) {
     .container {
         display: block;
         flex-direction: row;
         align-items: flex-start;
         gap: 20px;
         width: 100%;
-        max-width: 695px;
+        max-width: 700px;
     }
 
     .nav-right {
@@ -714,7 +714,7 @@ body.dark-mode form button {
     }
 
     .page-left {
-        width: 270px;
+        width: 290px;
         position: fixed;
         height: 100%;
         overflow-y: auto;
@@ -752,13 +752,13 @@ body.dark-mode form button {
     }
 }
 
-@media (min-width: 715px) {
+@media (min-width: 720px) {
     #flightsTable {
         max-width: 95%;
     }
 }
 
-@media (min-width: 735px) {
+@media (min-width: 740px) {
     #flightsTable {
         max-width: 100%;
     }
