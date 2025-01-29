@@ -1310,7 +1310,7 @@ function rgbToHex(rgb) {
 
 // Toggle Heading Highlight and reapply highlights
 
-const SplitFilterBorder = document.getElementById('SplitFilterBorder');
+const filterHeadingHighlightBorder = document.getElementById('filterHeadingHighlightBorder');
 const filterHeadingHighlightButton = document.getElementById('filterHeadingHighlightButton');
 
 document.getElementById('filterHeadingHighlightButton').addEventListener('click', () => {
@@ -1331,11 +1331,9 @@ document.getElementById('filterHeadingHighlightButton').addEventListener('click'
 
     headingHighlightEnabled = !headingHighlightEnabled;
 
-    SplitFilterBorder.style.borderLeftColor = boldHeadingEnabled ? 'blue' : '#bbb';
-    SplitFilterBorder.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
-    SplitFilterBorder.style.borderLeftStyle = 'solid';
+filterHeadingHighlightBorder.style.borderLeftColor = boldHeadingEnabled ? 'blue' : '#bbb'; filterHeadingHighlightBorder.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px'; filterHeadingHighlightBorder.style.borderLeftStyle = 'solid';
 
-    highlightCloseETAs(); // Reapply highlighting with the heading filter
+    highlightCloseETAs();
 });
 
 // Toggle Heading Button Functionality
@@ -1385,7 +1383,7 @@ boldHeadingButton.addEventListener('click', () => {
 
 // Toggle Apply Distance Filter
 
-const DistanceFilterBorder = document.getElementById('DistanceFilterBorder');
+const applyDistanceFilterBorder = document.getElementById('applyDistanceFilterBorder');
 const applyDistanceFilterButton = document.getElementById('applyDistanceFilterButton');
 
 // Apply Distance Filter
@@ -1407,9 +1405,9 @@ document.getElementById('applyDistanceFilterButton').addEventListener('click', (
 
     applyDistanceFilterEnabled = !applyDistanceFilterEnabled;
 
-    DistanceFilterBorder.style.borderLeftColor = boldHeadingEnabled ? 'blue' : '#bbb';
-    DistanceFilterBorder.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
-    DistanceFilterBorder.style.borderLeftStyle = 'solid';
+    applyDistanceFilterBorder.style.borderLeftColor = boldHeadingEnabled ? 'blue' : '#bbb';
+applyDistanceFilterBorder.style.borderLeftWidth = boldHeadingEnabled ? '5px' : '2px';
+applyDistanceFilterBorder.style.borderLeftStyle = 'solid';
 
     hiddenDistance.minDistance = minDistance;
     hiddenDistance.maxDistance = maxDistance;
