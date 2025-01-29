@@ -1810,6 +1810,20 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
     }
 }
 
+
+// Export functions
+export {
+    getFlights,
+    allFlights,
+    fetchAndUpdateFlights,
+    fetchInboundFlightDetails,
+    fetchAirportCoordinates,
+    fetchControllers,
+    fetchAirportATIS,
+    fetchActiveATCAirports,
+    renderFlightsTable,
+};
+
 // ============================
 // Auto-Update
 // ============================
@@ -1991,18 +2005,3 @@ interpolateNextPositions(airportCoordinates);
       });
     } 
 });
-
-// Export functions
-export {
-    getFlights,
-    allFlights,
-    fetchAndUpdateFlights,
-    fetchInboundFlightDetails,
-    fetchAirportCoordinates,
-    fetchControllers,
-    fetchAirportATIS,
-    fetchActiveATCAirports,
-    renderFlightsTable,
-    startAutoUpdate,
-    stopAutoUpdate
-};
