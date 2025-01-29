@@ -6,28 +6,22 @@ const PROXY_URL = 'https://infiniteflightapi.deno.dev';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8';
 
 let allFlights = [];
-
-let updateInterval = null;
-let updateTimeout = null;
-let countdownInterval = null;
-
-let hideOtherAircraft = false;
-let boldHeadingEnabled = false;
-let applyDistanceFilterEnabled = false;
-
-let minDistance = null;
-let maxDistance = null;
 let headingFilterActive = false;
 let boldedHeadings = { minHeading: null, maxHeading: null };
 let hiddenDistance = { minDistance: null, maxDistance: null };
 let distanceFilterActive = false;
-
+let minDistance = null;
+let maxDistance = null;
+let updateInterval = null;
+let updateTimeout = null;
+let countdownInterval = null;
+let hideOtherAircraft = false;
+let boldHeadingEnabled = false;
+let applyDistanceFilterEnabled = false;
+let isAutoUpdateActive = false;
 let airportCoordinates = null;
 let interpolatedFlights = [];
 let lastApiUpdateTime = null;
-let secondsSinceLastApiUpdate = 0;
-
-let isAutoUpdateActive = false;
 
 function getFlights() {
     return allFlights && allFlights.length > 0 ? allFlights : interpolatedFlights;
@@ -119,13 +113,6 @@ function getUncachedIds(ids, type) {
     return ids.filter(id => !cache[type][id]);
 }
 
-
-function getAdjustedElapsedTime(lastUpdateTime) {
-    const now = Date.now();
-    const driftCorrectedTime = Math.max(0, Math.floor((now - lastUpdateTime) / 1000));
-    return Math.min(driftCorrectedTime, 18); // Cap at 18 seconds
-}
-
 // ============================
 // Aircraft
 // ============================
@@ -203,7 +190,11 @@ pairAircraftData(aircraftIds).then(pairedData => {
 async function fetchWithProxy(endpoint) {
     try {
         const response = await fetch(`${PROXY_URL}${endpoint}`);
-        if (!response.ok) throw new Error(`Error fetching data: ${response.status}`);
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Error from proxy:', errorData);
+            throw new Error(`Error fetching data: ${response.status}`);
+        }
 
         const textResponse = await response.text();
         try {
@@ -213,7 +204,7 @@ async function fetchWithProxy(endpoint) {
         }
     } catch (error) {
         console.error('Error communicating with proxy:', error.message);
-        return null; // Prevents further crashes
+        throw error;
     }
 }
 
@@ -768,21 +759,18 @@ function predictPosition(lat, lon, groundSpeed, heading, seconds) {
 
     let σ = distance / (b * A);
     let σP, sinσ, cosσ, Δσ;
-    let iterationCount = 0; // Track iterations
-    const maxIterations = 100; // Prevent infinite loops
-
     do {
         sinσ = Math.sin(σ);
         cosσ = Math.cos(σ);
-        Δσ = B * sinσ * (cos2α + (B / 4) * (cosσ * (-1 + 2 * cos2α) - (B / 6) * cos2α * (-3 + 4 * sinσ * sinσ) * (-3 + 4 * cos2α)));
+        Δσ =
+            B *
+            sinσ *
+            (cos2α +
+                (B / 4) *
+                    (cosσ * (-1 + 2 * cos2α) -
+                        (B / 6) * cos2α * (-3 + 4 * sinσ * sinσ) * (-3 + 4 * cos2α)));
         σP = σ;
         σ = distance / (b * A) + Δσ;
-
-        iterationCount++;
-        if (iterationCount >= maxIterations) {
-            console.warn("Vincenty's formula failed to converge within 100 iterations.");
-            break;
-        }
     } while (Math.abs(σ - σP) > 1e-12);
 
     const tmp = sinU1 * sinσ - cosU1 * cosσ * cosα1;
@@ -800,27 +788,17 @@ function predictPosition(lat, lon, groundSpeed, heading, seconds) {
     return { latitude: lat2, longitude: lon2 };
 }
 
-
 /**
  * Fill gaps between updates by predicting positions
  */
-function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, lastApiUpdateTime) {
+function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interval = 18) {
     const positions = [];
-    let currentLat = startLat; // Initialize with the starting latitude
-    let currentLon = startLon; // Initialize with the starting longitude
+    let currentLat = startLat;
+    let currentLon = startLon;
 
-    // Get actual seconds since the last API update
-    const currentTime = Date.now();
-    const secondsSinceLastApiUpdate = getAdjustedElapsedTime(lastApiUpdateTime);
-
-    // Only predict up to the actual elapsed time
-    for (let t = 0; t < secondsSinceLastApiUpdate; t++) {
-        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1);
-
-        // Store the new predicted position
+    for (let t = 0; t < interval; t++) {
+        const newPosition = predictPosition(currentLat, currentLon, groundSpeed, heading, 1); // Step = 1 second
         positions.push({ time: t + 1, latitude: newPosition.latitude, longitude: newPosition.longitude });
-
-        // Update `currentLat` and `currentLon` to the new position
         currentLat = newPosition.latitude;
         currentLon = newPosition.longitude;
     }
@@ -1050,14 +1028,22 @@ async function fetchAndUpdateFlights(icao) {
 
 // interpolatedNextPositions
 function interpolateNextPositions(airportCoordinates) {
-    
+    if (isAutoUpdateActive === true) {
+      console.error("Interpolation skipped as auto-update is off.");
+      return;
+    }
+
     if (!airportCoordinates) {
         console.error("Airport coordinates not available.");
         return;
     }
 
+    const currentTime = Date.now();
+    const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
+
     if (secondsSinceLastApiUpdate > 18) {
-        console.error("Interpolation exceeded API update interval. Waiting for new data.");
+        console.error("Interpolation exceeded 18 seconds. Waiting for the next API update.");
+        
         return;
     }
 
@@ -1080,6 +1066,7 @@ function interpolateNextPositions(airportCoordinates) {
                             airportCoordinates.longitude
                         )
                     );
+
                     flight.etaMinutes = calculateETA(
                         flight.latitude,
                         flight.longitude,
@@ -1093,12 +1080,15 @@ function interpolateNextPositions(airportCoordinates) {
                     flight.etaMinutes = 'N/A';
                 }
             } catch (error) {
-                console.error(`Error recalculating for flight ${flight.callsign || 'Unknown'}:`, error.message);
+                console.error(
+                    `Error recalculating for flight ${flight.callsign || 'Unknown'}:`,
+                    error.message
+                );
                 flight.distanceToDestination = 'N/A';
                 flight.etaMinutes = 'N/A';
             }
         }
-    });
+     });
 
     renderFlightsTable(getFlights());
 }
@@ -1824,140 +1814,183 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
 // Auto-Update
 // ============================
 
-let flightUpdateFrame = null;
-let atcUpdateFrame = null;
+// Stop auto-update
+function stopAutoUpdate() {
+    if (updateInterval) clearInterval(updateInterval);
+    if (updateTimeout) clearTimeout(updateTimeout);
+    if (countdownInterval) clearInterval(countdownInterval);
 
-document.addEventListener("DOMContentLoaded", async () => {
+    updateInterval = null;
+    updateTimeout = null;
+    countdownInterval = null;
+    isAutoUpdateActive = false;
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', async () => {
+    // Apply default settings from cookies
     applyDefaults();
 
     try {
+        // Initialize data fetching and rendering
         await fetchActiveATCAirports();
         await renderATCTable();
     } catch (error) {
-        console.error("Error initializing ATC table:", error.message);
+        console.error('Error initializing ATC table:', error.message);
     }
 
+    // DOM Elements
     const searchButton = document.getElementById("search");
     const icaoInput = document.getElementById("icao");
     const updateButton = document.getElementById("update");
 
+    let isAutoUpdateActive = false;
+    let flightUpdateInterval = null;
+    let interpolateInterval = null;
+    let atcUpdateInterval = null;
+
+    // Handle Search
     async function handleSearch() {
-        const icao = icaoInput.value.trim().toUpperCase();
+    const icao = icaoInput.value.trim().toUpperCase();
 
-        if (!icao) {
-            alert("Please enter a valid ICAO code.");
-            return;
-        }
-
-        stopAutoUpdate();
-        allFlights = [];
-        interpolatedFlights = [];
-        airportCoordinates = null;
-        lastApiUpdateTime = null;
-
-        const tableBody = document.querySelector("#flightsTable tbody");
-        if (tableBody) {
-            tableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
-        }
-
-        try {
-            await fetchAndUpdateFlights(icao);
-            startAutoUpdate(icao);
-        } catch (error) {
-            console.error("Error during search:", error.message);
-            alert("Failed to fetch and update flights. Please try again.");
-        }
+    if (!icao) {
+        alert("Please enter a valid ICAO code.");
+        return;
     }
 
-    if (searchButton) {
-        searchButton.addEventListener("click", handleSearch);
+    // Stop any ongoing updates
+    stopAutoUpdate();
+
+    // Clear previous flight data
+    allFlights = [];
+    interpolatedFlights = [];
+    airportCoordinates = null; // Reset airport coordinates
+    lastApiUpdateTime = null;
+
+    // Clear table to reflect no flights before fetching new data
+    const tableBody = document.querySelector("#flightsTable tbody");
+    if (tableBody) {
+        tableBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
     }
+
+    try {
+        // Fetch and update flights for the new ICAO
+        await fetchAndUpdateFlights(icao);
+
+        // Automatically start updates for the new ICAO
+    startAutoUpdate(icao);
+            } catch (error) {
+                console.error("Error during search:", error.message);
+                alert("Failed to fetch and update flights. Please try again.");
+            }
+        }
+
+            // Add event listeners for search functionality
+            if (searchButton) {
+                searchButton.addEventListener("click", async () => {
+                    await handleSearch();
+                });
+            }
 
     if (icaoInput) {
-        icaoInput.addEventListener("keydown", (event) => {
+        icaoInput.addEventListener("keydown", async (event) => {
             if (event.key === "Enter") {
                 event.preventDefault();
-                handleSearch();
+                await handleSearch();
             }
         });
     }
 
-    updateButton.addEventListener("click", () => {
-        const icao = icaoInput.value.trim().toUpperCase();
-
-        if (!icao) {
-            alert("Please enter a valid ICAO code.");
-            return;
-        }
-
-        if (isAutoUpdateActive) {
-            stopAutoUpdate();
-        } else {
-            startAutoUpdate(icao);
-        }
-    });
-});
-
-// Smooth Animation Loop using requestAnimationFrame
-function startAutoUpdate(icao) {
-    if (isAutoUpdateActive) return;
+    // Start auto-update
+    function startAutoUpdate(icao) {
     isAutoUpdateActive = true;
-
     updateButton.style.color = "blue";
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.add("spin");
 
-    function updateFlights() {
-        if (!isAutoUpdateActive) return;
-
+    interpolateInterval = setInterval(async () => {
         try {
-            interpolateNextPositions(airportCoordinates);
-            const elapsedTime = Date.now() - lastApiUpdateTime;
+interpolateNextPositions(airportCoordinates);
+        } catch (error) {
+            console.error("Error during interpolated flight updates:", error.message);
 
-            if (elapsedTime >= 18000) {
-                fetchAndUpdateFlights(icao).then(() => {
-                    lastApiUpdateTime = Date.now();
-                });
+            if (error.message.includes("rate limit") || error.message.includes("fetch")) {
+                alert("Rate limit or network error encountered. Flight updates stopped.");
+                clearInterval(flightUpdateInterval); // Stop the interval if there's an issue
             }
-        } catch (error) {
-            console.error("Error during flight updates:", error.message);
-            stopAutoUpdate();
-            return;
         }
-
-        flightUpdateFrame = requestAnimationFrame(updateFlights);
-    }
-
-    function updateATC() {
-        if (!isAutoUpdateActive) return;
-
+    }, 1000); // Updates every second
+    
+    
+    flightUpdateInterval = setInterval(async () => {
         try {
-            fetchControllers(icao);
-            fetchActiveATCAirports();
-            renderATCTable();
+            await fetchAndUpdateFlights(icao);
         } catch (error) {
-            console.error("Error during ATC updates:", error.message);
-            stopAutoUpdate();
-            return;
-        }
+            console.error("Error during interpolated flight updates:", error.message);
 
-        atcUpdateFrame = setTimeout(() => requestAnimationFrame(updateATC), 60000);
+            if (error.message.includes("rate limit") || error.message.includes("fetch")) {
+                alert("Rate limit or network error encountered. Flight updates stopped.");
+                clearInterval(flightUpdateInterval); // Stop the interval if there's an issue
+            }
+        }
+    }, 18000); // API updates every 18 seconds
+
+    // Update ATC data every 60 seconds
+        atcUpdateInterval = setInterval(async () => {
+            try {
+                await fetchControllers(icao);
+                await fetchActiveATCAirports();
+                await renderATCTable();
+            } catch (error) {
+                console.error("Error during ATC updates:", error.message);
+
+                if (error.message.includes("rate limit") || error.message.includes("fetch")) {
+                    alert("Rate limit or network error encountered. ATC updates stopped.");
+                    stopAutoUpdate();
+                }
+            }
+        }, 60000);
     }
 
-    flightUpdateFrame = requestAnimationFrame(updateFlights);
-    atcUpdateFrame = requestAnimationFrame(updateATC);
-}
+    // Stop auto-update
+    function stopAutoUpdate() {
+     isAutoUpdateActive = false;
 
-function stopAutoUpdate() {
-    isAutoUpdateActive = false;
-
+    // Update the button style to reflect the stopped state
     updateButton.style.color = "#828282";
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.remove("spin");
 
-    if (flightUpdateFrame) cancelAnimationFrame(flightUpdateFrame);
-    if (atcUpdateFrame) clearTimeout(atcUpdateFrame);
+    // Clear all intervals and reset related variables
+    if (flightUpdateInterval) clearInterval(flightUpdateInterval);
+    if (interpolateInterval) clearInterval(interpolateInterval);
+    if (atcUpdateInterval) clearInterval(atcUpdateInterval);
+    
+    flightUpdateInterval = null;
+    interpolateInterval = null;
+    atcUpdateInterval = null;
 
-    flightUpdateFrame = null;
-    atcUpdateFrame = null;
-}
+    console.log("Auto-update and interpolation stopped.");
+    }
+
+    // Add event listener for the update button
+    if (updateButton) {
+        updateButton.addEventListener("click", () => {
+    const icao = icaoInput.value.trim().toUpperCase();
+
+        if (!icao) {
+          alert("Please enter a valid ICAO code before updating.");
+         return;
+        }
+
+        if (isAutoUpdateActive) {
+         stopAutoUpdate();
+        } else {
+         startAutoUpdate(icao); 
+        }
+      });
+    }
+});
+
+
+export { allFlights, fetchAndUpdateFlights, getFlights };

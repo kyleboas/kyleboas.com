@@ -1989,5 +1989,37 @@ interpolateNextPositions(airportCoordinates);
          startAutoUpdate(icao); 
         }
       });
-    }
+    } 
 });
+
+
+// Export
+
+export let allFlights = [];
+
+export async function fetchAndUpdateFlights(icao) {
+    try {
+        const response = await fetch(`https://infiniteflightapi.deno.dev/sessions/9bdfef34-f03b-4413-b8fa-c29949bb18f8/airport/${icao}/status`);
+        const data = await response.json();
+        
+        if (!data || !data.result) throw new Error("Invalid response data.");
+
+        allFlights = data.result.inboundFlights.map(flight => ({
+            callsign: flight.callsign || "Unknown",
+            latitude: flight.latitude,
+            longitude: flight.longitude,
+            altitude: flight.altitude || "N/A",
+            speed: flight.speed || "N/A",
+            heading: flight.heading || "N/A",
+            distanceToDestination: flight.distanceToDestination || "N/A",
+            interpolatedPositions: [],
+        }));
+    } catch (error) {
+        console.error("Error fetching flights:", error.message);
+        allFlights = [];
+    }
+}
+
+export function getFlights() {
+    return allFlights;
+}
