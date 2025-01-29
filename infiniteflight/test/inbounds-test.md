@@ -145,7 +145,7 @@ permalink: /test/inbounds/
         placeholder="Maximum distance..."
         aria-label="Maximum distance..."
       />
-      </div>
+     </div>
   <div class="setting-container">
     <div class="setting-border" id="boldHeadingBorder">
       <button class="overlay-button" id="boldHeadingButton"></button>    
