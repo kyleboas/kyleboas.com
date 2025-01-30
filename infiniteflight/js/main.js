@@ -16,6 +16,19 @@ let flights = [];
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("DOM fully loaded.");
 
+    // Fetch and update flights before getting them
+    try {
+        await fetchAndUpdateFlights(icao);  // Pass an initial ICAO code
+        flights = getFlights();  // Now retrieve the updated flights
+        console.log("Flights loaded:", flights);
+    } catch (error) {
+        console.error("Error fetching flights:", error);
+    }
+});
+
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("DOM fully loaded.");
+
     // Select necessary DOM elements
     const flightsTable = document.getElementById("flightsTable");
     const mapContainer = document.getElementById("mapContainer");

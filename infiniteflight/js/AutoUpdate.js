@@ -8,8 +8,8 @@ import {
 
 export class AutoUpdate {
     constructor(fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable) {
-        const updateButton = document.getElementById("update")
-        this.fetchFlights = fetchFlights;
+        this.updateButton = document.getElementById("update"); // Fix updateButton scope
+        this.fetchFlights = fetchAndUpdateFlights; // Fix incorrect reference
         this.interpolateNextPositions = interpolateNextPositions;
         this.fetchControllers = fetchControllers;
         this.fetchActiveATCAirports = fetchActiveATCAirports;
@@ -29,7 +29,7 @@ export class AutoUpdate {
 
         this.interpolateInterval = setInterval(() => {
             try {
-                this.interpolate();
+                this.interpolateNextPositions(); // Fix calling interpolation method
             } catch (error) {
                 console.error("Interpolation error:", error);
             }
@@ -47,8 +47,8 @@ export class AutoUpdate {
         this.atcUpdateInterval = setInterval(async () => {
             try {
                 await this.fetchControllers(icao);
-                await this.fetchATC();
-                await this.renderATC();
+                await this.fetchActiveATCAirports(); // Fix undefined method
+                await this.renderATCTable(); // Fix undefined method
             } catch (error) {
                 console.error("ATC update error:", error);
                 this.stop();

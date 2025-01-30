@@ -40,7 +40,7 @@ const aircraftMachDetails = {
         "e92bc6db-a9e6-4137-a93c-a7423715b799": { name: "SR22", minMach: 0.40, maxMach: 0.60 }
 };
 
-async function pairAircraftData(aircraftIds) {
+export async function pairAircraftData(aircraftIds) {
     const pairedData = {};
 
     aircraftIds.forEach((id) => {
@@ -53,6 +53,3 @@ async function pairAircraftData(aircraftIds) {
 
     return pairedData;
 }
-
-export { pairAircraftData };
-export default aircraftMachDetails;
