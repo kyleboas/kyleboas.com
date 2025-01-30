@@ -1,70 +1,67 @@
 import { showMap } from "./map.js";
-import { allFlights } from "./inbounds-test.js";
+import { AutoUpdate } from "./AutoUpdate.js";
+import { getFlights, fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable } from "./inbounds-test.js";
+
+let flights = []; // Store fetched flights globally for reuse
 
 document.addEventListener("DOMContentLoaded", async () => {
+    console.log("DOM fully loaded.");
+
+    // Select necessary DOM elements
     const flightsTable = document.getElementById("flightsTable");
     const mapContainer = document.getElementById("mapContainer");
+    const closeMapButton = document.getElementById("closeMapButton");
+    const updateButton = document.getElementById("update");
+    const icaoInput = document.getElementById("icao");
 
-    if (!flightsTable || !mapContainer) {
+    // Validate essential elements
+    if (!flightsTable || !mapContainer || !updateButton || !icaoInput) {
         console.error("Required elements not found in the DOM.");
         return;
     }
 
-    // Ensure flights are loaded before allowing clicks
-    let flights = [];
+    // Fetch flight data on load
     try {
         flights = await getFlights();
         console.log("Flights loaded:", flights);
     } catch (error) {
-        console.error("Error fetching flight data:", error);
+        console.error("Error fetching flights:", error);
     }
 
-    // Click event to show the map when an aircraft row is clicked
+    // Handle flight row clicks to show map
     flightsTable.addEventListener("click", (event) => {
         const row = event.target.closest("tr");
         if (!row) return;
 
-        const callsign = row.cells[0]?.textContent.trim(); // Get callsign
+        const callsign = row.cells[0]?.textContent.trim();
         const flight = flights.find(f => f.callsign === callsign);
 
         if (flight) {
             console.log(`Showing map for flight: ${callsign}`, flight);
             showMap(flight);
         } else {
-            console.warn(`Flight with callsign "${callsign}" not found.`);
+            console.warn(`Flight "${callsign}" not found.`);
         }
     });
 
-    // Close Map Button
-    const closeMapButton = document.getElementById("closeMapButton");
+    // Close map when close button is clicked
     if (closeMapButton) {
         closeMapButton.addEventListener("click", () => {
             mapContainer.style.display = "none";
         });
     }
-});
 
+    // Initialize auto-update manager
+    const autoUpdate = new AutoUpdate (
+        updateButton,
+        fetchAndUpdateFlights,
+        interpolateNextPositions,
+        fetchControllers,
+        fetchActiveATCAirports,
+        renderATCTable
+    );
 
-// Auto-Update
-
-import { AutoUpdateManager } from "./AutoUpdateManager.js";
-
-// Get UI elements
-const updateButton = document.getElementById("update");
-const icaoInput = document.getElementById("icao");
-
-// Create AutoUpdateManager instance
-const autoUpdateManager = new AutoUpdateManager(
-    updateButton,
-    fetchAndUpdateFlights,
-    interpolateNextPositions,
-    fetchControllers,
-    fetchActiveATCAirports,
-    renderATCTable
-);
-
-// Add event listener to update button
-if (updateButton) {
+    // Handle update button clicks
     updateButton.addEventListener("click", () => {
         const icao = icaoInput.value.trim().toUpperCase();
 
@@ -73,10 +70,10 @@ if (updateButton) {
             return;
         }
 
-        if (autoUpdateManager.isAutoUpdateActive) {
-            autoUpdateManager.stop();
+        if (autoUpdate.isAutoUpdateActive) {
+            autoUpdate.stop();
         } else {
-            autoUpdateManager.start(icao);
+            autoUpdate.start(icao);
         }
     });
-}
+});
