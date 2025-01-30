@@ -54,6 +54,5 @@ async function pairAircraftData(aircraftIds) {
     return pairedData;
 }
 
-
-export { pairedAircraftData };
+export { pairAircraftData };
 export default aircraftMachDetails;
