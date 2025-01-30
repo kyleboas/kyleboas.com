@@ -1,5 +1,4 @@
 import { 
-        updateButton,
         fetchAndUpdateFlights,
         interpolateNextPositions,
         fetchControllers,
@@ -8,7 +7,7 @@ import {
  } from "./inbounds-test.js";
 
 export class AutoUpdate {
-    constructor(updateButton, fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable) {
+    constructor(fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable) {
         this.updateButton = updateButton;
         this.fetchFlights = fetchFlights;
         this.interpolateNextPositions = interpolateNextPositions;
