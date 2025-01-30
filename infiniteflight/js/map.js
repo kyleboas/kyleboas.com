@@ -1,11 +1,7 @@
 import { getFlights } from "./inbounds-test.js";
+import { fetchAirportCoordinates } from "./inbounds-test.js"; // Ensure airport coordinates are available
 
-export function showMap(flight) {
-    if (!flight || !flight.latitude || !flight.longitude || !flight.heading) {
-        console.error("Invalid flight data:", flight);
-        return;
-    }
-
+export async function showMap(mainAirportIcao) {
     const mapContainer = document.getElementById("mapContainer");
     const canvas = document.getElementById("flightCanvas");
     const ctx = canvas.getContext("2d");
@@ -15,49 +11,75 @@ export function showMap(flight) {
 
     let zoomLevel = 1;
     let panX = 0, panY = 0;
-    let currentPos = { latitude: flight.latitude, longitude: flight.longitude };
-    let targetPos = { latitude: flight.latitude, longitude: flight.longitude };
+    let selectedFlightId = null; // To track selected flight for highlighting
 
+    // Fetch main airport coordinates
+    const airportCoordinates = await fetchAirportCoordinates(mainAirportIcao);
+    if (!airportCoordinates) {
+        console.error("Failed to fetch airport coordinates.");
+        return;
+    }
+
+    const flights = getFlights();
+    if (!flights || flights.length === 0) {
+        console.warn("No inbound flights available.");
+        return;
+    }
+
+    // Convert lat/lon to canvas coordinates
     function mapToCanvas(lat, lon) {
+        const scale = 10 * zoomLevel;
         return {
-            x: (lon + 180) * 10 * zoomLevel + panX,
-            y: canvas.height - ((lat + 90) * 10 * zoomLevel) + panY
+            x: (lon - airportCoordinates.longitude) * scale + canvas.width / 2 + panX,
+            y: canvas.height / 2 - (lat - airportCoordinates.latitude) * scale + panY,
         };
     }
 
+    // Draw all aircraft
     function drawAircraft() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const pos = mapToCanvas(currentPos.latitude, currentPos.longitude);
 
-        ctx.save();
-        ctx.translate(pos.x, pos.y);
-        ctx.rotate((flight.heading * Math.PI) / 180);
-        
-        ctx.fillStyle = "yellow";
-        ctx.beginPath();
-        ctx.moveTo(0, -10);
-        ctx.lineTo(5, 5);
-        ctx.lineTo(-5, 5);
-        ctx.closePath();
-        ctx.fill();
-        
-        ctx.restore();
+        flights.forEach((flight) => {
+            if (!flight.latitude || !flight.longitude || !flight.heading) return;
+
+            const pos = mapToCanvas(flight.latitude, flight.longitude);
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            ctx.rotate((flight.heading * Math.PI) / 180);
+
+            // Highlight selected aircraft
+            if (flight.flightId === selectedFlightId) {
+                ctx.strokeStyle = "red";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(0, 0, 12, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+
+            // Draw aircraft
+            ctx.fillStyle = "yellow";
+            ctx.beginPath();
+            ctx.moveTo(0, -10);
+            ctx.lineTo(5, 5);
+            ctx.lineTo(-5, 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+        });
     }
 
-    function animateMovement() {
-        if (!targetPos) return;
-
-        currentPos.latitude += (targetPos.latitude - currentPos.latitude) * 0.05;
-        currentPos.longitude += (targetPos.longitude - currentPos.longitude) * 0.05;
-
-        drawAircraft();
-
-        if (Math.abs(currentPos.latitude - targetPos.latitude) > 0.0001 ||
-            Math.abs(currentPos.longitude - targetPos.longitude) > 0.0001) {
-            requestAnimationFrame(animateMovement);
-        }
+    // Handle row click to highlight aircraft
+    function setupTableClickHighlighting() {
+        document.querySelectorAll("#flightsTable tbody tr").forEach((row) => {
+            row.addEventListener("click", () => {
+                selectedFlightId = row.getAttribute("flight-id");
+                drawAircraft();
+            });
+        });
     }
 
+    // Handle zoom & pan
     function setupTouchControls() {
         let lastTouch = null;
         let lastDist = 0;
@@ -72,21 +94,14 @@ export function showMap(flight) {
 
         canvas.addEventListener("touchmove", (e) => {
             if (e.touches.length === 1 && lastTouch) {
-                let dx = e.touches[0].clientX - lastTouch.clientX;
-                let dy = e.touches[0].clientY - lastTouch.clientY;
-                
-                panX += dx;
-                panY += dy;
-
+                panX += e.touches[0].clientX - lastTouch.clientX;
+                panY += e.touches[0].clientY - lastTouch.clientY;
                 lastTouch = e.touches[0];
                 drawAircraft();
             } else if (e.touches.length === 2) {
                 let newDist = getTouchDistance(e.touches);
-                let scale = newDist / lastDist;
-
-                zoomLevel *= scale;
+                zoomLevel *= newDist / lastDist;
                 zoomLevel = Math.max(0.5, Math.min(3, zoomLevel));
-                
                 lastDist = newDist;
                 drawAircraft();
             }
@@ -110,19 +125,9 @@ export function showMap(flight) {
         }
     }
 
+    // Setup and render
     mapContainer.style.display = "block";
     setupTouchControls();
     drawAircraft();
-
-    let updateCounter = 0;
-    let updateInterval = setInterval(() => {
-        if (updateCounter >= flight.interpolatedPositions.length) {
-            clearInterval(updateInterval);
-            return;
-        }
-
-        targetPos = flight.interpolatedPositions[updateCounter];
-        animateMovement();
-        updateCounter++;
-    }, 1000);
+    setupTableClickHighlighting();
 }
