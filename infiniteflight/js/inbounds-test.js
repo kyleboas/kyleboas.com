@@ -1,4 +1,4 @@
-import { pairedAircraftData } from "./aircraft.js";
+import { pairAircraftData } from "./aircraft.js";
 
 // ============================
 // Constants and Global State
