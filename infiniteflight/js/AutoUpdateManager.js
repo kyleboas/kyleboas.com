@@ -1,5 +1,3 @@
-
-
 export class AutoUpdateManager {
     constructor(updateButton, fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable) {
         this.updateButton = updateButton;
