@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Fetch flight data on load
     try {
-        flights = await getFlights());  // Ensure getFlights() is defined or imported
+        flights = await getFlights();  // Ensure getFlights() is defined or imported
         console.log("Flights loaded:", flights);
     } catch (error) {
         console.error("Error fetching flights:", error);
