@@ -8,7 +8,7 @@ import {
 
 export class AutoUpdate {
     constructor(fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable) {
-        this.updateButton = updateButton;
+        const updateButton = document.getElementById("update")
         this.fetchFlights = fetchFlights;
         this.interpolateNextPositions = interpolateNextPositions;
         this.fetchControllers = fetchControllers;

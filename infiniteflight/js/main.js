@@ -1,7 +1,6 @@
 import { showMap } from "./map.js";
 import { AutoUpdate } from "./AutoUpdate.js";
 import { 
-        updateButton,
         fetchAndUpdateFlights,
         interpolateNextPositions,
         fetchControllers,
@@ -10,6 +9,8 @@ import {
  } from "./inbounds-test.js";
 
 let flights = []; // Store fetched flights globally for reuse
+
+const updateButton = document.getElementById("update")
 
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("DOM fully loaded.");
@@ -60,7 +61,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Initialize auto-update manager
     const autoUpdate = new AutoUpdate (
-        updateButton,
         fetchAndUpdateFlights,
         interpolateNextPositions,
         fetchControllers,
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
     // Handle update button clicks
-    updateButton.addEventListener("click", () => {
+    updateButton.addEventListener("click", () =>mm
         const icao = icaoInput.value.trim().toUpperCase();
 
         if (!icao) {
