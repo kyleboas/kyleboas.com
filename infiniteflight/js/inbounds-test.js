@@ -1709,5 +1709,10 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
 export {
     getFlights,
     allFlights,
-    fetchAirportCoordinates
+    fetchAirportCoordinates,
+    fetchAndUpdateFlights,
+    interpolateNextPositions,
+    fetchControllers, 
+    fetchActiveATCAirports,
+    renderATCTable
 };

@@ -1,3 +1,6 @@
+import { fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable } from "./inbounds-test.js";
+
+
 export class AutoUpdateManager {
     constructor(updateButton, fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable) {
         this.updateButton = updateButton;
