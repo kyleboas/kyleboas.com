@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // Auto-Update
 
-import { AutoUpdateManager } from "./autoUpdate.js";
+import { AutoUpdateManager } from "./AutoUpdateManager.js";
 
 // Get UI elements
 const updateButton = document.getElementById("update");
