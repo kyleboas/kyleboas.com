@@ -8,9 +8,8 @@ import {
         renderATCTable 
  } from "./inbounds-test.js";
 
-let flights = []; // Store fetched flights globally for reuse
-
-const updateButton = document.getElementById("update")
+// Store fetched flights globally for reuse
+let flights = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("DOM fully loaded.");
@@ -30,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Fetch flight data on load
     try {
-        flights = await getFlights();
+        flights = await getFlights();  // Ensure getFlights() is defined or imported
         console.log("Flights loaded:", flights);
     } catch (error) {
         console.error("Error fetching flights:", error);
@@ -69,7 +68,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
     // Handle update button clicks
-    updateButton.addEventListener("click", () =>mm
+    updateButton.addEventListener("click", () => {
         const icao = icaoInput.value.trim().toUpperCase();
 
         if (!icao) {
