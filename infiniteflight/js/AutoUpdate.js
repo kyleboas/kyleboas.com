@@ -1,11 +1,20 @@
-export class AutoUpdateManager {
-    constructor(updateButton, fetchFlights, interpolate, fetchControllers, fetchATC, renderATC) {
+import { 
+        updateButton,
+        fetchAndUpdateFlights,
+        interpolateNextPositions,
+        fetchControllers,
+        fetchActiveATCAirports,
+        renderATCTable 
+ } from "./inbounds-test.js";
+
+export class AutoUpdate {
+    constructor(updateButton, fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable) {
         this.updateButton = updateButton;
         this.fetchFlights = fetchFlights;
-        this.interpolate = interpolate;
+        this.interpolateNextPositions = interpolateNextPositions;
         this.fetchControllers = fetchControllers;
-        this.fetchATC = fetchATC;
-        this.renderATC = renderATC;
+        this.fetchActiveATCAirports = fetchActiveATCAirports;
+        this.renderATCTable = renderATCTable;
 
         this.isAutoUpdateActive = false;
         this.flightUpdateInterval = null;
