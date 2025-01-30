@@ -12,4 +12,3 @@ package.json
 2024/03/**
 !/package.json
 .env
-/infiniteflight/js/js/fetch.js
