@@ -1,4 +1,4 @@
-import { getFlights } from "*/inbounds-test.js";
+import { getFlights } from "/*/inbounds-test.js";
 
 export function showMap(flight) {
     if (!flight || !flight.latitude || !flight.longitude || !flight.heading) {

@@ -1,5 +1,5 @@
 import { showMap } from "/*/map.js";
-import { allFlights } from "*/inbounds-test.js";
+import { allFlights } from "/*/inbounds-test.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const flightsTable = document.getElementById("flightsTable");
