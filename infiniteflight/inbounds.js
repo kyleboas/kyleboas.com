@@ -573,16 +573,17 @@ function displayControllers(controllers, centerFrequencies = []) {
     // Ensure the main airport section is visible
     mainAirportElement.style.display = 'block';
 
-    // Separate Center frequencies and other controllers
+    // Format regular controllers
     const otherControllers = controllers.length
-        ? controllers.filter(ctrl => !centerFrequencies.includes(ctrl)).map(ctrl => `${ctrl}<br>`).join('')
+        ? controllers.map(ctrl => `${ctrl}<br>`).join('')
         : 'No active controllers available.';
 
+    // Format center controllers as a comma-separated list
     const centerControllers = centerFrequencies.length
-        ? centerFrequencies.map(ctrl => `${ctrl}<br>`).join('')
+        ? `Center: ${centerFrequencies.join(', ')}`
         : 'No active Center frequencies available.';
 
-    // Combine other controllers first, followed by Center frequencies
+    // Update the controllers display
     controllersElement.style.display = 'block';
     controllersElement.innerHTML = `
         <p>${otherControllers}</p>
@@ -623,43 +624,45 @@ async function fetchAirportATIS(icao) {
 async function fetchControllers(icao) {
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
-        displayControllers(cached); // Display cached controllers
+        displayControllers(cached);
         return cached;
     }
 
     try {
         const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
-        const controllers = (data.result.atcFacilities || [])
-            .map(facility => {
-                const frequencyTypes = {
-                    0: "Ground",
-                    1: "Tower",
-                    2: "Unicom",
-                    3: "Clearance",
-                    4: "Approach",
-                    5: "Departure",
-                    6: "Center", // Center frequency
-                    7: "ATIS",
-                };
-                const frequencyName = frequencyTypes[facility.type] || "Unknown";
-                return { frequencyName, username: facility.username, type: facility.type };
-            });
+        const controllers = (data.result.atcFacilities || []).map(facility => {
+            const frequencyTypes = {
+                0: "Ground",
+                1: "Tower",
+                2: "Unicom",
+                3: "Clearance",
+                4: "Approach",
+                5: "Departure",
+                6: "Center",
+                7: "ATIS",
+            };
+            const frequencyName = frequencyTypes[facility.type] || "Unknown";
+            return { frequencyName, username: facility.username, type: facility.type };
+        });
 
-        // Sort controllers by a specific order
+        // Sort controllers based on the given priority order
+        const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
         const sortedControllers = controllers.sort((a, b) => {
-            const order = ["ATIS", "Clearance", "Ground", "Tower", "Approach", "Departure", "Center", "Unknown"];
-            const indexA = order.indexOf(a.frequencyName);
-            const indexB = order.indexOf(b.frequencyName);
-            return indexA - indexB;
-        }).map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
+            return order.indexOf(a.frequencyName) - order.indexOf(b.frequencyName);
+        });
 
-        // Extract only Center frequencies
-        const centerFrequencies = controllers
-            .filter(ctrl => ctrl.frequencyName === "Center")
+        // Extract only Center frequencies separately
+        const centerFrequencies = sortedControllers
+            .filter(ctrl => ctrl.type === 6)
+            .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
+
+        // Filter out non-Center controllers
+        const nonCenterControllers = sortedControllers
+            .filter(ctrl => ctrl.type !== 6)
             .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
 
         setCache(icao, sortedControllers, 'controllers');
-        displayControllers(sortedControllers, centerFrequencies); // Pass both sorted controllers and centers
+        displayControllers(nonCenterControllers, centerFrequencies); // Pass both sorted controllers and centers
         return sortedControllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
