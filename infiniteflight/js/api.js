@@ -1,5 +1,5 @@
-const PROXY_URL = 'https://infiniteflightapi.deno.dev';
-const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8';
+const PROXY_URL = "https://infiniteflightapi.deno.dev";
+const SESSION_ID = "9bdfef34-f03b-4413-b8fa-c29949bb18f8";
 
 export async function fetchWithProxy(endpoint) {
     try {
@@ -11,255 +11,153 @@ export async function fetchWithProxy(endpoint) {
         const textResponse = await response.text();
         return JSON.parse(textResponse);
     } catch (error) {
-        console.error('API Error:', error.message);
+        console.error("API Error:", error.message);
         throw error;
     }
 }
 
+// Airport Data
+let airportDataCache = null;
+let airportDataFetchPromise = null;
 
-let AirportDataCache = null;
-let AirportDataFetchPromise = null;
+async function fetchAirportData(icao) {
+    if (airportDataCache) return airportDataCache;
+    if (airportDataFetchPromise) return airportDataFetchPromise;
 
-/**
- * Fetch Airport data once and cache it
- */
-async function fetchAirportData() {
-    
-    // Return cached data if available
-    if (AirportDataCache) {
-        return AirportDataCache;
-    }
-
-    // Return the ongoing fetch promise if one exists
-    if (AirportDataFetchPromise) {
-        return AirportDataFetchPromise;
-    }
-
-    // Start the fetch process
-    AirportDataFetchPromise = fetchWithProxy(`/airport/${icao}`)
+    airportDataFetchPromise = fetchWithProxy(`/airport/${icao}`)
         .then((data) => {
-
-            // Basic validation
             if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
-                console.error("Invalid Airport data received:", data);
                 throw new Error("Invalid Airport data format.");
             }
-
-            // Cache the result
-            AirportDataCache = data.result;
-            return AirportDataCache;
+            airportDataCache = data.result;
+            return airportDataCache;
         })
-        .cAirporth((error) => {
+        .catch((error) => {
             console.error("Error fetching Airport data:", error.message);
-
-            // Clear cache on error
-            AirportDataCache = null;
-            AirportDataFetchPromise = null;
+            airportDataCache = null;
+            airportDataFetchPromise = null;
             throw error;
         });
 
-    // Return the fetch promise
-    return AirportDataFetchPromise;
+    return airportDataFetchPromise;
 }
-
 
 function clearAirportDataCache() {
-    AirportDataCache = null;
-    AirportDataFetchPromise = null;
+    airportDataCache = null;
+    airportDataFetchPromise = null;
 }
 
-
+// ATC Data
 let atcDataCache = null;
 let atcDataFetchPromise = null;
 
-/**
- * Fetch ATC data once and cache it
- */
 async function fetchATCData() {
-    
-    // Return cached data if available
-    if (atcDataCache) {
-        return atcDataCache;
-    }
+    if (atcDataCache) return atcDataCache;
+    if (atcDataFetchPromise) return atcDataFetchPromise;
 
-    // Return the ongoing fetch promise if one exists
-    if (atcDataFetchPromise) {
-        return atcDataFetchPromise;
-    }
-
-    // Start the fetch process
     atcDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/atc`)
         .then((data) => {
-
-            // Basic validation
             if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
-                console.error("Invalid ATC data received:", data);
                 throw new Error("Invalid ATC data format.");
             }
-
-            // Cache the result
             atcDataCache = data.result;
             return atcDataCache;
         })
         .catch((error) => {
             console.error("Error fetching ATC data:", error.message);
-
-            // Clear cache on error
             atcDataCache = null;
             atcDataFetchPromise = null;
             throw error;
         });
 
-    // Return the fetch promise
     return atcDataFetchPromise;
 }
-
 
 function clearATCDataCache() {
     atcDataCache = null;
     atcDataFetchPromise = null;
 }
 
+// ATIS Data
+let atisDataCache = null;
+let atisDataFetchPromise = null;
 
-let ATISDataCache = null;
-let ATISDataFetchPromise = null;
+async function fetchATISData(icao) {
+    if (atisDataCache) return atisDataCache;
+    if (atisDataFetchPromise) return atisDataFetchPromise;
 
-/**
- * Fetch ATIS data once and cache it
- */
-async function fetchATISData() {
-    
-    // Return cached data if available
-    if (ATISDataCache) {
-        return ATISDataCache;
-    }
-
-    // Return the ongoing fetch promise if one exists
-    if (ATISDataFetchPromise) {
-        return ATISDataFetchPromise;
-    }
-
-    // Start the fetch process
-    ATISDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`)
+    atisDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`)
         .then((data) => {
-
-            // Basic validation
             if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
-                console.error("Invalid ATIS data received:", data);
                 throw new Error("Invalid ATIS data format.");
             }
-
-            // Cache the result
-            ATISDataCache = data.result;
-            return ATISDataCache;
+            atisDataCache = data.result;
+            return atisDataCache;
         })
-        .cATISh((error) => {
+        .catch((error) => {
             console.error("Error fetching ATIS data:", error.message);
-
-            // Clear cache on error
-            ATISDataCache = null;
-            ATISDataFetchPromise = null;
+            atisDataCache = null;
+            atisDataFetchPromise = null;
             throw error;
         });
 
-    // Return the fetch promise
-    return ATISDataFetchPromise;
+    return atisDataFetchPromise;
 }
-
 
 function clearATISDataCache() {
-    ATISDataCache = null;
-    ATISDataFetchPromise = null;
+    atisDataCache = null;
+    atisDataFetchPromise = null;
 }
 
-let FlightsDataCache = null;
-let FlightsDataFetchPromise = null;
+// Flights Data
+let flightsDataCache = null;
+let flightsDataFetchPromise = null;
 
-/**
- * Fetch Flights data once and cache it
- */
 async function fetchFlightsData() {
-    
-    // Return cached data if available
-    if (FlightsDataCache) {
-        return FlightsDataCache;
-    }
+    if (flightsDataCache) return flightsDataCache;
+    if (flightsDataFetchPromise) return flightsDataFetchPromise;
 
-    // Return the ongoing fetch promise if one exists
-    if (FlightsDataFetchPromise) {
-        return FlightsDataFetchPromise;
-    }
-
-    // Start the fetch process
-    FlightsDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/Flights`)
+    flightsDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/flights`)
         .then((data) => {
-
-            // Basic validation
             if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
-                console.error("Invalid Flights data received:", data);
                 throw new Error("Invalid Flights data format.");
             }
-
-            // Cache the result
-            FlightsDataCache = data.result;
-            return FlightsDataCache;
+            flightsDataCache = data.result;
+            return flightsDataCache;
         })
-        .cFlightsh((error) => {
+        .catch((error) => {
             console.error("Error fetching Flights data:", error.message);
-
-            // Clear cache on error
-            FlightsDataCache = null;
-            FlightsDataFetchPromise = null;
+            flightsDataCache = null;
+            flightsDataFetchPromise = null;
             throw error;
         });
 
-    // Return the fetch promise
-    return FlightsDataFetchPromise;
+    return flightsDataFetchPromise;
 }
-
 
 function clearFlightsDataCache() {
-    FlightsDataCache = null;
-    FlightsDataFetchPromise = null;
+    flightsDataCache = null;
+    flightsDataFetchPromise = null;
 }
 
-
-
-
+// Status Data
 let statusDataCache = null;
 let statusDataFetchPromise = null;
 
-/**
- * Fetch status data once and cache it
- */
 async function fetchStatusData(icao) {
-    // Return cached data if available
-    if (statusDataCache) {
-        return statusDataCache;
-    }
+    if (statusDataCache) return statusDataCache;
+    if (statusDataFetchPromise) return statusDataFetchPromise;
 
-    // Return the ongoing fetch promise if one exists
-    if (statusDataFetchPromise) {
-        return statusDataFetchPromise;
-    }
-
-    // Start the fetch process
     statusDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`)
         .then((data) => {
-            // Basic validation
             if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
-                console.error("Invalid status data received:", data);
                 throw new Error("Invalid status data format.");
             }
-
-            // Cache the result
             statusDataCache = data.result;
             return statusDataCache;
         })
         .catch((error) => {
             console.error("Error fetching status data:", error.message);
-
-            // Clear cache on error
             statusDataCache = null;
             statusDataFetchPromise = null;
             throw error;
@@ -273,55 +171,49 @@ function clearStatusDataCache() {
     statusDataFetchPromise = null;
 }
 
+// World Data
 let worldDataCache = null;
 let worldDataFetchPromise = null;
 
-/**
- * Fetch world data once and cache it
- */
-async function fetchworldData() {
-    
-    // Return cached data if available
-    if (worldDataCache) {
-        return worldDataCache;
-    }
+async function fetchWorldData() {
+    if (worldDataCache) return worldDataCache;
+    if (worldDataFetchPromise) return worldDataFetchPromise;
 
-    // Return the ongoing fetch promise if one exists
-    if (worldDataFetchPromise) {
-        return worldDataFetchPromise;
-    }
-
-    // Start the fetch process
     worldDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/world`)
         .then((data) => {
-
-            // Basic validation
             if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
-                console.error("Invalid world data received:", data);
                 throw new Error("Invalid world data format.");
             }
-
-            // Cache the result
             worldDataCache = data.result;
             return worldDataCache;
         })
-        .cworldh((error) => {
+        .catch((error) => {
             console.error("Error fetching world data:", error.message);
-
-            // Clear cache on error
             worldDataCache = null;
             worldDataFetchPromise = null;
             throw error;
         });
 
-    // Return the fetch promise
     return worldDataFetchPromise;
 }
 
-
-function clearworldDataCache() {
+function clearWorldDataCache() {
     worldDataCache = null;
     worldDataFetchPromise = null;
 }
 
-export { fetchworldData, clearworldDataCache, fetchStatusData, clearStatusDataCache, fetchFlightsData, clearFlightsDataCache, fetchATISData, clearATISDataCache, fetchATCData, clearATCDataCache, fetchAirportData, clearAirportDataCache };
+// Exporting Corrected Functions
+export {
+    fetchWorldData,
+    clearWorldDataCache,
+    fetchStatusData,
+    clearStatusDataCache,
+    fetchFlightsData,
+    clearFlightsDataCache,
+    fetchATISData,
+    clearATISDataCache,
+    fetchATCData,
+    clearATCDataCache,
+    fetchAirportData,
+    clearAirportDataCache
+};
