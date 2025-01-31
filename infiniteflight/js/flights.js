@@ -4,7 +4,7 @@ import { pairAircraftData, aircraftMachDetails } from "./aircraft.js";
 import { fetchAirportATIS, fetchControllers } from "./ATC.js";
 import { displayATIS } from "./ATIS.js";
 import { displayControllers } from "./ATC.js";
-import { renderFlightsTable } from "./flightTable.js";
+import { renderFlightsTable } from "./flightsTable.js";
 import { fetchAirportCoordinates } from "./airport.js";
 import { stopAutoUpdate, isAutoUpdateActive } from "./AutoUpdate.js";
 
