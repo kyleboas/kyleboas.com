@@ -1,4 +1,4 @@
-import { fetchAndUpdateFlights } from "./flights.js";
+import { fetchAndUpdateFlights, lastApiUpdateTime } from "./flights.js";
 import { fetchControllers, fetchActiveATCAirports } from "./ATC.js";
 import { renderATCTable } from "./atcTable.js";
 
