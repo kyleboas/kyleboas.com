@@ -5,7 +5,7 @@ import { fetchAirportATIS, fetchControllers } from "./atc.js";
 import { displayATIS, displayControllers } from "./display.js";
 import { renderFlightsTable, getFlights } from "./flightTable.js";
 import { fetchAirportCoordinates } from "./airport.js";
-import { stopAutoUpdate, isAutoUpdateActive, lastApiUpdateTime } from "./autoUpdate.js";
+import { stopAutoUpdate, isAutoUpdateActive, lastApiUpdateTime } from "./AutoUpdate.js";
 
 // Fetch inbound flight IDs
 async function fetchInboundFlightIds(icao) {

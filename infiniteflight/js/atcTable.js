@@ -1,7 +1,6 @@
 import { fetchATCData } from "./api.js";
-import { fetchInboundFlightIds, fetchInboundFlightDetails } from "./flights.js";
+import { fetchInboundFlightIds, fetchInboundFlightDetails, updateDistancesAndETAs } from "./flights.js";
 import { fetchAirportCoordinates } from "./airport.js";
-import { updateDistancesAndETAs } from "./calculations.js";
 import { fetchActiveATCAirports } from "./atc.js";
 
 // Map frequency type to short codes

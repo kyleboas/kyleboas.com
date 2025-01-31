@@ -4,7 +4,7 @@ import { airportCoordinates } from "./airport.js";
 import { updateRowVisibility, getHeadingArrow } from "./ui.js";
 import { minDistance, maxDistance, boldHeadingEnabled, boldedHeadings } from "./main.js";
 import { highlightCloseETAs } from "./highlights.js";
-import { lastApiUpdateTime } from "./autoUpdate.js";
+import { lastApiUpdateTime } from "./AutoUpdate.js";
 import { setCookie } from "./cookies.js";
 
 export async function renderFlightsTable(getFlights, hideFilter = false) {
