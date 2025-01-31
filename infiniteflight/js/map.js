@@ -1,5 +1,5 @@
-import { getFlights } from "./inbounds-test.js";
-import { fetchAirportCoordinates } from "./inbounds-test.js"; // Ensure airport coordinates are available
+import { getFlights } from "./flightsTable.js";
+import { fetchAirportCoordinates } from "./airport.js";
 
 export async function showMap(mainAirportIcao) {
     const mapContainer = document.getElementById("mapContainer");
