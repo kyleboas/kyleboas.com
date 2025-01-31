@@ -1,9 +1,10 @@
 import { showMap } from "./map.js";
 import { AutoUpdate } from "./AutoUpdate.js";
 import { getFlights, fetchAndUpdateFlights, interpolateNextPositions } from "./flights.js";
-import { renderFlightsTable } from "./flightsTable.js";
-import { fetchControllers, fetchActiveATCAirports, renderATCTable } from "./atc.js";
+import { fetchControllers, fetchActiveATCAirports } from "./atc.js";
+import { renderATCTable } from "./atcTable.js";
 import { fetchSecondaryATIS, fetchSecondaryControllers } from "./secondaryAirports.js";
+import { renderFlightsTable } from "./flightsTable.js";
 import { highlightCloseETAs } from "./highlights.js";
 import { setCookie } from "./cookies.js";
 
