@@ -1,4 +1,5 @@
 import { fetchAirportData } from "./api.js";
+import { getCache, setCache, cacheExpiration } from "./cache.js";
 
 // Fetch airport latitude and longitude
 export async function fetchAirportCoordinates(icao) {

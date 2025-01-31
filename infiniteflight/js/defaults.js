@@ -1,5 +1,5 @@
-import { getCookie } from './cookies.js'; // Assuming getCookie is in a separate utility module
-import { renderFlightsTable } from './FlightsTable.js'; // Assuming renderFlightsTable is defined in flights.js
+import { getCookie } from './cookies.js';
+import { renderFlightsTable } from './fightsTable.js';
 
 
 export function applyDefaults() {

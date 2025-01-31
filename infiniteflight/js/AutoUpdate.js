@@ -1,5 +1,7 @@
-import { fetchAndUpdateFlights } from "./api.js";
+import { fetchAndUpdateFlights } from "./flights.js";
 import { fetchControllers, fetchActiveATCAirports, renderATCTable } from "./atc.js";
+import { renderATCTable } from "./atcTable.js";
+
 
 let isAutoUpdateActive = false;
 let flightUpdateInterval = null;
