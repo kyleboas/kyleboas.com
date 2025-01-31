@@ -5,23 +5,29 @@
 const PROXY_URL = 'https://infiniteflightapi.deno.dev';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8';
 
-let allFlights = [];
+
 let headingFilterActive = false;
 let boldedHeadings = { minHeading: null, maxHeading: null };
 let hiddenDistance = { minDistance: null, maxDistance: null };
 let distanceFilterActive = false;
 let minDistance = null;
 let maxDistance = null;
-let updateInterval = null;
-let updateTimeout = null;
-let countdownInterval = null;
 let hideOtherAircraft = false;
 let boldHeadingEnabled = false;
 let applyDistanceFilterEnabled = false;
-let isAutoUpdateActive = false;
+
 let airportCoordinates = null;
-let interpolatedFlights = [];
+
+let updateInterval = null;
+let updateTimeout = null;
+let countdownInterval = null;
 let lastApiUpdateTime = null;
+let isAutoUpdateActive = false;
+
+let allFlights = [];
+let interpolatedFlights = [];
+
+
 
 function getFlights() {
     return allFlights && allFlights.length > 0 ? allFlights : interpolatedFlights;
