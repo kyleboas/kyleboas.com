@@ -1,10 +1,10 @@
 import { pairAircraftData } from "./aircraft.js";
 import { calculateDistance, calculateETA, allFlights, interpolatedFlights, parseETAInSeconds } from "./flights.js";
-import {  airportCoordinates } from "./airport.js";
+import { airportCoordinates } from "./airport.js";
 import { updateRowVisibility, getHeadingArrow, minDistance, maxDistance, boldHeadingEnabled, boldedHeadings } from "./buttons.js";
 import { highlightCloseETAs } from "./highlights.js";
 import { lastApiUpdateTime } from "./autoUpdate.js";
-
+import { setCookie } from "./cookies.js"; 
 
 export async function renderFlightsTable(getFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");

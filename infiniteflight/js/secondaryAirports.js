@@ -8,7 +8,7 @@ export async function fetchSecondaryATIS(icao) {
     }
 
     try {
-        const data = await fetchATISData;
+        const data = await fetchATISData();
         const atis = data.result || 'ATIS not available';
         setCache(icao, atis, 'atis');
         return atis;
