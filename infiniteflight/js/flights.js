@@ -3,7 +3,7 @@ import { getCache, setCache, cacheExpiration } from "./cache.js";
 import { pairAircraftData, aircraftMachDetails } from "./aircraft.js";
 import { fetchAirportATIS, fetchControllers } from "./ATC.js";
 import { displayATIS, displayControllers } from "./display.js";
-import { renderFlightsTable, getFlights } from "./flightTable.js";
+import { renderFlightsTable } from "./flightTable.js";
 import { fetchAirportCoordinates } from "./airport.js";
 import { stopAutoUpdate, isAutoUpdateActive, lastApiUpdateTime } from "./AutoUpdate.js";
 
