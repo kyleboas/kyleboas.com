@@ -1,7 +1,7 @@
 import { showMap } from "./map.js";
 import { AutoUpdate } from "./AutoUpdate.js";
 import { getFlights, fetchAndUpdateFlights, interpolateNextPositions } from "./flights.js";
-import { fetchControllers, fetchActiveATCAirports } from "./atc.js";
+import { fetchControllers, fetchActiveATCAirports } from "./ATC.js";
 import { renderATCTable } from "./atcTable.js";
 import { fetchSecondaryATIS, fetchSecondaryControllers } from "./secondaryAirports.js";
 import { renderFlightsTable } from "./flightsTable.js";

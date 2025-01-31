@@ -1,5 +1,5 @@
 import { fetchAndUpdateFlights } from "./flights.js";
-import { fetchControllers, fetchActiveATCAirports, renderATCTable } from "./atc.js";
+import { fetchControllers, fetchActiveATCAirports, renderATCTable } from "./ATC.js";
 import { renderATCTable } from "./atcTable.js";
 
 
