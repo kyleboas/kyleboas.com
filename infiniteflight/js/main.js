@@ -1,15 +1,8 @@
 import { showMap } from "./map.js";
 import { AutoUpdate } from "./AutoUpdate.js";
-import { getFlights, 
-         allFlights, 
-         fetchAndUpdateFlights,
-         interpolateNextPositions } from ".flights.js";
+import { getFlights, fetchAndUpdateFlights, interpolateNextPositions } from "./flights.js";
 import { renderFlightsTable } from "./flightsTable.js";
-import { 
-        fetchControllers,
-        fetchActiveATCAirports,
-        renderATCTable 
- } from "./atc.js";
+import { fetchControllers, fetchActiveATCAirports, renderATCTable } from "./atc.js";
 
 // Store fetched flights globally for reuse
 let flights = [];
