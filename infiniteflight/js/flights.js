@@ -466,3 +466,7 @@ export function parseETAInSeconds(eta) {
 
     return minutes * 60 + seconds;
 }
+
+export function getFlights() {
+    return allFlights && allFlights.length > 0 ? allFlights : interpolatedFlights;
+}

@@ -1,3 +1,5 @@
+import { allFlights, parseETAInSeconds } from "./flights.js";
+
 let headingHighlightEnabled = false;
 
 // Clear all highlights

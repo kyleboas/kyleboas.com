@@ -4,6 +4,8 @@ import { getFlights, fetchAndUpdateFlights, interpolateNextPositions } from "./f
 import { renderFlightsTable } from "./flightsTable.js";
 import { fetchControllers, fetchActiveATCAirports, renderATCTable } from "./atc.js";
 import { fetchSecondaryATIS, fetchSecondaryControllers } from "./secondaryAirports.js";
+import { highlightCloseETAs } from "./highlights.js";
+import { setCookie } from "./cookies.js";
 
 // Store fetched flights globally for reuse
 let flights = [];

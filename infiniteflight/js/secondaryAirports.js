@@ -1,4 +1,5 @@
-import { fetchATISData } from "./api.js";
+import { fetchATISData, fetchStatusData } from "./api.js";
+import { getCache, setCache, cacheExpiration } from "./cache.js";
 
 // Fetch ATIS for secondary airports using shared cache
 export async function fetchSecondaryATIS(icao) {

@@ -1,10 +1,11 @@
 import { pairAircraftData } from "./aircraft.js";
-import { calculateDistance, calculateETA, allFlights, interpolatedFlights, parseETAInSeconds } from "./flights.js";
+import { calculateDistance, calculateETA, parseETAInSeconds, getlFlights } from "./flights.js";
 import { airportCoordinates } from "./airport.js";
-import { updateRowVisibility, getHeadingArrow, minDistance, maxDistance, boldHeadingEnabled, boldedHeadings } from "./buttons.js";
+import { updateRowVisibility, getHeadingArrow } from "./ui.js";
+import { minDistance, maxDistance, boldHeadingEnabled, boldedHeadings } from "./main.js";
 import { highlightCloseETAs } from "./highlights.js";
 import { lastApiUpdateTime } from "./autoUpdate.js";
-import { setCookie } from "./cookies.js"; 
+import { setCookie } from "./cookies.js";
 
 export async function renderFlightsTable(getFlights, hideFilter = false) {
     const tableBody = document.querySelector("#flightsTable tbody");
@@ -130,8 +131,4 @@ export async function renderFlightsTable(getFlights, hideFilter = false) {
         console.error("Error rendering the flights table:", error.message);
         tableBody.innerHTML = '<tr><td colspan="5">Error populating table. Check console for details.</td></tr>';
     }
-}
-
-export function getFlights() {
-    return allFlights && allFlights.length > 0 ? allFlights : interpolatedFlights;
 }
