@@ -1,6 +1,8 @@
 import { fetchAirportData } from "./api.js";
 import { getCache, setCache, cacheExpiration } from "./cache.js";
 
+let airportCoordinates = null;
+
 // Fetch airport latitude and longitude
 export async function fetchAirportCoordinates(icao) {
     const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);

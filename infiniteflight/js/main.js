@@ -10,6 +10,15 @@ import { setCookie } from "./cookies.js";
 
 // Store fetched flights globally for reuse
 let flights = [];
+let headingFilterActive = false;
+let boldedHeadings = { minHeading: null, maxHeading: null };
+let hiddenDistance = { minDistance: null, maxDistance: null };
+let distanceFilterActive = false;
+let minDistance = null;
+let maxDistance = null;
+let hideOtherAircraft = false;
+let boldHeadingEnabled = false;
+let applyDistanceFilterEnabled = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("DOM fully loaded.");

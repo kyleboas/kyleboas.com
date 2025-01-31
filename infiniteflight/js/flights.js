@@ -7,6 +7,10 @@ import { renderFlightsTable } from "./flightTable.js";
 import { fetchAirportCoordinates } from "./airport.js";
 import { stopAutoUpdate, isAutoUpdateActive, lastApiUpdateTime } from "./AutoUpdate.js";
 
+let allFlights = [];
+let lastApiUpdateTime = null;
+let interpolatedFlights = [];
+
 // Fetch inbound flight IDs
 async function fetchInboundFlightIds(icao) {
     const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);

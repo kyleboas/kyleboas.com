@@ -3,6 +3,10 @@ import { fetchControllers, fetchActiveATCAirports } from "./ATC.js";
 import { renderATCTable } from "./atcTable.js";
 
 
+let updateInterval = null;
+let updateTimeout = null;
+let countdownInterval = null;
+
 let isAutoUpdateActive = false;
 let flightUpdateInterval = null;
 let interpolateInterval = null;
