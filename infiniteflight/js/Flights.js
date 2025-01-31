@@ -1,3 +1,12 @@
+import { fetchStatusData, fetchFlightsData } from "./api.js";
+import { getCache, setCache, cacheExpiration } from "./cache.js";
+import { pairAircraftData, aircraftMachDetails } from "./aircraft.js";
+import { fetchAirportATIS, fetchControllers } from "./atc.js";
+import { displayATIS, displayControllers } from "./display.js";
+import { renderFlightsTable, getFlights } from "./flightTable.js";
+import { fetchAirportCoordinates } from "./airport.js";
+import { stopAutoUpdate, isAutoUpdateActive, lastApiUpdateTime } from "./autoUpdate.js";
+
 // Fetch inbound flight IDs
 async function fetchInboundFlightIds(icao) {
     const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
@@ -6,7 +15,7 @@ async function fetchInboundFlightIds(icao) {
     }
 
     try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const data = await fetchStatusData();
         const inboundFlights = data.result.inboundFlights || [];
         setCache(icao, inboundFlights, 'inboundFlightIds');
         return inboundFlights;
@@ -20,7 +29,7 @@ async function fetchInboundFlightIds(icao) {
 async function fetchInboundFlightDetails(inboundFlightIds = []) {
     try {
         // Fetch flights data from the proxy API
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        const data = await fetchFlightsData();
 
         // Validate API response
         if (!data || !data.result || !Array.isArray(data.result)) {
@@ -55,7 +64,6 @@ async function fetchInboundFlightDetails(inboundFlightIds = []) {
         return [];
     }
 }
-
 
 // Vincenty's Formula to predict position 
 
@@ -272,6 +280,26 @@ function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, hea
 }
 
 
+function countInboundFlightsByDistance(flights) {
+    if (!Array.isArray(flights)) {
+        console.error("countInboundFlightsByDistance received invalid input:", flights);
+        return { "50nm": 0, "200nm": 0, "500nm": 0 };
+    }
+
+    const counts = { "50nm": 0, "200nm": 0, "500nm": 0 };
+    flights.forEach((flight) => {
+        const distance = flight.distanceToDestination;
+        if (typeof distance !== "number") return;
+
+        if (distance >= 0 && distance <= 50) counts["50nm"]++;
+        else if (distance >= 51 && distance <= 200) counts["200nm"]++;
+        else if (distance >= 201 && distance <= 500) counts["500nm"]++;
+    });
+
+    return counts;
+}
+
+
 // Fetch and update flights
 async function fetchAndUpdateFlights(icao) {
     // Reset the cache for the new ICAO
@@ -422,4 +450,19 @@ function interpolateNextPositions(airportCoordinates) {
      });
 
     renderFlightsTable(getFlights());
+}
+
+
+// Parses ETA string in "minutes:seconds" format to total seconds
+export function parseETAInSeconds(eta) {
+    if (typeof eta !== 'string' || eta === 'N/A' || eta.startsWith('>')) {
+        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid or undefined ETAs
+    }
+
+    const [minutes, seconds] = eta.split(':').map(Number);
+    if (isNaN(minutes) || isNaN(seconds)) {
+        return Number.MAX_SAFE_INTEGER; // Return a large number for invalid formats
+    }
+
+    return minutes * 60 + seconds;
 }

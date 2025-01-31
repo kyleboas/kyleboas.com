@@ -1,11 +1,11 @@
-// atc.js
 import { fetchATCData } from "./api.js";
 import { fetchInboundFlightIds, fetchInboundFlightDetails } from "./flights.js";
 import { fetchAirportCoordinates } from "./airport.js";
 import { updateDistancesAndETAs } from "./calculations.js";
+import { fetchActiveATCAirports } from "./atc.js";
 
 // Map frequency type to short codes
-export function mapFrequencyType(type) {
+function mapFrequencyType(type) {
     const frequencyMap = {
         0: "G", // Ground
         1: "T", // Tower

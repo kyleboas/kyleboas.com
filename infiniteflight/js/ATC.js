@@ -1,6 +1,6 @@
-import { fetchWorldData } from "./fetchWorld.js";
+import { fetchWorldData, fetchATCData } from "./api.js";
 
-async function fetchActiveATCAirports() {
+export async function fetchActiveATCAirports() {
     try {
         const atcData = await fetchATCData();
 

@@ -1,71 +1,67 @@
-import { 
-        fetchAndUpdateFlights,
-        interpolateNextPositions,
-        fetchControllers,
-        fetchActiveATCAirports,
-        renderATCTable 
- } from "./inbounds-test.js";
+import { fetchAndUpdateFlights } from "./api.js";
+import { fetchControllers, fetchActiveATCAirports, renderATCTable } from "./atc.js";
 
-export class AutoUpdate {
-    constructor(fetchAndUpdateFlights, interpolateNextPositions, fetchControllers, fetchActiveATCAirports, renderATCTable) {
-        this.updateButton = document.getElementById("update"); // Fix updateButton scope
-        this.fetchFlights = fetchAndUpdateFlights; // Fix incorrect reference
-        this.interpolateNextPositions = interpolateNextPositions;
-        this.fetchControllers = fetchControllers;
-        this.fetchActiveATCAirports = fetchActiveATCAirports;
-        this.renderATCTable = renderATCTable;
+let isAutoUpdateActive = false;
+let flightUpdateInterval = null;
+let interpolateInterval = null;
+let atcUpdateInterval = null;
 
-        this.isAutoUpdateActive = false;
-        this.flightUpdateInterval = null;
-        this.interpolateInterval = null;
-        this.atcUpdateInterval = null;
-    }
+export function startAutoUpdate(icao, updateButton) {
+    isAutoUpdateActive = true;
+    updateButton.style.color = "blue";
+    const icon = updateButton.querySelector("i");
+    if (icon) icon.classList.add("spin");
 
-    start(icao) {
-        this.isAutoUpdateActive = true;
-        this.updateButton.style.color = "blue";
-        const icon = this.updateButton.querySelector("i");
-        if (icon) icon.classList.add("spin");
+    interpolateInterval = setInterval(async () => {
+        try {
+            interpolateNextPositions(airportCoordinates);
+        } catch (error) {
+            console.error("Error during interpolated flight updates:", error.message);
+            handleUpdateError(error, flightUpdateInterval);
+        }
+    }, 1000); // Updates every second
 
-        this.interpolateInterval = setInterval(() => {
-            try {
-                this.interpolateNextPositions(); // Fix calling interpolation method
-            } catch (error) {
-                console.error("Interpolation error:", error);
-            }
-        }, 1000);
+    flightUpdateInterval = setInterval(async () => {
+        try {
+            await fetchAndUpdateFlights(icao);
+        } catch (error) {
+            console.error("Error fetching flight updates:", error.message);
+            handleUpdateError(error, flightUpdateInterval);
+        }
+    }, 18000); // API updates every 18 seconds
 
-        this.flightUpdateInterval = setInterval(async () => {
-            try {
-                await this.fetchFlights(icao);
-            } catch (error) {
-                console.error("Flight update error:", error);
-                this.stop();
-            }
-        }, 18000);
+    atcUpdateInterval = setInterval(async () => {
+        try {
+            await fetchControllers(icao);
+            await fetchActiveATCAirports();
+            await renderATCTable();
+        } catch (error) {
+            console.error("Error during ATC updates:", error.message);
+            handleUpdateError(error, atcUpdateInterval);
+        }
+    }, 60000);
+}
 
-        this.atcUpdateInterval = setInterval(async () => {
-            try {
-                await this.fetchControllers(icao);
-                await this.fetchActiveATCAirports(); // Fix undefined method
-                await this.renderATCTable(); // Fix undefined method
-            } catch (error) {
-                console.error("ATC update error:", error);
-                this.stop();
-            }
-        }, 60000);
-    }
+export function stopAutoUpdate(updateButton) {
+    isAutoUpdateActive = false;
+    updateButton.style.color = "#828282";
+    const icon = updateButton.querySelector("i");
+    if (icon) icon.classList.remove("spin");
 
-    stop() {
-        this.isAutoUpdateActive = false;
-        this.updateButton.style.color = "#828282";
-        const icon = this.updateButton.querySelector("i");
-        if (icon) icon.classList.remove("spin");
+    clearInterval(flightUpdateInterval);
+    clearInterval(interpolateInterval);
+    clearInterval(atcUpdateInterval);
 
-        clearInterval(this.flightUpdateInterval);
-        clearInterval(this.interpolateInterval);
-        clearInterval(this.atcUpdateInterval);
+    flightUpdateInterval = null;
+    interpolateInterval = null;
+    atcUpdateInterval = null;
 
-        console.log("Auto-update stopped.");
+    console.log("Auto-update and interpolation stopped.");
+}
+
+function handleUpdateError(error, interval) {
+    if (error.message.includes("rate limit") || error.message.includes("fetch")) {
+        alert("Rate limit or network error encountered. Updates stopped.");
+        clearInterval(interval);
     }
 }
