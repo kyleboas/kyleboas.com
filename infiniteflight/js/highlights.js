@@ -8,7 +8,7 @@ function clearHighlights() {
     });
 }
 
-function highlightCloseETAs() {
+export function highlightCloseETAs() {
     clearHighlights();
     
     const rows = document.querySelectorAll('#flightsTable tbody tr');

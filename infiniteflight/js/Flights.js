@@ -386,7 +386,7 @@ async function fetchAndUpdateFlights(icao) {
 
 
 // interpolatedNextPositions
-function interpolateNextPositions(airportCoordinates) {
+export function interpolateNextPositions(airportCoordinates) {
     if (isAutoUpdateActive === true) {
       console.error("Interpolation skipped as auto-update is off.");
       return;
