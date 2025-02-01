@@ -1,8 +1,8 @@
 import { fetchStatusData, fetchFlightsData } from "./api.js";
 import { getCache, setCache, cacheExpiration } from "./cache.js";
 import { pairAircraftData, aircraftMachDetails } from "./aircraft.js";
-import { fetchAirportATIS, fetchControllers } from "./ATC.js";
-import { displayATIS } from "./ATIS.js";
+import { fetchControllers } from "./ATC.js";
+import { fetchAirportATIS, displayATIS } from "./ATIS.js";
 import { displayControllers } from "./ATC.js";
 import { renderFlightsTable } from "./flightsTable.js";
 import { fetchAirportCoordinates } from "./airport.js";
