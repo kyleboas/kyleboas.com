@@ -23,41 +23,31 @@ export let applyDistanceFilterEnabled = false;
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("DOM fully loaded.");
 
-    // Fetch and update flights before getting them
-    try {
-        await fetchAndUpdateFlights(icao);  // Pass an initial ICAO code
-        flights = getFlights();  // Now retrieve the updated flights
-        console.log("Flights loaded:", flights);
-    } catch (error) {
-        console.error("Error fetching flights:", error);
-    }
-});
-
-document.addEventListener("DOMContentLoaded", async () => {
-    console.log("DOM fully loaded.");
-
-    // Select necessary DOM elements
     const flightsTable = document.getElementById("flightsTable");
     const mapContainer = document.getElementById("mapContainer");
     const closeMapButton = document.getElementById("closeMapButton");
     const updateButton = document.getElementById("update");
     const icaoInput = document.getElementById("icao");
 
-    // Validate essential elements
     if (!flightsTable || !mapContainer || !updateButton || !icaoInput) {
         console.error("Required elements not found in the DOM.");
         return;
     }
 
-    // Fetch flight data on load
+    const icao = icaoInput.value.trim().toUpperCase();
+    if (!icao) {
+        console.warn("No ICAO code provided. Skipping initial fetch.");
+        return;
+    }
+
     try {
-        flights = await getFlights();  // Ensure getFlights() is defined or imported
+        await fetchAndUpdateFlights(icao);
+        flights = getFlights();
         console.log("Flights loaded:", flights);
     } catch (error) {
         console.error("Error fetching flights:", error);
     }
 
-    // Handle flight row clicks to show map
     flightsTable.addEventListener("click", (event) => {
         const row = event.target.closest("tr");
         if (!row) return;
@@ -73,15 +63,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // Close map when close button is clicked
     if (closeMapButton) {
         closeMapButton.addEventListener("click", () => {
             mapContainer.style.display = "none";
         });
     }
 
-    // Initialize auto-update manager
-    const autoUpdate = new isAutoUpdateActive (
+    const autoUpdate = new isAutoUpdateActive(
         fetchAndUpdateFlights,
         interpolateNextPositions,
         fetchControllers,
@@ -89,7 +77,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderATCTable
     );
 
-    // Handle update button clicks
     updateButton.addEventListener("click", () => {
         const icao = icaoInput.value.trim().toUpperCase();
 
@@ -105,7 +92,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 });
-
 
  
 // Add secondary airport to the display
