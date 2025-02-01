@@ -9,7 +9,7 @@ import { fetchAirportCoordinates } from "./airport.js";
 import { stopAutoUpdate, isAutoUpdateActive } from "./AutoUpdate.js";
 
 let allFlights = [];
-let lastApiUpdateTime = null;
+export let lastApiUpdateTime = null;
 let interpolatedFlights = [];
 
 // Fetch inbound flight IDs
