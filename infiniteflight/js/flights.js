@@ -31,7 +31,7 @@ async function fetchInboundFlightIds(icao) {
     }
 }
 
-async function fetchInboundFlightDetails(inboundFlightIds = []) {
+export async function fetchInboundFlightDetails(inboundFlightIds = []) {
     try {
         // Fetch flights data from the proxy API
         const data = await fetchFlightsData();
