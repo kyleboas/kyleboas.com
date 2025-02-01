@@ -1,5 +1,5 @@
 import { showMap } from "./map.js";
-import { AutoUpdate } from "./AutoUpdate.js";
+import { isAutoUpdateActive } from "./AutoUpdate.js";
 import { fetchAndUpdateFlights, interpolateNextPositions, getFlights } from "./flights.js";
 import { fetchControllers, fetchActiveATCAirports } from "./ATC.js";
 import { renderATCTable } from "./atcTable.js";
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Initialize auto-update manager
-    const autoUpdate = new AutoUpdate (
+    const autoUpdate = new isAutoUpdateActive (
         fetchAndUpdateFlights,
         interpolateNextPositions,
         fetchControllers,
