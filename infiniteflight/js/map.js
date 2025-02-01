@@ -1,4 +1,4 @@
-import { getFlights } from "./flightsTable.js";
+import { getFlights } from "./flights.js";
 import { fetchAirportCoordinates } from "./airport.js";
 
 export async function showMap(mainAirportIcao) {
