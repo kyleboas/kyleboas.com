@@ -7,7 +7,7 @@ let updateInterval = null;
 let updateTimeout = null;
 let countdownInterval = null;
 
-let isAutoUpdateActive = false;
+export let isAutoUpdateActive = false;
 let flightUpdateInterval = null;
 let interpolateInterval = null;
 let atcUpdateInterval = null;
