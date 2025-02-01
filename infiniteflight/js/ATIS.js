@@ -2,7 +2,7 @@ import { getCache, setCache, cacheExpiration } from "./cache.js";
 import { fetchStatusData, fetchATISData } from "./api.js";
 
 // Fetch ATIS
-async function fetchAirportATIS(icao) {
+export async function fetchAirportATIS(icao) {
     const atisElement = document.getElementById('atisMessage');
 
     const cached = getCache(icao, 'atis', cacheExpiration.atis);
