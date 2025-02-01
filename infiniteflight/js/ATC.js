@@ -86,7 +86,7 @@ export async function fetchActiveATCAirports() {
 }
 
 // Fetch Controllers
-async function fetchControllers(icao) {
+export async function fetchControllers(icao) {
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
         displayControllers(cached); // Display cached controllers
