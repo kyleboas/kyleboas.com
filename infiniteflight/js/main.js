@@ -9,16 +9,16 @@ import { highlightCloseETAs } from "./highlights.js";
 import { setCookie } from "./cookies.js";
 
 // Store fetched flights globally for reuse
-let flights = [];
-let headingFilterActive = false;
-let boldedHeadings = { minHeading: null, maxHeading: null };
-let hiddenDistance = { minDistance: null, maxDistance: null };
+export let flights = [];
+export let headingFilterActive = false;
+export let boldedHeadings = { minHeading: null, maxHeading: null };
+export let hiddenDistance = { minDistance: null, maxDistance: null };
 let distanceFilterActive = false;
-let minDistance = null;
+export let minDistance = null;
 export let maxDistance = null;
-let hideOtherAircraft = false;
-let boldHeadingEnabled = false;
-let applyDistanceFilterEnabled = false;
+export let hideOtherAircraft = false;
+export let boldHeadingEnabled = false;
+export let applyDistanceFilterEnabled = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("DOM fully loaded.");
