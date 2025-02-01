@@ -83,7 +83,7 @@ function setupEventListeners() {
  * Handles user search functionality.
  */
 async function handleSearch() {
-    const icaoInput = document.getElementById("icao");
+    const selectedICAO = document.getElementById("icao");
     const icao = icaoInput.value.trim().toUpperCase();
 
     if (!icao) {
@@ -202,8 +202,6 @@ function updateButtonState(isActive) {
 
 console.log("Current ICAO:", selectedICAO);
 
-
- 
 // Add secondary airport to the display
 document.getElementById('add').addEventListener('click', async (event) => {
     event.preventDefault();
