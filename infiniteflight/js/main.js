@@ -116,9 +116,6 @@ async function handleSearch() {
     }
 }
 
-
-console.log("Current ICAO:", selectedICAO);
-
 /**
  * Starts auto-update for flight and ATC data.
  */
@@ -201,6 +198,9 @@ function updateButtonState(isActive) {
         }
     }
 }
+
+
+console.log("Current ICAO:", selectedICAO);
 
 
  
