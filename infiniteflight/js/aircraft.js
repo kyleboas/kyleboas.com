@@ -1,4 +1,4 @@
-const aircraftMachDetails = {
+export const aircraftMachDetails = {
         "81d9ccd4-9c03-493a-811e-8fad3e57bd05": { name: "A-10", minMach: 0.40, maxMach: 0.56 },
         "876b428a-3ee2-46cd-9d8c-2c59424dfcb5": { name: "AC-130", minMach: 0.40, maxMach: 0.60 },
         "710c84ae-6fdc-4c4a-ac3b-4031c3036e98": { name: "A220-300", minMach: 0.72, maxMach: 0.82 },
