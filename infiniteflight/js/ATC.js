@@ -4,7 +4,8 @@ import { getCache, setCache, cacheExpiration } from "./cache.js";
 export async function fetchActiveATCAirports() {
     try {
         const atcData = await fetchATCData();
-
+        window.activeATCAirports = atcData.map(facility => facility.airportIcao);
+        
         // Map airports to their facilities
         const activeATCAirports = (atcData || []).reduce((acc, atcFacility) => {
             const airportIcao = atcFacility.airportIcao;

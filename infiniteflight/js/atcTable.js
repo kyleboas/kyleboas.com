@@ -1,7 +1,7 @@
 import { fetchATCData } from "./api.js";
 import { fetchInboundFlightIds, fetchInboundFlightDetails, updateDistancesAndETAs } from "./flights.js";
 import { fetchAirportCoordinates } from "./airport.js";
-import { fetchActiveATCAirports } from "./ATC.js";
+import { fetchActiveATCAirports } from "./atc.js";
 
 // Map frequency type to short codes
 function mapFrequencyType(type) {
@@ -29,7 +29,7 @@ export async function fetchActiveATCAirportsData() {
         const frequencyOrder = ["G", "T", "A", "D", "S"];
 
         const airports = atcData.reduce((acc, facility) => {
-            const icao = facility.airportName;
+            const icao = facility.airportIcao;
             const frequencyCode = mapFrequencyType(facility.type);
 
             if (!icao) return acc;
