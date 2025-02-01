@@ -45,7 +45,7 @@ export let atcUpdateInterval = null;
  */
 function setupEventListeners() {
     const searchButton = document.getElementById("search");
-    const icaoInput = document.getElementById("icao");
+    const selectedICAO = document.getElementById("icao");
     const updateButton = document.getElementById("update");
 
     if (searchButton) {
@@ -54,8 +54,8 @@ function setupEventListeners() {
         });
     }
 
-    if (icaoInput) {
-        icaoInput.addEventListener("keydown", async (event) => {
+    if (selectedICAO) {
+        selectedICAO.addEventListener("keydown", async (event) => {
             if (event.key === "Enter") {
                 event.preventDefault();
                 await handleSearch();
