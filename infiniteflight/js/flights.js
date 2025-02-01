@@ -6,7 +6,7 @@ import { fetchAirportATIS, displayATIS } from "./ATIS.js";
 import { displayControllers } from "./ATC.js";
 import { renderFlightsTable } from "./flightsTable.js";
 import { fetchAirportCoordinates } from "./airport.js";
-import { stopAutoUpdate, isAutoUpdateActive } from "./AutoUpdate.js";
+import { stopAutoUpdate, isAutoUpdateActive } from "./main.js";
 
 export let allFlights = [];
 export let lastApiUpdateTime = null;
