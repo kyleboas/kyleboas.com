@@ -19,6 +19,9 @@ export let hideOtherAircraft = false;
 export let boldHeadingEnabled = false;
 export let applyDistanceFilterEnabled = false;
 
+// Export ICAO so it can be used in other modules
+export let selectedICAO = "";
+
 document.addEventListener('DOMContentLoaded', async () => {
     applyDefaults();
 
@@ -62,9 +65,7 @@ function setupEventListeners() {
 
     if (updateButton) {
         updateButton.addEventListener("click", () => {
-            const icao = icaoInput.value.trim().toUpperCase();
-
-            if (!icao) {
+            if (!selectedICAO) {
                 alert("Please enter a valid ICAO code before updating.");
                 return;
             }
@@ -72,7 +73,7 @@ function setupEventListeners() {
             if (isAutoUpdateActive) {
                 stopAutoUpdate();
             } else {
-                startAutoUpdate(icao);
+                startAutoUpdate(selectedICAO);
             }
         });
     }
@@ -89,6 +90,9 @@ async function handleSearch() {
         alert("Please enter a valid ICAO code.");
         return;
     }
+
+    // Update exported ICAO variable
+    selectedICAO = icao;
 
     stopAutoUpdate();
 
@@ -112,10 +116,14 @@ async function handleSearch() {
     }
 }
 
+
+console.log("Current ICAO:", selectedICAO);
+
 /**
  * Starts auto-update for flight and ATC data.
  */
-function startAutoUpdate(icao) {
+export function startAutoUpdate(icao) {
+    selectedICAO = icao; // Ensure ICAO is set
     isAutoUpdateActive = true;
     updateButtonState(true);
 
@@ -149,7 +157,7 @@ function startAutoUpdate(icao) {
 /**
  * Stops all auto-update intervals.
  */
-function stopAutoUpdate() {
+export function stopAutoUpdate() {
     isAutoUpdateActive = false;
     updateButtonState(false);
 
