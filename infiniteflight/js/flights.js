@@ -13,7 +13,7 @@ let lastApiUpdateTime = null;
 let interpolatedFlights = [];
 
 // Fetch inbound flight IDs
-async function fetchInboundFlightIds(icao) {
+export async function fetchInboundFlightIds(icao) {
     const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
     if (cached) {
         return cached;
@@ -72,7 +72,7 @@ export async function fetchInboundFlightDetails(inboundFlightIds = []) {
 
 // Vincenty's Formula to predict position 
 
-function predictPosition(lat, lon, groundSpeed, heading, seconds) {
+export function predictPosition(lat, lon, groundSpeed, heading, seconds) {
     const a = 6378137.0; // WGS-84 semi-major axis (meters)
     const f = 1 / 298.257223563; // WGS-84 flattening
     const b = (1 - f) * a;
@@ -153,7 +153,7 @@ function fillGapsBetweenUpdates(startLat, startLon, groundSpeed, heading, interv
 /**
  * Update distances and ETAs for flights
  */
-async function updateDistancesAndETAs(flights, airportCoordinates) {
+export async function updateDistancesAndETAs(flights, airportCoordinates) {
     for (const flight of flights) {
         try {
             if (
@@ -208,7 +208,7 @@ async function updateDistancesAndETAs(flights, airportCoordinates) {
 
 // Helper functions with validations
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
+export function calculateDistance(lat1, lon1, lat2, lon2) {
     // Validate coordinates
     if (
         lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
@@ -228,7 +228,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function calculateBearing(lat1, lon1, lat2, lon2) {
+export function calculateBearing(lat1, lon1, lat2, lon2) {
     // Validate coordinates
     if (
         lat1 == null || lon1 == null || lat2 == null || lon2 == null ||
@@ -251,7 +251,7 @@ function calculateBearing(lat1, lon1, lat2, lon2) {
     return (toDegrees(Math.atan2(y, x)) + 360) % 360; // Normalize to 0–360
 }
 
-function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
+export function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, heading) {
     // Validate inputs
     if (
         !groundSpeed || groundSpeed <= 0 ||
@@ -285,7 +285,7 @@ function calculateETA(currentLat, currentLon, destLat, destLon, groundSpeed, hea
 }
 
 
-function countInboundFlightsByDistance(flights) {
+export function countInboundFlightsByDistance(flights) {
     if (!Array.isArray(flights)) {
         console.error("countInboundFlightsByDistance received invalid input:", flights);
         return { "50nm": 0, "200nm": 0, "500nm": 0 };
@@ -306,7 +306,7 @@ function countInboundFlightsByDistance(flights) {
 
 
 // Fetch and update flights
-async function fetchAndUpdateFlights(icao) {
+export async function fetchAndUpdateFlights(icao) {
     // Reset the cache for the new ICAO
     clearStatusDataCache();
 
