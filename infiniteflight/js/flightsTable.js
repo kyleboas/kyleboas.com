@@ -1,5 +1,5 @@
 import { pairAircraftData } from "./aircraft.js";
-import { calculateDistance, calculateETA, parseETAInSeconds, getlFlights, lastApiUpdateTime } from "./flights.js";
+import { calculateDistance, calculateETA, parseETAInSeconds, getFlights, lastApiUpdateTime } from "./flights.js";
 import { airportCoordinates } from "./airport.js";
 import { updateRowVisibility, getHeadingArrow } from "./ui.js";
 import { minDistance, maxDistance, boldHeadingEnabled, boldedHeadings } from "./main.js";
