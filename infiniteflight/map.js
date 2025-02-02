@@ -71,20 +71,10 @@ function drawRing(radius, label) {
     ctx.fillText(label, mapCanvas.width / 2 + radius * scale + 5, mapCanvas.height / 2);
 }
 
-
-function getHighlightColorByETA(eta) {
-    const seconds = parseETAInSeconds(eta);
-
-    if (seconds > 120) return "#eaeaea"; // Gray for >120s
-    if (seconds <= 10) return "#fffa9f"; // Yellow for <=10s
-    if (seconds <= 30) return "#80daeb"; // Blue for <=30s
-    if (seconds <= 60) return "#daceca"; // Beige for <=60s
-    return "#eaeaea"; // Default gray
-}
-
+// Update aircraft positions
 function updateAircraftOnMap(flights, airport) {
     drawBaseMap(); 
-
+    
     flights.forEach(flight => {
         if (flight.latitude && flight.longitude) {
             const distance = getDistance(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
@@ -94,16 +84,13 @@ function updateAircraftOnMap(flights, airport) {
 
                 aircraftPositions[flight.flightId] = { x, y, flight };
 
-                // Determine color based on ETA
-                const highlightColor = getHighlightColorByETA(flight.etaMinutes);
-                
-                // Draw aircraft with corresponding color
-                ctx.fillStyle = highlightColor;
+                // Draw aircraft as a blue circle
+                ctx.fillStyle = "blue";
                 ctx.beginPath();
                 ctx.arc(x, y, 5, 0, Math.PI * 2);
                 ctx.fill();
 
-                // If this is the selected aircraft, draw a square around it
+                // If this is the selected aircraft, draw a red square around it
                 if (selectedAircraft === flight.flightId) {
                     ctx.strokeStyle = "red";
                     ctx.lineWidth = 2;
