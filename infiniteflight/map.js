@@ -1,6 +1,7 @@
 let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
+const scale = 0.5; // Reduced scale for better zoom-out effect
 
 // Initialize map when the popup is opened
 function initMap() {
@@ -11,13 +12,11 @@ function initMap() {
 
 // Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
-    const scale = 2; // 1 nm = 2 pixels
     const nmPerDegree = 60; // Approximate nm per lat/lon degree
-
     const dx = (lon - airportLon) * nmPerDegree * scale;
     const dy = (lat - airportLat) * nmPerDegree * scale;
 
-    return { x: 300 + dx, y: 300 - dy }; // Center at (300,300)
+    return { x: mapCanvas.width / 2 + dx, y: mapCanvas.height / 2 - dy }; 
 }
 
 // Calculate the great-circle distance (Haversine formula)
@@ -28,9 +27,9 @@ function getDistance(lat1, lon1, lat2, lon2) {
     const dLat = (lat2 - lat1) * toRad;
     const dLon = (lon2 - lon1) * toRad;
     
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    const a = Math.sin(dLat / 2) ** 2 +
               Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+              Math.sin(dLon / 2) ** 2;
     
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
@@ -46,7 +45,7 @@ function drawBaseMap() {
     // Draw Airport at Center
     ctx.fillStyle = "black";
     ctx.beginPath();
-    ctx.arc(300, 300, 5, 0, Math.PI * 2);
+    ctx.arc(mapCanvas.width / 2, mapCanvas.height / 2, 5, 0, Math.PI * 2);
     ctx.fill();
 
     // Draw Distance Rings
@@ -59,11 +58,10 @@ function drawBaseMap() {
 
 // Helper function to draw rings
 function drawRing(radius, label) {
-    const scale = 2;
     ctx.beginPath();
-    ctx.arc(300, 300, radius * scale, 0, Math.PI * 2);
+    ctx.arc(mapCanvas.width / 2, mapCanvas.height / 2, radius * scale, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillText(label, 300 + radius * scale + 5, 300);
+    ctx.fillText(label, mapCanvas.width / 2 + radius * scale + 5, mapCanvas.height / 2);
 }
 
 // Update Aircraft Positions (only within 500nm range)
@@ -74,7 +72,7 @@ function updateAircraftOnMap(flights, airport) {
         if (flight.latitude && flight.longitude) {
             const distance = getDistance(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
-            if (distance <= 500) { // Only plot aircraft within 500nm
+            if (distance <= 500) {
                 const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
                 aircraftPositions[flight.flightId] = { x, y, flight };
