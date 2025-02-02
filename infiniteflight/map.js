@@ -1,27 +1,34 @@
 let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
-const scale = 0.5; // Reduced scale for better zoom-out effect
+let scale = 0.4; // Adjusted for better visibility without stretching
 
-// Initialize map when the popup is opened
+// Ensure the canvas is square
+function resizeCanvas() {
+    mapCanvas.width = Math.min(window.innerWidth * 0.6, 600); 
+    mapCanvas.height = mapCanvas.width; // Keep it square
+}
+
+// Initialize map
 function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
     ctx = mapCanvas.getContext("2d");
+    resizeCanvas();
     drawBaseMap();
 }
 
 // Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
-    const nmPerDegree = 60; // Approximate nm per lat/lon degree
+    const nmPerDegree = 60; 
     const dx = (lon - airportLon) * nmPerDegree * scale;
     const dy = (lat - airportLat) * nmPerDegree * scale;
 
-    return { x: mapCanvas.width / 2 + dx, y: mapCanvas.height / 2 - dy }; 
+    return { x: mapCanvas.width / 2 + dx, y: mapCanvas.height / 2 - dy };
 }
 
-// Calculate the great-circle distance (Haversine formula)
+// Calculate distance using the Haversine formula
 function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440.065; // Earth's radius in nautical miles
+    const R = 3440.065; 
     const toRad = Math.PI / 180;
     
     const dLat = (lat2 - lat1) * toRad;
@@ -35,20 +42,20 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-// Draw Base Map with Distance Rings
+// Draw the base map with centered rings
 function drawBaseMap() {
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     
     ctx.fillStyle = "#e8e8e8";
     ctx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
 
-    // Draw Airport at Center
+    // Draw airport at the center
     ctx.fillStyle = "black";
     ctx.beginPath();
     ctx.arc(mapCanvas.width / 2, mapCanvas.height / 2, 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Draw Distance Rings
+    // Draw distance rings
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 1;
     drawRing(50, "50nm");
@@ -56,7 +63,7 @@ function drawBaseMap() {
     drawRing(500, "500nm");
 }
 
-// Helper function to draw rings
+// Draw rings dynamically
 function drawRing(radius, label) {
     ctx.beginPath();
     ctx.arc(mapCanvas.width / 2, mapCanvas.height / 2, radius * scale, 0, Math.PI * 2);
@@ -64,9 +71,9 @@ function drawRing(radius, label) {
     ctx.fillText(label, mapCanvas.width / 2 + radius * scale + 5, mapCanvas.height / 2);
 }
 
-// Update Aircraft Positions (only within 500nm range)
+// Update aircraft positions
 function updateAircraftOnMap(flights, airport) {
-    drawBaseMap(); // Redraw the base map
+    drawBaseMap(); 
     
     flights.forEach(flight => {
         if (flight.latitude && flight.longitude) {
@@ -86,14 +93,20 @@ function updateAircraftOnMap(flights, airport) {
     });
 }
 
-// Show the Map Popup
+// Show the map popup
 function showMapPopup(flight, airport) {
     document.getElementById("mapPopup").style.display = "block";
     selectedAircraft = flight.flightId;
     updateAircraftOnMap(allFlights, airport);
 }
 
-// Initialize Map
+// Adjust on window resize
+window.addEventListener("resize", () => {
+    resizeCanvas();
+    drawBaseMap();
+});
+
+// Initialize map when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
     initMap();
 });
