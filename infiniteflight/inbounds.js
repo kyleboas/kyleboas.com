@@ -1995,3 +1995,13 @@ interpolateNextPositions(airportCoordinates);
       });
     } 
 });
+
+
+// Close Map Popup
+document.getElementById("mapPopupClose").addEventListener("click", () => {
+    document.getElementById("mapPopup").style.display = "none";
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    renderFlightsTable(getFlights());
+});

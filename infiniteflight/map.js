@@ -1,12 +1,3 @@
-// Close Map Popup
-document.getElementById("mapPopupClose").addEventListener("click", () => {
-    document.getElementById("mapPopup").style.display = "none";
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    renderFlightsTable(getFlights());
-});
-
 let mapCanvas, ctx;
 let aircraftPositions = {};  // Store aircraft positions
 let selectedAircraft = null;
