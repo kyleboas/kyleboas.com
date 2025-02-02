@@ -1,5 +1,6 @@
 import { SESSION_ID, allFlights, interpolatedFlights, airportCoordinates, lastApiUpdateTime } from './constants.js';
-import { fetchWithProxy, setCache, getCache, cacheExpiration } from './utils.js';
+import { setCache, getCache, cacheExpiration } from './utils.js';
+import { fetchWithProxy } from './fetch.js';
 
 export async function fetchInboundFlightIds(icao) {
     const cached = getCache(icao, 'inboundFlightIds', cacheExpiration.inboundFlightIds);
