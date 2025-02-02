@@ -415,15 +415,18 @@ permalink: /test/inbounds/
 
    </div> 
    <div class="page-right">
-    <div class="map-container" id="mapContainer">
-        <div id="mapPopup">
-            <span id="mapPopupClose">✖</span>
-            <canvas id="mapCanvas"></canvas>
-        </div>
-    </div>
-
     <table id="flightsTable">
         <thead>
+            <tr>
+                <th colspan="5">
+                    <div class="map-container" id="mapContainer">
+                        <div id="mapPopup">
+                            <span id="mapPopupClose" style="display:none;">✖</span>
+                            <canvas id="mapCanvas"></canvas>
+                        </div>
+                    </div>
+                </th>
+            </tr>
             <tr>
                 <th class="column-one">Aircraft</th>
                 <th>MIN/MAX</th>
