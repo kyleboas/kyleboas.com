@@ -58,9 +58,9 @@ function drawBaseMap() {
     // Draw distance rings
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 1;
-    drawRing(50, "");
-    drawRing(200, "");
-    drawRing(500, "");
+    drawRing(50, "50nm");
+    drawRing(200, "200nm");
+    drawRing(500, "500nm");
 }
 
 // Draw rings dynamically
