@@ -1,22 +1,23 @@
 let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
-let scale = 0.4;
 
-// Ensure the canvas is square
+const scale = 0.4;
+const baseWidth = 600; // Reference width for consistent ring size
+const fixedHeight = 150; // Fixed height for the canvas
+
+// Ensure canvas is 100% width but height remains fixed at 150px
 function resizeCanvas() {
-    const width = Math.min(window.innerWidth * 0.6, 600);
-    const height = width; // Keep it square
-
+    const width = mapCanvas.parentElement.clientWidth; // Full width of container
     const dpr = window.devicePixelRatio || 1; // Get device pixel ratio
 
     mapCanvas.width = width * dpr;
-    mapCanvas.height = height * dpr;
-    
-    mapCanvas.style.width = `${width}px`;
-    mapCanvas.style.height = `${height}px`;
+    mapCanvas.height = fixedHeight * dpr;
 
-    ctx.scale(dpr, dpr); // Scale context to match resolution
+    mapCanvas.style.width = "100%";
+    mapCanvas.style.height = `${fixedHeight}px`;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // Ensure sharp rendering
 }
 
 // Initialize map
@@ -52,7 +53,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-// Draw the base map with centered rings
+// Draw the base map with fixed-size rings
 function drawBaseMap() {
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     
@@ -65,20 +66,24 @@ function drawBaseMap() {
     ctx.arc(mapCanvas.width / 2, mapCanvas.height / 2, 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Draw distance rings
-    ctx.strokeStyle = "gray";
-    ctx.lineWidth = 1;
-    drawRing(50, "50nm");
-    drawRing(200, "200nm");
-    drawRing(500, "500nm");
+    // Fixed-size rings based on `baseWidth`
+    drawRing(50, "50nm", baseWidth);
+    drawRing(200, "200nm", baseWidth);
+    drawRing(500, "500nm", baseWidth);
 }
 
-// Draw rings dynamically
-function drawRing(radius, label) {
+// Draw rings with a consistent size
+function drawRing(radius, label, referenceWidth) {
+    const fixedScale = (referenceWidth * scale) / baseWidth; // Keep ring size fixed
+    const ringRadius = radius * fixedScale;
+
+    ctx.strokeStyle = "gray";
+    ctx.lineWidth = 1;
+    
     ctx.beginPath();
-    ctx.arc(mapCanvas.width / 2, mapCanvas.height / 2, radius * scale, 0, Math.PI * 2);
+    ctx.arc(mapCanvas.width / 2, mapCanvas.height / 2, ringRadius, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillText(label, mapCanvas.width / 2 + radius * scale + 5, mapCanvas.height / 2);
+    ctx.fillText(label, mapCanvas.width / 2 + ringRadius + 5, mapCanvas.height / 2);
 }
 
 // Update aircraft positions
