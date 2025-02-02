@@ -5,8 +5,18 @@ let scale = 0.4;
 
 // Ensure the canvas is square
 function resizeCanvas() {
-    mapCanvas.width = Math.min(window.innerWidth * 0.6, 600); 
-    mapCanvas.height = mapCanvas.width; // Keep it square
+    const width = Math.min(window.innerWidth * 0.6, 600);
+    const height = width; // Keep it square
+
+    const dpr = window.devicePixelRatio || 1; // Get device pixel ratio
+
+    mapCanvas.width = width * dpr;
+    mapCanvas.height = height * dpr;
+    
+    mapCanvas.style.width = `${width}px`;
+    mapCanvas.style.height = `${height}px`;
+
+    ctx.scale(dpr, dpr); // Scale context to match resolution
 }
 
 // Initialize map
