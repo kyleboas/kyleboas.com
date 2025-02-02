@@ -414,7 +414,6 @@ permalink: /test/inbounds/
     </div>
     
     <div id="mapPopup">
-        <span id="mapPopupClose">✖</span>
         <canvas id="mapCanvas"></canvas>
     </div>
 
