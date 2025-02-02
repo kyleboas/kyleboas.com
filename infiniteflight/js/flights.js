@@ -1,8 +1,8 @@
-import { fetchWithProxy } from './api.js';
+import { fetchStatusData } from './api.js';
 import { SESSION_ID, state } from './config.js';
 
 export async function fetchFlights(icao) {
-    const flights = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+    const flights = await fetchStatusData(${icao});
     state.allFlights = flights.result || [];
 }
 
