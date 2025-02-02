@@ -1,16 +1,19 @@
 let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
-let scale = 0.4; 
+let scale = 0.4; // Adjusted for better visibility without stretching
 
-// Initialize map with fixed dimensions
+// Ensure the canvas is square
+function resizeCanvas() {
+    mapCanvas.width = Math.min(window.innerWidth * 0.6, 600); 
+    mapCanvas.height = mapCanvas.width; // Keep it square
+}
+
+// Initialize map
 function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
     ctx = mapCanvas.getContext("2d");
-
-    mapCanvas.width = 600;  
-    mapCanvas.height = 300;  
-
+    resizeCanvas();
     drawBaseMap();
 }
 
@@ -76,7 +79,7 @@ function updateAircraftOnMap(flights, airport) {
         if (flight.latitude && flight.longitude) {
             const distance = getDistance(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
-            if (distance <= 700) {
+            if (distance <= 500) {
                 const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
                 aircraftPositions[flight.flightId] = { x, y, flight };
@@ -97,6 +100,13 @@ function showMapPopup(flight, airport) {
     updateAircraftOnMap(allFlights, airport);
 }
 
+// Adjust on window resize
+window.addEventListener("resize", () => {
+    resizeCanvas();
+    drawBaseMap();
+});
+
+// Initialize map when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
     initMap();
 });
