@@ -8,8 +8,8 @@ const fixedHeight = 150; // Fixed height for the canvas
 
 // Ensure canvas is 100% width but height remains fixed at 150px
 function resizeCanvas() {
-    const width = mapCanvas.parentElement.clientWidth; // Full width of container
-    const dpr = window.devicePixelRatio || 1; // Get device pixel ratio
+    const width = mapCanvas.parentElement.clientWidth;
+    const dpr = window.devicePixelRatio || 1;
 
     mapCanvas.width = width * dpr;
     mapCanvas.height = fixedHeight * dpr;
@@ -17,7 +17,7 @@ function resizeCanvas() {
     mapCanvas.style.width = "100%";
     mapCanvas.style.height = `${fixedHeight}px`;
 
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // Ensure sharp rendering
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 // Initialize map
@@ -72,7 +72,7 @@ function drawBaseMap() {
 
 // Draw rings with a consistent size
 function drawRing(radius, label, referenceWidth) {
-    const fixedScale = (referenceWidth * scale) / baseWidth; // Keep ring size fixed
+    const fixedScale = (referenceWidth * scale) / baseWidth;
     const ringRadius = radius * fixedScale;
 
     ctx.strokeStyle = "gray";
