@@ -2,5 +2,19 @@ import { fetchAirportData } from './api.js';
 import { SESSION_ID } from './config.js';
 
 export async function fetchAirportCoordinates(icao) {
-    return await fetchAirportData(icao);
+    const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);
+    if (cached) {
+        return cached;
+    }
+    
+    try {
+        const data = await fetchAirportData(icao));
+        const coordinates = { latitude: data.result.latitude, longitude: data.result.longitude };
+        setCache(icao, coordinates, 'airportCoordinates');
+        return coordinates;
+    } catch (error) {
+        console.error('Error fetching airport coordinates:', error.message);
+        alert('Failed to fetch airport coordinates.');
+        return null;
+    }
 }
