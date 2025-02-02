@@ -17,14 +17,14 @@ export const cache = {
     inboundFlightIds: {},
     atis: {},
     controllers: {},
-};
+}
 
 export const cacheExpiration = {
     airportCoordinates: 90 * 24 * 60 * 60 * 1000,
     inboundFlightIds: 5 * 60 * 1000,
     atis: 30 * 60 * 1000,
     controllers: 10 * 60 * 1000,
-};
+}
 
 export function setCache(key, value, type) {
     cache[type][key] = { value, timestamp: Date.now() };
