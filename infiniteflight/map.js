@@ -79,7 +79,7 @@ function updateAircraftOnMap(flights, airport) {
         if (flight.latitude && flight.longitude) {
             const distance = getDistance(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
-            if (distance <= 700) {
+            if (distance <= 500) {
                 const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
                 aircraftPositions[flight.flightId] = { x, y, flight };
