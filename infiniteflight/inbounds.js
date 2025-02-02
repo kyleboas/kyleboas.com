@@ -1839,8 +1839,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize data fetching and rendering
         await fetchActiveATCAirports();
         await renderATCTable();
-        await fetchAirportCoordinates(icao);
-        await fetchAndUpdateFlights(icao);
     } catch (error) {
         console.error('Error initializing ATC table:', error.message);
     }
