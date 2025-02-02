@@ -1,8 +1,21 @@
+console.log("autoUpdate.js - Importing");
+
 import { fetchAndUpdateFlights } from "./flights.js";
+console.log("autoUpdate.js - Imported: fetchAndUpdateFlights from flights.js");
+
 import { fetchControllers } from "./atc.js";
+console.log("autoUpdate.js - Imported: fetchControllers from atc.js");
+
 import { fetchActiveATCAirports } from "./airport.js";
+console.log("autoUpdate.js - Imported: fetchActiveATCAirports from airport.js");
+
 import { renderATCTable, renderFlightsTable } from "./ui.js";
+console.log("autoUpdate.js - Imported: renderATCTable & renderFlightsTable from ui.js");
+
 import { state } from "./config.js";
+console.log("autoUpdate.js - Imported: state from config.js");
+
+console.log("autoUpdate.js - Successfully imported.");
 
 // Stop auto-update
 export function stopAutoUpdate() {

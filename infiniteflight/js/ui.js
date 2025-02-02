@@ -1,8 +1,21 @@
+console.log("ui.js - Importing");  // Marks the start of execution in this file
+
 import { fetchFlights } from './flights.js';
+console.log("ui.js - Imported: fetchFlights from flights.js");
+
 import { fetchATCData } from './atc.js';
+console.log("ui.js - Imported: fetchATCData from atc.js");
+
 import { fetchAirportCoordinates } from './airport.js';
+console.log("ui.js - Imported: fetchAirportCoordinates from airport.js");
+
 import { getFlights } from './flights.js';
+console.log("ui.js - Imported: getFlights from flights.js");
+
 import { state } from './config.js';
+console.log("ui.js - Imported: state from config.js");
+
+console.log("ui.js - Successfully imported.");
 
 export function renderFlightsTable() {
     const tableBody = document.querySelector("#flightsTable tbody");
