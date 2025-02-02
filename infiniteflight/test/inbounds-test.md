@@ -412,15 +412,6 @@ permalink: /test/inbounds/
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
     </div>
-    
-    <!-- Map Container (Hidden by Default) -->
-<div id="mapContainer" style="display: none; position: fixed; top: 10%; left: 10%; width: 80%; height: 80%; background: rgba(0, 0, 0, 0.8); border-radius: 10px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); z-index: 1000;">
-    <!-- Close Button -->
-    <button id="closeMapButton" style="position: absolute; top: 10px; right: 10px; background: red; color: white; border: none; padding: 5px 10px; font-size: 16px; cursor: pointer;">✖</button>
-
-    <!-- Canvas for Rendering the Aircraft -->
-    <canvas id="flightCanvas" style="width: 100%; height: 100%;"></canvas>
-</div>
 
    </div> 
    <div class="page-right">
@@ -439,6 +430,13 @@ permalink: /test/inbounds/
         </tbody>
     </table>
   </div>
+  
+  <div id="mapPopup">
+        <span id="mapPopupClose">✖</span>
+        <canvas id="mapCanvas"></canvas>
+    </div>
+
+    <script src="map.js"></script>
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
