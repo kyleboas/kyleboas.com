@@ -1,5 +1,6 @@
 import { SESSION_ID } from './constants.js';
-import { fetchWithProxy, setCache, getCache, cacheExpiration } from './utils.js';
+import { setCache, getCache, cacheExpiration } from './utils.js';
+import { fetchWithProxy } from './fetch.js';
 
 export let atcDataCache = null;
 export let atcDataFetchPromise = null;
