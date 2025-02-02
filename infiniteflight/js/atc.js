@@ -1,5 +1,12 @@
+console.log("atc.js - Importing");
+
 import { fetchATCData, fetchWorldData } from './api.js';
+console.log("atc.js - Imported: fetchATCData, fetchWorldData from api.js");
+
 import { SESSION_ID } from './config.js';
+console.log("atc.js - Imported: SESSION_ID from config.js");
+
+console.log("atc.js - Imported");
 
 export async function fetchActiveATCAirports() {
     try {
