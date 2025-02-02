@@ -436,8 +436,6 @@ permalink: /test/inbounds/
         <canvas id="mapCanvas"></canvas>
     </div>
 
-    <script src="map.js"></script>
-
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
 
