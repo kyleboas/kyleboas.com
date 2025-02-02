@@ -23,7 +23,7 @@ function convertToXY(lat, lon, airportLat, airportLon) {
     const dx = (lon - airportLon) * nmPerDegree * scale;
     const dy = (lat - airportLat) * nmPerDegree * scale;
 
-    return { x: mapCanvas.width / 1 + dx, y: mapCanvas.height / 1 - dy };
+    return { x: mapCanvas.width / 2 + dx, y: mapCanvas.height / 2 - dy };
 }
 
 // Calculate distance using the Haversine formula
@@ -79,23 +79,15 @@ function updateAircraftOnMap(flights, airport) {
         if (flight.latitude && flight.longitude) {
             const distance = getDistance(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
-            if (distance <= 500) {
+            if (distance <= 700) {
                 const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
                 aircraftPositions[flight.flightId] = { x, y, flight };
 
-                // Draw aircraft as a blue circle
-                ctx.fillStyle = "blue";
+                ctx.fillStyle = (selectedAircraft === flight.flightId) ? "red" : "blue";
                 ctx.beginPath();
                 ctx.arc(x, y, 5, 0, Math.PI * 2);
                 ctx.fill();
-
-                // If this is the selected aircraft, draw a red square around it
-                if (selectedAircraft === flight.flightId) {
-                    ctx.strokeStyle = "red";
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(x - 7, y - 7, 14, 14); // Centered square
-                }
             }
         }
     });
