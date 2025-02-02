@@ -6,7 +6,7 @@ console.log("autoUpdate.js - Imported: fetchAndUpdateFlights from flights.js");
 import { fetchControllers } from "./atc.js";
 console.log("autoUpdate.js - Imported: fetchControllers from atc.js");
 
-import { fetchActiveATCAirports } from "./airport.js";
+import { fetchActiveATCAirports } from "./atc.js";
 console.log("autoUpdate.js - Imported: fetchActiveATCAirports from airport.js");
 
 import { renderATCTable, renderFlightsTable } from "./ui.js";
