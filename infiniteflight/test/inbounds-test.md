@@ -413,8 +413,8 @@ permalink: /test/inbounds/
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
     </div>
     
-    <div id="mapPopup">
-        <canvas id="mapCanvas"></canvas>
+    <div class="map-container">
+    <canvas id="mapCanvas"></canvas>
     </div>
 
    </div> 
