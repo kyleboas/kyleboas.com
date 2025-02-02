@@ -415,11 +415,13 @@ permalink: /test/inbounds/
 
    </div> 
    <div class="page-right">
-   <div id="mapPopup">
-        <span id="mapPopupClose">✖</span>
-        <canvas id="mapCanvas"></canvas>
+    <div class="map-container" id="mapContainer">
+        <div id="mapPopup">
+            <span id="mapPopupClose">✖</span>
+            <canvas id="mapCanvas"></canvas>
+        </div>
     </div>
-   
+
     <table id="flightsTable">
         <thead>
             <tr>
@@ -434,7 +436,7 @@ permalink: /test/inbounds/
             <!-- Dynamic rows will be added here -->
         </tbody>
     </table>
-  </div>
+   </div>
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
