@@ -8,7 +8,7 @@ export async function fetchAirportCoordinates(icao) {
     }
     
     try {
-        const data = await fetchAirportData(icao));
+        const data = await fetchAirportData(${icao});
         const coordinates = { latitude: data.result.latitude, longitude: data.result.longitude };
         setCache(icao, coordinates, 'airportCoordinates');
         return coordinates;
