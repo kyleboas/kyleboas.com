@@ -1,5 +1,5 @@
 let mapCanvas, ctx;
-let aircraftPositions = {};  // Store aircraft positions
+let aircraftPositions = {};  
 let selectedAircraft = null;
 
 // Initialize map when the popup is opened
@@ -18,6 +18,22 @@ function convertToXY(lat, lon, airportLat, airportLon) {
     const dy = (lat - airportLat) * nmPerDegree * scale;
 
     return { x: 300 + dx, y: 300 - dy }; // Center at (300,300)
+}
+
+// Calculate the great-circle distance (Haversine formula)
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 3440.065; // Earth's radius in nautical miles
+    const toRad = Math.PI / 180;
+    
+    const dLat = (lat2 - lat1) * toRad;
+    const dLon = (lon2 - lon1) * toRad;
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
 }
 
 // Draw Base Map with Distance Rings
@@ -50,20 +66,24 @@ function drawRing(radius, label) {
     ctx.fillText(label, 300 + radius * scale + 5, 300);
 }
 
-// Update Aircraft Positions
+// Update Aircraft Positions (only within 500nm range)
 function updateAircraftOnMap(flights, airport) {
     drawBaseMap(); // Redraw the base map
     
     flights.forEach(flight => {
         if (flight.latitude && flight.longitude) {
-            const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
+            const distance = getDistance(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
-            aircraftPositions[flight.flightId] = { x, y, flight };
+            if (distance <= 500) { // Only plot aircraft within 500nm
+                const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
-            ctx.fillStyle = (selectedAircraft === flight.flightId) ? "red" : "blue";
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI * 2);
-            ctx.fill();
+                aircraftPositions[flight.flightId] = { x, y, flight };
+
+                ctx.fillStyle = (selectedAircraft === flight.flightId) ? "red" : "blue";
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     });
 }
