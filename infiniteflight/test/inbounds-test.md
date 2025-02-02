@@ -407,15 +407,15 @@ permalink: /test/inbounds/
     <div id="secondaryAirport">
         <div id="secondaryAirportContainer"></div>
     </div>
-    
-    <div id="mapPopup">
-        <span id="mapPopupClose">✖</span>
-        <canvas id="mapCanvas"></canvas>
-    </div>
 
     <div class="mainAirport" style="display: none;">
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
+    </div>
+    
+    <div id="mapPopup">
+        <span id="mapPopupClose">✖</span>
+        <canvas id="mapCanvas"></canvas>
     </div>
 
    </div> 
