@@ -1,18 +1,16 @@
 let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
-let scale = 0.4; // Adjusted for better visibility without stretching
+let scale = 0.4; 
 
-function resizeCanvas() {
-    mapCanvas.width = Math.min(window.innerWidth * 0.8, 600); 
-    mapCanvas.height = 300; // Fixed height for consistency
-}
-
-// Initialize map
+// Initialize map with fixed dimensions
 function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
     ctx = mapCanvas.getContext("2d");
-    resizeCanvas();
+
+    mapCanvas.width = 600;  
+    mapCanvas.height = 300;  
+
     drawBaseMap();
 }
 
@@ -98,11 +96,6 @@ function showMapPopup(flight, airport) {
     selectedAircraft = flight.flightId;
     updateAircraftOnMap(allFlights, airport);
 }
-
-window.addEventListener("resize", () => {
-    resizeCanvas();
-    drawBaseMap();
-});
 
 document.addEventListener("DOMContentLoaded", () => {
     initMap();
