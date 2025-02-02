@@ -60,12 +60,6 @@ function drawBaseMap() {
     ctx.fillStyle = "#e8e8e8";
     ctx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
 
-    // Draw airport at the center
-    ctx.fillStyle = "black";
-    ctx.beginPath();
-    ctx.arc(mapCanvas.width / 2, mapCanvas.height / 2, 5, 0, Math.PI * 2);
-    ctx.fill();
-
     // Fixed-size rings based on `baseWidth`
     drawRing(50, "50nm", baseWidth);
     drawRing(200, "200nm", baseWidth);
