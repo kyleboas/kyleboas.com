@@ -407,6 +407,11 @@ permalink: /test/inbounds/
     <div id="secondaryAirport">
         <div id="secondaryAirportContainer"></div>
     </div>
+    
+    <div id="mapPopup">
+        <span id="mapPopupClose">✖</span>
+        <canvas id="mapCanvas"></canvas>
+    </div>
 
     <div class="mainAirport" style="display: none;">
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
@@ -430,11 +435,6 @@ permalink: /test/inbounds/
         </tbody>
     </table>
   </div>
-  
-  <div id="mapPopup">
-        <span id="mapPopupClose">✖</span>
-        <canvas id="mapCanvas"></canvas>
-    </div>
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
