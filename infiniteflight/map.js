@@ -23,7 +23,7 @@ function convertToXY(lat, lon, airportLat, airportLon) {
     const dx = (lon - airportLon) * nmPerDegree * scale;
     const dy = (lat - airportLat) * nmPerDegree * scale;
 
-    return { x: mapCanvas.width / 2 + dx, y: mapCanvas.height / 2 - dy };
+    return { x: mapCanvas.width / 1 + dx, y: mapCanvas.height / 1 - dy };
 }
 
 // Calculate distance using the Haversine formula
@@ -58,9 +58,9 @@ function drawBaseMap() {
     // Draw distance rings
     ctx.strokeStyle = "gray";
     ctx.lineWidth = 1;
-    drawRing(50, "50nm");
-    drawRing(200, "200nm");
-    drawRing(500, "500nm");
+    drawRing(50, "");
+    drawRing(200, "");
+    drawRing(500, "");
 }
 
 // Draw rings dynamically
