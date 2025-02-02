@@ -1,93 +1,47 @@
-console.log("atc.js - Importing");
+import { SESSION_ID } from './constants.js';
+import { fetchWithProxy, setCache, getCache, cacheExpiration } from './utils.js';
 
-import { fetchATCData, fetchWorldData } from './api.js';
-console.log("atc.js - Imported: fetchATCData, fetchWorldData from api.js");
+export let atcDataCache = null;
+export let atcDataFetchPromise = null;
 
-import { SESSION_ID } from './config.js';
-console.log("atc.js - Imported: SESSION_ID from config.js");
-
-console.log("atc.js - Imported");
-
-export async function fetchActiveATCAirports() {
-    try {
-        const atcData = await fetchATCData();
-
-        // Map airports to their facilities
-        const activeATCAirports = (atcData || []).reduce((acc, atcFacility) => {
-            const airportIcao = atcFacility.airportIcao;
-
-            if (!acc[airportIcao]) {
-                acc[airportIcao] = {
-                    icao: airportIcao,
-                    hasApproach: false,
-                };
-            }
-
-            // Check if this facility is "Approach" (type 4)
-            if (atcFacility.type === 4) {
-                acc[airportIcao].hasApproach = true;
-            }
-
-            return acc;
-        }, {});
-
-        // Fetch inbound counts for airports
-        const worldData = await fetchWorldData();
-        const airportsWithInbounds = (worldData.result || []).filter(
-            (airport) => airport.inboundFlightsCount > 0
-        );
-
-        // Combine active ATC data with inbound flight data
-        const combinedAirports = airportsWithInbounds.map((airport) => {
-            const atcInfo = activeATCAirports[airport.airportIcao] || { hasApproach: false };
-            return {
-                icao: airport.airportIcao,
-                inboundCount: airport.inboundFlightsCount,
-                hasApproach: atcInfo.hasApproach,
-                hasATC: Boolean(activeATCAirports[airport.airportIcao]),
-            };
-        });
-
-        // Sort by inbound count in descending order
-        combinedAirports.sort((a, b) => b.inboundCount - a.inboundCount);
-
-        // Select the top 5 airports by inbound flights
-        const topAirports = combinedAirports.slice(0, 4);
-
-        // Format the output
-        // Format the output
-        const formattedAirports = topAirports.map((airport) => {
-            let icao = airport.icao;
-
-            // Add bold for airports with ATC
-            if (airport.hasATC) {
-                icao = `<strong>${icao}</strong>`;
-            }
-
-            // Add an asterisk for airports with approach
-            if (airport.hasApproach) {
-                icao += "*";
-            }
-
-            return `${icao}: ${airport.inboundCount}`;
-        });
-
-        // Insert a `<br>` after the second airport if there are at least three
-        if (formattedAirports.length > 2) {
-            formattedAirports[1] += "<br>"; // Append <br> after the second airport
-        }
-
-        // Join the output with spaces only (no commas)
-        const formattedOutput = formattedAirports.join(" ");
-
-        // Update the DOM
-        const atcAirportsListElement = document.getElementById("atcAirportsList");
-        atcAirportsListElement.innerHTML = formattedOutput || "No active ATC airports found.";
-    } catch (error) {
-        console.error("Error fetching active ATC airports:", error.message);
-
-        // Display error message
-        const atcAirportsListElement = document.getElementById("atcAirportsList");
-        atcAirportsListElement.textContent = "Failed to fetch active ATC airports.";
+export async function fetchATCData() {
+    // Return cached data if available
+    if (atcDataCache) {
+        return atcDataCache;
     }
+
+    // Return the ongoing fetch promise if one exists
+    if (atcDataFetchPromise) {
+        return atcDataFetchPromise;
+    }
+
+    // Start the fetch process
+    atcDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/atc`)
+        .then((data) => {
+            // Basic validation
+            if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
+                console.error("Invalid ATC data received:", data);
+                throw new Error("Invalid ATC data format.");
+            }
+
+            // Cache the result
+            atcDataCache = data.result;
+            return atcDataCache;
+        })
+        .catch((error) => {
+            console.error("Error fetching ATC data:", error.message);
+
+            // Clear cache on error
+            atcDataCache = null;
+            atcDataFetchPromise = null;
+            throw error;
+        });
+
+    // Return the fetch promise
+    return atcDataFetchPromise;
+}
+
+export function clearATCDataCache() {
+    atcDataCache = null;
+    atcDataFetchPromise = null;
 }

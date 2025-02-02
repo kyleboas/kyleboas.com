@@ -1,5 +1,5 @@
-import { fetchAirportData } from './api.js';
-import { SESSION_ID } from './config.js';
+import { SESSION_ID } from './constants.js';
+import { fetchWithProxy, setCache, getCache, cacheExpiration } from './utils.js';
 
 export async function fetchAirportCoordinates(icao) {
     const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);
@@ -8,18 +8,9 @@ export async function fetchAirportCoordinates(icao) {
     }
     
     try {
-        const data = await fetchAirportData(icao);
-
-        // Validate response data
-        if (!data || !data.result || typeof data.result.latitude !== 'number' || typeof data.result.longitude !== 'number') {
-            throw new Error('Invalid API response');
-        }
-
+        const data = await fetchWithProxy(`/airport/${icao}`);
         const coordinates = { latitude: data.result.latitude, longitude: data.result.longitude };
-        
-        // Cache the coordinates
         setCache(icao, coordinates, 'airportCoordinates');
-        
         return coordinates;
     } catch (error) {
         console.error('Error fetching airport coordinates:', error.message);
