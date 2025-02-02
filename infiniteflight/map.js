@@ -84,10 +84,18 @@ function updateAircraftOnMap(flights, airport) {
 
                 aircraftPositions[flight.flightId] = { x, y, flight };
 
-                ctx.fillStyle = (selectedAircraft === flight.flightId) ? "red" : "blue";
+                // Draw aircraft as a blue circle
+                ctx.fillStyle = "blue";
                 ctx.beginPath();
                 ctx.arc(x, y, 5, 0, Math.PI * 2);
                 ctx.fill();
+
+                // If this is the selected aircraft, draw a red square around it
+                if (selectedAircraft === flight.flightId) {
+                    ctx.strokeStyle = "red";
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x - 7, y - 7, 14, 14); // Centered square
+                }
             }
         }
     });
