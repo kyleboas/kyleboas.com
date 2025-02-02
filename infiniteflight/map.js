@@ -25,7 +25,8 @@ function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
     ctx = mapCanvas.getContext("2d");
     resizeCanvas();
-    drawBaseMap();
+    drawBaseMap(); 
+    setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
 }
 
 // Convert latitude/longitude to X/Y coordinates
