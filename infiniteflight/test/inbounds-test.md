@@ -418,7 +418,6 @@ permalink: /test/inbounds/
    
    <div class="map-container" id="mapContainer">
     <div id="mapPopup">
-        <span id="mapPopupClose">✖</span>
         <canvas id="mapCanvas"></canvas>
     </div>
    </div>
