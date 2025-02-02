@@ -2,8 +2,8 @@ let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
 
-const scale = 0.4;
-const baseWidth = 600; // Reference width for consistent ring size
+const scale = 0.1;
+const baseWidth = 200; // Reference width for consistent ring size
 const fixedHeight = 150; // Fixed height for the canvas
 
 // Ensure canvas is 100% width but height remains fixed at 150px
