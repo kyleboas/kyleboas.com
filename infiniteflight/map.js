@@ -119,4 +119,5 @@ window.addEventListener("resize", () => {
 // Initialize map when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
     initMap();
+    updateAircraftOnMap(allFlights, airportCoordinates);
 });
