@@ -14,7 +14,7 @@ function resizeCanvas() {
     mapCanvas.width = width * dpr;
     mapCanvas.height = fixedHeight * dpr;
 
-    mapCanvas.style.width = "100%";
+    mapCanvas.style.width = `${Math.min(width, baseWidth)}px`; 
     mapCanvas.style.height = `${fixedHeight}px`;
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -36,9 +36,9 @@ function convertToXY(lat, lon, airportLat, airportLon) {
     const dy = (lat - airportLat) * nmPerDegree * scale;
 
     return { 
-    x: (mapCanvas.width / 2) + dx - (baseWidth / 2) * scale, 
+    x: (mapCanvas.width / 2) + dx, 
     y: (mapCanvas.height / 2) - dy 
-};
+    };
 }
 
 // Calculate distance using the Haversine formula
