@@ -1,8 +1,19 @@
+console.log("Loaded: main.js");
+
 import { fetchActiveATCAirports } from "./airport.js";
+console.log("main.js - Imported: fetchActiveATCAirports from airport.js");
+
 import { renderATCTable } from "./ui.js";
+console.log("main.js - Imported: renderATCTable from ui.js");
+
 import { fetchAndUpdateFlights } from "./flights.js";
+console.log("main.js - Imported: fetchAndUpdateFlights from flights.js");
+
 import { startAutoUpdate, stopAutoUpdate } from "./autoUpdate.js";
+console.log("main.js - Imported: startAutoUpdate & stopAutoUpdate from autoUpdate.js");
+
 import { state } from "./config.js";
+console.log("main.js - Imported: state from config.js");
 
 // Initialize
 document.addEventListener("DOMContentLoaded", async () => {
