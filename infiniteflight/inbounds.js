@@ -1802,6 +1802,10 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
             updateRowVisibility(row, flight);
             tableBody.appendChild(row);
         });
+        
+        row.addEventListener("click", () => {
+            showMapPopup(flight, airportCoordinates);
+        });
 
         highlightCloseETAs(); // Highlight rows based on close ETAs
     } catch (error) {
