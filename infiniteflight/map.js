@@ -35,7 +35,10 @@ function convertToXY(lat, lon, airportLat, airportLon) {
     const dx = (lon - airportLon) * nmPerDegree * scale;
     const dy = (lat - airportLat) * nmPerDegree * scale;
 
-    return { x: mapCanvas.width / 2 + dx, y: mapCanvas.height / 2 - dy };
+    return { 
+    x: (mapCanvas.width / 2) + dx - (baseWidth / 2) * scale, 
+    y: (mapCanvas.height / 2) - dy 
+};
 }
 
 // Calculate distance using the Haversine formula
