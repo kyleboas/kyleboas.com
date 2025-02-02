@@ -1,7 +1,7 @@
 let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
-let scale = 0.4; // Adjusted for better visibility without stretching
+let scale = 0.4;
 
 // Ensure the canvas is square
 function resizeCanvas() {
