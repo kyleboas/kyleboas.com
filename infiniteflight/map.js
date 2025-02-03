@@ -2,9 +2,11 @@ let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
 
-const scale = 0.2;
+const scaleOptions = [0.2, 1, 0.1];
+let scaleIndex = 0;
+let scale = scaleOptions[scaleIndex]; 
 let baseWidth;
-const fixedHeight = 210; // Fixed height for the canvas
+const fixedHeight = 210;
 
 // Ensure canvas is 100% width but height remains fixed at 150px
 function resizeCanvas() {
@@ -20,6 +22,14 @@ function resizeCanvas() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
+function toggleScale() {
+    scaleIndex = (scaleIndex + 1) % scaleOptions.length; // Cycle through zoom levels
+    scale = scaleOptions[scaleIndex]; // Update scale
+
+    drawBaseMap(); // Redraw base map with new scale
+    updateAircraftOnMap(getFlights(), airportCoordinates); // Update aircraft positions
+}
+
 // Initialize map
 function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
@@ -27,6 +37,8 @@ function initMap() {
     resizeCanvas();
     drawBaseMap(); 
     setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
+
+    mapCanvas.addEventListener("click", toggleScale);
 }
 
 // Convert latitude/longitude to X/Y coordinates
@@ -36,11 +48,9 @@ function convertToXY(lat, lon, airportLat, airportLon) {
 
     const nmPerDegree = 60;
 
-    // Compute distances
     const deltaLon = (lon - airportLon) * nmPerDegree * scale;
     const deltaLat = (lat - airportLat) * nmPerDegree * scale;
 
-    // Transform to canvas coordinates
     const x = centerX + deltaLon;
     const y = centerY - deltaLat;
 
