@@ -31,14 +31,21 @@ function initMap() {
 
 // Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
-    const nmPerDegree = 60; 
-    const dx = (lon - airportLon) * nmPerDegree * scale;
-    const dy = (lat - airportLat) * nmPerDegree * scale;
+    const centerX = mapCanvas.width * 0.25; // Adjusted base map center
+    const centerY = mapCanvas.height * 0.25; 
 
-    return { 
-    x: (mapCanvas.width / 2) + dx - (baseWidth / 2) * scale, 
-    y: (mapCanvas.height / 2) - dy 
-};
+    const nmPerDegree = 60; // Rough nautical mile per degree
+    const scale = 2; // Adjust scaling factor
+
+    // Compute distances
+    const deltaLon = (lon - airportLon) * nmPerDegree * scale;
+    const deltaLat = (lat - airportLat) * nmPerDegree * scale;
+
+    // Transform to canvas coordinates
+    const x = centerX + deltaLon;
+    const y = centerY - deltaLat; // Inverted to match canvas Y-axis
+
+    return { x, y };
 }
 
 // Calculate distance using the Haversine formula
