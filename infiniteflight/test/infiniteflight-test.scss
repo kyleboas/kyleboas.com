@@ -44,6 +44,10 @@
     fill: none;
 }
 
+.aircraft {
+    transition: transform 0.2s linear;
+}
+
 .setting-container {
   position: relative;
   display: flex;
