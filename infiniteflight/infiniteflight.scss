@@ -44,6 +44,16 @@
     fill: none;
 }
 
+.aircraft {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: grey;
+    border-radius: 50%;
+    transition: transform 0.5s linear;
+}
+
+
 .setting-container {
   position: relative;
   display: flex;

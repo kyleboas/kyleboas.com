@@ -109,7 +109,7 @@ function drawRing(radius, label, centerX, centerY) {
 // Store last known aircraft positions to handle errors
 let lastKnownPositions = {};
 let lastUpdateTime = Date.now();
-const positionTimeout = 5000; // Restore last positions for 5 seconds if an error occurs
+const positionTimeout = 5000;
 
 function updateAircraftOnMap(flights, airport) {
     try {
@@ -119,13 +119,10 @@ function updateAircraftOnMap(flights, airport) {
         flights.forEach(flight => {
             if (flight.latitude && flight.longitude) {
                 const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
-
-                // Update stored aircraft positions
                 aircraftPositions[flight.flightId] = { x, y, flight };
                 lastKnownPositions[flight.flightId] = { x, y, flight };
                 lastUpdateTime = Date.now();
 
-                // Update aircraft on canvas
                 if (selectedAircraft === flight.flightId) {
                     selectedFlight = { x, y, flight };
                 } else {
@@ -135,7 +132,6 @@ function updateAircraftOnMap(flights, airport) {
                     ctx.fill();
                 }
 
-                // Update aircraft in the DOM
                 let aircraftElement = document.getElementById(`flight-${flight.flightId}`);
 
                 if (!aircraftElement) {
