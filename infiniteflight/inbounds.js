@@ -1876,6 +1876,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             initMap();
+            showMapPopup(flight, airportCoordinates);
             await fetchAndUpdateFlights(icao);
             updateAircraftOnMap(allFlights, airportCoordinates);
             startAutoUpdate(icao);
