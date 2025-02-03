@@ -555,7 +555,7 @@ function displayATIS(atis) {
     atisElement.textContent = `ATIS: ${atis || 'Not available'}`;
 }
 
-function displayControllers(controllers, centerFrequencies = []) {
+function displayControllers(controllers, centerFrequencies = "") {
     const controllersElement = document.getElementById('controllersList');
     const mainAirportElement = document.querySelector('.mainAirport');
 
@@ -567,16 +567,18 @@ function displayControllers(controllers, centerFrequencies = []) {
     // Ensure the main airport section is visible
     mainAirportElement.style.display = 'block';
 
-    // Separate Center frequencies and other controllers
-    const otherControllers = controllers.length
-        ? controllers.filter(ctrl => !centerFrequencies.includes(ctrl)).map(ctrl => `${ctrl}<br>`).join('')
-        : 'No active controllers available.';
+    // Filter out Center controllers from the general controllers list
+    const otherControllers = controllers
+        .filter(ctrl => !ctrl.startsWith("Center:"))
+        .map(ctrl => `${ctrl}<br>`)
+        .join('') || 'No active controllers available.';
 
-    const centerControllers = centerFrequencies.length
-        ? centerFrequencies.map(ctrl => `${ctrl}<br>`).join('')
+    // Format Center frequencies properly
+    const centerControllers = centerFrequencies.length 
+        ? `${centerFrequencies}`
         : 'No active Center frequencies available.';
 
-    // Combine other controllers first, followed by Center frequencies
+    // Update the DOM with sorted controllers
     controllersElement.style.display = 'block';
     controllersElement.innerHTML = `
         <p>${otherControllers}</p>
@@ -650,7 +652,8 @@ async function fetchControllers(icao) {
         // Extract only Center frequencies
         const centerFrequencies = controllers
     .filter(ctrl => ctrl.type === 6)
-    .map(ctrl => `Center: ${ctrl.username} (${ctrl.airportName || "N/A"})`);
+    .map(ctrl => `Center: ${ctrl.username} (${ctrl.airportName || "N/A"})`)
+    .join(", ");
 
         setCache(icao, sortedControllers, 'controllers');
         displayControllers(sortedControllers, centerFrequencies); // Pass both sorted controllers and centers
