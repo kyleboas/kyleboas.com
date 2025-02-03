@@ -447,7 +447,13 @@ tbody {
 
 #flightsTable thead th {
     position: sticky;
+    top: 200px;
     z-index: 1;
+}
+
+/* Ensure table headers stay directly below the map row */
+#flightsTable thead tr:nth-child(2) {
+    top: 220px;
 }
 
 thead th {
