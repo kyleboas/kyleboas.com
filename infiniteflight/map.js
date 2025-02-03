@@ -77,9 +77,6 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function drawBaseMap() {
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     
-    ctx.fillStyle = "transparent";
-    ctx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
-
     // Dynamically adjust the center of the canvas
     const centerX = mapCanvas.width * 0.25;
     const centerY = mapCanvas.height * 0.25;

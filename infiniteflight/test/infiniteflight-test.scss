@@ -31,6 +31,7 @@
 }
 
 #mapCanvas {
+    background-color: white;
     width: 100%;
     height: 200px;
     display: block;
@@ -704,6 +705,10 @@ body.dark-mode {
     background-color: #1e1e1e;
     color: #e0e0e0;
 }
+
+#mapCanvas {
+    background-color: #1e1e1e;
+} 
 
 body.dark-mode .nav-container {
     background-color: #002727;
