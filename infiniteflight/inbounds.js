@@ -650,7 +650,7 @@ async function fetchControllers(icao) {
         // Extract only Center frequencies
         const centerFrequencies = controllers
     .filter(ctrl => ctrl.type === 6)
-    .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
+    .map(ctrl => `Center: ${ctrl.username} (${ctrl.airportName || "N/A"})`);
 
         setCache(icao, sortedControllers, 'controllers');
         displayControllers(sortedControllers, centerFrequencies); // Pass both sorted controllers and centers
