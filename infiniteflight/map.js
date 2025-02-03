@@ -101,20 +101,34 @@ function drawRing(radius, label, centerX, centerY) {
 
 // Update aircraft positions
 function updateAircraftOnMap(flights, airport) {
-    drawBaseMap(); 
+    drawBaseMap();
 
+    let selectedFlight = null;
+    
     flights.forEach(flight => {
         if (flight.latitude && flight.longitude) {
             const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
             aircraftPositions[flight.flightId] = { x, y, flight };
 
-            ctx.fillStyle = (selectedAircraft === flight.flightId) ? "red" : "blue";
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI * 2);
-            ctx.fill();
+            if (selectedAircraft === flight.flightId) {
+                selectedFlight = { x, y, flight };
+            } else {
+                // Draw non-selected aircraft first (blue)
+                ctx.fillStyle = "grey";
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     });
+
+    if (selectedFlight) {
+        ctx.fillStyle = "red";
+        ctx.beginPath();
+        ctx.arc(selectedFlight.x, selectedFlight.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+    }
 }
 
 // Show map popup
