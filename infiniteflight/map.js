@@ -2,19 +2,19 @@ let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
 
-const scale = 0.1;
-const baseWidth = 200; // Reference width for consistent ring size
+const scale = 0.4;
+let baseWidth;
 const fixedHeight = 150; // Fixed height for the canvas
 
 // Ensure canvas is 100% width but height remains fixed at 150px
 function resizeCanvas() {
-    const width = mapCanvas.parentElement.clientWidth;
+    baseWidth = mapCanvas.parentElement.clientWidth; // 100% of container
     const dpr = window.devicePixelRatio || 1;
 
-    mapCanvas.width = width * dpr;
+    mapCanvas.width = baseWidth * dpr;
     mapCanvas.height = fixedHeight * dpr;
 
-    mapCanvas.style.width = `${Math.min(width, baseWidth)}px`; 
+    mapCanvas.style.width = "100%";
     mapCanvas.style.height = `${fixedHeight}px`;
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -71,8 +71,8 @@ function drawBaseMap() {
 }
 
 // Draw rings with a consistent size
-function drawRing(radius, label, referenceWidth) {
-    const fixedScale = (referenceWidth * scale) / baseWidth;
+function drawRing(radius, label) {
+    const fixedScale = (baseWidth * scale) / baseWidth; // Keep ring size proportional
     const ringRadius = radius * fixedScale;
 
     ctx.strokeStyle = "gray";
@@ -117,4 +117,10 @@ function showMapPopup(flight, airport) {
 window.addEventListener("resize", () => {
     resizeCanvas();
     drawBaseMap();
+});
+
+// Initialize map when DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+    initMap();
+    showMapPopup(flight, airportCoordinates);
 });
