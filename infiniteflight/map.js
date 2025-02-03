@@ -2,9 +2,9 @@ let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
 
-const scale = 0.4;
+const scale = 0.2;
 let baseWidth;
-const fixedHeight = 150; // Fixed height for the canvas
+const fixedHeight = 210; // Fixed height for the canvas
 
 // Ensure canvas is 100% width but height remains fixed at 150px
 function resizeCanvas() {
@@ -64,24 +64,23 @@ function drawBaseMap() {
     ctx.fillStyle = "#e8e8e8";
     ctx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
 
-    // Fixed-size rings based on `baseWidth`
-    drawRing(50, "50nm", baseWidth);
-    drawRing(200, "200nm", baseWidth);
-    drawRing(500, "500nm", baseWidth);
+    // Dynamically adjust the center of the canvas
+    const centerX = mapCanvas.width * 0.25;
+    const centerY = mapCanvas.height * 0.25;
+
+    // Draw rings at true center
+    drawRing(50, "50nm", centerX, centerY);
+    drawRing(200, "200nm", centerX, centerY);
+    drawRing(500, "500nm", centerX, centerY);
 }
 
-// Draw rings with a consistent size
-function drawRing(radius, label) {
-    const fixedScale = (baseWidth * scale) / baseWidth; // Keep ring size proportional
-    const ringRadius = radius * fixedScale;
 
-    ctx.strokeStyle = "gray";
-    ctx.lineWidth = 1;
-    
+// Draw rings with a consistent size
+function drawRing(radius, label, centerX, centerY) {
     ctx.beginPath();
-    ctx.arc(mapCanvas.width / 2, mapCanvas.height / 2, ringRadius, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, radius * scale, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillText(label, mapCanvas.width / 2 + ringRadius + 5, mapCanvas.height / 2);
+    ctx.fillText(label, centerX + radius * scale + 5, centerY);
 }
 
 // Update aircraft positions
