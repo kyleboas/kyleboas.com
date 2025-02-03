@@ -90,18 +90,14 @@ function updateAircraftOnMap(flights, airport) {
     
     flights.forEach(flight => {
         if (flight.latitude && flight.longitude) {
-            const distance = getDistance(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
+            const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
-            if (distance <= 500) {
-                const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
+            aircraftPositions[flight.flightId] = { x, y, flight };
 
-                aircraftPositions[flight.flightId] = { x, y, flight };
-
-                ctx.fillStyle = (selectedAircraft === flight.flightId) ? "red" : "blue";
-                ctx.beginPath();
-                ctx.arc(x, y, 5, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            ctx.fillStyle = (selectedAircraft === flight.flightId) ? "red" : "blue";
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fill();
         }
     });
 }
