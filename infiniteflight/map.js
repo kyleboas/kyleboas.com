@@ -77,7 +77,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
 function drawBaseMap() {
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     
-    ctx.fillStyle = "#e8e8e8";
+    ctx.fillStyle = "transparent";
     ctx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
 
     // Dynamically adjust the center of the canvas
@@ -101,21 +101,24 @@ function drawRing(radius, label, centerX, centerY) {
 
 // Update aircraft positions
 function updateAircraftOnMap(flights, airport) {
-    drawBaseMap();
+    // Ensure the map is in view before clearing and redrawing
+    const rect = mapCanvas.getBoundingClientRect();
+    if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+        drawBaseMap(); // Only clear when in view
+    }
 
     let selectedFlight = null;
     
     flights.forEach(flight => {
         if (flight.latitude && flight.longitude) {
             const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
-
             aircraftPositions[flight.flightId] = { x, y, flight };
 
             if (selectedAircraft === flight.flightId) {
                 selectedFlight = { x, y, flight };
             } else {
-                // Draw non-selected aircraft first (blue)
-                ctx.fillStyle = "grey";
+                // Draw non-selected aircraft first (grey)
+                ctx.fillStyle = "#828282";
                 ctx.beginPath();
                 ctx.arc(x, y, 5, 0, Math.PI * 2);
                 ctx.fill();
@@ -123,8 +126,9 @@ function updateAircraftOnMap(flights, airport) {
         }
     });
 
+    // Always draw the selected flight last (red)
     if (selectedFlight) {
-        ctx.fillStyle = "red";
+        ctx.fillStyle = "blue";
         ctx.beginPath();
         ctx.arc(selectedFlight.x, selectedFlight.y, 5, 0, Math.PI * 2);
         ctx.fill();
@@ -149,28 +153,16 @@ window.addEventListener("resize", () => {
 document.addEventListener("DOMContentLoaded", () => {
     initMap();
 
-    // Debounce function to limit excessive redraws during fast scrolling
-    function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), delay);
-        };
-    }
-
-    // Debounced aircraft update (prevents flickering when scrolling fast)
-    const debouncedUpdate = debounce(() => {
-        updateAircraftOnMap(getFlights(), airportCoordinates);
-    }, 300);
-
     // Auto-update aircraft every second normally
     setInterval(() => {
         updateAircraftOnMap(getFlights(), airportCoordinates);
     }, 1000);
 
-    // Attach debounce to scroll event on the aircraft table
-    const flightsTable = document.getElementById("flightsTable");
-    if (flightsTable) {
-        flightsTable.addEventListener("scroll", debouncedUpdate);
-    }
+    // Attach scroll event to update aircraft ONLY when map is visible
+    window.addEventListener("scroll", () => {
+        const rect = mapCanvas.getBoundingClientRect();
+        if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+            updateAircraftOnMap(getFlights(), airportCoordinates);
+        }
+    });
 });
