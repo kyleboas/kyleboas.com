@@ -745,6 +745,11 @@ body.dark-mode input {
     color: #e0e0e0;
 }
 
+body.dark-mode #flightsTable tr:hover {
+    background-color: #002727;
+    cursor: pointer;
+}
+
 body.dark-mode thead th {
     background-color: #002727;
 }
