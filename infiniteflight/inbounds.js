@@ -1874,8 +1874,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!airportCoordinates) {
                 throw new Error("Failed to fetch airport coordinates.");
             }
-
-            initMap();
+            
             await fetchAndUpdateFlights(icao);
             updateAircraftOnMap(allFlights, airportCoordinates);
             startAutoUpdate(icao);
