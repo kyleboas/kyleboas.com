@@ -449,6 +449,11 @@ tbody {
     z-index: 1;
 }
 
+#flightsTable thead th {
+    position: sticky;
+    z-index: 1;
+}
+
 #flightsTable thead tr:nth-child(1) {
     position: sticky;
 }
