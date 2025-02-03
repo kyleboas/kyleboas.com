@@ -30,23 +30,29 @@ function initMap() {
 }
 
 // Convert latitude/longitude to X/Y coordinates
+// Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
-    const centerX = mapCanvas.width * 0.25; // Adjusted base map center
-    const centerY = mapCanvas.height * 0.25; 
+    const centerX = mapCanvas.width / 2;
+    const centerY = mapCanvas.height / 2;
 
-    const nmPerDegree = 60; // Rough nautical mile per degree
-    const scale = 2; // Adjust scaling factor
+    const nmPerDegree = 60;
+    const scale = 1; // Fixed scale, no zoom
 
-    // Compute distances
     const deltaLon = (lon - airportLon) * nmPerDegree * scale;
     const deltaLat = (lat - airportLat) * nmPerDegree * scale;
 
-    // Transform to canvas coordinates
-    const x = centerX + deltaLon;
-    const y = centerY - deltaLat; // Inverted to match canvas Y-axis
-
-    return { x, y };
+    return { x: centerX + deltaLon, y: centerY - deltaLat };
 }
+
+// Initialize real-time aircraft updates
+document.addEventListener("DOMContentLoaded", () => {
+    initMap();
+
+    // Auto-update aircraft every second
+    setInterval(() => {
+        updateAircraftOnMap(getFlights(), airportCoordinates);
+    }, 1000);
+});
 
 // Calculate distance using the Haversine formula
 function getDistance(lat1, lon1, lat2, lon2) {
@@ -93,7 +99,7 @@ function drawRing(radius, label, centerX, centerY) {
 // Update aircraft positions
 function updateAircraftOnMap(flights, airport) {
     drawBaseMap(); 
-    
+
     flights.forEach(flight => {
         if (flight.latitude && flight.longitude) {
             const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
@@ -108,12 +114,13 @@ function updateAircraftOnMap(flights, airport) {
     });
 }
 
-// Show the map popup
+// Show map popup
 function showMapPopup(flight, airport) {
     document.getElementById("mapPopup").style.display = "block";
     selectedAircraft = flight.flightId;
-    updateAircraftOnMap(allFlights, airport);
+    updateAircraftOnMap(getFlights(), airport);
 }
+
 
 // Adjust on window resize
 window.addEventListener("resize", () => {

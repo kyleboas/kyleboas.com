@@ -1011,6 +1011,7 @@ async function fetchAndUpdateFlights(icao) {
 
         // Render the updated table
         renderFlightsTable(getFlights());
+        updateAircraftOnMap(getFlights(), airportCoordinates);
     } catch (error) {
         console.error("Error fetching flights or controllers:", error.message);
 
@@ -1900,26 +1901,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function startAutoUpdate(icao) {
-        isAutoUpdateActive = true;
-        updateButton.style.color = "blue";
-        const icon = updateButton.querySelector("i");
-        if (icon) icon.classList.add("spin");
+    isAutoUpdateActive = true;
+    updateButton.style.color = "blue";
+    const icon = updateButton.querySelector("i");
+    if (icon) icon.classList.add("spin");
 
-        interpolateInterval = setInterval(() => {
-            try {
-                interpolateNextPositions(airportCoordinates);
-            } catch (error) {
-                console.error("Error during interpolated flight updates:", error.message);
-                if (error.message.includes("rate limit") || error.message.includes("fetch")) {
-                    alert("Rate limit or network error encountered. Flight updates stopped.");
-                    clearInterval(flightUpdateInterval);
-                }
+    // Interpolate aircraft positions every second
+    interpolateInterval = setInterval(() => {
+        try {
+            interpolateNextPositions(airportCoordinates);
+            updateAircraftOnMap(getFlights(), airportCoordinates); // Auto-update aircraft positions
+        } catch (error) {
+            console.error("Error during interpolated flight updates:", error.message);
+            if (error.message.includes("rate limit") || error.message.includes("fetch")) {
+                alert("Rate limit or network error encountered. Flight updates stopped.");
+                clearInterval(flightUpdateInterval);
             }
-        }, 1000);
+        }
+    }, 1000);
 
+    // Fetch new flight data every 18 seconds
         flightUpdateInterval = setInterval(async () => {
             try {
                 await fetchAndUpdateFlights(icao);
+                updateAircraftOnMap(getFlights(), airportCoordinates); // Update aircraft positions on the map
             } catch (error) {
                 console.error("Error during flight updates:", error.message);
                 if (error.message.includes("rate limit") || error.message.includes("fetch")) {
@@ -1929,6 +1934,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }, 18000);
 
+        // Fetch ATC data every 60 seconds
         atcUpdateInterval = setInterval(async () => {
             try {
                 await fetchControllers(icao);
