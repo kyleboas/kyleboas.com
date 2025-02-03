@@ -128,7 +128,7 @@ function updateAircraftOnMap(flights, airport) {
         if (selectedFlight) {
             ctx.fillStyle = "red";
             ctx.beginPath();
-            ctx.arc(selectedFlight.x, selectedFlight.y, 5, 0, Math.PI * 2);
+            ctx.arc(selectedFlight.x, selectedFlight.y, 3, 0, Math.PI * 2);
             ctx.fill();
         }
     } catch (error) {
