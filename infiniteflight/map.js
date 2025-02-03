@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Debounced scroll event to prevent lag and excessive updates
     let lastScrollTime = 0;
-    const scrollDelay = 250; // Adjust delay for performance
+    const scrollDelay = 500; // Adjust delay for performance
 
     window.addEventListener("scroll", () => {
         const now = Date.now();
