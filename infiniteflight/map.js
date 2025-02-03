@@ -136,7 +136,7 @@ function updateAircraftOnMap(flights, airport) {
                 if (selectedAircraft === flight.flightId) {
                     selectedFlight = { x, y, flight };
                 } else {
-                    ctx.fillStyle = "grey";
+                    ctx.fillStyle = "#828282";
                     ctx.beginPath();
                     ctx.arc(x, y, 2.5, 0, Math.PI * 2);
                     ctx.fill();
@@ -160,7 +160,7 @@ function updateAircraftOnMap(flights, airport) {
         if (selectedFlight) {
             ctx.fillStyle = "blue";
             ctx.beginPath();
-            ctx.arc(selectedFlight.x, selectedFlight.y, 4, 0, Math.PI * 2);
+            ctx.arc(selectedFlight.x, selectedFlight.y, 3.5, 0, Math.PI * 2);
             ctx.fill();
         }
     } catch (error) {
