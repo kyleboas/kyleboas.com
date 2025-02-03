@@ -92,6 +92,16 @@ function drawBaseMap() {
 function drawRing(radius, label, centerX, centerY) {
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius * scale, 0, Math.PI * 2);
+    
+    // Get the stroke color from the CSS class
+    const ringElement = document.querySelector(".ring-color");
+    if (ringElement) {
+        ctx.strokeStyle = getComputedStyle(ringElement).stroke;
+    } else {
+        ctx.strokeStyle = "grey"; // Fallback color
+    }
+    
+    ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.fillText(label, centerX + radius * scale + 5, centerY);
 }

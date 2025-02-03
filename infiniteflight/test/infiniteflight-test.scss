@@ -38,6 +38,12 @@
     margin: 0 auto;
 }
 
+.ring-color {
+    stroke: #828282;
+    stroke-width: 1.5px;
+    fill: none;
+}
+
 .setting-container {
   position: relative;
   display: flex;
@@ -774,6 +780,11 @@ body.dark-mode tr.highlighted .arrow::before {
 
 body.dark-mode tr.highlighted .arrow::after {
   border-left-color: #000;
+}
+
+
+body.dark-mode .ring-color {
+    stroke: #e0e0e0;
 }
 
 .yellow-highlight td {
