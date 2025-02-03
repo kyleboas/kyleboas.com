@@ -2,7 +2,7 @@ let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
 
-const scale = 0.4;
+const scale = 0.2;
 let baseWidth;
 const fixedHeight = 210; // Fixed height for the canvas
 
@@ -30,11 +30,12 @@ function initMap() {
 }
 
 // Convert latitude/longitude to X/Y coordinates
-function convertToXY(lat, lon, airportLat, airportLon, scale) {
-    const centerX = mapCanvas.width * 0.25; 
+function convertToXY(lat, lon, airportLat, airportLon) {
+    const centerX = mapCanvas.width * 0.25; // Adjusted base map center
     const centerY = mapCanvas.height * 0.25; 
 
-    const nmPerDegree = 60; // Rough nautical miles per degree
+    const nmPerDegree = 60; // Rough nautical mile per degree
+    const scale = 2; // Adjust scaling factor
 
     // Compute distances
     const deltaLon = (lon - airportLon) * nmPerDegree * scale;
@@ -89,26 +90,13 @@ function drawRing(radius, label, centerX, centerY) {
     ctx.fillText(label, centerX + radius * scale + 5, centerY);
 }
 
-// Calculate Scale
-function calculateScale(flights) {
-    const maxDistance = Math.max(...flights.map(flight => flight.distanceNm || 0), 50); // Default min 50nm
-
-    const baseScale = 5; // Base zoom level for nearby aircraft
-    const zoomFactor = 500 / maxDistance; // Adjust dynamically
-
-    return Math.max(zoomFactor, baseScale * 0.1); // Prevent too much zoom-in
-}
-
 // Update aircraft positions
 function updateAircraftOnMap(flights, airport) {
     drawBaseMap(); 
     
-    // Get dynamic zoom scale
-    const scale = calculateScale(flights);
-
     flights.forEach(flight => {
         if (flight.latitude && flight.longitude) {
-            const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude, scale);
+            const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
             aircraftPositions[flight.flightId] = { x, y, flight };
 
@@ -137,8 +125,4 @@ window.addEventListener("resize", () => {
 document.addEventListener("DOMContentLoaded", () => {
     initMap();
     showMapPopup(flight, airportCoordinates);
-});
-
-document.getElementById("aircraftTable").addEventListener("scroll", () => {
-    updateAircraftOnMap(flights, airport);
 });
