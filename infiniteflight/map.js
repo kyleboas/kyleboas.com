@@ -2,7 +2,7 @@ let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
 
-const scale = 0.2;
+const scale = 0.4;
 let baseWidth;
 const fixedHeight = 210; // Fixed height for the canvas
 
@@ -35,7 +35,7 @@ function convertToXY(lat, lon, airportLat, airportLon) {
     const centerY = mapCanvas.height * 0.25; 
 
     const nmPerDegree = 60; // Rough nautical mile per degree
-    const scale = 2; // Adjust scaling factor
+    const scale = 0.4; // Adjust scaling factor
 
     // Compute distances
     const deltaLon = (lon - airportLon) * nmPerDegree * scale;
