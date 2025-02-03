@@ -145,8 +145,32 @@ window.addEventListener("resize", () => {
     drawBaseMap();
 });
 
-// Initialize map when DOM is loaded
+// Initialize real-time aircraft updates
 document.addEventListener("DOMContentLoaded", () => {
     initMap();
-    showMapPopup(flight, airportCoordinates);
+
+    // Debounce function to limit excessive redraws during fast scrolling
+    function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), delay);
+        };
+    }
+
+    // Debounced aircraft update (prevents flickering when scrolling fast)
+    const debouncedUpdate = debounce(() => {
+        updateAircraftOnMap(getFlights(), airportCoordinates);
+    }, 300);
+
+    // Auto-update aircraft every second normally
+    setInterval(() => {
+        updateAircraftOnMap(getFlights(), airportCoordinates);
+    }, 1000);
+
+    // Attach debounce to scroll event on the aircraft table
+    const flightsTable = document.getElementById("flightsTable");
+    if (flightsTable) {
+        flightsTable.addEventListener("scroll", debouncedUpdate);
+    }
 });
