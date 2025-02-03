@@ -35,7 +35,6 @@ function convertToXY(lat, lon, airportLat, airportLon) {
     const centerY = mapCanvas.height * 0.25; 
 
     const nmPerDegree = 60;
-    const scale = 2; 
 
     // Compute distances
     const deltaLon = (lon - airportLon) * nmPerDegree * scale;
