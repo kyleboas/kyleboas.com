@@ -412,10 +412,18 @@ permalink: /infiniteflight/inbounds/
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
     </div>
+
    </div> 
    <div class="page-right">
     <table id="flightsTable">
         <thead>
+            <tr>
+                <th colspan="5" class="map-container">
+                    <div id="mapPopup">
+                        <canvas id="mapCanvas"></canvas>
+                    </div>
+                </th>
+            </tr>
             <tr>
                 <th class="column-one">Aircraft</th>
                 <th>MIN/MAX</th>
@@ -428,7 +436,7 @@ permalink: /infiniteflight/inbounds/
             <!-- Dynamic rows will be added here -->
         </tbody>
     </table>
-  </div>
+</div>
 
 <div style="display: none;">
        <button id="manualUpdateButton">Update Information</button>
