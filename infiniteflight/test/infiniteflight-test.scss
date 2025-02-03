@@ -444,12 +444,12 @@ tbody {
     font-size: 12px; 
 }
 
-#flightsTable thead th {
+#flightsTable thead tr {
     position: sticky;
     z-index: 1;
 }
 
-#flightsTable thead th:nth-child(2) {
+#flightsTable thead tr:nth-child(2) {
     top: 220px;
 }
 
