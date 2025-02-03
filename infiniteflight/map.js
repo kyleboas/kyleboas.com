@@ -82,9 +82,9 @@ function drawBaseMap() {
     const centerY = mapCanvas.height * 0.25;
 
     // Draw rings at true center
-    drawRing(50, "50nm", centerX, centerY);
-    drawRing(200, "200nm", centerX, centerY);
-    drawRing(500, "500nm", centerX, centerY);
+    drawRing(50, "", centerX, centerY);
+    drawRing(200, "", centerX, centerY);
+    drawRing(500, "", centerX, centerY);
 }
 
 
