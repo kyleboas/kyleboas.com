@@ -30,18 +30,22 @@ function initMap() {
 }
 
 // Convert latitude/longitude to X/Y coordinates
-// Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
-    const centerX = mapCanvas.width / 2;
-    const centerY = mapCanvas.height / 2;
+    const centerX = mapCanvas.width * 0.25;
+    const centerY = mapCanvas.height * 0.25; 
 
     const nmPerDegree = 60;
-    const scale = 1; // Fixed scale, no zoom
+    const scale = 2; 
 
+    // Compute distances
     const deltaLon = (lon - airportLon) * nmPerDegree * scale;
     const deltaLat = (lat - airportLat) * nmPerDegree * scale;
 
-    return { x: centerX + deltaLon, y: centerY - deltaLat };
+    // Transform to canvas coordinates
+    const x = centerX + deltaLon;
+    const y = centerY - deltaLat;
+
+    return { x, y };
 }
 
 // Initialize real-time aircraft updates
