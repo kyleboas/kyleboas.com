@@ -118,9 +118,3 @@ window.addEventListener("resize", () => {
     resizeCanvas();
     drawBaseMap();
 });
-
-// Initialize map when DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
-    initMap();
-    showMapPopup(flight, airportCoordinates);
-});
