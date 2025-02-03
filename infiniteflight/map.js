@@ -2,7 +2,7 @@ let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
 
-const scaleOptions = [0.2, 1, 0.1];
+const scaleOptions = [0.2, 0.9, 0.1];
 let scaleIndex = 0;
 let scale = scaleOptions[scaleIndex]; 
 let baseWidth;
