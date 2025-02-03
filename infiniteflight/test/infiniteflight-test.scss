@@ -45,6 +45,11 @@
 }
 
 .aircraft {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: grey;
+    border-radius: 50%;
     transition: transform 0.2s linear;
 }
 

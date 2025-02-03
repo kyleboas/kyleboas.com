@@ -106,10 +106,10 @@ function drawRing(radius, label, centerX, centerY) {
     ctx.fillText(label, centerX + radius * scale + 5, centerY);
 }
 
-// Update aircraft positions
+// Store last known aircraft positions to handle errors
 let lastKnownPositions = {};
 let lastUpdateTime = Date.now();
-const positionTimeout = 5000;
+const positionTimeout = 5000; // Restore last positions for 5 seconds if an error occurs
 
 function updateAircraftOnMap(flights, airport) {
     try {
@@ -120,10 +120,12 @@ function updateAircraftOnMap(flights, airport) {
             if (flight.latitude && flight.longitude) {
                 const { x, y } = convertToXY(flight.latitude, flight.longitude, airport.latitude, airport.longitude);
 
+                // Update stored aircraft positions
                 aircraftPositions[flight.flightId] = { x, y, flight };
                 lastKnownPositions[flight.flightId] = { x, y, flight };
                 lastUpdateTime = Date.now();
 
+                // Update aircraft on canvas
                 if (selectedAircraft === flight.flightId) {
                     selectedFlight = { x, y, flight };
                 } else {
@@ -132,9 +134,23 @@ function updateAircraftOnMap(flights, airport) {
                     ctx.arc(x, y, 3, 0, Math.PI * 2);
                     ctx.fill();
                 }
+
+                // Update aircraft in the DOM
+                let aircraftElement = document.getElementById(`flight-${flight.flightId}`);
+
+                if (!aircraftElement) {
+                    aircraftElement = document.createElement("div");
+                    aircraftElement.id = `flight-${flight.flightId}`;
+                    aircraftElement.className = "aircraft";
+                    mapCanvas.appendChild(aircraftElement);
+                }
+
+                // Update position without re-adding the element
+                aircraftElement.style.transform = `translate(${x}px, ${y}px)`;
             }
         });
 
+        // Highlight selected flight
         if (selectedFlight) {
             ctx.fillStyle = "red";
             ctx.beginPath();
@@ -144,7 +160,7 @@ function updateAircraftOnMap(flights, airport) {
     } catch (error) {
         console.error("Error updating aircraft positions:", error);
 
-        // If an error occurs, restore last known positions for 5 seconds
+        // Restore last known positions if an error occurs
         if (Date.now() - lastUpdateTime < positionTimeout) {
             console.warn("Using last known positions due to error");
             Object.values(lastKnownPositions).forEach(({ x, y, flight }) => {
@@ -180,18 +196,19 @@ document.addEventListener("DOMContentLoaded", () => {
         updateAircraftOnMap(getFlights(), airportCoordinates);
     }, 1000);
 
-    // Debounced scroll event to prevent lag and excessive updates
-    let lastScrollTime = 0;
-    const scrollDelay = 1500; // Adjust delay for performance
+    // Optimize scroll event to prevent blinking
+    let isUpdating = false;
 
     window.addEventListener("scroll", () => {
-        const now = Date.now();
-        if (now - lastScrollTime > scrollDelay) {
-            lastScrollTime = now;
-            const rect = mapCanvas.getBoundingClientRect();
-            if (rect.top < window.innerHeight && rect.bottom > 0) {
-                updateAircraftOnMap(getFlights(), airportCoordinates);
-            }
+        if (!isUpdating) {
+            isUpdating = true;
+            requestAnimationFrame(() => {
+                const rect = mapCanvas.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    updateAircraftOnMap(getFlights(), airportCoordinates);
+                }
+                isUpdating = false;
+            });
         }
     });
 });
