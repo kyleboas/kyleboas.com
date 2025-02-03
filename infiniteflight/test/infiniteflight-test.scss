@@ -463,6 +463,10 @@ tbody {
     top: 220px;
 }
 
+#flightsTable thead th:nth-child(1) {
+   padding: 0px;
+}
+
 thead th {
     padding: 5px;
     text-align: center;
