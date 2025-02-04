@@ -38,9 +38,9 @@ function initMap() {
     drawBaseMap(); 
 
     // Ensure the map popup is visible
-    const mapPopup = document.getElementById("mapPopup");
-    if (mapPopup) {
-        mapPopup.style.display = "block";
+    const mapContainer = document.getElementById("mapContainer");
+    if (mapContainer) {
+        mapContainer.style.display = "block";
     }
 
     // Delay showing aircraft for better rendering
