@@ -36,19 +36,7 @@ function initMap() {
     ctx = mapCanvas.getContext("2d");
     resizeCanvas();
     drawBaseMap(); 
-
-    // Ensure the map popup is visible
-    const mapContainer = document.getElementById("mapContainer");
-    if (mapContainer) {
-        mapContainer.style.display = "block";
-    }
-
-    // Delay showing aircraft for better rendering
-    setTimeout(() => {
-        if (allFlights.length > 0) {
-            showMapPopup(allFlights[0], airportCoordinates);
-        }
-    }, 500);
+    setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
 
     mapCanvas.addEventListener("click", toggleScale);
 }
