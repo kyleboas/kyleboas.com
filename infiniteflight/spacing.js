@@ -1,4 +1,5 @@
-function calculateAverageSpacingInNM() {
+// Live update function for average spacing in NM
+function calculateLiveAverageSpacingInNM() {
     if (!Array.isArray(allFlights) || allFlights.length === 0) {
         console.warn("No flights available.");
         return "N/A";
@@ -7,7 +8,7 @@ function calculateAverageSpacingInNM() {
     const now = Date.now();
     const sixtyMinutesAgo = now - 60 * 60 * 1000; // 60 minutes ago in milliseconds
 
-    // Filter flights within 13nm and within the last 60 minutes
+    // Filter flights within 13nm that were last reported in the past 60 minutes
     const recentFlights = allFlights
         .filter(flight => 
             flight.distanceToDestination <= 13 &&
@@ -22,8 +23,7 @@ function calculateAverageSpacingInNM() {
         .sort((a, b) => a.timestamp - b.timestamp); // Sort by timestamp
 
     if (recentFlights.length < 2) {
-        console.warn("Not enough flights within 13nm to calculate spacing.");
-        return "N/A";
+        return "N/A"; // Not enough flights to calculate spacing
     }
 
     // Function to calculate distance between two coordinates (Haversine formula)
@@ -59,5 +59,14 @@ function calculateAverageSpacingInNM() {
     return averageSpacingNM.toFixed(2) + " nm";
 }
 
-// Usage
-console.log("Average Spacing:", calculateAverageSpacingInNM());
+// Function to update the displayed value in the UI
+function updateLiveSpacingDisplay() {
+    const spacingElement = document.getElementById("liveSpacing");
+    if (!spacingElement) return;
+
+    const liveSpacing = calculateLiveAverageSpacingInNM();
+    spacingElement.textContent = `Live Average Spacing: ${liveSpacing}`;
+}
+
+// Auto-update every 5 seconds
+setInterval(updateLiveSpacingDisplay, 5000);

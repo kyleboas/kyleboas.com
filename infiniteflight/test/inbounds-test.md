@@ -4,6 +4,7 @@ layout: infiniteflight-test
 permalink: /test/inbounds/
 ---
 
+
 <div class="settings-menu hidden">
   <div class="settings-header">
     <strong>Settings</strong>
@@ -311,7 +312,7 @@ permalink: /test/inbounds/
          </tbody>
        </table>
       <p class="setting-description" style="margin-top: 20px;"> 
-        If you enable the <strong>Split Filter</strong> the highlighted colors will change dependent on your heading settings. For example, if you wanted to see what the separation of the aircraft from the North compared to the South, you would set the minimum heading to 90 and maximum heading to 270. This is what the same table will look like. N623KB is compared to DAL24 and AAL34 is compared to NT3.
+        If you enable the <strong>Split Filter</strong> the highlighted colors will change dependent on your heading settings. For example, if you wanted to separate aircraft into two groups aircraft coming the North and aircraft coming from the South, you would set the minimum heading to 90 and maximum heading to 270. This is what the same table will look like. N623KB is compared to DAL24 and AAL34 is compared to NT3.
       </p>
       <table id="infoTable">
         <thead>
@@ -385,98 +386,7 @@ permalink: /test/inbounds/
         <div class="nav-right" id="atcAirportsList">
         </div>
     </div>
-    
-    <table id="schedule">
-        <thead>
-            <tr>
-                <th>Feb 3</th>
-                <th>Feb 4</th>
-                <th>Feb 5</th>
-                <th>Feb 6</th>
-                <th>Feb 7</th>
-                <th>Feb 8</th>
-                <th>Feb 9</th>
-                <th>Feb 10</th>
-                <th>Feb 11</th>
-                <th>Feb 12</th>
-                <th>Feb 13</th>
-                <th>Feb 14</th>
-                <th>Feb 15</th>
-                <th>Feb 16</th>
-                <th>Feb 17</th>
-                <th>Feb 18</th>
-                <th>Feb 19</th>
-                <th>Feb 20</th>
-                <th>Feb 21</th>
-                <th>Feb 22</th>
-                <th>Feb 23</th>
-                <th>Feb 24</th>
-                <th>Feb 25</th>
-                <th>Feb 26</th>
-                <th>Feb 27</th>
-                <th>Feb 28</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>MPTO-SPJC</td>
-                <td>SPJC-SCEL</td>
-                <td>SCEL-SBGL</td>
-                <td>SBGL-KMIA</td>
-                <td>KMIA-CYYZ</td>
-                <td>CYYZ-KJFK</td>
-                <td>KJFK-EGLL</td>
-                <td>EGLL-LIRF</td>
-                <td>LIRF-LTFM</td>
-                <td>LTFM-HECA</td>
-                <td>HECA-HAAB</td>
-                <td>HAAB-FAOR</td>
-                <td>FAOR-OMDB</td>
-                <td>OMDB-VABB</td>
-                <td>VABB-VCBI</td>
-                <td>VCBI-WSSS</td>
-                <td>WSSS-YSSY</td>
-                <td>YSSY-VHHH</td>
-                <td>VHHH-ZBAA</td>
-                <td>ZBAA-RKSI</td>
-                <td>RKSI-RJAA</td>
-                <td>RJAA-PHNL</td>
-                <td>PHNL-KSEA</td>
-                <td>KSEA-CYYC</td>
-                <td>CYYC-KSFO</td>
-                <td>KSFO-KLAX</td>
-            </tr>
-            <tr>
-                <td>SKBO, SVMI, SKCL</td>
-                <td>SLVR, SPZO, SCFA</td>
-                <td>SBGR, SAEZ, SBKP</td>
-                <td>SBBR, TJSJ, MYNN</td>
-                <td>KLGA, KATL, KORD</td>
-                <td>KBOS, KPHL, CYUL</td>
-                <td>BIKF, EIDW, EHAM</td>
-                <td>LFPG, EDDF, LSZH</td>
-                <td>LGAV, LTAI, LGIR</td>
-                <td>OJAI, OEJN, UBBB</td>
-                <td>HKJK, HRYR, HTDA</td>
-                <td>FACT, FMMI, FMEE</td>
-                <td>OTHH, OKKK, OERK</td>
-                <td>VCBI, OPIS, OOMS</td>
-                <td>VNKT, VECC, VTBS</td>
-                <td>VVTS, VVDN, WIII</td>
-                <td>YBBN, AYPY, WADD</td>
-                <td>RPLL, RCTP, YBCS</td>
-                <td>ZUUU, ZSPD, RCKH</td>
-                <td>RKPC, ZSSS, RPVM</td>
-                <td>RKPK, RJCC, ZBAD</td>
-                <td>PHTO, PHOG, PHKO</td>
-                <td>CYVR, KPDX, KSFO</td>
-                <td>CYEG, KSLC</td>
-                <td>KDFW, KMSP, KSAN</td>
-                <td>KDEN, KLAS, KAUS</td>
-            </tr>
-        </tbody>
-    </table>
-    
+
     <!-- ATC Table -->
     <table id="atcTable">
         <thead>
@@ -503,6 +413,8 @@ permalink: /test/inbounds/
         <p class="atisMessage" id="atisMessage" style="display: none;">ATIS: Not fetched yet</p>
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
     </div>
+    
+    <div id="liveSpacing">Live Average Spacing: Calculating...</div>
 
    </div> 
    <div class="page-right">
