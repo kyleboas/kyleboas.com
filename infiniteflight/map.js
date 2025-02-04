@@ -138,7 +138,7 @@ function updateAircraftOnMap(flights, airport) {
                 } else {
                     ctx.fillStyle = "#828282";
                     ctx.beginPath();
-                    ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+                    ctx.arc(x, y, 2.2, 0, Math.PI * 2);
                     ctx.fill();
                 }
 
@@ -160,7 +160,7 @@ function updateAircraftOnMap(flights, airport) {
         if (selectedFlight) {
             ctx.fillStyle = "blue";
             ctx.beginPath();
-            ctx.arc(selectedFlight.x, selectedFlight.y, 3.5, 0, Math.PI * 2);
+            ctx.arc(selectedFlight.x, selectedFlight.y, 3.2, 0, Math.PI * 2);
             ctx.fill();
         }
     } catch (error) {
@@ -172,7 +172,7 @@ function updateAircraftOnMap(flights, airport) {
             Object.values(lastKnownPositions).forEach(({ x, y, flight }) => {
                 ctx.fillStyle = flight.flightId === selectedAircraft ? "blue" : "#828282";
                 ctx.beginPath();
-                ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+                ctx.arc(x, y, 2.2, 0, Math.PI * 2);
                 ctx.fill();
             });
         }
