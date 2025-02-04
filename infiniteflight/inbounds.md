@@ -418,8 +418,8 @@ permalink: /infiniteflight/inbounds/
     <table id="flightsTable">
         <thead>
             <tr>
-                <th colspan="5" class="map-container" style="display: none;">
-                    <div id="mapPopup">
+                <th colspan="5" class="map-container">
+                    <div id="mapPopup" style="display: none;">
                         <canvas id="mapCanvas"></canvas>
                     </div>
                 </th>
