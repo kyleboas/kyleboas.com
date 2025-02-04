@@ -389,7 +389,6 @@ permalink: /test/inbounds/
     <table id="schedule">
         <thead>
             <tr>
-                <th>Day</th>
                 <th>Feb 3</th>
                 <th>Feb 4</th>
                 <th>Feb 5</th>
@@ -420,7 +419,6 @@ permalink: /test/inbounds/
         </thead>
         <tbody>
             <tr>
-                <th>Featured Route</th>
                 <td>MPTO-SPJC</td>
                 <td>SPJC-SCEL</td>
                 <td>SCEL-SBGL</td>
@@ -449,7 +447,6 @@ permalink: /test/inbounds/
                 <td>KSFO-KLAX</td>
             </tr>
             <tr>
-                <th>Additional Airports</th>
                 <td>SKBO, SVMI, SKCL</td>
                 <td>SLVR, SPZO, SCFA</td>
                 <td>SBGR, SAEZ, SBKP</td>
