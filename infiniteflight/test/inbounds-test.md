@@ -385,7 +385,215 @@ permalink: /test/inbounds/
         <div class="nav-right" id="atcAirportsList">
         </div>
     </div>
+    
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATC Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .table-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 100%;
+            max-width: 100%;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 800px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
 
+    <div class="schedule-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Date</th>
+                <th>Featured Route</th>
+                <th>Additional Airports</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Monday</td>
+                <td>Feb 3</td>
+                <td>MPTO-SPJC</td>
+                <td>SKBO, SVMI, SKCL</td>
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                <td>Feb 4</td>
+                <td>SPJC-SCEL</td>
+                <td>SLVR, SPZO, SCFA</td>
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                <td>Feb 5</td>
+                <td>SCEL-SBGL</td>
+                <td>SBGR, SAEZ, SBKP</td>
+            </tr>
+            <tr>
+                <td>Thursday</td>
+                <td>Feb 6</td>
+                <td>SBGL-KMIA</td>
+                <td>SBBR, TJSJ, MYNN</td>
+            </tr>
+            <tr>
+                <td>Friday</td>
+                <td>Feb 7</td>
+                <td>KMIA-CYYZ</td>
+                <td>KLGA, KATL, KORD</td>
+            </tr>
+            <tr>
+                <td>Saturday</td>
+                <td>Feb 8</td>
+                <td>CYYZ-KJFK</td>
+                <td>KBOS, KPHL, CYUL</td>
+            </tr>
+            <tr>
+                <td>Sunday</td>
+                <td>Feb 9</td>
+                <td>KJFK-EGLL</td>
+                <td>BIKF, EIDW, EHAM</td>
+            </tr>
+            <tr>
+                <td>Monday</td>
+                <td>Feb 10</td>
+                <td>EGLL-LIRF</td>
+                <td>LFPG, EDDF, LSZH</td>
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                <td>Feb 11</td>
+                <td>LIRF-LTFM</td>
+                <td>LGAV, LTAI, LGIR</td>
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                <td>Feb 12</td>
+                <td>LTFM-HECA</td>
+                <td>OJAI, OEJN, UBBB</td>
+            </tr>
+            <tr>
+                <td>Thursday</td>
+                <td>Feb 13</td>
+                <td>HECA-HAAB</td>
+                <td>HKJK, HRYR, HTDA</td>
+            </tr>
+            <tr>
+                <td>Friday</td>
+                <td>Feb 14</td>
+                <td>HAAB-FAOR</td>
+                <td>FACT, FMMI, FMEE</td>
+            </tr>
+            <tr>
+                <td>Saturday</td>
+                <td>Feb 15</td>
+                <td>FAOR-OMDB</td>
+                <td>OTHH, OKKK, OERK</td>
+            </tr>
+            <tr>
+                <td>Sunday</td>
+                <td>Feb 16</td>
+                <td>OMDB-VABB</td>
+                <td>VCBI, OPIS, OOMS</td>
+            </tr>
+            <tr>
+                <td>Monday</td>
+                <td>Feb 17</td>
+                <td>VABB-VCBI</td>
+                <td>VNKT, VECC, VTBS</td>
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                <td>Feb 18</td>
+                <td>VCBI-WSSS</td>
+                <td>VVTS, VVDN, WIII</td>
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                <td>Feb 19</td>
+                <td>WSSS-YSSY</td>
+                <td>YBBN, AYPY, WADD</td>
+            </tr>
+            <tr>
+                <td>Thursday</td>
+                <td>Feb 20</td>
+                <td>YSSY-VHHH</td>
+                <td>RPLL, RCTP, YBCS</td>
+            </tr>
+            <tr>
+                <td>Friday</td>
+                <td>Feb 21</td>
+                <td>VHHH-ZBAA</td>
+                <td>ZUUU, ZSPD, RCKH</td>
+            </tr>
+            <tr>
+                <td>Saturday</td>
+                <td>Feb 22</td>
+                <td>ZBAA-RKSI</td>
+                <td>RKPC, ZSSS, RPVM</td>
+            </tr>
+            <tr>
+                <td>Sunday</td>
+                <td>Feb 23</td>
+                <td>RKSI-RJAA</td>
+                <td>RKPK, RJCC, ZBAD</td>
+            </tr>
+            <tr>
+                <td>Monday</td>
+                <td>Feb 24</td>
+                <td>RJAA-PHNL</td>
+                <td>PHTO, PHOG, PHKO</td>
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                <td>Feb 25</td>
+                <td>PHNL-KSEA</td>
+                <td>CYVR, KPDX, KSFO</td>
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                <td>Feb 26</td>
+                <td>KSEA-CYYC</td>
+                <td>CYEG, KSLC</td>
+            </tr>
+            <tr>
+                <td>Thursday</td>
+                <td>Feb 27</td>
+                <td>CYYC-KSFO</td>
+                <td>KDFW, KMSP, KSAN</td>
+            </tr>
+            <tr>
+                <td>Friday</td>
+                <td>Feb 28</td>
+                <td>KSFO-KLAX</td>
+                <td>KDEN, KLAS, KAUS</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+    
     <!-- ATC Table -->
     <table id="atcTable">
         <thead>

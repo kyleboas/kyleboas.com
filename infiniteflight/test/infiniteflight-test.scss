@@ -2,6 +2,13 @@
 # Front matter comment to ensure Jekyll properly reads file.
 ---
 
+.schedule-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    width: 100%;
+    max-width: 100%;
+}
+
 #flightsTable tr:hover {
     background-color: #f0f0f0;
     cursor: pointer;
