@@ -1,8 +1,9 @@
 import { setICAO } from "./icao.js";
+import { fetchAirportData } from "./airport.js";
+import { updateRunwaySpacingDisplay } from "./spacing.js";
 
-function inputSearch() {
+async function inputSearch() {
     const inputElement = document.getElementById("icao");
-    
     if (!inputElement) {
         console.error("ICAO input field not found.");
         return;
@@ -14,6 +15,11 @@ function inputSearch() {
         setICAO(inputICAO);
         console.log(`ICAO stored: ${inputICAO}`);
     }
+
+    const airportData = await fetchAirportData();
+    if (!airportData) return;
+
+    updateRunwaySpacingDisplay();
 }
 
 export { inputSearch };
