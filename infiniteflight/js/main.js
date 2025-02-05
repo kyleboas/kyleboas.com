@@ -1,2 +1,2 @@
-import { getICAO } from "./icaoStorage.js";
+import { getICAO } from "./icao.js";
 import { handleSearch } from "./search.js";
