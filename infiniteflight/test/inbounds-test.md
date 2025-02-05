@@ -414,7 +414,7 @@ permalink: /test/inbounds/
         <p class="controllersList" id="controllersList" style="display: none;">No active ATC.</p>
     </div>
     
-    <div id="liveSpacing">Live Average Spacing: Calculating...</div>
+    <div id="runwaySpacing"></div>
 
    </div> 
    <div class="page-right">
