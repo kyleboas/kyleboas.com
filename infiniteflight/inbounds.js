@@ -1,3 +1,5 @@
+import { getICAO } from "https://kyleboas.com/infiniteflight/js/icao.js";
+
 // ============================
 // Constants and Global State
 // ============================
