@@ -1010,7 +1010,6 @@ async function fetchAndUpdateFlights(icao) {
 
         // Log flight distance counts
         const distanceCounts = countInboundFlightsByDistance(allFlights);
-        console.log("Inbound flight distance counts:", distanceCounts);
 
         // Render the updated table
         renderFlightsTable(getFlights());
