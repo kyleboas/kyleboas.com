@@ -181,8 +181,6 @@ pairAircraftData(aircraftIds).then(pairedData => {
 
 });
 
-
-
 // ============================
 // Fetch Functions
 // ============================

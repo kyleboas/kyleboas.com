@@ -42,5 +42,3 @@ export async function fetchAirportData() {
         return null;
     }
 }
-
-export { fetchAirportData };
