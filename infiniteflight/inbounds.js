@@ -395,7 +395,7 @@ async function fetchActiveATCAirports() {
 
         // Display error message
         const atcAirportsListElement = document.getElementById("atcAirportsList");
-        atcAirportsListElement.textContent = "Failed to fetch active ATC airports.";
+        atcAirportsListElement.textContent = "Failed to fetch airports.";
     }
 }
 
