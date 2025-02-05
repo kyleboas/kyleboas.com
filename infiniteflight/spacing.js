@@ -59,7 +59,7 @@ function calculateLiveAverageSpacingInNM() {
 
     if (count === 0) return "N/A"; // No valid spacing calculations
 
-    return totalDistance / count.toFixed(2) + " nm";
+    return (totalDistance / count).toFixed(2) + " nm";
 }
 
 // Function to update the displayed value in the UI
