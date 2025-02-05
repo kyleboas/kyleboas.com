@@ -41,7 +41,7 @@ function calculateLiveAverageSpacingInNM() {
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // Calculate spacing distances between consecutive flights
+    // Calculate spacing distances between consecutive flights, ignoring distances <1nm
     let totalDistance = 0;
     let count = 0;
 
@@ -51,12 +51,15 @@ function calculateLiveAverageSpacingInNM() {
             recentFlights[i].latitude, recentFlights[i].longitude
         );
 
-        totalDistance += distance;
-        count++;
+        if (distance >= 1) {  // Ignore aircraft within 1nm
+            totalDistance += distance;
+            count++;
+        }
     }
 
-    const averageSpacingNM = totalDistance / count;
-    return averageSpacingNM.toFixed(2) + " nm";
+    if (count === 0) return "N/A"; // No valid spacing calculations
+
+    return totalDistance / count.toFixed(2) + " nm";
 }
 
 // Function to update the displayed value in the UI
