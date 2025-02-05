@@ -1,8 +1,12 @@
 import { serve } from "https://deno.land/std@0.184.0/http/server.ts";
 
-// Replace this with your Infinite Flight API key
+// API Keys from Environment Variables
 const API_KEY = Deno.env.get("API_KEY");
+const AIRPORTDB_KEY = Deno.env.get("AIRPORTDB_KEY");
+
+// API Base URLs
 const API_BASE_URL = "https://api.infiniteflight.com/public/v2";
+const AIRPORTDB_URL = "https://airportdb.io/api/v1/airport";
 
 // Helper function for error responses
 function respondWithError(message: string, status = 500) {
@@ -41,9 +45,36 @@ async function proxyHandler(req: Request): Promise<Response> {
       });
     }
 
-    // Handle GET requests
-    if (req.method === "GET") {
-      const response = await fetch(`${API_BASE_URL}${pathname}${search}`, {
+    // Handle AirportDB API Requests (e.g., /api/airport/KPHL)
+    if (pathname.startsWith("/api/airport/")) {
+      const icao = pathname.split("/").pop(); // Extract ICAO code
+      if (!icao) return respondWithError("ICAO code is required", 400);
+
+      const response = await fetch(`${AIRPORTDB_URL}/${icao}?apiKey=${AIRPORTDB_KEY}`);
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return addCORSHeaders(
+          new Response(JSON.stringify(data), {
+            status: response.status,
+            headers: { "Content-Type": "application/json" },
+          })
+        );
+      }
+
+      return addCORSHeaders(
+        new Response(JSON.stringify(data), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        })
+      );
+    }
+
+    // Handle Infinite Flight API Requests
+    if (pathname.startsWith("/api/if")) {
+      const ifPath = pathname.replace("/api/if", "");
+      const response = await fetch(`${API_BASE_URL}${ifPath}${search}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${API_KEY}`,
@@ -69,52 +100,8 @@ async function proxyHandler(req: Request): Promise<Response> {
       );
     }
 
-    // Handle POST requests
-    else if (req.method === "POST") {
-      const { endpoint, method = "GET", body } = await req.json();
-
-      if (!endpoint) {
-        return respondWithError("Endpoint is required", 400);
-      }
-
-      const options: RequestInit = {
-        method,
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      };
-
-      // Add body if it's a POST request
-      if (method === "POST" && body) {
-        options.body = JSON.stringify(body);
-      }
-
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return addCORSHeaders(
-          new Response(JSON.stringify(data), {
-            status: response.status,
-            headers: { "Content-Type": "application/json" },
-          })
-        );
-      }
-
-      return addCORSHeaders(
-        new Response(JSON.stringify(data), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        })
-      );
-    }
-
-    // Unsupported HTTP methods
-    else {
-      return respondWithError("Only GET and POST requests are allowed", 405);
-    }
+    // Unsupported endpoint
+    return respondWithError("Invalid API endpoint", 404);
   } catch (error) {
     console.error("Proxy error:", error);
     return respondWithError("An error occurred while processing the request");
