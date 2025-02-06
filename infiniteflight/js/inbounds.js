@@ -550,9 +550,12 @@ function displayATIS(atis) {
     // Ensure the main airport section is visible
     mainAirportElement.style.display = 'block';
 
+    // Format ATIS message by ensuring a space after each comma
+    const formattedATIS = atis.replace(/,/g, ', ');
+
     // Update the ATIS content
     atisElement.style.display = 'block';
-    atisElement.textContent = `ATIS: ${atis || 'Not available'}`;
+    atisElement.textContent = `ATIS: ${formattedATIS || 'Not available'}`;
 }
 
 function displayControllers(controllers, centerFrequencies = "") {
