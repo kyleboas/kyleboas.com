@@ -69,7 +69,7 @@ async function getRunwayAlignedAircraft() {
 // Calculate spacing between aircraft on the same runway
 async function calculateRunwaySpacing() {
     const runwayAircraftData = await getRunwayAlignedAircraft();
-    if (!runwayAircraftData.length) return "N/A";
+    if (!runwayAircraftData.length) return []; // Return empty array instead of "N/A"
 
     const spacingData = runwayAircraftData.map(({ runway, aircraft }) => {
         if (aircraft.length < 2) return { runway, spacing: "N/A" };
@@ -97,6 +97,11 @@ async function updateRunwaySpacingDisplay() {
     if (!spacingElement) return;
 
     const spacingData = await calculateRunwaySpacing();
+    if (!spacingData.length) {
+        spacingElement.innerHTML = "<p>No runway spacing data available</p>";
+        return;
+    }
+
     spacingElement.innerHTML = spacingData.map(({ runway, spacing }) => 
         `<p>${runway}: ${spacing}</p>`
     ).join("");

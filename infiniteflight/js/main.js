@@ -4,16 +4,31 @@ import { getFlights, allFlights, airportCoordinates } from "./inbounds.js";
 import { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./map.js";
 import { updateRunwaySpacingDisplay } from "./spacing.js";
 
-document.getElementById("icao").addEventListener("input", inputSearch);
-
 // Initialize real-time aircraft updates
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    // Set up ICAO input handler
+    const icaoInput = document.getElementById("icao");
+    if (icaoInput) {
+        // Set initial value from session storage if exists
+        const storedICAO = getICAO();
+        if (storedICAO) {
+            icaoInput.value = storedICAO;
+            await inputSearch(); // Trigger initial search
+        }
+        
+        // Add input event listener
+        icaoInput.addEventListener("input", inputSearch);
+    }
+
     initMap();
 
     // Auto-update aircraft every second normally
-    setInterval(() => {
-        updateAircraftOnMap(getFlights(), airportCoordinates);
-        updateRunwaySpacingDisplay();
+    setInterval(async () => {
+        const currentICAO = getICAO();
+        if (currentICAO) {
+            updateAircraftOnMap(getFlights(), airportCoordinates);
+            await updateRunwaySpacingDisplay();
+        }
     }, 1000);
 
     // Optimize scroll event to prevent blinking
