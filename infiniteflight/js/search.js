@@ -21,8 +21,11 @@ async function inputSearch() {
         console.error("Failed to fetch airport data.");
         return;
     }
-
+     
+     
     console.log("Updating runway spacing display...");
+    await getRunwayAlignedAircraft();
+    await calculateRunwaySpacing();
     await updateRunwaySpacingDisplay();
 }
 
