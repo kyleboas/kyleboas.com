@@ -1032,8 +1032,8 @@ async function fetchAndUpdateFlights(icao) {
 // interpolatedNextPositions
 function interpolateNextPositions(airportCoordinates) {
     if (isAutoUpdateActive === true) {
-      console.error("Interpolation skipped as auto-update is off.");
-      return;
+        console.error("Interpolation skipped as auto-update is off.");
+        return;
     }
 
     if (!airportCoordinates) {
@@ -1047,6 +1047,8 @@ function interpolateNextPositions(airportCoordinates) {
     if (secondsSinceLastApiUpdate > 18) {
         console.error("Interpolation exceeded 18 seconds. Waiting for the next API update.");
         
+        // Ensure allFlights is rendered when interpolation is skipped
+        renderFlightsTable(allFlights);
         return;
     }
 
@@ -1091,7 +1093,7 @@ function interpolateNextPositions(airportCoordinates) {
                 flight.etaMinutes = 'N/A';
             }
         }
-     });
+    });
 
     renderFlightsTable(getFlights());
 }
