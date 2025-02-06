@@ -1,4 +1,5 @@
 import { fetchAirportData } from "./airport.js";
+import { allFlights } from "./inbounds.js";
 
 // Function to calculate distance using the Haversine formula
 function spacingDistance(lat1, lon1, lat2, lon2) {

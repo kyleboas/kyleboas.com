@@ -1,4 +1,5 @@
 import { fetchAirportData } from "./airport.js";
+import { getFlights, allFlights } from "./inbounds.js";
 
 let mapCanvas, ctx;
 let aircraftPositions = {};  

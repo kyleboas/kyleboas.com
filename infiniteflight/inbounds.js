@@ -1929,3 +1929,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 });
+
+export { getFlights, allFlights };
