@@ -102,7 +102,13 @@ async function updateRunwaySpacingDisplay() {
     ).join("");
 }
 
-// Auto-update every 5 seconds
-setInterval(updateRunwaySpacingDisplay, 5000);
+let intervalId = setInterval(() => {
+    try {
+        updateRunwaySpacingDisplay();
+    } catch (error) {
+        console.error("Error occurred, stopping auto-update:", error);
+        clearInterval(intervalId);
+    }
+}, 5000);
 
 export { getRunwayAlignedAircraft, calculateRunwaySpacing, updateRunwaySpacingDisplay };
