@@ -30,7 +30,6 @@ export async function fetchAirportData() {
 
             // Use cached data if it's still valid
             if (ageInDays < CACHE_EXPIRATION_DAYS) {
-                console.log(`[Cache] Using cached data for ICAO: ${icao}`);
                 return data;
             } else {
                 console.log(`[Cache] Cache expired for ICAO: ${icao}, fetching new data...`);
