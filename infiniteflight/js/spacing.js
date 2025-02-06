@@ -1,5 +1,19 @@
 import { fetchAirportData } from "./airport.js";
-import { allFlights, calculateDistance } from "./inbounds.js";
+
+// Function to calculate distance using the Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 3440;
+    const toRadians = (deg) => (deg * Math.PI) / 180;
+
+    const φ1 = toRadians(lat1);
+    const φ2 = toRadians(lat2);
+    const Δφ = toRadians(lat2 - lat1);
+    const Δλ = toRadians(lon2 - lon1);
+
+    const a = Math.sin(Δφ / 2) ** 2 +
+              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 // Determine which aircraft is aligned with the runway
 async function getRunwayAlignedAircraft() {
@@ -86,5 +100,8 @@ async function updateRunwaySpacingDisplay() {
         `<p>${runway}: ${spacing}</p>`
     ).join("");
 }
+
+// Auto-update every 5 seconds
+setInterval(updateRunwaySpacingDisplay, 5000);
 
 export { getRunwayAlignedAircraft, calculateRunwaySpacing, updateRunwaySpacingDisplay };
