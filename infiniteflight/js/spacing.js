@@ -18,10 +18,19 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 // Determine which aircraft is aligned with the runway
 async function getRunwayAlignedAircraft() {
+    console.log("Fetching airport data for runway alignment...");
     const airportData = await fetchAirportData();
-    if (!airportData) return [];
+    console.log("Airport data received:", airportData);
+    
+    if (!airportData) {
+        console.log("No airport data available");
+        return [];
+    }
 
     const runways = airportData.runways || [];
+    console.log("Number of runways:", runways.length);
+    console.log("Number of flights:", allFlights.length);
+    
     if (!runways.length) return [];
 
     return runways.map(runway => {
@@ -46,6 +55,8 @@ async function getRunwayAlignedAircraft() {
             return (alignedWithLE && distToLE < distToHE) || (alignedWithHE && distToHE < distToLE) ? inFinalApproach : false;
         });
 
+        console.log(`Runway ${runway.le_ident}/${runway.he_ident} has ${alignedAircraft.length} aligned aircraft`);
+
         // Sort aircraft by distance to threshold
         alignedAircraft.sort((a, b) => {
             const distA = Math.min(
@@ -69,7 +80,7 @@ async function getRunwayAlignedAircraft() {
 // Calculate spacing between aircraft on the same runway
 async function calculateRunwaySpacing() {
     const runwayAircraftData = await getRunwayAlignedAircraft();
-    if (!runwayAircraftData.length) return []; // Return empty array instead of "N/A"
+    if (!runwayAircraftData.length) return [];
 
     const spacingData = runwayAircraftData.map(({ runway, aircraft }) => {
         if (aircraft.length < 2) return { runway, spacing: "N/A" };
@@ -94,7 +105,10 @@ async function calculateRunwaySpacing() {
 // Function to update UI with calculated spacing
 async function updateRunwaySpacingDisplay() {
     const spacingElement = document.getElementById("runwaySpacing");
-    if (!spacingElement) return;
+    if (!spacingElement) {
+        console.log("Spacing element not found in DOM");
+        return;
+    }
 
     const spacingData = await calculateRunwaySpacing();
     if (!spacingData.length) {
@@ -106,8 +120,5 @@ async function updateRunwaySpacingDisplay() {
         `<p>${runway}: ${spacing}</p>`
     ).join("");
 }
-
-// Auto-update every 5 seconds
-setInterval(updateRunwaySpacingDisplay, 5000);
 
 export { getRunwayAlignedAircraft, calculateRunwaySpacing, updateRunwaySpacingDisplay };

@@ -54,3 +54,5 @@ window.addEventListener("resize", () => {
     resizeCanvas();
     drawBaseMap();
 });
+
+setInterval(updateRunwaySpacingDisplay, 5000);
