@@ -54,15 +54,15 @@ async function getRunwayAlignedAircraft() {
 // Calculate spacing between aircraft on the same runway
 async function calculateRunwaySpacing() {
     const runwayAircraftData = await getRunwayAlignedAircraft();
-    if (!runwayAircraftData.length) return "N/A";
+    if (!runwayAircraftData.length) return [];
 
-    const spacingData = runwayAircraftData.map(({ runway, aircraft }) => {
+    return runwayAircraftData.map(({ runway, aircraft }) => {
         if (aircraft.length < 2) return { runway, spacing: "N/A" };
 
         let totalDistance = 0, count = 0;
 
         for (let i = 1; i < aircraft.length; i++) {
-            totalDistance += calculateDistance(
+            totalDistance += spacingDistance(
                 aircraft[i - 1].latitude, aircraft[i - 1].longitude,
                 aircraft[i].latitude, aircraft[i].longitude
             );
@@ -72,8 +72,6 @@ async function calculateRunwaySpacing() {
         const averageSpacingNM = (totalDistance / count).toFixed(2) + " nm";
         return { runway, spacing: averageSpacingNM };
     });
-
-    return spacingData;
 }
 
 // Function to update UI with calculated spacing
@@ -82,6 +80,13 @@ async function updateRunwaySpacingDisplay() {
     if (!spacingElement) return;
 
     const spacingData = await calculateRunwaySpacing();
+    
+    // Ensure spacingData is an array
+    if (!Array.isArray(spacingData)) {
+        console.error("Unexpected data format:", spacingData);
+        return;
+    }
+
     spacingElement.innerHTML = spacingData.map(({ runway, spacing }) => 
         `<p>${runway}: ${spacing}</p>`
     ).join("");
