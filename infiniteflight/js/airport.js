@@ -5,10 +5,10 @@ const CACHE_KEY = "airportData";
 const CACHE_EXPIRATION_DAYS = 180;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-let fetchPromise = null; // Singleton pattern to ensure only one fetch call
+let fetchPromise = null;
 
 export function fetchAirportData() {
-    if (fetchPromise) return fetchPromise; // Return existing promise if already running
+    if (fetchPromise) return fetchPromise;
 
     fetchPromise = (async () => {
         const icao = getICAO();
@@ -17,11 +17,10 @@ export function fetchAirportData() {
                 console.error("No ICAO code found in session storage.");
                 sessionStorage.setItem("icaoNotFoundLogged", "true");
             }
-            fetchPromise = null; // Reset so it can retry later
+            fetchPromise = null;
             return null;
         }
 
-        // Check if cached data exists
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
             const { timestamp, data } = JSON.parse(cached);
@@ -42,13 +41,12 @@ export function fetchAirportData() {
 
             const data = await response.json();
 
-            // Store fetched data in localStorage with timestamp
             localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
 
             return data;
         } catch (error) {
             console.error("Failed to fetch airport data:", error);
-            fetchPromise = null; // Reset in case of failure
+            fetchPromise = null;
             return null;
         }
     })();

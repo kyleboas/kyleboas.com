@@ -1,3 +1,5 @@
+import { updateAircraftOnMap } from "./map.js";
+
 // ============================
 // Constants and Global State
 // ============================
