@@ -67,7 +67,7 @@ async function getRunwayAlignedAircraft() {
 }
 
 // Calculate spacing between aircraft on the same runway
-export async function calculateRunwaySpacing() {
+async function calculateRunwaySpacing() {
     const runwayAircraftData = await getRunwayAlignedAircraft();
     if (!runwayAircraftData.length) return "N/A";
 
