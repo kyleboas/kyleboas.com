@@ -1,4 +1,4 @@
-import { updateAircraftOnMap } from "./map.js";
+import { updateAircraftOnMap, showMapPopup } from "./map.js";
 
 // ============================
 // Constants and Global State

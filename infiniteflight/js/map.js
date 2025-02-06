@@ -217,4 +217,4 @@ function initMap() {
     mapCanvas.addEventListener("click", toggleScale);
 }
 
-export { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft };
+export { initMap, showMapPopup, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft };
