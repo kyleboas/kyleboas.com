@@ -34,7 +34,7 @@ function toggleScale() {
 }
 
 // Initialize map
-export function initMap() {
+function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
     ctx = mapCanvas.getContext("2d");
     resizeCanvas();
@@ -148,7 +148,7 @@ let lastKnownPositions = {};
 let lastUpdateTime = Date.now();
 const positionTimeout = 5000;
 
-export function updateAircraftOnMap(flights, airport) {
+function updateAircraftOnMap(flights, airport) {
     try {
         drawBaseMap();
         let selectedFlight = null;
