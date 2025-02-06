@@ -1,14 +1,14 @@
 import { getICAO } from "./icao.js";
 import { inputSearch } from "./search.js";
 import { getFlights, allFlights, airportCoordinates } from "./inbounds.js";
-import { updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./map.js";
+import { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./map.js";
 
 document.getElementById("icao").addEventListener("input", inputSearch);
 
 // Initialize real-time aircraft updates
 document.addEventListener("DOMContentLoaded", () => {
     initMap();
-
+    
     // Auto-update aircraft every second
     setInterval(() => {
         updateAircraftOnMap(getFlights(), airportCoordinates);
