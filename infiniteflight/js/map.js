@@ -195,4 +195,4 @@ function updateAircraftOnMap(flights, airport) {
     }
 }
 
-export { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft };
+export { updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft };
