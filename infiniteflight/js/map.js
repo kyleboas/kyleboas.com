@@ -158,7 +158,7 @@ let lastKnownPositions = {};
 let lastUpdateTime = Date.now();
 const positionTimeout = 5000;
 
-function updateAircraftOnMap(flights, airport) {
+export function updateAircraftOnMap(flights, airport) {
     try {
         drawBaseMap();
         let selectedFlight = null;
