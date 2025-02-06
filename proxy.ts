@@ -45,24 +45,36 @@ async function proxyHandler(req: Request): Promise<Response> {
       });
     }
 
-    // Handle AirportDB API Requests (e.g., /api/airport/KPHL)
+    // Handle AirportDB API Requests
     if (pathname.startsWith("/api/airport/")) {
-      const icao = pathname.split("/").pop(); // Extract ICAO code
+      const icao = pathname.split("/").pop();
+
       if (!icao) return respondWithError("ICAO code is required", 400);
+      
+      if (!AIRPORTDB_KEY) {
+        console.error("❌ AIRPORTDB_KEY is missing!");
+        return respondWithError("Server configuration error: Missing API Token", 500);
+      }
 
-      const response = await fetch(`${AIRPORTDB_URL}/${icao}?apiKey=${AIRPORTDB_KEY}`);
+      const apiUrl = `https://airportdb.io/api/v1/airport/${icao}?apiToken=${AIRPORTDB_KEY}`;
+      console.log("Fetching URL:", apiUrl); // Debugging API Request
 
-      const data = await response.json();
+      const response = await fetch(apiUrl);
 
       if (!response.ok) {
+        console.error(`❌ API Error: ${response.status} - ${response.statusText}`);
         return addCORSHeaders(
-          new Response(JSON.stringify(data), {
-            status: response.status,
-            headers: { "Content-Type": "application/json" },
-          })
+          new Response(
+            JSON.stringify({ error: `Error fetching airport: ${response.statusText}` }),
+            {
+              status: response.status,
+              headers: { "Content-Type": "application/json" },
+            }
+          )
         );
       }
 
+      const data = await response.json();
       return addCORSHeaders(
         new Response(JSON.stringify(data), {
           status: 200,
@@ -74,6 +86,12 @@ async function proxyHandler(req: Request): Promise<Response> {
     // Handle Infinite Flight API Requests
     if (pathname.startsWith("/api/if")) {
       const ifPath = pathname.replace("/api/if", "");
+
+      if (!API_KEY) {
+        console.error("❌ API_KEY is missing!");
+        return respondWithError("Server configuration error: Missing API Key", 500);
+      }
+
       const response = await fetch(`${API_BASE_URL}${ifPath}${search}`, {
         method: "GET",
         headers: {
@@ -84,6 +102,7 @@ async function proxyHandler(req: Request): Promise<Response> {
       const data = await response.json();
 
       if (!response.ok) {
+        console.error(`❌ API Error: ${response.status} - ${response.statusText}`);
         return addCORSHeaders(
           new Response(JSON.stringify(data), {
             status: response.status,
@@ -103,7 +122,7 @@ async function proxyHandler(req: Request): Promise<Response> {
     // Unsupported endpoint
     return respondWithError("Invalid API endpoint", 404);
   } catch (error) {
-    console.error("Proxy error:", error);
+    console.error("❌ Proxy error:", error);
     return respondWithError("An error occurred while processing the request");
   }
 }
