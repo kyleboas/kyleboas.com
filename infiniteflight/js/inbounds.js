@@ -1048,16 +1048,10 @@ function interpolateNextPositions(airportCoordinates) {
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
     if (secondsSinceLastApiUpdate > 18) {
-        console.error("Interpolation exceeded 18 seconds. Fetching new data from API...");
+        console.error("Interpolation exceeded 18 seconds. Waiting for the next API update.");
         
-        // Immediately update `allFlights` from the API
-        fetchFlightsFromAPI().then((updatedFlights) => {
-            allFlights = updatedFlights;
-            renderFlightsTable(allFlights);
-        }).catch((error) => {
-            console.error("Error fetching new flight data:", error.message);
-        });
-
+        // Ensure allFlights is rendered when interpolation is skipped
+        renderFlightsTable(allFlights);
         return;
     }
 
