@@ -67,19 +67,53 @@ async function getRunwayAlignedAircraft() {
 }
 
 // Calculate spacing between aircraft on the same runway
-async function calculateRunwaySpacing() {
+export async function calculateRunwaySpacing() {
     const runwayAircraftData = await getRunwayAlignedAircraft();
     if (!runwayAircraftData.length) return "N/A";
 
-    const spacingData = runwayAircraftData.map(({ runway, aircraft }) => {
-        if (aircraft.length < 2) return { runway, spacing: "N/A" };
+    const airportData = await fetchAirportData();
+    if (!airportData) return "N/A";
 
+    const { latitude: airportLat, longitude: airportLon } = airportData;
+
+    const spacingData = runwayAircraftData.map(({ runway, aircraft }) => {
+        // Filter aircraft based on distance from the airport (2nm to 45nm range)
+        const filteredAircraft = aircraft.filter(flight => {
+            const distFromAirport = calculateDistance(
+                flight.latitude, flight.longitude,
+                airportLat, airportLon
+            );
+            return distFromAirport >= 2 && distFromAirport <= 45;
+        });
+
+        if (filteredAircraft.length < 2) return { runway, spacing: "N/A" };
+
+        // Sort aircraft by their distance to the specific runway threshold
+        filteredAircraft.sort((a, b) => {
+            const distA = Math.min(
+                calculateDistance(a.latitude, a.longitude, 
+                                  parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
+                calculateDistance(a.latitude, a.longitude, 
+                                  parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
+            );
+
+            const distB = Math.min(
+                calculateDistance(b.latitude, b.longitude, 
+                                  parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
+                calculateDistance(b.latitude, b.longitude, 
+                                  parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
+            );
+
+            return distA - distB;
+        });
+
+        // Calculate spacing only for aircraft assigned to this runway
         let totalDistance = 0, count = 0;
 
-        for (let i = 1; i < aircraft.length; i++) {
+        for (let i = 1; i < filteredAircraft.length; i++) {
             totalDistance += calculateDistance(
-                aircraft[i - 1].latitude, aircraft[i - 1].longitude,
-                aircraft[i].latitude, aircraft[i].longitude
+                filteredAircraft[i - 1].latitude, filteredAircraft[i - 1].longitude,
+                filteredAircraft[i].latitude, filteredAircraft[i].longitude
             );
             count++;
         }
