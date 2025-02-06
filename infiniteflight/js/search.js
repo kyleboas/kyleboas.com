@@ -1,6 +1,6 @@
 import { setICAO } from "./icao.js";
 import { fetchAirportData } from "./airport.js";
-import { updateRunwaySpacingDisplay } from "./spacing.js";
+import { getRunwayAlignedAircraft, calculateRunwaySpacing, updateRunwaySpacingDisplay } from "./spacing.js";
 
 async function inputSearch() {
     const inputElement = document.getElementById("icao");
