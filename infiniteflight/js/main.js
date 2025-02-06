@@ -22,17 +22,6 @@ function showMapPopup(flight, airport) {
     updateAircraftOnMap(getFlights(), airport);
 }
 
-// Initialize map
-function initMap() {
-    mapCanvas = document.getElementById("mapCanvas");
-    ctx = mapCanvas.getContext("2d");
-    resizeCanvas();
-    drawBaseMap(); 
-    setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
-
-    mapCanvas.addEventListener("click", toggleScale);
-}
-
 // Adjust on window resize
 window.addEventListener("resize", () => {
     resizeCanvas();
