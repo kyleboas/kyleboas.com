@@ -19,7 +19,11 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 // Determine which aircraft is aligned with the runway
 async function getRunwayAlignedAircraft() {
     const airportData = await fetchAirportData();
-    if (!airportData) return [];
+    console.log("Fetched Airport Data:", airportData);
+    if (!airportData) {
+    console.error("Error: fetchAirportData() returned null or undefined.");
+    return [];
+    }
 
     const runways = airportData.runways || [];
     if (!runways.length) return [];
