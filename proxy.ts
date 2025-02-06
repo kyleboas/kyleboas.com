@@ -52,7 +52,7 @@ async function proxyHandler(req: Request): Promise<Response> {
       if (!icao) return respondWithError("ICAO code is required", 400);
       
       if (!AIRPORTDB_KEY) {
-        console.error("❌ AIRPORTDB_KEY is missing!");
+        console.error("AIRPORTDB_KEY is missing ");
         return respondWithError("Server configuration error: Missing API Token", 500);
       }
 
@@ -62,7 +62,7 @@ async function proxyHandler(req: Request): Promise<Response> {
       const response = await fetch(apiUrl);
 
       if (!response.ok) {
-        console.error(`❌ API Error: ${response.status} - ${response.statusText}`);
+        console.error(`API Error: ${response.status} - ${response.statusText}`);
         return addCORSHeaders(
           new Response(
             JSON.stringify({ error: `Error fetching airport: ${response.statusText}` }),
@@ -88,7 +88,7 @@ async function proxyHandler(req: Request): Promise<Response> {
       const ifPath = pathname.replace("/api/if", "");
 
       if (!API_KEY) {
-        console.error("❌ API_KEY is missing!");
+        console.error("API_KEY is missing");
         return respondWithError("Server configuration error: Missing API Key", 500);
       }
 
@@ -102,7 +102,7 @@ async function proxyHandler(req: Request): Promise<Response> {
       const data = await response.json();
 
       if (!response.ok) {
-        console.error(`❌ API Error: ${response.status} - ${response.statusText}`);
+        console.error(`API Error: ${response.status} - ${response.statusText}`);
         return addCORSHeaders(
           new Response(JSON.stringify(data), {
             status: response.status,
@@ -122,7 +122,7 @@ async function proxyHandler(req: Request): Promise<Response> {
     // Unsupported endpoint
     return respondWithError("Invalid API endpoint", 404);
   } catch (error) {
-    console.error("❌ Proxy error:", error);
+    console.error("Proxy error:", error);
     return respondWithError("An error occurred while processing the request");
   }
 }

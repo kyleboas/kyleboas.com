@@ -83,6 +83,38 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
+async function drawILSPaths() {
+    const airportData = await fetchAirportData();
+    if (!airportData || !airportData.runways) return;
+
+    airportData.runways.forEach(runway => {
+        drawILS(runway.le_latitude_deg, runway.le_longitude_deg, runway.le_heading_degT);
+        drawILS(runway.he_latitude_deg, runway.he_longitude_deg, runway.he_heading_degT);
+    });
+}
+
+function drawILS(lat, lon, heading) {
+    const nmPerDegree = 60;
+    const ilsLength = 13; // 13 NM ILS path
+    const ilsSegments = 13; // One dash per NM
+
+    const ilsEndLat = lat + (ilsLength / nmPerDegree) * Math.cos((heading * Math.PI) / 180);
+    const ilsEndLon = lon + (ilsLength / nmPerDegree) * Math.sin((heading * Math.PI) / 180);
+
+    const start = convertToXY(lat, lon, airportCoordinates.latitude, airportCoordinates.longitude);
+    const end = convertToXY(ilsEndLat, ilsEndLon, airportCoordinates.latitude, airportCoordinates.longitude);
+
+    ctx.setLineDash([5, 5]); // Dashed line: 5px on, 5px off
+    ctx.strokeStyle = "grey";
+    ctx.lineWidth = 1.5;
+
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+    ctx.setLineDash([]); // Reset dash style
+}
+
 // Draw the base map with fixed-size rings
 function drawBaseMap() {
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
@@ -95,6 +127,8 @@ function drawBaseMap() {
     drawRing(50, "", centerX, centerY);
     drawRing(200, "", centerX, centerY);
     drawRing(500, "", centerX, centerY);
+    
+    drawILSPaths();
 }
 
 
