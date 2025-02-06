@@ -12,6 +12,8 @@ export function fetchAirportData() {
 
     fetchPromise = (async () => {
         const icao = getICAO();
+        console.log("Fetching airport data for ICAO:", icao);  // Moved inside the function
+
         if (!icao) {
             if (!sessionStorage.getItem("icaoNotFoundLogged")) {
                 console.error("No ICAO code found in session storage.");
@@ -33,13 +35,14 @@ export function fetchAirportData() {
         }
 
         try {
-            console.log("Fetching fresh airport data...");
+            console.log("Fetching from URL:", `${AIRPORTDB_URL}${icao}`);
             const response = await fetch(`${AIRPORTDB_URL}${icao}`);
             if (!response.ok) {
                 throw new Error(`Error fetching airport data: ${response.statusText}`);
             }
 
             const data = await response.json();
+            console.log("Airport data received:", data);
 
             localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
 

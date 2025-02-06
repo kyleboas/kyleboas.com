@@ -2,6 +2,7 @@ import { setICAO } from "./icao.js";
 import { fetchAirportData } from "./airport.js";
 
 async function inputSearch() {
+    console.log("Search triggered!");
     const inputElement = document.getElementById("icao");
     if (!inputElement) {
         console.error("ICAO input field not found.");
@@ -9,18 +10,16 @@ async function inputSearch() {
     }
     const inputICAO = inputElement.value.trim().toUpperCase();
     
+    console.log("User entered ICAO:", inputICAO);
+
     if (inputICAO.length === 4) {
         setICAO(inputICAO);
-        console.log(`ICAO stored: ${inputICAO}`);
-        
+        console.log(`ICAO stored: ${getICAO()}`);
+
         const airportData = await fetchAirportData();
-        if (!airportData) {
-            console.error("Failed to fetch airport data.");
-            return;
-        }
-        console.log("Airport data fetched successfully:", airportData);
+        console.log("Fetched airport data:", airportData);
     } else {
-        setICAO(null); // Clear ICAO if invalid
+        setICAO(null);
     }
 }
 
