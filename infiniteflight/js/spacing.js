@@ -1,5 +1,5 @@
 import { fetchAirportData } from "./airport.js";
-import { getFlights } from "./inbounds.js";
+import { allFlights } from "./inbounds.js";
 
 // Function to calculate distance using the Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -25,7 +25,7 @@ async function getRunwayAlignedAircraft() {
     if (!runways.length) return [];
 
     return runways.map(runway => {
-        const alignedAircraft = getFlights.filter(flight => {
+        const alignedAircraft = allFlights.filter(flight => {
             if (!flight.latitude || !flight.longitude || !flight.heading) return false;
 
             // Determine proximity to runway threshold
