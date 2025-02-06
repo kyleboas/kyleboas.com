@@ -17,8 +17,12 @@ async function inputSearch() {
     }
 
     const airportData = await fetchAirportData();
-    if (!airportData) return;
+    if (!airportData) {
+        console.error("Failed to fetch airport data.");
+        return;
+    }
 
+    console.log("Updating runway spacing display...");
     await updateRunwaySpacingDisplay();
 }
 
