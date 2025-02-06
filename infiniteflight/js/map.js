@@ -33,17 +33,6 @@ function toggleScale() {
     updateAircraftOnMap(getFlights(), airportCoordinates);
 }
 
-// Initialize map
-function initMap() {
-    mapCanvas = document.getElementById("mapCanvas");
-    ctx = mapCanvas.getContext("2d");
-    resizeCanvas();
-    drawBaseMap(); 
-    setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
-
-    mapCanvas.addEventListener("click", toggleScale);
-}
-
 // Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
     const centerX = mapCanvas.width * 0.25;

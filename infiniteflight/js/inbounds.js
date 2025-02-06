@@ -1930,4 +1930,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-export { getFlights, allFlights };
+export { getFlights, allFlights, airportCoordinates };

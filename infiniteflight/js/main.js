@@ -1,10 +1,20 @@
 import { getICAO } from "./icao.js";
 import { inputSearch } from "./search.js";
-import { getFlights, allFlights } from "./inbounds.js";
+import { getFlights, allFlights, fetchAirportCoordinates } from "./inbounds.js";
 import { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./map.js";
 
 document.getElementById("icao").addEventListener("input", inputSearch);
 
+// Initialize map
+function initMap() {
+    mapCanvas = document.getElementById("mapCanvas");
+    ctx = mapCanvas.getContext("2d");
+    resizeCanvas();
+    drawBaseMap(); 
+    setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
+
+    mapCanvas.addEventListener("click", toggleScale);
+}
 
 // Initialize real-time aircraft updates
 document.addEventListener("DOMContentLoaded", () => {
