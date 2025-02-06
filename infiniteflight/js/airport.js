@@ -24,7 +24,7 @@ export async function fetchAirportData() {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
             const { timestamp, data } = JSON.parse(cached);
-            const ageInDays = (Date.now() - timestamp) / MS_PER_DAY;
+            const ageInDays = Math.floor((Date.now() - timestamp) / MS_PER_DAY);
 
             // Use cached data if it's still valid
             if (ageInDays < CACHE_EXPIRATION_DAYS) {
@@ -38,6 +38,9 @@ export async function fetchAirportData() {
     } catch (error) {
         console.warn(`[Cache] Failed to parse cache for ICAO: ${icao}, fetching new data...`, error);
     }
+    
+    if (sessionStorage.getItem(`fetching_${icao}`)) return null;
+sessionStorage.setItem(`fetching_${icao}`, "true");
 
     // Fetch new data if cache is expired or invalid
     try {
