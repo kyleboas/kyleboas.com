@@ -4,6 +4,27 @@ import { getFlights, allFlights, airportCoordinates } from "./inbounds.js";
 import { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./map.js";
 import { updateRunwaySpacingDisplay } from "./spacing.js";
 
+// Attach event listeners to the search button and input field
+document.addEventListener("DOMContentLoaded", () => {
+    const searchButton = document.getElementById("searchButton");
+    const icaoInput = document.getElementById("icao");
+
+    if (searchButton) {
+        searchButton.addEventListener("click", async () => {
+            await inputSearch();
+        });
+    }
+
+    if (icaoInput) {
+        icaoInput.addEventListener("keydown", async (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                await inputSearch();
+            }
+        });
+    }
+});
+
 // Initialize real-time aircraft updates
 document.addEventListener("DOMContentLoaded", async () => {
     // Set up ICAO input handler
