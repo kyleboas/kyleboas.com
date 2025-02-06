@@ -1,7 +1,7 @@
 import { getICAO } from "./icao.js";
 import { inputSearch } from "./search.js";
 import { getFlights, allFlights, airportCoordinates } from "./inbounds.js";
-import { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./map.js";
+import { updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./map.js";
 
 document.getElementById("icao").addEventListener("input", inputSearch);
 
