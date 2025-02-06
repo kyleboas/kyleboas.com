@@ -15,13 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
 });
 
-// Show map popup
-function showMapPopup(flight, airport) {
-    document.getElementById("mapPopup").style.display = "block";
-    selectedAircraft = flight.flightId;
-    updateAircraftOnMap(getFlights(), airport);
-}
-
 // Adjust on window resize
 window.addEventListener("resize", () => {
     resizeCanvas();

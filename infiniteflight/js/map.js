@@ -195,6 +195,13 @@ function updateAircraftOnMap(flights, airport) {
     }
 }
 
+// Show map popup
+function showMapPopup(flight, airport) {
+    document.getElementById("mapPopup").style.display = "block";
+    selectedAircraft = flight.flightId;
+    updateAircraftOnMap(getFlights(), airport);
+}
+
 function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
     if (!mapCanvas) {
