@@ -26,15 +26,15 @@ function resizeCanvas() {
 }
 
 function toggleScale() {
-    scaleIndex = (scaleIndex + 1) % scaleOptions.length; // Cycle through zoom levels
-    scale = scaleOptions[scaleIndex]; // Update scale
+    scaleIndex = (scaleIndex + 1) % scaleOptions.length;
+    scale = scaleOptions[scaleIndex];
 
-    drawBaseMap(); // Redraw base map with new scale
-    updateAircraftOnMap(getFlights(), airportCoordinates); // Update aircraft positions
+    drawBaseMap();
+    updateAircraftOnMap(getFlights(), airportCoordinates);
 }
 
 // Initialize map
-function initMap() {
+export function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
     ctx = mapCanvas.getContext("2d");
     resizeCanvas();
@@ -59,16 +59,6 @@ function convertToXY(lat, lon, airportLat, airportLon) {
 
     return { x, y };
 }
-
-// Initialize real-time aircraft updates
-document.addEventListener("DOMContentLoaded", () => {
-    initMap();
-
-    // Auto-update aircraft every second
-    setInterval(() => {
-        updateAircraftOnMap(getFlights(), airportCoordinates);
-    }, 1000);
-});
 
 // Calculate distance using the Haversine formula
 function getDistance(lat1, lon1, lat2, lon2) {
@@ -216,42 +206,4 @@ export function updateAircraftOnMap(flights, airport) {
     }
 }
 
-// Show map popup
-function showMapPopup(flight, airport) {
-    document.getElementById("mapPopup").style.display = "block";
-    selectedAircraft = flight.flightId;
-    updateAircraftOnMap(getFlights(), airport);
-}
-
-
-// Adjust on window resize
-window.addEventListener("resize", () => {
-    resizeCanvas();
-    drawBaseMap();
-});
-
-// Initialize real-time aircraft updates
-document.addEventListener("DOMContentLoaded", () => {
-    initMap();
-
-    // Auto-update aircraft every second normally
-    setInterval(() => {
-        updateAircraftOnMap(getFlights(), airportCoordinates);
-    }, 1000);
-
-    // Optimize scroll event to prevent blinking
-    let isUpdating = false;
-
-    window.addEventListener("scroll", () => {
-        if (!isUpdating) {
-            isUpdating = true;
-            requestAnimationFrame(() => {
-                const rect = mapCanvas.getBoundingClientRect();
-                if (rect.top < window.innerHeight && rect.bottom > 0) {
-                    updateAircraftOnMap(getFlights(), airportCoordinates);
-                }
-                isUpdating = false;
-            });
-        }
-    });
-});
+export { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft };
