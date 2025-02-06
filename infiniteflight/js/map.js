@@ -1,3 +1,5 @@
+import { fetchAirportData } from "./airport.js";
+
 let mapCanvas, ctx;
 let aircraftPositions = {};  
 let selectedAircraft = null;
