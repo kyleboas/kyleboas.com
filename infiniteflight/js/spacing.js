@@ -1,20 +1,5 @@
 import { fetchAirportData } from "./airport.js";
-import { allFlights } from "./inbounds.js";
-
-// Function to calculate distance using the Haversine formula
-function spacingDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440;
-    const toRadians = (deg) => (deg * Math.PI) / 180;
-
-    const φ1 = toRadians(lat1);
-    const φ2 = toRadians(lat2);
-    const Δφ = toRadians(lat2 - lat1);
-    const Δλ = toRadians(lon2 - lon1);
-
-    const a = Math.sin(Δφ / 2) ** 2 +
-              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+import { allFlights, calculateDistance } from "./inbounds.js";
 
 // Determine which aircraft is aligned with the runway
 async function getRunwayAlignedAircraft() {
@@ -29,10 +14,10 @@ async function getRunwayAlignedAircraft() {
             if (!flight.latitude || !flight.longitude || !flight.heading) return false;
 
             // Determine proximity to runway threshold
-            const distToLE = spacingDistance(flight.latitude, flight.longitude, 
+            const distToLE = calculateDistance(flight.latitude, flight.longitude, 
                                                parseFloat(runway.le_latitude_deg), 
                                                parseFloat(runway.le_longitude_deg));
-            const distToHE = spacingDistance(flight.latitude, flight.longitude, 
+            const distToHE = calculateDistance(flight.latitude, flight.longitude, 
                                                parseFloat(runway.he_latitude_deg), 
                                                parseFloat(runway.he_longitude_deg));
 
@@ -49,12 +34,12 @@ async function getRunwayAlignedAircraft() {
         // Sort aircraft by distance to threshold
         alignedAircraft.sort((a, b) => {
             const distA = Math.min(
-                spacingDistance(a.latitude, a.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
-                spacingDistance(a.latitude, a.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
+                calculateDistance(a.latitude, a.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
+                calculateDistance(a.latitude, a.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
             );
             const distB = Math.min(
-                spacingDistance(b.latitude, b.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
-                spacingDistance(b.latitude, b.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
+                calculateDistance(b.latitude, b.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
+                calculateDistance(b.latitude, b.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
             );
             return distA - distB;
         });
@@ -77,7 +62,7 @@ async function calculateRunwaySpacing() {
         let totalDistance = 0, count = 0;
 
         for (let i = 1; i < aircraft.length; i++) {
-            totalDistance += spacingDistance(
+            totalDistance += calculateDistance(
                 aircraft[i - 1].latitude, aircraft[i - 1].longitude,
                 aircraft[i].latitude, aircraft[i].longitude
             );
@@ -102,13 +87,7 @@ async function updateRunwaySpacingDisplay() {
     ).join("");
 }
 
-let intervalId = setInterval(() => {
-    try {
-        updateRunwaySpacingDisplay();
-    } catch (error) {
-        console.error("Error occurred, stopping auto-update:", error);
-        clearInterval(intervalId);
-    }
-}, 5000);
+// Auto-update every 5 seconds
+setInterval(updateRunwaySpacingDisplay, 5000);
 
 export { getRunwayAlignedAircraft, calculateRunwaySpacing, updateRunwaySpacingDisplay };

@@ -1932,4 +1932,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-export { getFlights, allFlights, airportCoordinates };
+export { getFlights, allFlights, airportCoordinates, calculateDistance };
