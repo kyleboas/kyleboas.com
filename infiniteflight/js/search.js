@@ -19,7 +19,7 @@ async function inputSearch() {
     const airportData = await fetchAirportData();
     if (!airportData) return;
 
-    updateRunwaySpacingDisplay();
+    await updateRunwaySpacingDisplay();
 }
 
 export { inputSearch };
