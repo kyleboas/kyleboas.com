@@ -3,7 +3,7 @@ import { allFlights } from "./inbounds.js";
 
 // Function to calculate distance using the Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440;
+    const R = 3440; // Nautical miles
     const toRadians = (deg) => (deg * Math.PI) / 180;
 
     const φ1 = toRadians(lat1);
@@ -20,24 +20,25 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 async function getRunwayAlignedAircraft() {
     console.log("Fetching airport data for runway alignment...");
     const airportData = await fetchAirportData();
-    console.log("Airport data received:", airportData);
-    
+
     if (!airportData) {
-        console.log("No airport data available");
+        console.error("No airport data received.");
         return [];
     }
 
-    const runways = airportData.runways || [];
-    console.log("Number of runways:", runways.length);
-    console.log("Number of flights:", allFlights.length);
-    
-    if (!runways.length) return [];
+    const runways = airportData.runways;
+    if (!runways || !runways.length) {
+        console.warn("No runways found in airport data.");
+        return [];
+    }
+
+    console.log(`Number of runways: ${runways.length}`);
+    console.log(`Number of flights: ${allFlights.length}`);
 
     return runways.map(runway => {
         const alignedAircraft = allFlights.filter(flight => {
             if (!flight.latitude || !flight.longitude || !flight.heading) return false;
 
-            // Determine proximity to runway threshold
             const distToLE = calculateDistance(flight.latitude, flight.longitude, 
                                                parseFloat(runway.le_latitude_deg), 
                                                parseFloat(runway.le_longitude_deg));
@@ -74,13 +75,16 @@ async function getRunwayAlignedAircraft() {
             runway: `${runway.le_ident}/${runway.he_ident}`,
             aircraft: alignedAircraft
         };
-    });
+    }).filter(runwayData => runwayData.aircraft.length > 0); // Filter out runways with no aligned aircraft
 }
 
 // Calculate spacing between aircraft on the same runway
 async function calculateRunwaySpacing() {
     const runwayAircraftData = await getRunwayAlignedAircraft();
-    if (!runwayAircraftData.length) return [];
+    if (!runwayAircraftData.length) {
+        console.warn("No aligned aircraft found for any runway.");
+        return [];
+    }
 
     const spacingData = runwayAircraftData.map(({ runway, aircraft }) => {
         if (aircraft.length < 2) return { runway, spacing: "N/A" };
@@ -106,7 +110,7 @@ async function calculateRunwaySpacing() {
 async function updateRunwaySpacingDisplay() {
     const spacingElement = document.getElementById("runwaySpacing");
     if (!spacingElement) {
-        console.log("Spacing element not found in DOM");
+        console.warn("Spacing element not found in DOM");
         return;
     }
 
