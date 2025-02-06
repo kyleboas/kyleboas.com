@@ -26,8 +26,6 @@ export async function fetchAirportData() {
             const { timestamp, data } = JSON.parse(cached);
             const ageInDays = (Date.now() - timestamp) / MS_PER_DAY;
 
-            console.log(`[Cache] ICAO: ${icao}, Age: ${ageInDays.toFixed(2)} days`);
-
             // Use cached data if it's still valid
             if (ageInDays < CACHE_EXPIRATION_DAYS) {
                 return data;
