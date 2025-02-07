@@ -1,146 +1,147 @@
 import { fetchAirportData } from "./airport.js";
 import { allFlights } from "./inbounds.js";
 
-// Function to calculate distance using the Haversine formula
+let updateInterval = null; // Store interval reference
+
 function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 3440;
+    const R = 3440; // Nautical miles
     const toRadians = (deg) => (deg * Math.PI) / 180;
 
-    const φ1 = toRadians(lat1);
-    const φ2 = toRadians(lat2);
-    const Δφ = toRadians(lat2 - lat1);
-    const Δλ = toRadians(lon2 - lon1);
+    const φ1 = toRadians(lat1), φ2 = toRadians(lat2);
+    const Δφ = toRadians(lat2 - lat1), Δλ = toRadians(lon2 - lon1);
 
     const a = Math.sin(Δφ / 2) ** 2 +
               Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Determine which aircraft is aligned with the runway
 async function getRunwayAlignedAircraft() {
-    const airportData = await fetchAirportData();
-    console.log("Fetched Airport Data:", airportData);
-    if (!airportData) {
-    console.error("Error: fetchAirportData() returned null or undefined.");
-    return [];
+    try {
+        const airportData = await fetchAirportData();
+        if (!airportData || !airportData.runways) throw new Error("Invalid airport data");
+
+        return airportData.runways.map(runway => {
+            const alignedAircraft = allFlights.filter(flight => {
+                if (!flight.latitude || !flight.longitude || !flight.heading) return false;
+
+                const distToLE = calculateDistance(flight.latitude, flight.longitude, 
+                                                   parseFloat(runway.le_latitude_deg), 
+                                                   parseFloat(runway.le_longitude_deg));
+                const distToHE = calculateDistance(flight.latitude, flight.longitude, 
+                                                   parseFloat(runway.he_latitude_deg), 
+                                                   parseFloat(runway.he_longitude_deg));
+
+                const alignedWithLE = Math.abs(flight.heading - parseFloat(runway.le_heading_degT)) <= 10 && distToLE <= 13;
+                const alignedWithHE = Math.abs(flight.heading - parseFloat(runway.he_heading_degT)) <= 10 && distToHE <= 13;
+
+                return alignedWithLE || alignedWithHE;
+            });
+
+            alignedAircraft.sort((a, b) => {
+                const distA = Math.min(
+                    calculateDistance(a.latitude, a.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
+                    calculateDistance(a.latitude, a.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
+                );
+                const distB = Math.min(
+                    calculateDistance(b.latitude, b.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
+                    calculateDistance(b.latitude, b.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
+                );
+                return distA - distB;
+            });
+
+            return { runway: `${runway.le_ident}/${runway.he_ident}`, aircraft: alignedAircraft };
+        });
+    } catch (error) {
+        console.error("Error fetching runway-aligned aircraft:", error.message);
+        return [];
     }
-
-    const runways = airportData.runways || [];
-    if (!runways.length) return [];
-
-    return runways.map(runway => {
-        const alignedAircraft = allFlights.filter(flight => {
-            if (!flight.latitude || !flight.longitude || !flight.heading) return false;
-
-            // Determine proximity to runway threshold
-            const distToLE = calculateDistance(flight.latitude, flight.longitude, 
-                                               parseFloat(runway.le_latitude_deg), 
-                                               parseFloat(runway.le_longitude_deg));
-            const distToHE = calculateDistance(flight.latitude, flight.longitude, 
-                                               parseFloat(runway.he_latitude_deg), 
-                                               parseFloat(runway.he_longitude_deg));
-
-            // Check heading alignment (within ±10 degrees)
-            const alignedWithLE = Math.abs(flight.heading - parseFloat(runway.le_heading_degT)) <= 10;
-            const alignedWithHE = Math.abs(flight.heading - parseFloat(runway.he_heading_degT)) <= 10;
-
-            // Aircraft must be within 13nm of the threshold
-            const inFinalApproach = distToLE <= 13 || distToHE <= 13;
-
-            return (alignedWithLE && distToLE < distToHE) || (alignedWithHE && distToHE < distToLE) ? inFinalApproach : false;
-        });
-
-        // Sort aircraft by distance to threshold
-        alignedAircraft.sort((a, b) => {
-            const distA = Math.min(
-                calculateDistance(a.latitude, a.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
-                calculateDistance(a.latitude, a.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
-            );
-            const distB = Math.min(
-                calculateDistance(b.latitude, b.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
-                calculateDistance(b.latitude, b.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
-            );
-            return distA - distB;
-        });
-
-        return {
-            runway: `${runway.le_ident}/${runway.he_ident}`,
-            aircraft: alignedAircraft
-        };
-    });
 }
 
-// Calculate spacing between aircraft on the same runway
 async function calculateRunwaySpacing() {
-    const runwayAircraftData = await getRunwayAlignedAircraft();
-    if (!runwayAircraftData.length) return "N/A";
+    try {
+        const runwayAircraftData = await getRunwayAlignedAircraft();
+        if (!runwayAircraftData.length) throw new Error("No valid runway data");
 
-    const airportData = await fetchAirportData();
-    if (!airportData) return "N/A";
+        const airportData = await fetchAirportData();
+        if (!airportData) throw new Error("Invalid airport data");
 
-    const { latitude: airportLat, longitude: airportLon } = airportData;
+        const { latitude: airportLat, longitude: airportLon } = airportData;
 
-    const spacingData = runwayAircraftData.map(({ runway, aircraft }) => {
-        // Filter aircraft based on distance from the airport (2nm to 45nm range)
-        const filteredAircraft = aircraft.filter(flight => {
-            const distFromAirport = calculateDistance(
-                flight.latitude, flight.longitude,
-                airportLat, airportLon
-            );
-            return distFromAirport >= 2 && distFromAirport <= 45;
+        return runwayAircraftData.map(({ runway, aircraft }) => {
+            const validAircraft = aircraft.filter(flight => {
+                const distFromAirport = calculateDistance(
+                    flight.latitude, flight.longitude, airportLat, airportLon
+                );
+                return distFromAirport >= 2 && distFromAirport <= 45;
+            });
+
+            if (validAircraft.length < 2) return { runway, spacing: "N/A" };
+
+            validAircraft.sort((a, b) => {
+                const distA = Math.min(
+                    calculateDistance(a.latitude, a.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
+                    calculateDistance(a.latitude, a.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
+                );
+                const distB = Math.min(
+                    calculateDistance(b.latitude, b.longitude, parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
+                    calculateDistance(b.latitude, b.longitude, parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
+                );
+                return distA - distB;
+            });
+
+            let totalDistance = 0, count = 0;
+            for (let i = 1; i < validAircraft.length; i++) {
+                totalDistance += calculateDistance(
+                    validAircraft[i - 1].latitude, validAircraft[i - 1].longitude,
+                    validAircraft[i].latitude, validAircraft[i].longitude
+                );
+                count++;
+            }
+
+            const avgSpacing = count > 0 ? (totalDistance / count).toFixed(2) + " nm" : "N/A";
+            return { runway, spacing: avgSpacing };
         });
+    } catch (error) {
+        console.error("Error calculating spacing:", error.message);
+        return "N/A";
+    }
+}
 
-        if (filteredAircraft.length < 2) return { runway, spacing: "N/A" };
+async function updateRunwaySpacingDisplay() {
+    try {
+        const spacingElement = document.getElementById("runwaySpacing");
+        if (!spacingElement) return;
 
-        // Sort aircraft by their distance to the specific runway threshold
-        filteredAircraft.sort((a, b) => {
-            const distA = Math.min(
-                calculateDistance(a.latitude, a.longitude, 
-                                  parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
-                calculateDistance(a.latitude, a.longitude, 
-                                  parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
-            );
-
-            const distB = Math.min(
-                calculateDistance(b.latitude, b.longitude, 
-                                  parseFloat(runway.le_latitude_deg), parseFloat(runway.le_longitude_deg)),
-                calculateDistance(b.latitude, b.longitude, 
-                                  parseFloat(runway.he_latitude_deg), parseFloat(runway.he_longitude_deg))
-            );
-
-            return distA - distB;
-        });
-
-        // Calculate spacing only for aircraft assigned to this runway
-        let totalDistance = 0, count = 0;
-
-        for (let i = 1; i < filteredAircraft.length; i++) {
-            totalDistance += calculateDistance(
-                filteredAircraft[i - 1].latitude, filteredAircraft[i - 1].longitude,
-                filteredAircraft[i].latitude, filteredAircraft[i].longitude
-            );
-            count++;
+        const spacingData = await calculateRunwaySpacing();
+        if (spacingData === "N/A") {
+            console.warn("No valid data, stopping updates.");
+            if (updateInterval) clearInterval(updateInterval);
+            return;
         }
 
-        const averageSpacingNM = (totalDistance / count).toFixed(2) + " nm";
-        return { runway, spacing: averageSpacingNM };
-    });
+        spacingElement.innerHTML = spacingData.map(({ runway, spacing }) => 
+            `<p>${runway}: ${spacing}</p>`
+        ).join("");
 
-    return spacingData;
+    } catch (error) {
+        console.error("Error updating display:", error.message);
+        if (updateInterval) clearInterval(updateInterval);
+    }
 }
 
-// Function to update UI with calculated spacing
-async function updateRunwaySpacingDisplay() {
-    const spacingElement = document.getElementById("runwaySpacing");
-    if (!spacingElement) return;
+// Start updates with safety check
+async function startUpdatingRunwaySpacing() {
+    if (updateInterval) clearInterval(updateInterval);
 
-    const spacingData = await calculateRunwaySpacing();
-    spacingElement.innerHTML = spacingData.map(({ runway, spacing }) => 
-        `<p>${runway}: ${spacing}</p>`
-    ).join("");
+    try {
+        await updateRunwaySpacingDisplay();
+        updateInterval = setInterval(updateRunwaySpacingDisplay, 5000);
+    } catch (error) {
+        console.error("Error initializing updates:", error.message);
+    }
 }
 
-// Auto-update every 5 seconds
-setInterval(updateRunwaySpacingDisplay, 5000);
+// Start process
+startUpdatingRunwaySpacing();
 
 export { getRunwayAlignedAircraft, calculateRunwaySpacing, updateRunwaySpacingDisplay };
