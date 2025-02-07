@@ -127,7 +127,7 @@ async function updateRunwaySpacingDisplay() {
         console.error("Error updating display:", error.message);
         if (updateInterval) clearInterval(updateInterval);
     }
-}
+} 
 
 // Start updates with safety check
 async function startUpdatingRunwaySpacing() {

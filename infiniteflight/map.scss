@@ -1,0 +1,905 @@
+---
+# Front matter comment to ensure Jekyll properly reads file.
+---
+
+#flightsTable tr:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+/* Popup Map */
+.map-container {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    z-index: 2;
+}
+
+
+/* Sticky map when scrolled past */
+.map-container.sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#mapPopup {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#mapCanvas {
+    background-color: #f7f7f7;
+    width: 100%;
+    height: 200px;
+    display: block;
+    margin: 0 auto;
+}
+
+.ring-color {
+    stroke: #828282;
+    stroke-width: 1.5px;
+    fill: none;
+}
+
+.aircraft {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: grey;
+    border-radius: 50%;
+    transition: transform 0.5s linear;
+}
+
+
+.setting-container {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  cursor: pointer;
+  flex-direction: column;
+  padding-bottom: 10px;
+}
+
+.overlay-button {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 5;
+}
+
+button, .overlay-button {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.setting-border {
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  width: 200px;
+  padding-left: 10px;
+  margin-top: 10px;
+  border-left: 2px solid #bbb;
+  transition: border-left 0.3s ease;
+}
+
+.setting {
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  width: 200px;
+  margin-top: 20px;
+}
+
+.setting-title {
+  font-weight: 600;
+  margin: 0;
+  font-size: 14px;
+}
+
+.setting-description {
+  margin: 0;
+  font-size: 13px;
+}
+
+.setting-description-info {
+  margin: 0;
+  font-size: 13px;
+}
+
+.setting-information {
+  margin-bottom: 100px;
+}  
+
+.box-container {
+  display: flex;
+  align-items: left;
+  gap: 5px;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  align-items: center;
+}
+
+.box {
+  width: 15px;
+  height: 15px;
+}
+
+.box-text {
+  font-size: 16px;
+}
+
+#infoTable {
+  margin-top: 10px;
+}
+
+.yellow-highlight {
+  background-color: #fffa9f;
+}
+
+.blue-highlight {
+  background-color: #80daeb;
+}
+
+.beige-highlight {
+  background-color: #daceca;
+}
+
+.grey-highlight {
+  background-color: #eaeaea;
+}
+
+body {
+    font-family: Helvetica, sans-serif;
+    margin: 20px;
+    line-height: 1.6;
+    background-color: #f7f7f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+pre {
+    font-family: Helvetica, sans-serif;
+    font-size: 12px;
+    padding-top: 0px;
+}
+
+/* Search */
+
+.nav-container {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    max-width: 600px;
+    justify-content: space-between;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+}
+
+.nav-left span {
+  font-size: 18px;
+  color: #828282;
+}
+
+.nav-left svg {
+  width: 20px;
+  height: 20px;
+  fill: #828282;
+} 
+
+.nav-right {
+    text-align: right;
+    font-size: 10px;
+    color: #828282;
+    line-height: 1.5;
+    margin-left: 10px;
+}
+
+.nav-left input {
+    width: 50px;
+    border: none;
+    font-size: 14px;
+    outline: none;
+}
+
+.nav-left button {
+    background-color: transparent;
+    color: #828282;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    padding: 0px;
+    margin: 6px; 
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Settings */
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #828282;
+}
+
+.settings-header i {
+  margin-left: 15px;
+  color: #828282;
+  font-size: 19px;
+} 
+  
+
+.settings-header strong {
+  font-size: 14px;
+}
+
+.theme-toggle-wrapper label {
+  cursor: pointer;
+}
+
+.theme-toggle-wrapper i {
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+form input {
+  border: none;
+}
+
+form button {
+  background-color: #bbb;
+  width: 60px;
+  margin-top: 2px;
+  margin-bottom: 5px;
+  width: 75%;
+} 
+
+.settings-menu {
+  position: fixed;
+  width: 210px;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  overflow-y: auto;
+  text-align: left;
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transform: translateX(-20px);
+  pointer-events: none;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+}
+
+.settings-menu.visible {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 2;
+  transform: translateX(0);
+}
+
+
+.settings-label {
+  font-size: 12px;
+  color: #828282;
+  font-weight: 600; 
+  margin-right: 10px; 
+}
+
+.dropdown {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dropdown-menu {
+  text-align: center;
+}
+
+.HeadingFilter input, .DistanceFilter input {
+ width: 30px;
+ font-weight: 600;
+} 
+
+input {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    padding: 10px;
+    padding-left: 0px;
+}
+
+
+.removeAirportButton {
+  margin-bottom: 10px;
+  background-color: transparent;
+  border-color: transparent;
+  color: #000000;
+} 
+
+
+/* Dropdown */
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+
+    .dropdown-toggle {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 15px;
+        z-index: 1;
+        width: 260px;
+
+        input,
+        button {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-top: 15px;
+
+            &:hover {
+                background-color: #45a049;
+            }
+        }
+    }
+
+    &:hover .dropdown-menu {
+        display: block;
+    }
+}
+
+.DistanceFilter {
+}
+
+form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    input[type="text"],
+    input[type="number"],
+    button {
+        padding: 6px;
+        font-size: 10px;
+        border-radius: 4px;
+        outline: none;
+        text-align: left;
+        background-color: transparent;
+    }
+
+    button {
+        background-color: #c2c2c2;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+            background-color: #fe8648;
+        }
+    }
+}
+
+.heading-arrow {
+    font-family: 'Courier', monospace;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    text-align: center;
+    border: none;
+}
+
+tbody {
+    font-size: 12px; 
+}
+
+#flightsTable thead tr {
+    position: sticky;
+    z-index: 1;
+}
+
+#flightsTable thead th {
+    position: sticky;
+    z-index: 1;
+}
+
+#flightsTable thead tr:nth-child(1) {
+    position: sticky;
+}
+
+#flightsTable thead tr:nth-child(2) {
+    top: 210px;
+}
+
+#flightsTable thead th:nth-child(1) {
+   padding: 0px;
+}
+
+thead th {
+    padding: 5px;
+    text-align: center;
+    top: 0;
+    border-bottom-style: none; 
+}
+
+tbody td {
+    padding: 5px;
+    border: none;
+    border-bottom: 1px solid #c2c2c2;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+    border-left: none;
+}
+
+th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+    border: none;
+}
+
+.atisMessage p {
+    margin-top: 0;
+    font-size: 13px;
+}
+
+.controllersList p {
+    margin-bottom: 0;
+} 
+
+.secondaryAirport,
+.mainAirport {
+    margin-top: 15px;
+    padding: 10px;
+    border-left: 4px solid #4CAF50;
+    background-color: white;
+    font-size: 13px;
+    font-family: Helvetica Neue, sans-serif;
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+/* Dark Mode Button */
+/* From Uiverse.io by Type-Delta */ 
+/* a clone from joshwcomeau.com 
+ * but this version runs on pure CSS
+ */
+
+.themeToggle {
+  color: #828282;
+  width: 5px;
+}
+
+.st-sunMoonThemeToggleBtn {
+  position: relative;
+  cursor: pointer;
+}
+
+.st-sunMoonThemeToggleBtn .themeToggleInput {
+  opacity: 0;
+  width: 10px;
+  aspect-ratio: 1;
+}
+
+.st-sunMoonThemeToggleBtn svg {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 17px;
+  transition: transform 0.4s ease;
+  transform: rotate(40deg);
+  top: 0;
+}
+
+.st-sunMoonThemeToggleBtn svg .sunMoon {
+  transform-origin: center center;
+  transition: inherit;
+  transform: scale(1);
+}
+
+.st-sunMoonThemeToggleBtn svg .sunRay {
+  transform-origin: center center;
+  transform: scale(0);
+}
+
+.st-sunMoonThemeToggleBtn svg mask > circle {
+  transition: transform 0.64s cubic-bezier(0.41, 0.64, 0.32, 1.575);
+  transform: translate(0px, 0px);
+}
+
+.st-sunMoonThemeToggleBtn svg .sunRay2 {
+  animation-delay: 0.05s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay3 {
+  animation-delay: 0.1s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay4 {
+  animation-delay: 0.17s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay5 {
+  animation-delay: 0.25s !important;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay5 {
+  animation-delay: 0.29s !important;
+}
+
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg {
+  transform: rotate(90deg);
+}
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg mask > circle {
+  transform: translate(16px, -3px);
+}
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunMoon {
+  transform: scale(0.55);
+}
+.st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunRay {
+  animation: showRay1832 0.4s ease 0s 1 forwards;
+}
+
+@keyframes showRay1832 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Arrow xmins */
+
+@mixin arrow($size, $width, $height, $length) {
+    position: relative;
+    display: inline-block;
+    width: 5px;
+    height: 4px;
+    max-width: 8px;
+    margin-left: 5px;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 6px;
+        height: 1px;
+        background-color: inherit;
+        transform: translateY(-50%);
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 100%;
+        transform: translateY(-50%);
+        border-width: 3px;
+        border-style: solid;
+        border-color: transparent;
+        border-left-color: inherit;
+    }
+}
+
+@mixin rotate($angle) {
+    transform: rotate($angle);
+}
+
+@mixin arrowColor($color) {
+    &::before {
+        background-color: $color;
+    }
+
+    &::after {
+        border-left-color: $color;
+    }
+}
+
+.arrow {
+    @include arrow(3px, 6px, 2px, 20px);
+    @include arrowColor(black);
+}
+
+.arrow.is-north {
+    @include rotate(270deg);
+    margin-bottom: 1px;
+}
+
+.arrow.is-northeast {
+    @include rotate(315deg);
+    margin-bottom: 1px;
+}
+
+.arrow.is-east {
+    @include rotate(0deg);
+    margin-bottom: 1px;
+}
+
+.arrow.is-southeast {
+    @include rotate(45deg);
+    margin-bottom: 3px;
+}
+
+.arrow.is-south {
+    @include rotate(90deg);
+    margin-bottom: 3px;
+}
+
+.arrow.is-southwest {
+    @include rotate(135deg);
+    margin-bottom: 3px;
+    margin-left: 7px;
+}
+
+.arrow.is-west {
+    @include rotate(180deg);
+    margin-bottom: 2px;
+    margin-left: 7px;
+}
+
+.arrow.is-northwest {
+    @include rotate(225deg);
+    margin-bottom: 1px;
+    margin-left: 7px;
+}
+
+/* Transition for elements affected by dark mode */
+.nav-container,
+.secondaryAirport,
+.mainAirport,
+form button {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-mode {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+body.dark-mode #mapCanvas {
+    background-color: #1e1e1e;
+} 
+
+body.dark-mode .nav-container {
+    background-color: #002727;
+    color: #e0e0e0;
+}
+
+body.dark-mode .settings-menu {
+    background-color: #002727;
+    color: #e0e0e0;
+}
+
+body.dark-mode input {
+    background-color: transparent;
+    color: #e0e0e0;
+}
+
+body.dark-mode #flightsTable tr:hover {
+    background-color: #323232;
+    cursor: pointer;
+}
+
+body.dark-mode thead th {
+    background-color: #002727;
+}
+
+body.dark-mode tbody td {
+    border-bottom: 1px solid rgb(130, 130, 130);
+    color: #e0e0e0;
+}
+
+body.dark-mode .secondaryAirport,
+body.dark-mode .mainAirport {
+    background-color: #002727;
+    color: #BEBFC5;
+}
+
+body-dark-mode .removeAirportButton {
+  color: #e0e0e0;
+} 
+
+body.dark-mode form button {
+  color: #000;
+} 
+
+body.dark-mode tr.highlighted td {
+  color: #000;
+}
+
+body.dark-mode .arrow::before {
+  background-color: #e0e0e0;
+}
+
+body.dark-mode .arrow::after {
+  border-left-color: #e0e0e0;
+}
+
+body.dark-mode tr.highlighted .arrow::before {
+  background-color: #000;
+}
+.column-one {
+  padding-left: 25px; 
+  padding-right: 25px;
+}  
+
+body.dark-mode tr.highlighted .arrow::after {
+  border-left-color: #000;
+}
+
+
+body.dark-mode .ring-color {
+    stroke: #002727;
+}
+
+.yellow-highlight td {
+  color: #000;
+}
+
+.blue-highlight td {
+  color: #000;
+}
+
+.beige-highlight td {
+  color: #000;
+}
+
+.grey-highlight td {
+  color: #000;
+}
+
+
+body.dark-mode .yellow-highlight td {
+  color: #000;
+}
+
+body.dark-mode .blue-highlight td {
+  color: #000;
+}
+
+body.dark-mode .beige-highlight td {
+  color: #000;
+}
+
+body.dark-mode .grey-highlight td {
+  color: #000;
+}
+
+/* Responsive */
+
+@media (min-width: 700px) {
+    .container {
+        display: block;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 20px;
+        width: 100%;
+        max-width: 700px;
+    }
+
+    .nav-right {
+        font-size: 7px;
+    }
+
+    .page-left {
+        width: 290px;
+        position: fixed;
+        height: 100%;
+        overflow-y: auto;
+        padding-bottom: 40px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .page-left::-webkit-scrollbar {
+      display: none;
+    }
+
+    #flightsTable {
+        margin-top: 0;
+    }
+
+    .secondaryAirport,
+    .mainAirport {
+        max-width: 100%;
+    }
+
+    #flightsTable {
+        max-width: 90%;
+        float: right;
+    } 
+    
+    .column-one {
+        padding-left: 50px; 
+        padding-right: 50px;
+    }
+
+    .page-right {
+        right: 0;
+        float: right;
+        max-width: 380px;
+    }
+}
+
+@media (min-width: 720px) {
+    #flightsTable {
+        max-width: 95%;
+    }
+}
+
+@media (min-width: 740px) {
+    #flightsTable {
+        max-width: 100%;
+    }
+}  
+  
