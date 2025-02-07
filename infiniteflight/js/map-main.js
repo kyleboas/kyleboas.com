@@ -2,7 +2,16 @@ import { fetchWorldMap } from "./api.js";
 import { fetchSIGMET, drawSIGMET } from "./sigmet.js";
 
 const canvas = document.getElementById("mapCanvas");
-const ctx = canvas.getContext("2d");
+
+if (!canvas) {
+    console.error("Canvas element not found!");
+} 
+
+const ctx = canvas?.getContext("2d");
+
+if (!ctx) {
+    console.error("Canvas context could not be retrieved!");
+}
 
 // Variables
 let geoJSONData = null;
@@ -22,7 +31,20 @@ window.addEventListener("resize", resizeCanvas);
 async function loadMap() {
     try {
         geoJSONData = await fetchWorldMap();
+        if (!geoJSONData || !geoJSONData.features) {
+            console.error("Invalid world map data:", geoJSONData);
+            return;
+        }
+
         sigmetData = await fetchSIGMET();
+        if (!Array.isArray(sigmetData)) {
+            console.error("Invalid SIGMET data:", sigmetData);
+            return;
+        }
+
+        console.log("World Map Loaded:", geoJSONData);
+        console.log("SIGMET Data Loaded:", sigmetData);
+        
         drawMap();
     } catch (error) {
         console.error("Error loading map data:", error);
@@ -31,9 +53,8 @@ async function loadMap() {
 
 // Initialize app properly
 async function initialize() {
-    await loadMap();
     resizeCanvas();
-}
+    await loadMap();
 initialize();
 
 // Auto-refresh SIGMET every 5 minutes
@@ -50,8 +71,15 @@ setInterval(() => {
 
 // Convert Latitude/Longitude to X/Y using Mercator Projection
 function project([lon, lat]) {
+    if (typeof lon !== "number" || typeof lat !== "number") {
+        console.warn("Invalid coordinates for projection:", [lon, lat]);
+        return [0, 0]; // Return safe default coordinates
+    }
+
     const x = (lon + 180) * (canvas.width / 360);
-    const y = (canvas.height / 2) - (canvas.width * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2)) / (2 * Math.PI));
+    const y = (canvas.height / 2) - 
+              (canvas.width * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2)) / (2 * Math.PI));
+
     return [x * scale + offsetX, y * scale + offsetY];
 }
 
