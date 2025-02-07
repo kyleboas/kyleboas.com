@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        if (geoJSONData) drawMap();
+        if (geoJSONData) window.drawMap();
     }
     window.addEventListener("resize", resizeCanvas);
 
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             console.log("World Map Loaded:", geoJSONData);
-            drawMap();
+            window.drawMap();
         } catch (error) {
             console.error("Error loading map data:", error);
         }
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Draw the world map
-    function drawMap() {
+    window.drawMap = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#ccc";
         ctx.strokeStyle = "#222";
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         console.log("Map drawn successfully.");
-    }
+    };
 
     // Mouse drag for panning
     canvas.addEventListener("mousedown", (e) => {
@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (dragging) {
             offsetX = e.clientX - startX;
             offsetY = e.clientY - startY;
-            requestAnimationFrame(drawMap);
+            requestAnimationFrame(window.drawMap);
         }
     });
 
@@ -137,13 +137,15 @@ document.addEventListener("DOMContentLoaded", () => {
         offsetY = mouseY - (mouseY - offsetY) * scaleFactor;
         scale *= scaleFactor;
 
-        requestAnimationFrame(drawMap);
+        requestAnimationFrame(window.drawMap);
     });
 });
 
 window.addEventListener("resize", function () {
     const canvas = document.getElementById("mapCanvas");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    drawMap(); // Redraw the map after resizing
+    if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.drawMap(); // Redraw the map after resizing
+    }
 });
