@@ -140,3 +140,10 @@ document.addEventListener("DOMContentLoaded", () => {
         requestAnimationFrame(drawMap);
     });
 });
+
+window.addEventListener("resize", function () {
+    const canvas = document.getElementById("mapCanvas");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    drawMap(); // Redraw the map after resizing
+});
