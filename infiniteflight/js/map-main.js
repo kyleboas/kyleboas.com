@@ -4,32 +4,48 @@ import { fetchSIGMET, drawSIGMET } from "./sigmet.js";
 const canvas = document.getElementById("mapCanvas");
 const ctx = canvas.getContext("2d");
 
-// Resize canvas
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    if (geoJSONData) drawMap();
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
+// Variables
 let geoJSONData = null;
 let sigmetData = [];
 let offsetX = 0, offsetY = 0, scale = 150;
 let dragging = false, startX, startY;
 
+// Resize canvas
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    if (geoJSONData !== null) drawMap();
+}
+window.addEventListener("resize", resizeCanvas);
+
 // Load world map
 async function loadMap() {
-    geoJSONData = await fetchWorldMap();
-    sigmetData = await fetchSIGMET();
-    drawMap();
+    try {
+        geoJSONData = await fetchWorldMap();
+        sigmetData = await fetchSIGMET();
+        drawMap();
+    } catch (error) {
+        console.error("Error loading map data:", error);
+    }
 }
-loadMap();
+
+// Initialize app properly
+async function initialize() {
+    await loadMap();
+    resizeCanvas();
+}
+initialize();
 
 // Auto-refresh SIGMET every 5 minutes
-setInterval(async () => {
-    sigmetData = await fetchSIGMET();
-    drawMap();
+setInterval(() => {
+    (async () => {
+        try {
+            sigmetData = await fetchSIGMET();
+            drawMap();
+        } catch (error) {
+            console.error("Error fetching SIGMET data:", error);
+        }
+    })();
 }, 300000);
 
 // Convert Latitude/Longitude to X/Y using Mercator Projection
@@ -45,6 +61,8 @@ function drawMap() {
     ctx.fillStyle = "#ccc"; 
     ctx.strokeStyle = "#222"; 
     ctx.lineWidth = 0.5;
+
+    if (!geoJSONData || !geoJSONData.features) return;
 
     geoJSONData.features.forEach(feature => {
         ctx.beginPath();
