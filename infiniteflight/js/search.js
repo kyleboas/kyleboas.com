@@ -22,6 +22,13 @@ async function inputSearch() {
     const airportData = await fetchAirportData();
     if (!airportData) return;
 
+    const mapContainer = document.querySelector(".map-container");
+    if (mapContainer) {
+        mapContainer.style.display = "table-cell";
+    } else {
+        console.warn("Map container not found.");
+    }
+
     updateRunwaySpacingDisplay();
 }
 
