@@ -3,8 +3,17 @@ const SIGMET_API = "https://aviationweather.gov/api/data/isigmet?format=json&haz
 export async function fetchSIGMET() {
     try {
         const response = await fetch(SIGMET_API);
-        if (!response.ok) throw new Error("Failed to fetch SIGMET data");
-        return await response.json();
+        if (!response.ok) throw new Error(`Failed to fetch SIGMET data: ${response.status}`);
+
+        const data = await response.json();
+        console.log("Fetched SIGMET Data:", data); // Debugging line
+
+        if (!Array.isArray(data)) {
+            throw new Error("SIGMET data is not an array");
+        }
+
+        // Ensure all SIGMETs have valid coords
+        return data.filter(sigmet => Array.isArray(sigmet.coords) && sigmet.coords.length > 0);
     } catch (error) {
         console.error("Error fetching SIGMET data:", error);
         return [];
@@ -24,7 +33,17 @@ export function drawSIGMET(ctx, canvas, sigmetData, scale, offsetX, offsetY) {
     ctx.lineWidth = 2;
     ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
 
+    if (!Array.isArray(sigmetData) || sigmetData.length === 0) {
+        console.warn("No valid SIGMET data to draw.");
+        return;
+    }
+
     sigmetData.forEach(sigmet => {
+        if (!Array.isArray(sigmet.coords) || sigmet.coords.length === 0) {
+            console.warn("Skipping SIGMET with invalid coords:", sigmet);
+            return;
+        }
+
         ctx.beginPath();
         sigmet.coords.forEach((point, index) => {
             const [x, y] = project([point.lon, point.lat], canvas, scale, offsetX, offsetY);
