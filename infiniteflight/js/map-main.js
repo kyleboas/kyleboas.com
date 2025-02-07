@@ -1,5 +1,4 @@
 import { fetchWorldMap } from "./api.js";
-import { fetchSIGMET, drawSIGMET } from "./sigmet.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("mapCanvas");
@@ -16,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Variables
     let geoJSONData = null;
-    let sigmetData = [];
     let offsetX = 0, offsetY = 0, scale = 150;
     let dragging = false, startX, startY;
 
@@ -37,15 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            sigmetData = await fetchSIGMET();
-            if (!Array.isArray(sigmetData)) {
-                console.error("Invalid SIGMET data:", sigmetData);
-                return;
-            }
-
             console.log("World Map Loaded:", geoJSONData);
-            console.log("SIGMET Data Loaded:", sigmetData);
-            
             drawMap();
         } catch (error) {
             console.error("Error loading map data:", error);
@@ -58,16 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
         await loadMap();
     }
     initialize();
-
-    // Auto-refresh SIGMET every 5 minutes
-    setInterval(async () => {
-        try {
-            sigmetData = await fetchSIGMET();
-            drawMap();
-        } catch (error) {
-            console.error("Error fetching SIGMET data:", error);
-        }
-    }, 300000);
 
     // Convert Latitude/Longitude to X/Y using Mercator Projection
     function project([lon, lat]) {
@@ -85,47 +65,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Draw the world map
     function drawMap() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#ccc"; 
-    ctx.strokeStyle = "#222"; 
-    ctx.lineWidth = 0.5;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#ccc"; 
+        ctx.strokeStyle = "#222"; 
+        ctx.lineWidth = 0.5;
 
-    if (!geoJSONData || !geoJSONData.features) return;
+        if (!geoJSONData || !geoJSONData.features) return;
 
-    geoJSONData.features.forEach(feature => {
-        const { geometry } = feature;
-        if (!geometry || !geometry.type || !geometry.coordinates) return;
+        geoJSONData.features.forEach(feature => {
+            const { geometry } = feature;
+            if (!geometry || !geometry.type || !geometry.coordinates) return;
 
-        ctx.beginPath();
+            ctx.beginPath();
 
-        // Handle both Polygon and MultiPolygon types
-        let polygons = geometry.type === "Polygon" 
-            ? [geometry.coordinates]  // Wrap in an array to keep the same structure
-            : geometry.coordinates;   // MultiPolygon is already an array of polygons
+            let polygons = geometry.type === "Polygon" 
+                ? [geometry.coordinates]  
+                : geometry.coordinates;   
 
-        polygons.forEach(polygon => {
-            polygon.forEach(ring => {  // Each polygon may have multiple rings (holes)
-                ring.forEach((point, index) => {
-                    if (!Array.isArray(point) || point.length !== 2) {
-                        console.warn("Skipping invalid point:", point);
-                        return;
-                    }
+            polygons.forEach(polygon => {
+                polygon.forEach(ring => {  
+                    ring.forEach((point, index) => {
+                        if (!Array.isArray(point) || point.length !== 2) {
+                            console.warn("Skipping invalid point:", point);
+                            return;
+                        }
 
-                    const [x, y] = project(point);
-                    if (index === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
+                        const [x, y] = project(point);
+                        if (index === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
                 });
             });
+
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
         });
-
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-    });
-
-    // Draw SIGMET areas
-    drawSIGMET(ctx, canvas, sigmetData, scale, offsetX, offsetY);
-}
+    }
 
     // Panning Events
     canvas.addEventListener("mousedown", (e) => {
