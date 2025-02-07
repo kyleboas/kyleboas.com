@@ -6,14 +6,25 @@ export async function fetchSIGMET() {
         if (!response.ok) throw new Error(`Failed to fetch SIGMET data: ${response.status}`);
 
         const data = await response.json();
-        console.log("Fetched SIGMET Data:", data); // Debugging line
+        console.log("Fetched SIGMET Data:", data); // Debugging output
 
+        // Check if the response is an array
         if (!Array.isArray(data)) {
-            throw new Error("SIGMET data is not an array");
+            throw new Error("SIGMET data is not an array.");
         }
 
-        // Ensure all SIGMETs have valid coords
-        return data.filter(sigmet => Array.isArray(sigmet.coords) && sigmet.coords.length > 0);
+        // Filter out SIGMETs that do not have valid coordinates
+        const validSIGMETs = data.filter(sigmet => 
+            Array.isArray(sigmet.coords) &&
+            sigmet.coords.length > 0 &&
+            sigmet.coords.every(point => point.lat !== undefined && point.lon !== undefined)
+        );
+
+        if (validSIGMETs.length === 0) {
+            console.warn("No valid SIGMET data to process.");
+        }
+
+        return validSIGMETs;
     } catch (error) {
         console.error("Error fetching SIGMET data:", error);
         return [];
