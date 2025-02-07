@@ -85,30 +85,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Draw the world map
     function drawMap() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#ccc"; 
-        ctx.strokeStyle = "#222"; 
-        ctx.lineWidth = 0.5;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ccc"; 
+    ctx.strokeStyle = "#222"; 
+    ctx.lineWidth = 0.5;
 
-        if (!geoJSONData || !geoJSONData.features) return;
+    if (!geoJSONData || !geoJSONData.features) return;
 
-        geoJSONData.features.forEach(feature => {
-            ctx.beginPath();
-            feature.geometry.coordinates.forEach(polygon => {
-                polygon.forEach((point, index) => {
+    geoJSONData.features.forEach(feature => {
+        const { geometry } = feature;
+        if (!geometry || !geometry.type || !geometry.coordinates) return;
+
+        ctx.beginPath();
+
+        // Handle both Polygon and MultiPolygon types
+        let polygons = geometry.type === "Polygon" 
+            ? [geometry.coordinates]  // Wrap in an array to keep the same structure
+            : geometry.coordinates;   // MultiPolygon is already an array of polygons
+
+        polygons.forEach(polygon => {
+            polygon.forEach(ring => {  // Each polygon may have multiple rings (holes)
+                ring.forEach((point, index) => {
+                    if (!Array.isArray(point) || point.length !== 2) {
+                        console.warn("Skipping invalid point:", point);
+                        return;
+                    }
+
                     const [x, y] = project(point);
                     if (index === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 });
             });
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
         });
 
-        // Draw SIGMET areas
-        drawSIGMET(ctx, canvas, sigmetData, scale, offsetX, offsetY);
-    }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    });
+
+    // Draw SIGMET areas
+    drawSIGMET(ctx, canvas, sigmetData, scale, offsetX, offsetY);
+}
 
     // Panning Events
     canvas.addEventListener("mousedown", (e) => {
