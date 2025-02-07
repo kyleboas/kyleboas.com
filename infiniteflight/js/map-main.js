@@ -1,4 +1,4 @@
-import { fetchWorldMap } from "./worldMap.js";
+import { fetchWorldMap } from "./api.js";
 import { fetchSIGMET, drawSIGMET } from "./sigmet.js";
 
 const canvas = document.getElementById("mapCanvas");
