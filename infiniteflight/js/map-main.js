@@ -1,4 +1,5 @@
-import { fetchWorldMap } from "./api.js";
+import { fetchWorldMap } from "./worldMap.js";
+import { fetchSIGMET, drawSIGMET } from "./sigmet.js";
 
 const canvas = document.getElementById("mapCanvas");
 const ctx = canvas.getContext("2d");
@@ -13,17 +14,25 @@ window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
 let geoJSONData = null;
+let sigmetData = [];
 let offsetX = 0, offsetY = 0, scale = 150;
 let dragging = false, startX, startY;
 
 // Load world map
 async function loadMap() {
     geoJSONData = await fetchWorldMap();
-    if (geoJSONData) drawMap();
+    sigmetData = await fetchSIGMET();
+    drawMap();
 }
 loadMap();
 
-// Convert Lat/Lon to X/Y using Mercator Projection
+// Auto-refresh SIGMET every 5 minutes
+setInterval(async () => {
+    sigmetData = await fetchSIGMET();
+    drawMap();
+}, 300000);
+
+// Convert Latitude/Longitude to X/Y using Mercator Projection
 function project([lon, lat]) {
     const x = (lon + 180) * (canvas.width / 360);
     const y = (canvas.height / 2) - (canvas.width * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2)) / (2 * Math.PI));
@@ -50,6 +59,9 @@ function drawMap() {
         ctx.fill();
         ctx.stroke();
     });
+
+    // Draw SIGMET areas
+    drawSIGMET(ctx, canvas, sigmetData, scale, offsetX, offsetY);
 }
 
 // Panning Events

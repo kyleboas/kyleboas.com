@@ -5,3 +5,4 @@ permalink: /infiniteflight/map/
 ---
 
 <canvas id="mapCanvas"></canvas>
+
