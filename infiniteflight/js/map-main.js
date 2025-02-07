@@ -61,14 +61,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const x = ((λ + Math.PI) / (2 * Math.PI)) * canvas.width;
         const y = ((1 - Math.log(Math.tan(φ) + 1 / Math.cos(φ)) / Math.PI) / 2) * canvas.height;
 
-        return [x * scale + offsetX, y * scale + offsetY];
+        return [(x - canvas.width / 2) * scale + offsetX, (y - canvas.height / 2) * scale + offsetY];
     }
 
     // Draw the world map
     function drawMap() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#ccc"; 
-        ctx.strokeStyle = "#222"; 
+        ctx.fillStyle = "#ccc";
+        ctx.strokeStyle = "#222";
         ctx.lineWidth = 0.5;
 
         if (!geoJSONData || !geoJSONData.features) return;
@@ -114,18 +114,29 @@ document.addEventListener("DOMContentLoaded", () => {
         if (dragging) {
             offsetX = e.clientX - startX;
             offsetY = e.clientY - startY;
-            drawMap();
+            requestAnimationFrame(drawMap);
         }
     });
 
     canvas.addEventListener("mouseup", () => dragging = false);
     canvas.addEventListener("mouseleave", () => dragging = false);
 
-    // Mouse wheel zoom
+    // Mouse wheel zoom with cursor centering
     canvas.addEventListener("wheel", (e) => {
         e.preventDefault();
+
         const zoomFactor = 1.1;
-        scale *= e.deltaY < 0 ? zoomFactor : 1 / zoomFactor;
-        drawMap();
+        const scaleFactor = e.deltaY < 0 ? zoomFactor : 1 / zoomFactor;
+
+        // Zoom at the cursor position
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        offsetX = mouseX - (mouseX - offsetX) * scaleFactor;
+        offsetY = mouseY - (mouseY - offsetY) * scaleFactor;
+        scale *= scaleFactor;
+
+        requestAnimationFrame(drawMap);
     });
 });
