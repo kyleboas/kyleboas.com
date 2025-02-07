@@ -5,19 +5,26 @@ export async function fetchSIGMET() {
         const response = await fetch(SIGMET_API);
         if (!response.ok) throw new Error(`Failed to fetch SIGMET data: ${response.status}`);
 
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            throw new Error(`Invalid JSON response: ${await response.text()}`);
+        }
+
         console.log("Fetched SIGMET Data:", data); // Debugging output
 
-        // Check if the response is an array
         if (!Array.isArray(data)) {
             throw new Error("SIGMET data is not an array.");
         }
 
-        // Filter out SIGMETs that do not have valid coordinates
+        // Filter valid SIGMETs with correct coordinates
         const validSIGMETs = data.filter(sigmet => 
             Array.isArray(sigmet.coords) &&
             sigmet.coords.length > 0 &&
-            sigmet.coords.every(point => point.lat !== undefined && point.lon !== undefined)
+            sigmet.coords.every(point => 
+                typeof point.lat === "number" && typeof point.lon === "number"
+            )
         );
 
         if (validSIGMETs.length === 0) {
@@ -33,21 +40,33 @@ export async function fetchSIGMET() {
 
 // Convert Latitude/Longitude to X/Y (Mercator Projection)
 export function project([lon, lat], canvas, scale, offsetX, offsetY) {
+    if (typeof lon !== "number" || typeof lat !== "number") {
+        console.warn("Invalid coordinates provided for projection:", lon, lat);
+        return [0, 0];
+    }
+
     const x = (lon + 180) * (canvas.width / 360);
-    const y = (canvas.height / 2) - (canvas.width * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2)) / (2 * Math.PI));
+    const y = (canvas.height / 2) - 
+              (canvas.width * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2)) / (2 * Math.PI));
+
     return [x * scale + offsetX, y * scale + offsetY];
 }
 
 // Draw SIGMET Polygons on Map
 export function drawSIGMET(ctx, canvas, sigmetData, scale, offsetX, offsetY) {
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
-    ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
+    if (!ctx || typeof ctx.beginPath !== "function") {
+        console.error("Invalid canvas context provided.");
+        return;
+    }
 
     if (!Array.isArray(sigmetData) || sigmetData.length === 0) {
         console.warn("No valid SIGMET data to draw.");
         return;
     }
+
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 2;
+    ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
 
     sigmetData.forEach(sigmet => {
         if (!Array.isArray(sigmet.coords) || sigmet.coords.length === 0) {
