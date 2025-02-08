@@ -1,7 +1,7 @@
 export const AIRPORTDB_URL = "https://infiniteflightapi.deno.dev/api/airport/";
 
 export async function fetchSIGMET() {
-    const url = "https://infiniteflightapi.deno.dev/api/sigmet";
+    const url = "https://infiniteflightapi.deno.dev/api/sigmet"; // Change to your API URL
 
     try {
         console.log(`Fetching SIGMETs from: ${url}`);
@@ -13,13 +13,35 @@ export async function fetchSIGMET() {
         }
 
         const data = await response.json();
-        if (!data.features || !Array.isArray(data.features)) {
+
+        if (!Array.isArray(data)) {
             console.error("Invalid SIGMET data format:", data);
             return [];
         }
 
-        console.log("Fetched SIGMET Data:", data.features);
-        return data.features;
+        // Convert SIGMETs to GeoJSON FeatureCollection
+        const sigmetGeoJSON = {
+            type: "FeatureCollection",
+            features: data.map(sigmet => ({
+                type: "Feature",
+                properties: {
+                    fir: sigmet.firName,
+                    hazard: sigmet.hazard,
+                    base: sigmet.base,
+                    top: sigmet.top,
+                    speed: sigmet.spd,
+                    movement: sigmet.dir,
+                    raw: sigmet.rawSigmet
+                },
+                geometry: {
+                    type: "Polygon",
+                    coordinates: [sigmet.coords.map(coord => [coord.lon, coord.lat])]
+                }
+            }))
+        };
+
+        console.log("Formatted SIGMET Data:", sigmetGeoJSON);
+        return sigmetGeoJSON.features; // Return as a GeoJSON features array
     } catch (error) {
         console.error("Error fetching SIGMET data:", error);
         return [];
