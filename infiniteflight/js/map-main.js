@@ -68,55 +68,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function drawSIGMETs() {
-    if (!sigmetData || sigmetData.length === 0) {
-        console.warn("No SIGMETs to draw.");
-        return;
-    }
-
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
-    ctx.fillStyle = "rgba(255, 0, 0, 0.2)"; // Semi-transparent red fill
-
-    sigmetData.forEach(sigmet => {
-        if (!sigmet.geometry || sigmet.geometry.type !== "Polygon") {
-            console.warn("Invalid SIGMET geometry:", sigmet);
+        if (!sigmetData || sigmetData.length === 0) {
+            console.warn("No SIGMETs to draw.");
             return;
         }
 
-        sigmet.geometry.coordinates.forEach(polygon => {
-            ctx.beginPath();
-            polygon.forEach(([lon, lat], index) => {
-                if (isNaN(lon) || isNaN(lat)) {
-                    console.error("Invalid SIGMET coordinates:", lon, lat);
-                    return;
-                }
-                const [x, y] = projection([lon, lat]);
-                if (index === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-        });
-    });
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.fillStyle = "rgba(255, 0, 0, 0.2)"; // Semi-transparent red fill
 
-    console.log("SIGMETs drawn successfully.");
-}
+        sigmetData.forEach(sigmet => {
+            if (!sigmet.geometry || sigmet.geometry.type !== "Polygon") {
+                console.warn("Invalid SIGMET geometry:", sigmet);
+                return;
+            }
 
-    function drawPolygon(coordinates) {
-        coordinates.forEach(polygon => {
-            ctx.beginPath();
-            polygon.forEach(([lon, lat], index) => {
-                if (isNaN(lon) || isNaN(lat)) {
-                    console.error("Invalid SIGMET coordinates:", lon, lat);
-                    return;
-                }
-                const [x, y] = projection([lon, lat]);
-                if (index === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+            sigmet.geometry.coordinates.forEach(polygon => {
+                ctx.beginPath();
+                polygon.forEach(([lon, lat], index) => {
+                    if (isNaN(lon) || isNaN(lat)) {
+                        console.error("Invalid SIGMET coordinates:", lon, lat);
+                        return;
+                    }
+                    const [x, y] = projection([lon, lat]);
+                    if (index === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
             });
-            ctx.closePath();
         });
+
+        console.log("SIGMETs drawn successfully.");
     }
 
     function applyInertia() {
