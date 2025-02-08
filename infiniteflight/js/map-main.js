@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         projection.scale(scale).translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
         ctx.fillStyle = "transparent"; // No fill for landmasses
-        ctx.strokeStyle = "#000"; // Outline color for landmasses
+        ctx.strokeStyle = "#ABB0B0"; // Outline color for landmasses
         ctx.lineWidth = 1.5;
 
         ctx.beginPath();
