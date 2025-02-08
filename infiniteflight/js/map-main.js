@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         drawMap();
     });
 
-    // Touch events for panning & double-tap zoom
+    // Touch events for panning & pinch-to-zoom
     canvas.addEventListener("touchstart", (e) => {
         if (e.touches.length === 1) {
             isDragging = true;
@@ -144,6 +144,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     canvas.addEventListener("touchmove", (e) => {
         e.preventDefault();
+
         if (e.touches.length === 1 && isDragging) {
             const dx = e.touches[0].clientX - startX;
             const dy = e.touches[0].clientY - startY;
@@ -157,7 +158,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else if (e.touches.length === 2) {
             const newZoomDistance = getDistance(e.touches[0], e.touches[1]);
             if (lastZoomDistance) {
-                scale *= newZoomDistance / lastZoomDistance;
+                const zoomFactor = newZoomDistance / lastZoomDistance;
+                
+                // Calculate midpoint for smooth zooming
+                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+                offsetX = midX - (midX - offsetX) * zoomFactor;
+                offsetY = midY - (midY - offsetY) * zoomFactor;
+                scale *= zoomFactor;
+                
                 drawMap();
             }
             lastZoomDistance = newZoomDistance;
