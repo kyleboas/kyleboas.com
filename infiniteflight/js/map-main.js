@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Double tap to zoom
             const currentTime = new Date().getTime();
             if (currentTime - lastTapTime < 300) {
-                scale *= 1.5;
+                scale *= 1;
                 drawMap();
             }
             lastTapTime = currentTime;
