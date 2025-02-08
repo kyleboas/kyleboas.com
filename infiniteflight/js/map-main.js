@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Draw the world map
     window.drawMap = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#ccc";
+        ctx.fillStyle = "#000";
         ctx.strokeStyle = "#000";
         ctx.lineWidth = 0.5;
 
