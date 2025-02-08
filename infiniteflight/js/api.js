@@ -12,7 +12,7 @@ function getCurrentUTCDate() {
     return `${year}${month}${day}_${hours}${minutes}${seconds}Z`;
 }
 
-export async function fetchSIGMETs() {
+export async function fetchSIGMET() {
     const dateParam = getCurrentUTCDate();
     const url = `https://aviationweather.gov/api/data/isigmet?format=json&hazard=turb&date=${dateParam}`;
 
