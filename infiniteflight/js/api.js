@@ -1,18 +1,19 @@
 export const AIRPORTDB_URL = "https://infiniteflightapi.deno.dev/api/airport/";
 
 // worldMap.js - Fetches world map GeoJSON data
-export async function fetchWorldMap() {
-    try {
-        const response = await fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json");
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+// sigmetData.js - Fetches and exports SIGMET data
 
-        const data = await response.json(); // Ensure proper JSON parsing
+export async function fetchSIGMET() {
+    try {
+        const response = await fetch("https://aviationweather.gov/api/data/isigmet?format=json&hazard=turb");
+        if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
+
+        const data = await response.json();
+
+        console.log("Fetched SIGMET Data:", data);
         return data;
     } catch (error) {
-        console.error("Error fetching world map:", error);
+        console.error("Error fetching SIGMET data:", error);
         return null;
     }
 }
