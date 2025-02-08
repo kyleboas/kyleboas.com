@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     let worldData = null;
-    let sigmetData = []; // Holds SIGMETs
+    let sigmetData = [];
     let offsetX = 0, offsetY = 0, scale = 150;
     let isDragging = false, startX = 0, startY = 0;
     let velocityX = 0, velocityY = 0;
@@ -32,15 +32,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         const response = await fetch("https://d3js.org/world-110m.v1.json");
         const topoData = await response.json();
         worldData = topojson.feature(topoData, topoData.objects.land);
+        console.log("Land Data Loaded:", worldData);
     } catch (error) {
         console.error("Error loading world map:", error);
         return;
     }
 
-    console.log("Land Data Loaded:", worldData);
-
+    // Fetch SIGMET Data & Draw the Map
     sigmetData = await fetchSIGMET();
     console.log("SIGMET Data Ready:", sigmetData);
+    drawMap(); // Ensure SIGMETs are drawn after loading
 
     const projection = d3.geoMercator()
         .scale(scale)
@@ -52,6 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         projection.scale(scale).translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
+        // Draw Landmass
         ctx.fillStyle = "transparent";
         ctx.strokeStyle = "#ABB0B0";
         ctx.lineWidth = 1.5;
@@ -60,34 +62,59 @@ document.addEventListener("DOMContentLoaded", async () => {
         pathGenerator(worldData);
         ctx.stroke();
 
+        // Draw SIGMETs
         drawSIGMETs();
         console.log("Map drawn successfully.");
     }
 
     function drawSIGMETs() {
-        if (!sigmetData || sigmetData.length === 0) return;
+        if (!sigmetData || sigmetData.length === 0) {
+            console.warn("No SIGMETs to draw.");
+            return;
+        }
 
         ctx.strokeStyle = "red";
         ctx.lineWidth = 2;
         ctx.fillStyle = "rgba(255, 0, 0, 0.2)"; // Semi-transparent red fill
 
         sigmetData.forEach(sigmet => {
-            if (sigmet.geometry && sigmet.geometry.type === "Polygon") {
-                sigmet.geometry.coordinates.forEach(polygon => {
-                    ctx.beginPath();
-                    polygon.forEach(([lon, lat], index) => {
-                        const [x, y] = projection([lon, lat]);
-                        if (index === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
-                    });
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                });
+            if (!sigmet.geometry || !sigmet.geometry.coordinates) {
+                console.warn("SIGMET missing geometry:", sigmet);
+                return;
             }
+
+            ctx.beginPath();
+
+            if (sigmet.geometry.type === "Polygon") {
+                drawPolygon(sigmet.geometry.coordinates);
+            } else if (sigmet.geometry.type === "MultiPolygon") {
+                sigmet.geometry.coordinates.forEach(drawPolygon);
+            } else {
+                console.warn("Unsupported SIGMET geometry type:", sigmet.geometry.type);
+            }
+
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
         });
 
         console.log("SIGMETs drawn successfully.");
+    }
+
+    function drawPolygon(coordinates) {
+        coordinates.forEach(polygon => {
+            ctx.beginPath();
+            polygon.forEach(([lon, lat], index) => {
+                if (isNaN(lon) || isNaN(lat)) {
+                    console.error("Invalid SIGMET coordinates:", lon, lat);
+                    return;
+                }
+                const [x, y] = projection([lon, lat]);
+                if (index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+        });
     }
 
     function applyInertia() {
