@@ -15,10 +15,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     let lastZoomDistance = null;
     let lastTapTime = 0;
 
-    // Resize Canvas
+    // Fix pixelation by setting canvas resolution correctly
     function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        canvas.style.width = `${window.innerWidth}px`;
+        canvas.style.height = `${window.innerHeight}px`;
+        ctx.scale(dpr, dpr); // Scale context for high-DPI screens
+
         if (worldData) drawMap();
     }
     window.addEventListener("resize", resizeCanvas);
@@ -42,14 +47,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const pathGenerator = d3.geoPath().projection(projection).context(ctx);
 
-    // Draw the map
+    // Draw the map with anti-aliasing fixes
     function drawMap() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         projection.scale(scale).translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
         ctx.fillStyle = "transparent";
         ctx.strokeStyle = "#000";
-        ctx.lineWidth = 0.5;
+        ctx.lineWidth = 1.5; // Increase line thickness for smoothness
 
         worldData.features.forEach(feature => {
             ctx.beginPath();
@@ -115,7 +120,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         drawMap();
     });
 
-    // Touch events for panning
+    // Touch events for panning & double-tap zoom
     canvas.addEventListener("touchstart", (e) => {
         if (e.touches.length === 1) {
             isDragging = true;
