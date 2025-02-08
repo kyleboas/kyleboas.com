@@ -1,4 +1,5 @@
 import { fetchSIGMET } from "./api.js";
+import * as topojson from "https://unpkg.com/topojson-client@3"; // ✅ Import TopoJSON
 
 document.addEventListener("DOMContentLoaded", async () => {
     const canvas = document.getElementById("mapCanvas");
@@ -31,17 +32,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         const response = await fetch("https://d3js.org/world-110m.v1.json");
         const topoData = await response.json();
-        worldData = topojson.feature(topoData, topoData.objects.land);
+        worldData = topojson.feature(topoData, topoData.objects.land); // ✅ Fix
         console.log("Land Data Loaded:", worldData);
     } catch (error) {
         console.error("Error loading world map:", error);
         return;
     }
 
-    // Fetch SIGMET Data & Draw the Map
-    sigmetData = await fetchSIGMET();
-    console.log("SIGMET Data Ready:", sigmetData);
-    drawMap(); // Ensure SIGMETs are drawn after loading
+    // ✅ Fetch SIGMET Data Before Drawing the Map
+    try {
+        sigmetData = await fetchSIGMET();
+        console.log("SIGMET Data Ready:", sigmetData);
+    } catch (error) {
+        console.error("Error fetching SIGMET data:", error);
+    }
+
+    drawMap(); // ✅ Now SIGMETs are drawn after fetching
 
     const projection = d3.geoMercator()
         .scale(scale)
