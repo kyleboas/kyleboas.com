@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         ctx.fillStyle = "transparent";
         ctx.strokeStyle = "#000";
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 1;
 
         worldData.features.forEach(feature => {
             ctx.beginPath();
