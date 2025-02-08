@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Double tap to zoom
             const currentTime = new Date().getTime();
             if (currentTime - lastTapTime < 300) {
-                scale *= 1;
+                scale *= 1.2;
                 drawMap();
             }
             lastTapTime = currentTime;
@@ -159,15 +159,21 @@ document.addEventListener("DOMContentLoaded", async () => {
             const newZoomDistance = getDistance(e.touches[0], e.touches[1]);
             if (lastZoomDistance) {
                 const zoomFactor = newZoomDistance / lastZoomDistance;
-                
-                // **Fix: Center zoom at pinch midpoint**
+
+                // Find midpoint of pinch in screen coordinates
                 const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                 const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
 
-                // Adjust offset so zoom happens at pinch center
-                offsetX = midX - (midX - offsetX) * zoomFactor;
-                offsetY = midY - (midY - offsetY) * zoomFactor;
+                // Convert screen midpoint to world coordinates before zooming
+                const worldMidX = (midX - canvas.width / 2 - offsetX) / scale;
+                const worldMidY = (midY - canvas.height / 2 - offsetY) / scale;
+
+                // Apply zoom
                 scale *= zoomFactor;
+
+                // Convert world midpoint back to screen coordinates after zooming
+                offsetX = midX - (worldMidX * scale) - canvas.width / 2;
+                offsetY = midY - (worldMidY * scale) - canvas.height / 2;
 
                 drawMap();
             }
