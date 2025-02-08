@@ -7,6 +7,7 @@ const AIRPORTDB_KEY = Deno.env.get("AIRPORTDB_KEY");
 // API Base URLs
 const API_BASE_URL = "https://api.infiniteflight.com/public/v2";
 const AIRPORTDB_URL = "https://airportdb.io/api/v1/airport";
+const SIGMET_URL = "https://aviationweather.gov/api/data/isigmet";
 
 // Helper function for error responses
 function respondWithError(message: string, status = 500) {
@@ -27,6 +28,19 @@ function addCORSHeaders(response: Response): Response {
   return response;
 }
 
+// Get current UTC time formatted for SIGMET API (YYYYMMDD_HHmmssZ)
+function getCurrentUTCDate(): string {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(now.getUTCDate()).padStart(2, "0");
+  const hours = String(now.getUTCHours()).padStart(2, "0");
+  const minutes = String(now.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(now.getUTCSeconds()).padStart(2, "0");
+
+  return `${year}${month}${day}_${hours}${minutes}${seconds}Z`;
+}
+
 // Proxy handler
 async function proxyHandler(req: Request): Promise<Response> {
   try {
@@ -45,33 +59,20 @@ async function proxyHandler(req: Request): Promise<Response> {
       });
     }
 
-    // Handle AirportDB API Requests
-    if (pathname.startsWith("/api/airport/")) {
-      const icao = pathname.split("/").pop();
+    // Handle SIGMET API Request
+    if (pathname.startsWith("/api/sigmet")) {
+      const dateParam = getCurrentUTCDate();
+      const sigmetUrl = `${SIGMET_URL}?format=json&hazard=turb&date=${dateParam}`;
 
-      if (!icao) return respondWithError("ICAO code is required", 400);
-      
-      if (!AIRPORTDB_KEY) {
-        console.error("AIRPORTDB_KEY is missing ");
-        return respondWithError("Server configuration error: Missing API Token", 500);
-      }
+      console.log("Fetching SIGMET data from:", sigmetUrl);
 
-      const apiUrl = `https://airportdb.io/api/v1/airport/${icao}?apiToken=${AIRPORTDB_KEY}`;
-      console.log("Fetching URL:", apiUrl); // Debugging API Request
-
-      const response = await fetch(apiUrl);
+      const response = await fetch(sigmetUrl, {
+        headers: { "Accept": "*/*" },
+      });
 
       if (!response.ok) {
-        console.error(`API Error: ${response.status} - ${response.statusText}`);
-        return addCORSHeaders(
-          new Response(
-            JSON.stringify({ error: `Error fetching airport: ${response.statusText}` }),
-            {
-              status: response.status,
-              headers: { "Content-Type": "application/json" },
-            }
-          )
-        );
+        console.error(`SIGMET API Error: ${response.status} - ${response.statusText}`);
+        return respondWithError(`Error fetching SIGMET data: ${response.statusText}`, response.status);
       }
 
       const data = await response.json();
@@ -81,6 +82,29 @@ async function proxyHandler(req: Request): Promise<Response> {
           headers: { "Content-Type": "application/json" },
         })
       );
+    }
+
+    // Handle AirportDB API Requests
+    if (pathname.startsWith("/api/airport/")) {
+      const icao = pathname.split("/").pop();
+      if (!icao) return respondWithError("ICAO code is required", 400);
+
+      if (!AIRPORTDB_KEY) {
+        console.error("AIRPORTDB_KEY is missing");
+        return respondWithError("Server configuration error: Missing API Token", 500);
+      }
+
+      const apiUrl = `${AIRPORTDB_URL}/${icao}?apiToken=${AIRPORTDB_KEY}`;
+      console.log("Fetching AirportDB:", apiUrl);
+
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        console.error(`API Error: ${response.status} - ${response.statusText}`);
+        return respondWithError(`Error fetching airport data: ${response.statusText}`, response.status);
+      }
+
+      const data = await response.json();
+      return addCORSHeaders(new Response(JSON.stringify(data), { status: 200 }));
     }
 
     // Handle Infinite Flight API Requests
@@ -94,29 +118,16 @@ async function proxyHandler(req: Request): Promise<Response> {
 
       const response = await fetch(`${API_BASE_URL}${ifPath}${search}`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-        },
+        headers: { Authorization: `Bearer ${API_KEY}` },
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        console.error(`API Error: ${response.status} - ${response.statusText}`);
-        return addCORSHeaders(
-          new Response(JSON.stringify(data), {
-            status: response.status,
-            headers: { "Content-Type": "application/json" },
-          })
-        );
+        console.error(`Infinite Flight API Error: ${response.status} - ${response.statusText}`);
+        return respondWithError(`Error fetching IF data: ${response.statusText}`, response.status);
       }
 
-      return addCORSHeaders(
-        new Response(JSON.stringify(data), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        })
-      );
+      const data = await response.json();
+      return addCORSHeaders(new Response(JSON.stringify(data), { status: 200 }));
     }
 
     // Unsupported endpoint
@@ -129,3 +140,4 @@ async function proxyHandler(req: Request): Promise<Response> {
 
 // Start the server
 serve(proxyHandler);
+console.log("Deno Proxy running on http://localhost:8000");
