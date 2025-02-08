@@ -49,19 +49,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Draw the map
     function drawMap() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
         projection.scale(scale).translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
-        ctx.fillStyle = "transparent";
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 1;
+        ctx.fillStyle = "transparent"; // No fill for landmasses
+        ctx.strokeStyle = "#000"; // Outline color for landmasses
+        ctx.lineWidth = 1.5;
 
-        worldData.features.forEach(feature => {
-            ctx.beginPath();
-            pathGenerator(feature);
-            ctx.fill();
-            ctx.stroke();
-        });
+        ctx.beginPath();
+        pathGenerator(worldData); // Draw only country-group outline
+        ctx.stroke();
 
         console.log("Map drawn successfully.");
     }
