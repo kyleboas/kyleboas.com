@@ -15,14 +15,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     let lastZoomDistance = null;
     let lastTapTime = 0;
 
-    // Fix pixelation by setting canvas resolution correctly
+    // Fix pixelation on high-DPI screens
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
         canvas.width = window.innerWidth * dpr;
         canvas.height = window.innerHeight * dpr;
         canvas.style.width = `${window.innerWidth}px`;
         canvas.style.height = `${window.innerHeight}px`;
-        ctx.scale(dpr, dpr); // Scale context for high-DPI screens
+        ctx.scale(dpr, dpr); // Fix blurry lines
 
         if (worldData) drawMap();
     }
@@ -47,14 +47,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const pathGenerator = d3.geoPath().projection(projection).context(ctx);
 
-    // Draw the map with anti-aliasing fixes
+    // Draw the map
     function drawMap() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         projection.scale(scale).translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
         ctx.fillStyle = "transparent";
         ctx.strokeStyle = "#000";
-        ctx.lineWidth = 1.5; // Increase line thickness for smoothness
+        ctx.lineWidth = 1.5;
 
         worldData.features.forEach(feature => {
             ctx.beginPath();
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             // Double tap to zoom
             const currentTime = new Date().getTime();
             if (currentTime - lastTapTime < 300) {
-                scale *= 1.5; // Zoom in on double tap
+                scale *= 1.5;
                 drawMap();
             }
             lastTapTime = currentTime;
@@ -160,14 +160,15 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lastZoomDistance) {
                 const zoomFactor = newZoomDistance / lastZoomDistance;
                 
-                // Calculate midpoint for smooth zooming
+                // **Fix: Center zoom at pinch midpoint**
                 const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                 const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
 
+                // Adjust offset so zoom happens at pinch center
                 offsetX = midX - (midX - offsetX) * zoomFactor;
                 offsetY = midY - (midY - offsetY) * zoomFactor;
                 scale *= zoomFactor;
-                
+
                 drawMap();
             }
             lastZoomDistance = newZoomDistance;
