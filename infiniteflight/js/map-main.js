@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.drawMap = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#ccc";
-        ctx.strokeStyle = "#222";
+        ctx.strokeStyle = "#000";
         ctx.lineWidth = 0.5;
 
         if (!geoJSONData || !geoJSONData.features) return;
