@@ -1,6 +1,8 @@
 import { fetchSIGMET } from "./api.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
+    console.log("DOM Loaded, initializing map...");
+
     const canvas = document.getElementById("mapCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -18,6 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let lastTapTime = 0;
 
     function resizeCanvas() {
+        console.log("Resizing canvas...");
         const dpr = window.devicePixelRatio || 1;
         canvas.width = window.innerWidth * dpr;
         canvas.height = window.innerHeight * dpr;
@@ -29,9 +32,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.addEventListener("resize", resizeCanvas);
 
     try {
+        console.log("Fetching world map...");
         const response = await fetch("https://d3js.org/world-110m.v1.json");
         const topoData = await response.json();
-        worldData = topojson.feature(topoData, topoData.objects.land);
+        
+        if (!window.topojson) {
+            throw new Error("TopoJSON is not loaded. Check your script imports in HTML.");
+        }
+
+        worldData = window.topojson.feature(topoData, topoData.objects.land);
         console.log("Land Data Loaded:", worldData);
     } catch (error) {
         console.error("Error loading world map:", error);
@@ -39,39 +48,50 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
+        console.log("Fetching SIGMET data...");
         sigmetData = await fetchSIGMET();
         console.log("SIGMET Data Ready:", sigmetData);
     } catch (error) {
         console.error("Error fetching SIGMET data:", error);
     }
 
+    console.log("Drawing initial map...");
     drawMap();
 
-    const projection = d3.geoMercator()
+    if (!window.d3) {
+        console.error("D3 is not loaded. Check your script imports in HTML.");
+        return;
+    }
+
+    const projection = window.d3.geoMercator()
         .scale(scale)
         .translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
-    const pathGenerator = d3.geoPath().projection(projection).context(ctx);
+    const pathGenerator = window.d3.geoPath().projection(projection).context(ctx);
 
     function drawMap() {
+        console.log("Redrawing map...");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         projection.scale(scale).translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
-        // Draw Landmass
         ctx.fillStyle = "transparent";
         ctx.strokeStyle = "#ABB0B0";
         ctx.lineWidth = 1.5;
 
         ctx.beginPath();
-        pathGenerator(worldData);
-        ctx.stroke();
+        if (worldData) {
+            pathGenerator(worldData);
+            ctx.stroke();
+        } else {
+            console.error("worldData is null, map not drawn.");
+        }
 
-        // Draw SIGMETs
         drawSIGMETs();
         console.log("Map drawn successfully.");
     }
 
     function drawSIGMETs() {
+        console.log("Drawing SIGMETs...");
         if (!sigmetData || sigmetData.length === 0) {
             console.warn("No SIGMETs to draw.");
             return;
@@ -79,29 +99,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         ctx.strokeStyle = "red";
         ctx.lineWidth = 2;
-        ctx.fillStyle = "rgba(255, 0, 0, 0.2)"; // Semi-transparent red fill
+        ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
 
         sigmetData.forEach(sigmet => {
-            if (!sigmet.geometry || sigmet.geometry.type !== "Polygon") {
-                console.warn("Invalid SIGMET geometry:", sigmet);
+            if (!sigmet.coords || sigmet.coords.length === 0) {
+                console.warn("Invalid SIGMET data:", sigmet);
                 return;
             }
 
-            sigmet.geometry.coordinates.forEach(polygon => {
-                ctx.beginPath();
-                polygon.forEach(([lon, lat], index) => {
-                    if (isNaN(lon) || isNaN(lat)) {
-                        console.error("Invalid SIGMET coordinates:", lon, lat);
-                        return;
-                    }
-                    const [x, y] = projection([lon, lat]);
-                    if (index === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                });
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
+            ctx.beginPath();
+            sigmet.coords.forEach(({ lon, lat }, index) => {
+                if (isNaN(lon) || isNaN(lat)) {
+                    console.error("Invalid SIGMET coordinates:", lon, lat);
+                    return;
+                }
+                const [x, y] = projection([lon, lat]);
+                if (index === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             });
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
         });
 
         console.log("SIGMETs drawn successfully.");
@@ -227,5 +245,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return Math.sqrt((touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2);
     }
 
+    console.log("Resizing canvas...");
     resizeCanvas();
 });
