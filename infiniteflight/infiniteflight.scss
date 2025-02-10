@@ -173,6 +173,7 @@ body {
     flex-direction: column;
     margin: 0 auto;
     max-width: 100%;
+    width: 100%;
 }
 
 pre {
@@ -191,7 +192,6 @@ pre {
     display: flex;
     align-items: center;
     max-width: 600px;
-    justify-content: space-between;
 }
 
 .nav-left {
