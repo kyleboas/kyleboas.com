@@ -570,9 +570,9 @@ function displayControllers(controllers, centerFrequencies = "") {
     mainAirportElement.style.display = 'block';
 
     // Format other controllers
-    const otherControllers = controllers
-        .map(ctrl => `${ctrl}<br>`)
-        .join('') || 'No active controllers available.';
+    const otherControllers = controllers.length
+        ? controllers.map(ctrl => `${ctrl}<br>`).join('')
+        : 'No active controllers available.';
 
     // Display formatted controllers
     controllersElement.style.display = 'block';
@@ -636,18 +636,18 @@ async function fetchControllers(icao) {
             return {
                 frequencyName,
                 username: facility.username,
-                airportName: facility.airportName || "N/A", // Show "N/A" if airport is null
+                airportName: facility.airportName ? facility.airportName : "N/A", // Ensure "N/A" if null
                 type: facility.type
             };
         });
 
-        // Separate Center controllers
+        // Extract Center controllers in "Center: Username (AirportName)" format
         const centerControllers = controllers
             .filter(ctrl => ctrl.type === 6)
             .map(ctrl => `Center: ${ctrl.username} (${ctrl.airportName})`)
             .join(", ");
 
-        // Sort the remaining controllers
+        // Sort other controllers
         const sortedControllers = controllers
             .filter(ctrl => ctrl.type !== 6)
             .sort((a, b) => {
@@ -657,11 +657,11 @@ async function fetchControllers(icao) {
             .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
 
         setCache(icao, sortedControllers, 'controllers');
-        displayControllers(sortedControllers, centerControllers); // Pass both
+        displayControllers(sortedControllers, centerControllers); // Pass both sorted list & center controllers
         return sortedControllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
-        displayControllers([], []);
+        displayControllers([], "");
         return [];
     }
 }
