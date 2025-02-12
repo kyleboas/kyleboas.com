@@ -146,6 +146,7 @@ const aircraftMachDetails = {
         "e258f6d4-4503-4dde-b25c-1fb9067061e2": { name: "B777-300ER", minMach: 0.78, maxMach: 0.89 },
         "6925c030-a868-49cc-adc8-7025537c51ca": { name: "B777F", minMach: 0.78, maxMach: 0.89 },
         "c1ae3647-f56a-4dc4-9007-cc8b1a2697a5": { name: "B787-8", minMach: 0.78, maxMach: 0.90 },
+        "0c039044-1a57-48db-99c1-7570a6bf2b00": { name: "B787-9", minMach: 0.78, maxMach: 0.90 },
         "61084cae-8aac-4da4-a7df-396ec6d9c870": { name: "B787-10", minMach: 0.78, maxMach: 0.90 },
         "3098345e-1152-4441-96ec-40a71179a24f": { name: "Dash-8 Q400", minMach: 0.45, maxMach: 0.66 },
         "8e316ed6-9296-472a-93f8-4b6ab74b9121": { name: "C350", minMach: 0.76, maxMach: 0.83 },
