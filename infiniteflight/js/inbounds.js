@@ -1774,51 +1774,6 @@ let interpolateInterval = null;
 let atcUpdateInterval = null;
 let inactivityTimeout = null;
 
-// Function to show the notification bar
-function showNotification(message) {
-    const notificationBar = document.getElementById("notification-bar");
-    if (!notificationBar) return;
-
-    notificationBar.textContent = message;
-    notificationBar.style.display = "block";
-
-    // Hide notification after 5 seconds
-    setTimeout(() => {
-        notificationBar.style.display = "none";
-    }, 5000);
-}
-
-// Function to stop auto-update
-function stopAutoUpdate() {
-    isAutoUpdateActive = false;
-    updateButton.style.color = "#828282";
-    const icon = updateButton.querySelector("i");
-    if (icon) icon.classList.remove("spin");
-
-    if (flightUpdateInterval) clearInterval(flightUpdateInterval);
-    if (interpolateInterval) clearInterval(interpolateInterval);
-    if (atcUpdateInterval) clearInterval(atcUpdateInterval);
-    if (inactivityTimeout) clearTimeout(inactivityTimeout);
-
-    flightUpdateInterval = null;
-    interpolateInterval = null;
-    atcUpdateInterval = null;
-    inactivityTimeout = null;
-
-    console.log("Auto-update stopped due to inactivity.");
-    showNotification("No activity in the past 15 minutes. Auto-update has stopped.");
-}
-
-// Function to reset the inactivity timer
-function resetInactivityTimer(icao) {
-    if (inactivityTimeout) clearTimeout(inactivityTimeout);
-    
-    inactivityTimeout = setTimeout(() => {
-        console.log("15 minutes of inactivity detected. Stopping auto-update.");
-        stopAutoUpdate();
-    }, 900000); // 15 minutes (900,000 ms)
-}
-
 // Function to start auto-update
 function startAutoUpdate(icao) {
     isAutoUpdateActive = true;
@@ -1948,6 +1903,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.addEventListener("keydown", () => resetInactivityTimer(icaoInput.value.trim().toUpperCase()));
     document.addEventListener("touchstart", () => resetInactivityTimer(icaoInput.value.trim().toUpperCase()));
 });
+
+// Function to show the notification bar
+function showNotification(message) {
+    const notificationBar = document.getElementById("notification-bar");
+    if (!notificationBar) return;
+
+    notificationBar.textContent = message;
+    notificationBar.style.display = "block";
+
+    // Hide notification after 5 seconds
+    setTimeout(() => {
+        notificationBar.style.display = "none";
+    }, 5000);
+}
+
+// Function to stop auto-update
+function stopAutoUpdate() {
+    isAutoUpdateActive = false;
+    updateButton.style.color = "#828282";
+    const icon = updateButton.querySelector("i");
+    if (icon) icon.classList.remove("spin");
+
+    if (flightUpdateInterval) clearInterval(flightUpdateInterval);
+    if (interpolateInterval) clearInterval(interpolateInterval);
+    if (atcUpdateInterval) clearInterval(atcUpdateInterval);
+    if (inactivityTimeout) clearTimeout(inactivityTimeout);
+
+    flightUpdateInterval = null;
+    interpolateInterval = null;
+    atcUpdateInterval = null;
+    inactivityTimeout = null;
+
+    console.log("Auto-update stopped due to inactivity.");
+    showNotification("No activity in the past 15 minutes. Auto-update has stopped.");
+}
+
+// Function to reset the inactivity timer
+function resetInactivityTimer(icao) {
+    if (inactivityTimeout) clearTimeout(inactivityTimeout);
+    
+    inactivityTimeout = setTimeout(() => {
+        console.log("15 minutes of inactivity detected. Stopping auto-update.");
+        stopAutoUpdate();
+    }, 900000); // 15 minutes (900,000 ms)
+}
 
 // Export Functions for External Use
 export { getFlights, allFlights, airportCoordinates, calculateDistance };
