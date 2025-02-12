@@ -2,6 +2,25 @@
 # Front matter comment to ensure Jekyll properly reads file.
 ---
 
+#notification-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #ff9800;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    display: none;
+    z-index: 1000;
+}
+
+.hidden {
+    display: none;
+}
+
 #flightsTable tr:hover {
     background-color: #f0f0f0;
     cursor: pointer;

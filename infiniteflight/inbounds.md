@@ -4,6 +4,8 @@ layout: infiniteflight
 permalink: /infiniteflight/inbounds/
 ---
 
+<div id="notification-bar" class="hidden">No activity in the past 15 minutes. Auto-update has stopped.</div>
+
 <div class="settings-menu hidden">
   <div class="settings-header">
     <strong>Settings</strong>
