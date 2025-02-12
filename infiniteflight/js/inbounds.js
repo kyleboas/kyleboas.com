@@ -1838,7 +1838,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        stopAutoUpdate();
+        stopAutoUpdate("manual"); // Prevents the inactivity message
         allFlights = [];
         interpolatedFlights = [];
         airportCoordinates = null;
@@ -1891,7 +1891,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             if (isAutoUpdateActive) {
-                stopAutoUpdate();
+                stopAutoUpdate("manual"); // Prevents the inactivity message
             } else {
                 startAutoUpdate(icao);
             }
@@ -1919,7 +1919,7 @@ function showNotification(message) {
 }
 
 // Function to stop auto-update
-function stopAutoUpdate() {
+function stopAutoUpdate(reason = "manual") {
     isAutoUpdateActive = false;
     updateButton.style.color = "#828282";
     const icon = updateButton.querySelector("i");
@@ -1935,17 +1935,21 @@ function stopAutoUpdate() {
     atcUpdateInterval = null;
     inactivityTimeout = null;
 
-    console.log("Auto-update stopped due to inactivity.");
-    showNotification("No activity in the past 15 minutes. Auto-update has stopped.");
+    console.log(`Auto-update stopped due to: ${reason}`);
+
+    // Show notification only if stopped due to inactivity
+    if (reason === "inactivity") {
+        showNotification("No activity in the past 15 minutes. Auto-update has stopped.");
+    }
 }
 
 // Function to reset the inactivity timer
 function resetInactivityTimer(icao) {
     if (inactivityTimeout) clearTimeout(inactivityTimeout);
-    
+
     inactivityTimeout = setTimeout(() => {
         console.log("15 minutes of inactivity detected. Stopping auto-update.");
-        stopAutoUpdate();
+        stopAutoUpdate("inactivity"); // Pass the reason
     }, 900000); // 15 minutes (900,000 ms)
 }
 
