@@ -1769,7 +1769,6 @@ async function renderFlightsTable(getFlights, hideFilter = false) {
 // ============================
 
 // Global variables
-let isAutoUpdateActive = false;
 let flightUpdateInterval = null;
 let interpolateInterval = null;
 let atcUpdateInterval = null;
