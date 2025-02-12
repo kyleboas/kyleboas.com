@@ -617,8 +617,8 @@ async function fetchAirportATIS(icao) {
 async function fetchControllers(icao) {
     const cached = getCache(icao, 'controllers', cacheExpiration.controllers);
     if (cached) {
-        displayControllers(cached.sortedControllers, cached.centerControllers);
-        return cached.sortedControllers;
+        displayControllers(cached);
+        return cached;
     }
 
     try {
@@ -634,15 +634,16 @@ async function fetchControllers(icao) {
                 6: "Center",
                 7: "ATIS",
             };
+            const frequencyName = frequencyTypes[facility.type] || "Unknown";
             return {
-                frequencyName: frequencyTypes[facility.type] || "Unknown",
+                frequencyName,
                 username: facility.username,
-                airportName: facility.airportName || "N/A",
+                airportName: facility.airportName ? facility.airportName : "N/A", // Ensure "N/A" if null
                 type: facility.type
             };
         });
 
-        // Extract Center controllers
+        // Extract Center controllers in "Center: Username (AirportName)" format
         const centerControllers = controllers
             .filter(ctrl => ctrl.type === 6)
             .map(ctrl => `Center: ${ctrl.username} (${ctrl.airportName})`)
@@ -657,8 +658,8 @@ async function fetchControllers(icao) {
             })
             .map(ctrl => `${ctrl.frequencyName}: ${ctrl.username}`);
 
-        setCache(icao, { sortedControllers, centerControllers }, 'controllers');
-        displayControllers(sortedControllers, centerControllers);
+        setCache(icao, sortedControllers, 'controllers');
+        displayControllers(sortedControllers, centerControllers); // Pass both sorted list & center controllers
         return sortedControllers;
     } catch (error) {
         console.error('Error fetching controllers:', error.message);
