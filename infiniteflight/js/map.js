@@ -208,13 +208,22 @@ function initMap() {
         console.error("Error: mapCanvas not found in the DOM.");
         return;
     }
-    
+
     ctx = mapCanvas.getContext("2d");
     resizeCanvas();
     drawBaseMap(); 
     setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
 
     mapCanvas.addEventListener("click", toggleScale);
+
+    let lastTouchEnd = 0;
+    mapCanvas.addEventListener("touchend", (event) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
 }
 
 export { initMap, showMapPopup, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft };
