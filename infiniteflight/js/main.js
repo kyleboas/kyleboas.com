@@ -4,6 +4,28 @@ import { getFlights, allFlights, airportCoordinates } from "./inbounds.js";
 import { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./map.js";
 import { updateRunwaySpacingDisplay } from "./spacing.js";
 
+function setupEventListeners() {
+    const searchButton = document.getElementById("Search");
+    const addButton = document.getElementById("Add");
+    const inputElement = document.getElementById("icao");
+
+    if (searchButton) {
+        searchButton.addEventListener("click", inputSearch);
+    }
+    if (addButton) {
+        addButton.addEventListener("click", inputSearch);
+    }
+    if (inputElement) {
+        inputElement.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                inputSearch();
+            }
+        });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", setupEventListeners);
+
 // Attach event listeners to the search button and input field
 document.addEventListener("DOMContentLoaded", () => {
     const searchButton = document.getElementById("searchButton");

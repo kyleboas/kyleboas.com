@@ -2,7 +2,6 @@ import { setICAO } from "./icao.js";
 import { fetchAirportData } from "./airport.js";
 import { updateRunwaySpacingDisplay } from "./spacing.js";
 
-// Function to handle search and update UI
 async function inputSearch() {
     const inputElement = document.getElementById("icao");
     if (!inputElement) {
@@ -25,6 +24,7 @@ async function inputSearch() {
     const mapContainer = document.querySelector(".map-container");
     if (mapContainer) {
         mapContainer.style.display = "table-cell";
+        mapContainer.offsetHeight;
     } else {
         console.warn("Map container not found.");
     }
