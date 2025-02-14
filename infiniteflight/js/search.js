@@ -25,6 +25,10 @@ async function inputSearch() {
     if (mapContainer) {
         mapContainer.style.display = "table-cell";
         mapContainer.offsetHeight;
+
+        requestAnimationFrame(() => {
+            mapContainer.style.opacity = "1";
+        });
     } else {
         console.warn("Map container not found.");
     }
