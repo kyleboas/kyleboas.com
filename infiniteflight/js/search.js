@@ -11,7 +11,6 @@ async function inputSearch() {
 
     const inputICAO = inputElement.value.trim().toUpperCase();
     if (inputICAO.length !== 4) {
-        console.warn("Invalid ICAO code. Must be exactly 4 characters.");
         return;
     }
 
@@ -20,18 +19,6 @@ async function inputSearch() {
 
     const airportData = await fetchAirportData();
     if (!airportData) return;
-
-    const mapContainer = document.querySelector(".map-container");
-    if (mapContainer) {
-        mapContainer.style.display = "table-cell";
-        mapContainer.offsetHeight;
-
-        requestAnimationFrame(() => {
-            mapContainer.style.opacity = "1";
-        });
-    } else {
-        console.warn("Map container not found.");
-    }
 
     updateRunwaySpacingDisplay();
 }
