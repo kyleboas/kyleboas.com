@@ -13,7 +13,7 @@ def fetch_rss_articles():
     feed = feedparser.parse(RSS_FEED_URL)
     articles = []
     
-    for entry in feed.entries[:5]:  # Get latest 5 articles
+    for entry in feed.entries[:5]:
         article_url = entry.link
         article_data = extract_article_data(article_url)
         if article_data:
