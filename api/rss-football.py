@@ -7,7 +7,7 @@ from sumy.summarizers.lsa import LsaSummarizer
 
 app = FastAPI()
 
-RSS_FEED_URL = "https://www.newsblur.com/reader/folder_rss/717228/7eb32e304e39/unread/4-news"
+RSS_FEED_URL = "https://cityxtra.co.uk/feed/"
 
 def fetch_rss_articles():
     feed = feedparser.parse(RSS_FEED_URL)
