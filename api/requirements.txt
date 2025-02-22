@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+feedparser
+newspaper3k
+sumy
