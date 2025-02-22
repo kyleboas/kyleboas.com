@@ -1,0 +1,8 @@
+{
+  "builds": [
+    { "src": "api/rss-football.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/football/headlines", "dest": "api/rss-footbal.py" }
+  ]
+}
