@@ -37,7 +37,7 @@ def fetch_rss_articles():
         for entry in feed.entries[:5]:  # Get latest 5 articles
             article_url = entry.link
             article_title = entry.title
-            _, quotes = extract_content(entry)
+            quotes = extract_content(entry)
 
             quotes_output = quotes if quotes else ["No quotes found."]
 
