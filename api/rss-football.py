@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 RSS_FEED_URL = "https://www.molineux.news/news/feed/"
 
 def fetch_rss_articles():
-    """Fetch articles from the RSS feed and extract quotes."""
+    """Fetch articles from the RSS feed and extract quotes only."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -37,15 +37,11 @@ def fetch_rss_articles():
         for entry in feed.entries[:5]:  # Get latest 5 articles
             article_url = entry.link
             article_title = entry.title
-            full_text, quotes = extract_content(entry)
+            _, quotes = extract_content(entry)
 
-            # If no quotes found, fallback to summary
-            if quotes:
-                summary = "\n".join(quotes)  # Only quotes, no speakers
-            else:
-                summary = summarize_text(full_text, 300) if full_text else "No quotes found."
+            summary = "\n".join(quotes) if quotes else "No quotes found."
 
-            articles.append({"headline": article_title, "summary": summary, "url": article_url})
+            articles.append({"headline": article_title, "quotes": summary, "url": article_url})
 
         return articles
 
@@ -56,8 +52,13 @@ def fetch_rss_articles():
 def extract_content(entry):
     """Extracts full article content from `content:encoded` and finds all quotes."""
     try:
-        # Attempt to get `content:encoded` from multiple locations
-        raw_html = entry.get("content:encoded") or entry.get("content", [{}])[0].get("value") or entry.get("summary") or entry.get("description")
+        # Extract `content:encoded` from multiple locations in RSS feed
+        raw_html = (
+            entry.get("content:encoded") or 
+            entry.get("content", [{}])[0].get("value") or 
+            entry.get("summary") or 
+            entry.get("description")
+        )
 
         if not raw_html:
             logging.error(f"No `content:encoded` found for article: {entry.get('link')} - Falling back to `summary` or `description`.")
@@ -71,17 +72,10 @@ def extract_content(entry):
         # Parse HTML using BeautifulSoup
         soup = BeautifulSoup(raw_html, "html.parser")
 
-        # Extract text
-        full_text = soup.get_text(separator=" ").strip()
-
         # Find all quotes
         quotes = extract_quotes(soup)
 
-        # Ensure minimum content length
-        full_text = clean_text(full_text)
-        logging.info(f"Extracted text length: {len(full_text)} for article: {entry.get('link')}")
-        
-        return (full_text if len(full_text) > 100 else None, quotes)
+        return None, quotes  # No need for full text, just quotes
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
@@ -99,51 +93,16 @@ def extract_quotes(soup):
 
         # Find quotes in the paragraph
         found_quotes = quote_pattern.findall(text)
-        
+
         # Store all extracted quotes
         for quote in found_quotes:
             quotes.append(f'"{quote}"')  # Store only the quote itself
 
     return quotes
 
-def summarize_text(text, limit=300):
-    """Summarizes the article to a natural length, 300 characters or less."""
-    try:
-        text = text.strip()
-        logging.info(f"Summarizing text of length {len(text)}")
-
-        # If the text is already short, return it as is
-        if len(text) <= limit:
-            return text
-
-        # Split into sentences
-        sentences = text.split(". ")
-
-        summary = ""
-        for sentence in sentences:
-            if len(summary) + len(sentence) + 2 > limit:  # +2 for ". "
-                break
-            summary += sentence + ". "
-
-        # If the summary is too short, take the first 300 characters
-        if len(summary) < 100:
-            summary = text[:limit] + "..."
-
-        logging.info(f"Final summary length: {len(summary)}")
-        return summary.strip()
-
-    except Exception as e:
-        logging.error(f"Error summarizing text: {e}")
-        return "Summary not available."
-
-def clean_text(text):
-    """Removes extra spaces, emojis, and fixes text encoding issues."""
-    text = re.sub(r'\s+', ' ', text)  # Remove extra spaces
-    return text.encode('utf-8', 'ignore').decode('utf-8')  # Fix encoding issues
-
 @app.get("/api/articles")
 async def get_articles():
-    """API endpoint to fetch summarized RSS articles."""
+    """API endpoint to fetch articles and extract only quotes."""
     articles = fetch_rss_articles()
 
     if not articles:
