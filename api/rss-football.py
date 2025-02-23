@@ -77,9 +77,6 @@ def extract_content(entry):
         # Decode HTML entities
         raw_html = html.unescape(raw_html)
 
-        # Log extracted HTML content (for debugging)
-        logging.debug(f"Extracted HTML content: {raw_html[:500]}...")  # Log first 500 chars
-
         # Parse HTML using BeautifulSoup
         soup = BeautifulSoup(raw_html, "html.parser")
 
@@ -91,9 +88,9 @@ def extract_content(entry):
         return []
 
 def extract_quotes(soup):
-    """Extracts all <p> tags that contain at least one quote character."""
+    """Extracts all <p> tags that contain at least one quote character anywhere inside them."""
     
-    # Characters that indicate a quote exists in the paragraph
+    # Quote characters to check for inside the paragraph
     quote_chars = ['"', '"', '"', '‘', '’', '&#8220;', '&#8221;']
 
     quotes = []
@@ -105,7 +102,7 @@ def extract_quotes(soup):
         # Decode any remaining HTML entities
         text = html.unescape(text)
 
-        # If the paragraph contains any quote character, add it as a quote
+        # If the paragraph contains any quote character, include the full paragraph
         if any(q in text for q in quote_chars):
             quotes.append(text)
 
