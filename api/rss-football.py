@@ -83,7 +83,7 @@ def extract_content(entry):
 
 def extract_quotes(soup):
     """Finds all quotes in the article without assigning speakers."""
-    quote_pattern = re.compile(r'[""""]([^""""]+)[""""]')  # Matches both curly and straight quotes
+    quote_pattern = re.compile(r'["""]([^"""]+)["""]')  # Matches both straight and curly quotes
 
     quotes = []
     paragraphs = soup.find_all("p")  # Get all paragraphs
