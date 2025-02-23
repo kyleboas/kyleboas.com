@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import html
 import logging
+import json
 
 app = FastAPI()
 # Setup logging
@@ -40,6 +41,10 @@ def fetch_rss_articles():
                 "quotes": quotes_output,
                 "url": article_url
             })
+        
+        # Convert to JSON and back to ensure we're working with proper text content
+        articles_json = json.dumps(articles)
+        articles = json.loads(articles_json)
         return articles
     except requests.exceptions.RequestException as e:
         logging.error(f"Error fetching RSS feed: {e}")
@@ -55,8 +60,6 @@ def extract_content(entry):
             return []  # Skip article if no valid content
 
         logging.info(f"Extracting content from article: {entry.get('link')}")
-        # Decode HTML entities
-        raw_html = html.unescape(raw_html)
         # Parse HTML using BeautifulSoup
         soup = BeautifulSoup(raw_html, "html.parser")
         # Extract and return quotes
@@ -67,8 +70,8 @@ def extract_content(entry):
 
 def extract_quotes(soup):
     """Extracts paragraphs that contain at least one double quotation mark."""
-    # Define only double quote characters
-    double_quote_chars = ['"', '"', '"', "â€œ", "â€", "&quot;", "&#8220;", "&#8221;"]
+    # Define only double quote characters, excluding standard JSON string delimiters
+    double_quote_chars = ['"', '"', "â€œ", "â€", "&#8220;", "&#8221;"]
     
     quotes = []
     # Find all paragraphs
@@ -76,7 +79,7 @@ def extract_quotes(soup):
     
     for paragraph in paragraphs:
         text = paragraph.get_text().strip()
-        # Decode any remaining HTML entities
+        # Decode HTML entities before checking for quotes
         text = html.unescape(text)
         
         # Count double quotes in the text
