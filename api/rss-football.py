@@ -66,9 +66,9 @@ def extract_content(entry):
         return []
 
 def extract_quotes(soup):
-    """Extracts paragraphs that contain either single quotes or matching double quotes."""
-    
-    double_quote_chars = ['"', """, """, "&quot;", "&#8220;", "&#8221;"]
+    """Extracts paragraphs that contain at least one double quotation mark."""
+    # Define only double quote characters
+    double_quote_chars = ['"', '"', '"', "â€œ", "â€", "&quot;", "&#8220;", "&#8221;"]
     
     quotes = []
     # Find all paragraphs
@@ -79,15 +79,15 @@ def extract_quotes(soup):
         # Decode any remaining HTML entities
         text = html.unescape(text)
         
-        # 2. At least two double quote characters (matching quotes)
-        double_quote_count = sum(text.count(q) for q in double_quote_chars)
-        has_matching_quotes = double_quote_count >= 1
+        # Count double quotes in the text
+        quote_count = sum(text.count(q) for q in double_quote_chars)
         
-        if has_single_quote or has_matching_quotes:
+        # Include paragraphs that have at least one double quote
+        if quote_count >= 1:
             quotes.append(text)
     
     if not quotes:
-        logging.warning("No valid quoted text found in article content.")
+        logging.warning("No valid double-quoted text found in article content.")
     
     return quotes if quotes else []
 
