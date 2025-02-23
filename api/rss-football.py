@@ -39,9 +39,9 @@ def fetch_rss_articles():
             article_title = entry.title
             _, quotes = extract_content(entry)
 
-            summary = "\n".join(quotes) if quotes else "No quotes found."
+            quotes_output = quotes if quotes else ["No quotes found."]
 
-            articles.append({"headline": article_title, "quotes": summary, "url": article_url})
+            articles.append({"headline": article_title, "quotes": quotes_output, "url": article_url})
 
         return articles
 
@@ -66,7 +66,7 @@ def extract_content(entry):
 
         logging.info(f"Extracting content for article: {entry.get('link')}")
 
-        # Decode HTML entities
+        # Decode HTML entities (fixes `&#8220;` for quotes, `&#8217;` for apostrophes, etc.)
         raw_html = html.unescape(raw_html)
 
         # Parse HTML using BeautifulSoup
@@ -83,13 +83,16 @@ def extract_content(entry):
 
 def extract_quotes(soup):
     """Finds all quotes in the article without assigning speakers."""
-    quote_pattern = re.compile(r'[""]([^""]+)[""]')  # Matches both "curly" and "straight" quotes
+    quote_pattern = re.compile(r'[""""]([^""""]+)[""""]')  # Matches both curly and straight quotes
 
     quotes = []
     paragraphs = soup.find_all("p")  # Get all paragraphs
 
     for paragraph in paragraphs:
         text = paragraph.get_text().strip()
+
+        # Decode any remaining HTML entities in extracted text
+        text = html.unescape(text)
 
         # Find quotes in the paragraph
         found_quotes = quote_pattern.findall(text)
