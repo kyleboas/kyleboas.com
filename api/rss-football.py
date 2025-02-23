@@ -40,15 +40,12 @@ def fetch_rss_articles():
             article_title = entry.title
             full_text, quotes = extract_content(entry)
 
-            if not full_text:
-                summary = "Summary not available."
-            else:
-                summary = summarize_text(full_text, 300)  # Summarize to 300 characters
-
-            # Format output properly
+            # If no quotes are found, use summary instead
             if quotes:
                 formatted_quotes = "\n".join([f"{speaker}: {', '.join(quote_list)}" for speaker, quote_list in quotes.items()])
-                summary += f"\n\n{formatted_quotes}"
+                summary = formatted_quotes
+            else:
+                summary = summarize_text(full_text, 300) if full_text else "Summary not available."
 
             articles.append({"headline": article_title, "summary": summary, "url": article_url})
 
@@ -98,8 +95,10 @@ def extract_content(entry):
 
 def extract_quotes_with_speakers(text):
     """Finds and groups quotes by the same speaker in the article."""
-    quote_pattern = re.compile(r'(?:"([^"]+)"|\"([^\"]+)\")')  # Matches both curly and straight quotes
-    speaker_pattern = re.compile(r'([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*(?:said|stated|confirmed|added|remarked|noted)', re.IGNORECASE)
+    # Improved regex for extracting quotes (curly and straight)
+    quote_pattern = re.compile(r'[""]([^""]+)[""]')  # Matches both "curly" and "straight" quotes
+    # Improved regex for detecting speakers (expanded list)
+    speaker_pattern = re.compile(r'([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*(?:said|stated|confirmed|added|remarked|noted|mentioned|explained|claimed|told)', re.IGNORECASE)
 
     quotes_with_speakers = defaultdict(list)
     sentences = text.split(". ")
@@ -110,7 +109,7 @@ def extract_quotes_with_speakers(text):
         speaker_match = speaker_pattern.search(sentence)
 
         # Extract the actual quote text from the regex match
-        extracted_quotes = [q[0] if q[0] else q[1] for q in quotes]
+        extracted_quotes = quotes
 
         if extracted_quotes:
             # If a speaker is found, use it; otherwise, use the last detected speaker
