@@ -39,9 +39,14 @@ def fetch_rss_articles():
             article_title = entry.title
             quotes = extract_content(entry)
 
+            # Ensure that quotes is always a list
             quotes_output = quotes if quotes else ["No quotes found."]
 
-            articles.append({"headline": article_title, "quotes": quotes_output, "url": article_url})
+            articles.append({
+                "headline": article_title,
+                "quotes": quotes_output,
+                "url": article_url
+            })
 
         return articles
 
@@ -61,8 +66,8 @@ def extract_content(entry):
         )
 
         if not raw_html:
-            logging.error(f"No `content:encoded` found for article: {entry.get('link')} - Falling back to `summary` or `description`.")
-            return None, []
+            logging.error(f"No `content:encoded` found for article: {entry.get('link')}")
+            return []
 
         logging.info(f"Extracting content for article: {entry.get('link')}")
 
@@ -72,21 +77,19 @@ def extract_content(entry):
         # Parse HTML using BeautifulSoup
         soup = BeautifulSoup(raw_html, "html.parser")
 
-        # Find all quotes
-        quotes = extract_quotes(soup)
-
-        return None, quotes  # No need for full text, just quotes
+        # Extract and return quotes
+        return extract_quotes(soup)
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
-        return None, []
+        return []
 
 def extract_quotes(soup):
     """Extracts all <p> tags that contain at least one quote character."""
     
     # Quote characters to check
-    quote_chars = ['"', '"', '"']
-    
+    quote_chars = ['"', '"', '"', '&#8220;', '&#8221;']
+
     quotes = []
     paragraphs = soup.find_all("p")  # Get all <p> elements
 
@@ -100,8 +103,8 @@ def extract_quotes(soup):
         if any(q in text for q in quote_chars):
             quotes.append(text)
 
-    return quotes
-
+    return quotes if quotes else []
+     
 @app.get("/api/articles")
 async def get_articles():
     """API endpoint to fetch articles and extract only quotes."""
