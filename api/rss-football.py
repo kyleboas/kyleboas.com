@@ -42,7 +42,7 @@ def fetch_rss_articles():
             if not full_text:
                 summary = "Summary not available."
             else:
-                summary = summarize_text(full_text)  # Summarize to ~300 characters naturally
+                summary = summarize_text(full_text)  # Summarize to 300 characters
 
             articles.append({"headline": article_title, "summary": summary, "url": article_url})
 
@@ -53,8 +53,9 @@ def fetch_rss_articles():
         return []
 
 def extract_content(entry):
-    """Extracts full article content from the RSS feed, preferring `content:encoded`."""
+    """Extracts full article content from the RSS feed, prioritizing `content:encoded`."""
     try:
+        # Extract `content:encoded` if available
         if "content:encoded" in entry:
             raw_html = entry["content:encoded"]
             logging.info(f"Extracting `content:encoded` for article: {entry.get('link')}")
@@ -65,39 +66,48 @@ def extract_content(entry):
             raw_html = entry["description"]
             logging.warning(f"Falling back to `description` for article: {entry.get('link')}")
         else:
-            logging.error(f"No content found for article: {entry.get('link')}")
+            logging.error(f"No usable content found for article: {entry.get('link')}")
             return None
 
+        # Decode HTML entities (fixes encoding issues)
         raw_html = html.unescape(raw_html)
 
+        # Parse HTML using BeautifulSoup
         soup = BeautifulSoup(raw_html, "html.parser")
+
+        # Extract text and remove unnecessary whitespace
         full_text = soup.get_text(separator=" ").strip()
 
+        # Clean the text (remove emojis, fix encoding issues)
         full_text = clean_text(full_text)
 
         logging.info(f"Extracted text length: {len(full_text)} for article: {entry.get('link')}")
-        return full_text if len(full_text) > 100 else None
+        return full_text if len(full_text) > 100 else None  # Ensure minimum content
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
         return None
 
 def summarize_text(text, limit=300):
-    """Summarizes the article into a natural length of ~300 characters."""
+    """Summarizes the article to a natural length, 300 characters or less."""
     try:
         text = text.strip()
         logging.info(f"Summarizing text of length {len(text)}")
 
+        # If the text is already short, return it as is
         if len(text) <= limit:
             return text
 
+        # Split into sentences
         sentences = text.split(". ")
+
         summary = ""
         for sentence in sentences:
-            if len(summary) + len(sentence) + 2 > limit:
+            if len(summary) + len(sentence) + 2 > limit:  # +2 for ". "
                 break
             summary += sentence + ". "
 
+        # If the summary is still too short, take the first 300 characters
         if len(summary) < 100:
             summary = text[:limit] + "..."
 
@@ -110,6 +120,7 @@ def summarize_text(text, limit=300):
 
 def clean_text(text):
     """Removes emojis and fixes text encoding issues."""
+    # Remove emojis using regex
     emoji_pattern = re.compile("["
         u"\U0001F600-\U0001F64F"
         u"\U0001F300-\U0001F5FF"
@@ -118,6 +129,7 @@ def clean_text(text):
         "]+", flags=re.UNICODE)
     text = emoji_pattern.sub(r'', text)
 
+    # Fix encoding issues
     text = text.encode('utf-8', 'ignore').decode('utf-8')
 
     return text
