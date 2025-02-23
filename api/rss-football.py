@@ -57,7 +57,7 @@ def fetch_rss_articles():
 def extract_content(entry):
     """Extracts full article content strictly from `content:encoded` stored in `entry.content[0].value`."""
     try:
-        # Check if `content` exists and extract the first value (feedparser stores it as a list)
+        # Ensure we get only `content:encoded`, do not use summary/description
         raw_html = entry.get("content")[0].get("value") if entry.get("content") else None
 
         if not raw_html:
@@ -80,14 +80,14 @@ def extract_content(entry):
         return []
 
 def extract_quotes(soup):
-    """Extracts all <p> tags or <blockquote> tags containing quotes from the article content."""
+    """Extracts text inside double quotes from <p> and <blockquote> tags."""
     
-    # Quote characters to detect
-    quote_chars = ['"', '"', '"', "&#8220;", "&#8221;", "&quot;"]
+    # Valid double quote variations
+    double_quote_chars = ['"', """, """, "&quot;", "&#8220;", "&#8221;"]
     
     quotes = []
     
-    # Look for <p> and <blockquote> elements
+    # Find all paragraphs and blockquote elements
     paragraphs = soup.find_all(["p", "blockquote"])
 
     for paragraph in paragraphs:
@@ -96,12 +96,17 @@ def extract_quotes(soup):
         # Decode any remaining HTML entities
         text = html.unescape(text)
 
-        # If the paragraph contains any quote characters, store it
-        if any(q in text for q in quote_chars):
-            quotes.append(text)
+        # Regex to extract text inside double quotes (handles various quote types)
+        matches = re.findall(r'"(.*?)"|"(.*?)"', text)
+
+        # Flatten tuple results and remove empty matches
+        extracted_quotes = [m[0] or m[1] for m in matches if m[0] or m[1]]
+
+        if extracted_quotes:
+            quotes.extend(extracted_quotes)
 
     if not quotes:
-        logging.warning("No quotes found in article content.")
+        logging.warning("No valid double-quoted text found in article content.")
 
     return quotes if quotes else []
 
