@@ -26,18 +26,15 @@ def fetch_articles():
         # Parse the HTML content
         soup = BeautifulSoup(content, 'html.parser')
         
-        # Find all paragraphs containing at least 3 double quotes
-        quotes = []
-        for p in soup.find_all('p'):
-            text = p.get_text().strip()
-            if text.count('"') >= 3:  # Check if there are at least 3 double quotes
-                quotes.append(text)
+        # Find all paragraphs containing at least 1 double quotes
+        quotes = [p.get_text().strip() for p in soup.find_all('p') if p.get_text().count('"') >= 1]
         
-        # Add to articles list
-        articles.append({
-            "headline": title,
-            "quotes": quotes,
-            "url": url
-        })
+        # Only add articles that contain at least one qualifying quote
+        if quotes:
+            articles.append({
+                "headline": title,
+                "quotes": quotes,
+                "url": url
+            })
     
     return articles
