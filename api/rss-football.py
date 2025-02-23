@@ -56,13 +56,8 @@ def fetch_rss_articles():
 def extract_content(entry):
     """Extracts full article content from `content:encoded` and finds all quotes with speakers."""
     try:
-        # Try different ways to get `content:encoded`
-        raw_html = None
-        if "content:encoded" in entry:
-            raw_html = entry["content:encoded"]
-        elif "content" in entry and isinstance(entry["content"], list):
-            raw_html = entry["content"][0]["value"]
-
+        # Extract `content:encoded` from RSS entry
+        raw_html = entry.get("content:encoded")
         if not raw_html:
             logging.error(f"No `content:encoded` found for article: {entry.get('link')}")
             return None, []
@@ -79,7 +74,7 @@ def extract_content(entry):
         full_text = soup.get_text(separator=" ").strip()
 
         # Find all quotes with their speakers
-        quotes = extract_quotes_with_speakers(full_text)
+        quotes = extract_quotes_with_speakers(soup)
 
         # Ensure minimum content length
         full_text = clean_text(full_text)
@@ -91,24 +86,29 @@ def extract_content(entry):
         logging.error(f"Error extracting content: {e}")
         return None, []
 
-def extract_quotes_with_speakers(text):
+def extract_quotes_with_speakers(soup):
     """Finds and assigns speakers to quotes."""
     quote_pattern = re.compile(r'[""]([^""]+)[""]')  # Matches both "curly" and "straight" quotes
     speaker_pattern = re.compile(r'([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*(?:said|stated|confirmed|added|remarked|noted|mentioned|explained|claimed|told)', re.IGNORECASE)
 
-    sentences = text.split(". ")
     quotes_with_speakers = []
-
     last_speaker = "Unknown"
-    for sentence in sentences:
-        quotes = quote_pattern.findall(sentence)
-        speaker_match = speaker_pattern.search(sentence)
 
+    paragraphs = soup.find_all("p")  # Get all paragraphs
+
+    for paragraph in paragraphs:
+        text = paragraph.get_text().strip()
+
+        # Find quotes in the paragraph
+        quotes = quote_pattern.findall(text)
+        
+        # Look for a speaker in the same or previous paragraph
+        speaker_match = speaker_pattern.search(text)
         if speaker_match:
-            last_speaker = speaker_match.group(1)  # Update the last detected speaker
+            last_speaker = speaker_match.group(1)  # Update speaker
 
         for quote in quotes:
-            quotes_with_speakers.append((last_speaker, f'"{quote}"'))  # Store speaker and quote
+            quotes_with_speakers.append((last_speaker, f'"{quote}"'))  # Store speaker + quote
 
     return quotes_with_speakers
 
