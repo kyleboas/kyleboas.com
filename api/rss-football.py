@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 RSS_FEED_URL = "https://www.molineux.news/news/feed/"
 
 def fetch_rss_articles():
-    """Fetch articles from the RSS feed and summarize them."""
+    """Fetch articles from the RSS feed and extract quotes."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -44,8 +44,11 @@ def fetch_rss_articles():
                 summary = "Summary not available."
             else:
                 summary = summarize_text(full_text, 300)  # Summarize to 300 characters
-                if quotes:
-                    summary += f' Quotes: {"; ".join(quotes)}'  # Append grouped quotes if available
+
+            # Format output properly
+            if quotes:
+                formatted_quotes = "\n".join([f"{speaker}: {', '.join(quote_list)}" for speaker, quote_list in quotes.items()])
+                summary += f"\n\n{formatted_quotes}"
 
             articles.append({"headline": article_title, "summary": summary, "url": article_url})
 
@@ -67,7 +70,7 @@ def extract_content(entry):
 
         if not raw_html:
             logging.error(f"No `content:encoded` found for article: {entry.get('link')}")
-            return None, []
+            return None, {}
 
         logging.info(f"Extracting `content:encoded` for article: {entry.get('link')}")
 
@@ -91,7 +94,7 @@ def extract_content(entry):
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
-        return None, []
+        return None, {}
 
 def extract_quotes_with_speakers(text):
     """Finds and groups quotes by the same speaker in the article."""
@@ -114,12 +117,10 @@ def extract_quotes_with_speakers(text):
             speaker = speaker_match.group(1) if speaker_match else last_speaker
 
             if speaker:
-                quotes_with_speakers[speaker].extend(extracted_quotes)
+                quotes_with_speakers[speaker].extend(f'"{quote}"' for quote in extracted_quotes)
                 last_speaker = speaker  # Keep track of the last known speaker
 
-    # Format the quotes properly
-    formatted_quotes = [f"{speaker}: " + "; ".join(quotes) for speaker, quotes in quotes_with_speakers.items()]
-    return formatted_quotes
+    return quotes_with_speakers
 
 def summarize_text(text, limit=300):
     """Summarizes the article to a natural length, 300 characters or less."""
