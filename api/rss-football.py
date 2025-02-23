@@ -56,13 +56,14 @@ def fetch_rss_articles():
 def extract_content(entry):
     """Extracts full article content from `content:encoded` and finds all quotes with speakers."""
     try:
-        # Extract `content:encoded` from RSS entry
-        raw_html = entry.get("content:encoded")
+        # Attempt to get `content:encoded` from multiple locations
+        raw_html = entry.get("content:encoded") or entry.get("content", [{}])[0].get("value") or entry.get("summary") or entry.get("description")
+
         if not raw_html:
-            logging.error(f"No `content:encoded` found for article: {entry.get('link')}")
+            logging.error(f"No `content:encoded` found for article: {entry.get('link')} - Falling back to `summary` or `description`.")
             return None, []
 
-        logging.info(f"Extracting `content:encoded` for article: {entry.get('link')}")
+        logging.info(f"Extracting content for article: {entry.get('link')}")
 
         # Decode HTML entities
         raw_html = html.unescape(raw_html)
