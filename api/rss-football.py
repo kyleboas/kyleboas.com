@@ -98,7 +98,6 @@ def extract_quotes(soup):
 
         # Ensure text contains at least one double quote variation
         if any(q in text for q in double_quote_chars):
-            # Check if there's a valid quote using regex
             if re.search(r'[""]([^"""]+)[""]', text):
                 quotes.append(text)
 
