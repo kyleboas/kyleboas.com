@@ -57,7 +57,6 @@ def fetch_rss_articles():
 def extract_content(entry):
     """Extracts full article content from `content:encoded` and finds all quotes."""
     try:
-        # Extract `content:encoded` first (priority), fallback to other fields
         raw_html = entry.get("content:encoded")
 
         if not raw_html:
@@ -88,13 +87,15 @@ def extract_content(entry):
         return []
 
 def extract_quotes(soup):
-    """Extracts all <p> tags that contain at least one quote character anywhere inside them."""
+    """Extracts all <p> tags or <blockquote> tags containing quotes from the article content."""
     
-    # Quote characters to check for inside the paragraph
-    quote_chars = ['"', '&#8220;', '&#8221;']
-
+    # Quote characters to detect
+    quote_chars = ['"', '"', '"', "&#8220;", "&#8221;", "&quot;"]
+    
     quotes = []
-    paragraphs = soup.find_all("p")  # Get all <p> elements
+    
+    # Look for <p> and <blockquote> elements
+    paragraphs = soup.find_all(["p", "blockquote"])
 
     for paragraph in paragraphs:
         text = paragraph.get_text().strip()
@@ -102,7 +103,7 @@ def extract_quotes(soup):
         # Decode any remaining HTML entities
         text = html.unescape(text)
 
-        # If the paragraph contains any quote character, include the full paragraph
+        # If the paragraph contains any quote characters, store it
         if any(q in text for q in quote_chars):
             quotes.append(text)
 
