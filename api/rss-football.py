@@ -80,15 +80,15 @@ def extract_content(entry):
         return []
 
 def extract_quotes(soup):
-    """Extracts text inside double quotes from <p> and <blockquote> tags."""
-    
-    # Valid double quote variations
+    """Extracts full <p> tag text if it contains at least one double quote."""
+
+    # Valid double quote variations (ignores single quotes)
     double_quote_chars = ['"', """, """, "&quot;", "&#8220;", "&#8221;"]
-    
+
     quotes = []
-    
-    # Find all paragraphs and blockquote elements
-    paragraphs = soup.find_all(["p", "blockquote"])
+
+    # Find all paragraphs
+    paragraphs = soup.find_all("p")
 
     for paragraph in paragraphs:
         text = paragraph.get_text().strip()
@@ -96,14 +96,9 @@ def extract_quotes(soup):
         # Decode any remaining HTML entities
         text = html.unescape(text)
 
-        # Regex to extract text inside double quotes (handles various quote types)
-        matches = re.findall(r'"(.*?)"|"(.*?)"', text)
-
-        # Flatten tuple results and remove empty matches
-        extracted_quotes = [m[0] or m[1] for m in matches if m[0] or m[1]]
-
-        if extracted_quotes:
-            quotes.extend(extracted_quotes)
+        # If the paragraph contains any double quote character, include the full paragraph
+        if any(q in text for q in double_quote_chars):
+            quotes.append(text)
 
     if not quotes:
         logging.warning("No valid double-quoted text found in article content.")
