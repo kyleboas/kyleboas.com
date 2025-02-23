@@ -55,7 +55,7 @@ def extract_article_data(url):
         article = Article(url)
         article.download()
 
-        if not article.is_downloaded:
+        if not article.html:  # Corrected check for failed download
             logging.warning(f"Failed to download article: {url}")
             return None
 
