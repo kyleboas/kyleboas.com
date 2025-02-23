@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
-RSS_FEED_URL = "https://cityxtra.co.uk/feed/"
+RSS_FEED_URL = "https://www.molineux.news/news/feed/"
 
 def fetch_rss_articles():
     """Fetch articles from the RSS feed and summarize them."""
