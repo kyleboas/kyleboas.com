@@ -1,7 +1,6 @@
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-import html
 
 def fetch_articles():
     # 1. Fetch the RSS feed
@@ -14,6 +13,7 @@ def fetch_articles():
     feed = feedparser.parse(response.text)
     
     articles = []
+    
     # Get latest 5 articles
     for entry in feed.entries[:5]:
         # Get the title and URL
@@ -25,10 +25,14 @@ def fetch_articles():
         
         # Parse the HTML content
         soup = BeautifulSoup(content, 'html.parser')
-        
-        # Find all paragraphs containing at least 3 double quotes
-        quotes = [p.get_text().strip() for p in soup.find_all('p') if p.get_text().count('"') >= 3]
-        
+
+        # Collect only paragraphs with at least 3 double quotes
+        quotes = []
+        for p in soup.find_all('p'):
+            text = p.get_text().strip()
+            if text.count('"') >= 3:
+                quotes.append(text)
+
         # Only add articles that contain at least one qualifying quote
         if quotes:
             articles.append({
