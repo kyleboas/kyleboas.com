@@ -83,7 +83,8 @@ def extract_content(entry):
 
 def extract_quotes(soup):
     """Finds all quotes in the article without assigning speakers."""
-    quote_pattern = re.compile(r'["""]([^"""]+)["""]')  # Matches both straight and curly quotes
+    # Matches both straight (") and curly (" ") quotes
+    quote_pattern = re.compile(r'["""](.+?)["""]')
 
     quotes = []
     paragraphs = soup.find_all("p")  # Get all paragraphs
@@ -91,7 +92,7 @@ def extract_quotes(soup):
     for paragraph in paragraphs:
         text = paragraph.get_text().strip()
 
-        # Decode any remaining HTML entities in extracted text
+        # Decode any remaining HTML entities (fixes `&#8220;` for quotes)
         text = html.unescape(text)
 
         # Find quotes in the paragraph
@@ -99,7 +100,7 @@ def extract_quotes(soup):
 
         # Store all extracted quotes
         for quote in found_quotes:
-            quotes.append(f'"{quote}"')  # Store only the quote itself
+            quotes.append(f'"{quote.strip()}"')  # Store only the quote itself
 
     return quotes
 
