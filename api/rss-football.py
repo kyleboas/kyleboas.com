@@ -81,8 +81,8 @@ def extract_content(entry):
 
 def extract_quotes(soup):
     """Extracts full <p> tag text if it contains at least one properly enclosed double quote."""
-    
-    # Valid double quote variations (ignores single quotes)
+
+    # List of valid double quote variations
     double_quote_chars = ['"', """, """, "&quot;", "&#8220;", "&#8221;"]
 
     quotes = []
@@ -96,9 +96,11 @@ def extract_quotes(soup):
         # Decode any remaining HTML entities
         text = html.unescape(text)
 
-        # Only include paragraphs that contain a properly enclosed quote
-        if re.search(r'[""]([^"""]+)[""]', text):  # Ensures a quote actually exists inside
-            quotes.append(text)
+        # Ensure text contains at least one double quote variation
+        if any(q in text for q in double_quote_chars):
+            # Check if there's a valid quote using regex
+            if re.search(r'[""]([^"""]+)[""]', text):
+                quotes.append(text)
 
     if not quotes:
         logging.warning("No valid double-quoted text found in article content.")
