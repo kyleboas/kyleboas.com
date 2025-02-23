@@ -91,7 +91,7 @@ def extract_quotes(soup):
     """Extracts all <p> tags that contain at least one quote character anywhere inside them."""
     
     # Quote characters to check for inside the paragraph
-    quote_chars = ['"', '"', '"', '&#8220;', '&#8221;']
+    quote_chars = ['"', '"', '&#8220;', '&#8221;']
 
     quotes = []
     paragraphs = soup.find_all("p")  # Get all <p> elements
