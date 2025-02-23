@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 RSS_FEED_URL = "https://www.molineux.news/news/feed/"
 
 def fetch_rss_articles():
-    """Fetch articles from the RSS feed and extract quotes with speakers."""
+    """Fetch articles from the RSS feed and extract quotes."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -41,7 +41,7 @@ def fetch_rss_articles():
 
             # If no quotes found, fallback to summary
             if quotes:
-                summary = "\n".join([f"{speaker}: {quote}" for speaker, quote in quotes])
+                summary = "\n".join(quotes)  # Only quotes, no speakers
             else:
                 summary = summarize_text(full_text, 300) if full_text else "No quotes found."
 
@@ -54,7 +54,7 @@ def fetch_rss_articles():
         return []
 
 def extract_content(entry):
-    """Extracts full article content from `content:encoded` and finds all quotes with speakers."""
+    """Extracts full article content from `content:encoded` and finds all quotes."""
     try:
         # Attempt to get `content:encoded` from multiple locations
         raw_html = entry.get("content:encoded") or entry.get("content", [{}])[0].get("value") or entry.get("summary") or entry.get("description")
@@ -74,8 +74,8 @@ def extract_content(entry):
         # Extract text
         full_text = soup.get_text(separator=" ").strip()
 
-        # Find all quotes with their speakers
-        quotes = extract_quotes_with_speakers(soup)
+        # Find all quotes
+        quotes = extract_quotes(soup)
 
         # Ensure minimum content length
         full_text = clean_text(full_text)
@@ -87,31 +87,24 @@ def extract_content(entry):
         logging.error(f"Error extracting content: {e}")
         return None, []
 
-def extract_quotes_with_speakers(soup):
-    """Finds and assigns speakers to quotes."""
+def extract_quotes(soup):
+    """Finds all quotes in the article without assigning speakers."""
     quote_pattern = re.compile(r'[""]([^""]+)[""]')  # Matches both "curly" and "straight" quotes
-    speaker_pattern = re.compile(r'([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*(?:said|stated|confirmed|added|remarked|noted|mentioned|explained|claimed|told)', re.IGNORECASE)
 
-    quotes_with_speakers = []
-    last_speaker = "Unknown"
-
+    quotes = []
     paragraphs = soup.find_all("p")  # Get all paragraphs
 
     for paragraph in paragraphs:
         text = paragraph.get_text().strip()
 
         # Find quotes in the paragraph
-        quotes = quote_pattern.findall(text)
+        found_quotes = quote_pattern.findall(text)
         
-        # Look for a speaker in the same or previous paragraph
-        speaker_match = speaker_pattern.search(text)
-        if speaker_match:
-            last_speaker = speaker_match.group(1)  # Update speaker
+        # Store all extracted quotes
+        for quote in found_quotes:
+            quotes.append(f'"{quote}"')  # Store only the quote itself
 
-        for quote in quotes:
-            quotes_with_speakers.append((last_speaker, f'"{quote}"'))  # Store speaker + quote
-
-    return quotes_with_speakers
+    return quotes
 
 def summarize_text(text, limit=300):
     """Summarizes the article to a natural length, 300 characters or less."""
