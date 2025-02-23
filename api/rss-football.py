@@ -5,7 +5,6 @@ import requests
 from bs4 import BeautifulSoup
 import html
 import logging
-from collections import defaultdict
 
 app = FastAPI()
 
@@ -15,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 RSS_FEED_URL = "https://www.molineux.news/news/feed/"
 
 def fetch_rss_articles():
-    """Fetch articles from the RSS feed and extract quotes."""
+    """Fetch articles from the RSS feed and extract quotes with speakers."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -40,12 +39,11 @@ def fetch_rss_articles():
             article_title = entry.title
             full_text, quotes = extract_content(entry)
 
-            # If no quotes are found, use summary instead
+            # If no quotes found, fallback to summary
             if quotes:
-                formatted_quotes = "\n".join([f"{speaker}: {', '.join(quote_list)}" for speaker, quote_list in quotes.items()])
-                summary = formatted_quotes
+                summary = "\n".join([f"{speaker}: {quote}" for speaker, quote in quotes])
             else:
-                summary = summarize_text(full_text, 300) if full_text else "Summary not available."
+                summary = summarize_text(full_text, 300) if full_text else "No quotes found."
 
             articles.append({"headline": article_title, "summary": summary, "url": article_url})
 
@@ -56,7 +54,7 @@ def fetch_rss_articles():
         return []
 
 def extract_content(entry):
-    """Extracts full article content from `content:encoded` and finds all quotes grouped by speaker."""
+    """Extracts full article content from `content:encoded` and finds all quotes with speakers."""
     try:
         # Try different ways to get `content:encoded`
         raw_html = None
@@ -67,7 +65,7 @@ def extract_content(entry):
 
         if not raw_html:
             logging.error(f"No `content:encoded` found for article: {entry.get('link')}")
-            return None, {}
+            return None, []
 
         logging.info(f"Extracting `content:encoded` for article: {entry.get('link')}")
 
@@ -80,7 +78,7 @@ def extract_content(entry):
         # Extract text
         full_text = soup.get_text(separator=" ").strip()
 
-        # Find all quotes with speaker names
+        # Find all quotes with their speakers
         quotes = extract_quotes_with_speakers(full_text)
 
         # Ensure minimum content length
@@ -91,33 +89,26 @@ def extract_content(entry):
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
-        return None, {}
+        return None, []
 
 def extract_quotes_with_speakers(text):
-    """Finds and groups quotes by the same speaker in the article."""
-    # Improved regex for extracting quotes (curly and straight)
+    """Finds and assigns speakers to quotes."""
     quote_pattern = re.compile(r'[""]([^""]+)[""]')  # Matches both "curly" and "straight" quotes
-    # Improved regex for detecting speakers (expanded list)
     speaker_pattern = re.compile(r'([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*(?:said|stated|confirmed|added|remarked|noted|mentioned|explained|claimed|told)', re.IGNORECASE)
 
-    quotes_with_speakers = defaultdict(list)
     sentences = text.split(". ")
+    quotes_with_speakers = []
 
-    last_speaker = None
-    for i, sentence in enumerate(sentences):
+    last_speaker = "Unknown"
+    for sentence in sentences:
         quotes = quote_pattern.findall(sentence)
         speaker_match = speaker_pattern.search(sentence)
 
-        # Extract the actual quote text from the regex match
-        extracted_quotes = quotes
+        if speaker_match:
+            last_speaker = speaker_match.group(1)  # Update the last detected speaker
 
-        if extracted_quotes:
-            # If a speaker is found, use it; otherwise, use the last detected speaker
-            speaker = speaker_match.group(1) if speaker_match else last_speaker
-
-            if speaker:
-                quotes_with_speakers[speaker].extend(f'"{quote}"' for quote in extracted_quotes)
-                last_speaker = speaker  # Keep track of the last known speaker
+        for quote in quotes:
+            quotes_with_speakers.append((last_speaker, f'"{quote}"'))  # Store speaker and quote
 
     return quotes_with_speakers
 
