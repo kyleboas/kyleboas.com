@@ -1,10 +1,11 @@
+import re
 from fastapi import FastAPI, HTTPException
 import feedparser
 import requests
 from bs4 import BeautifulSoup
 import html
 import logging
-import re
+from collections import defaultdict
 
 app = FastAPI()
 
@@ -37,12 +38,14 @@ def fetch_rss_articles():
         for entry in feed.entries[:5]:  # Get latest 5 articles
             article_url = entry.link
             article_title = entry.title
-            full_text = extract_content(entry)
+            full_text, quotes = extract_content(entry)
 
             if not full_text:
                 summary = "Summary not available."
             else:
                 summary = summarize_text(full_text, 300)  # Summarize to 300 characters
+                if quotes:
+                    summary += f' Quotes: {"; ".join(quotes)}'  # Append grouped quotes if available
 
             articles.append({"headline": article_title, "summary": summary, "url": article_url})
 
@@ -53,39 +56,70 @@ def fetch_rss_articles():
         return []
 
 def extract_content(entry):
-    """Extracts full article content from `content:encoded`, ensuring proper retrieval."""
+    """Extracts full article content from `content:encoded` and finds all quotes grouped by speaker."""
     try:
-        # Check different possible locations for `content:encoded`
+        # Try different ways to get `content:encoded`
         raw_html = None
         if "content:encoded" in entry:
             raw_html = entry["content:encoded"]
         elif "content" in entry and isinstance(entry["content"], list):
-            raw_html = entry["content"][0]["value"]  # Some feeds store it this way
+            raw_html = entry["content"][0]["value"]
 
         if not raw_html:
             logging.error(f"No `content:encoded` found for article: {entry.get('link')}")
-            return None
+            return None, []
 
         logging.info(f"Extracting `content:encoded` for article: {entry.get('link')}")
 
-        # Decode HTML entities (fixes encoding issues)
+        # Decode HTML entities
         raw_html = html.unescape(raw_html)
 
         # Parse HTML using BeautifulSoup
         soup = BeautifulSoup(raw_html, "html.parser")
 
-        # Extract text and remove unnecessary whitespace
+        # Extract text
         full_text = soup.get_text(separator=" ").strip()
 
-        # Clean the text (remove emojis, fix encoding issues)
-        full_text = clean_text(full_text)
+        # Find all quotes with speaker names
+        quotes = extract_quotes_with_speakers(full_text)
 
+        # Ensure minimum content length
+        full_text = clean_text(full_text)
         logging.info(f"Extracted text length: {len(full_text)} for article: {entry.get('link')}")
-        return full_text if len(full_text) > 100 else None  # Ensure meaningful content
+        
+        return (full_text if len(full_text) > 100 else None, quotes)
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
-        return None
+        return None, []
+
+def extract_quotes_with_speakers(text):
+    """Finds and groups quotes by the same speaker in the article."""
+    quote_pattern = re.compile(r'(?:"([^"]+)"|\"([^\"]+)\")')  # Matches both curly and straight quotes
+    speaker_pattern = re.compile(r'([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*(?:said|stated|confirmed|added|remarked|noted)', re.IGNORECASE)
+
+    quotes_with_speakers = defaultdict(list)
+    sentences = text.split(". ")
+
+    last_speaker = None
+    for i, sentence in enumerate(sentences):
+        quotes = quote_pattern.findall(sentence)
+        speaker_match = speaker_pattern.search(sentence)
+
+        # Extract the actual quote text from the regex match
+        extracted_quotes = [q[0] if q[0] else q[1] for q in quotes]
+
+        if extracted_quotes:
+            # If a speaker is found, use it; otherwise, use the last detected speaker
+            speaker = speaker_match.group(1) if speaker_match else last_speaker
+
+            if speaker:
+                quotes_with_speakers[speaker].extend(extracted_quotes)
+                last_speaker = speaker  # Keep track of the last known speaker
+
+    # Format the quotes properly
+    formatted_quotes = [f"{speaker}: " + "; ".join(quotes) for speaker, quotes in quotes_with_speakers.items()]
+    return formatted_quotes
 
 def summarize_text(text, limit=300):
     """Summarizes the article to a natural length, 300 characters or less."""
@@ -118,25 +152,9 @@ def summarize_text(text, limit=300):
         return "Summary not available."
 
 def clean_text(text):
-    """Removes emojis, extra spaces, and fixes text encoding issues."""
-    # Remove emojis using regex
-    emoji_pattern = re.compile("["
-        u"\U0001F600-\U0001F64F"  # Emoticons
-        u"\U0001F300-\U0001F5FF"  # Symbols & pictographs
-        u"\U0001F680-\U0001F6FF"  # Transport & map symbols
-        u"\U0001F700-\U0001F77F"  # Alchemical symbols
-        u"\U0001FA00-\U0001FA6F"  # Miscellaneous symbols
-        u"\U0001FA70-\U0001FAFF"  # More symbols
-        "]+", flags=re.UNICODE)
-    text = emoji_pattern.sub(r'', text)
-
-    # Remove extra spaces
-    text = re.sub(r'\s+', ' ', text)
-
-    # Fix encoding issues
-    text = text.encode('utf-8', 'ignore').decode('utf-8')
-
-    return text
+    """Removes extra spaces, emojis, and fixes text encoding issues."""
+    text = re.sub(r'\s+', ' ', text)  # Remove extra spaces
+    return text.encode('utf-8', 'ignore').decode('utf-8')  # Fix encoding issues
 
 @app.get("/api/articles")
 async def get_articles():
