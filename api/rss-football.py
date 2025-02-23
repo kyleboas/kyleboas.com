@@ -42,7 +42,7 @@ def fetch_rss_articles():
             if not full_text:
                 summary = "Summary not available."
             else:
-                summary = summarize_text(full_text)
+                summary = summarize_text(full_text)  # Summarize to ~300 characters naturally
 
             articles.append({"headline": article_title, "summary": summary, "url": article_url})
 
@@ -53,8 +53,9 @@ def fetch_rss_articles():
         return []
 
 def extract_content(entry):
-    """Extracts full article content from the RSS feed."""
+    """Extracts full article content from the RSS feed, preferring `content:encoded`."""
     try:
+        # Prefer `content:encoded`, fallback to `summary` or `description`
         if "content:encoded" in entry:
             raw_html = entry["content:encoded"]
         elif "summary" in entry:
@@ -73,32 +74,49 @@ def extract_content(entry):
         # Extract text from HTML
         full_text = soup.get_text(separator=" ").strip()
 
-        # Remove emojis
-        full_text = remove_emojis(full_text)
+        # Remove emojis and fix encoding
+        full_text = clean_text(full_text)
 
-        return full_text if len(full_text) > 50 else None  # Avoid very short summaries
+        return full_text if len(full_text) > 100 else None  # Ensure enough content
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
         return None
 
-def summarize_text(text):
-    """Summarizes the article into 3 sentences using basic text splitting."""
+def summarize_text(text, limit=300):
+    """Summarizes the article into a natural length of ~300 characters."""
     try:
+        text = text.strip()
+
+        # If the text is already short, return it as is
+        if len(text) <= limit:
+            return text
+
+        # Split into sentences
         sentences = text.split(". ")
-        summary = ". ".join(sentences[:3])  # Take first 3 sentences
 
-        # Remove emojis from summary
-        summary = remove_emojis(summary)
+        summary = ""
+        for sentence in sentences:
+            if len(summary) + len(sentence) + 2 > limit:  # +2 for ". "
+                break
+            summary += sentence + ". "
 
-        return summary if len(summary) > 10 else "Summary not available."  # Ensure summary isn't too short
+        # Ensure summary isn't too short
+        if len(summary) < 100:
+            summary = text[:limit] + "..."
+
+        # Remove emojis and fix encoding in summary
+        summary = clean_text(summary)
+
+        return summary.strip()
 
     except Exception as e:
         logging.error(f"Error summarizing text: {e}")
         return "Summary not available."
 
-def remove_emojis(text):
-    """Removes all emojis from a given text."""
+def clean_text(text):
+    """Removes emojis and fixes text encoding issues."""
+    # Remove emojis using regex
     emoji_pattern = re.compile(
         "["
         u"\U0001F600-\U0001F64F"  # Emoticons
@@ -112,7 +130,12 @@ def remove_emojis(text):
         u"\U0001FA70-\U0001FAFF"  # More symbols
         "]+", flags=re.UNICODE
     )
-    return emoji_pattern.sub(r'', text)
+    text = emoji_pattern.sub(r'', text)
+
+    # Fix encoding issues
+    text = text.encode('utf-8', 'ignore').decode('utf-8')
+
+    return text
 
 @app.get("/api/articles")
 async def get_articles():
