@@ -55,22 +55,14 @@ def fetch_rss_articles():
         return []
 
 def extract_content(entry):
-    """Extracts full article content from multiple possible fields and finds all quotes."""
+    """Extracts full article content strictly from `content:encoded` stored in `entry.content[0].value`."""
     try:
-        # Attempt to get content:encoded
-        raw_html = entry.get("content:encoded")
-
-        # Check alternative fields if content:encoded is missing
-        if not raw_html:
-            logging.warning(f"Missing `content:encoded` for article: {entry.get('link')}, trying other fields...")
-
-            raw_html = (
-                entry.get("content")[0].get("value") if entry.get("content") else None
-            ) or entry.get("summary") or entry.get("description")
+        # Check if `content` exists and extract the first value (feedparser stores it as a list)
+        raw_html = entry.get("content")[0].get("value") if entry.get("content") else None
 
         if not raw_html:
-            logging.error(f"No valid content found for article: {entry.get('link')}")
-            return []
+            logging.warning(f"Missing `content:encoded` for article: {entry.get('link')}, skipping...")
+            return []  # Skip article if no valid content
 
         logging.info(f"Extracting content from article: {entry.get('link')}")
 
