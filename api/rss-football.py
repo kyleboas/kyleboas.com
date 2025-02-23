@@ -1,6 +1,9 @@
 import feedparser
 import requests
 from bs4 import BeautifulSoup
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def fetch_articles():
     headers = {
@@ -19,6 +22,8 @@ def fetch_articles():
         content = entry.content[0].value
         
         soup = BeautifulSoup(content, 'html.parser')
+        
+        logging.info(f"Parsed HTML:\n{soup.prettify()}")
 
         quotes = []
         for p in soup.find_all('p'):
