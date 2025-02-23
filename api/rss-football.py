@@ -1,103 +1,43 @@
-import re
-from fastapi import FastAPI, HTTPException
 import feedparser
 import requests
 from bs4 import BeautifulSoup
 import html
-import logging
-import json
 
-app = FastAPI()
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-RSS_FEED_URL = "https://www.molineux.news/news/feed/"
-
-def fetch_rss_articles():
-    """Fetch articles from the RSS feed and extract quotes only."""
+def fetch_articles():
+    # 1. Fetch the RSS feed
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
-    try:
-        response = requests.get(RSS_FEED_URL, headers=headers, timeout=10)
-        logging.info(f"RSS feed request status: {response.status_code}")
-        if response.status_code != 200:
-            logging.error(f"Failed to fetch RSS feed: {response.status_code}")
-            return []
-
-        feed = feedparser.parse(response.text)
-        if not feed.entries:
-            logging.error("No articles found in the RSS feed.")
-            return []
-
-        articles = []
-        for entry in feed.entries[:5]:  # Get latest 5 articles
-            article_url = entry.link
-            article_title = entry.title
-            quotes = extract_content(entry)
-            # Ensure that quotes is always a list
-            quotes_output = quotes if quotes else ["No quotes found."]
-            articles.append({
-                "headline": article_title,
-                "quotes": quotes_output,
-                "url": article_url
-            })
+    response = requests.get("https://www.molineux.news/news/feed/", headers=headers)
+    
+    # 2. Parse the feed
+    feed = feedparser.parse(response.text)
+    
+    articles = []
+    # Get latest 5 articles
+    for entry in feed.entries[:5]:
+        # Get the title and URL
+        title = entry.title
+        url = entry.link
         
-        # Convert to JSON and back to ensure we're working with proper text content
-        articles_json = json.dumps(articles)
-        articles = json.loads(articles_json)
-        return articles
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Error fetching RSS feed: {e}")
-        return []
-
-def extract_content(entry):
-    """Extracts full article content strictly from `content:encoded` stored in `entry.content[0].value`."""
-    try:
-        # Ensure we get only `content:encoded`, do not use summary/description
-        raw_html = entry.get("content")[0].get("value") if entry.get("content") else None
-        if not raw_html:
-            logging.warning(f"Missing `content:encoded` for article: {entry.get('link')}, skipping...")
-            return []  # Skip article if no valid content
-
-        logging.info(f"Extracting content from article: {entry.get('link')}")
-        # Parse HTML using BeautifulSoup
-        soup = BeautifulSoup(raw_html, "html.parser")
-        # Extract and return quotes
-        return extract_quotes(soup)
-    except Exception as e:
-        logging.error(f"Error extracting content: {e}")
-        return []
-
-def extract_quotes(soup):
-    """Extracts paragraphs that contain at least one double quotation mark."""
-    # Define only double quote characters, excluding standard JSON string delimiters
-    double_quote_chars = ['"', '"', "â€œ", "â€", "&#8220;", "&#8221;"]
-    
-    quotes = []
-    # Find all paragraphs
-    paragraphs = soup.find_all("p")
-    
-    for paragraph in paragraphs:
-        text = paragraph.get_text().strip()
-        # Decode HTML entities before checking for quotes
-        text = html.unescape(text)
+        # Get the full content from content:encoded
+        content = entry.content[0].value
         
-        # Count double quotes in the text
-        quote_count = sum(text.count(q) for q in double_quote_chars)
+        # Parse the HTML content
+        soup = BeautifulSoup(content, 'html.parser')
         
-        # Include paragraphs that have at least one double quote
-        if quote_count >= 1:
-            quotes.append(text)
+        # Find all paragraphs containing quotes
+        quotes = []
+        for p in soup.find_all('p'):
+            text = p.get_text().strip()
+            if '"' in text:  # Simple check for double quote
+                quotes.append(text)
+        
+        # Add to articles list
+        articles.append({
+            "headline": title,
+            "quotes": quotes,
+            "url": url
+        })
     
-    if not quotes:
-        logging.warning("No valid double-quoted text found in article content.")
-    
-    return quotes if quotes else []
-
-@app.get("/api/articles")
-async def get_articles():
-    """API endpoint to fetch articles and extract only quotes."""
-    articles = fetch_rss_articles()
-    if not articles:
-        raise HTTPException(status_code=404, detail="No articles found or failed to fetch RSS feed")
     return articles
