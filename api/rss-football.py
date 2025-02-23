@@ -53,14 +53,20 @@ def fetch_rss_articles():
         return []
 
 def extract_content(entry):
-    """Extracts full article content from `content:encoded`, removing HTML and unwanted characters."""
+    """Extracts full article content from `content:encoded`, ensuring proper retrieval."""
     try:
+        # Check different possible locations for `content:encoded`
+        raw_html = None
         if "content:encoded" in entry:
             raw_html = entry["content:encoded"]
-            logging.info(f"Extracting `content:encoded` for article: {entry.get('link')}")
-        else:
+        elif "content" in entry and isinstance(entry["content"], list):
+            raw_html = entry["content"][0]["value"]  # Some feeds store it this way
+
+        if not raw_html:
             logging.error(f"No `content:encoded` found for article: {entry.get('link')}")
             return None
+
+        logging.info(f"Extracting `content:encoded` for article: {entry.get('link')}")
 
         # Decode HTML entities (fixes encoding issues)
         raw_html = html.unescape(raw_html)
@@ -75,7 +81,7 @@ def extract_content(entry):
         full_text = clean_text(full_text)
 
         logging.info(f"Extracted text length: {len(full_text)} for article: {entry.get('link')}")
-        return full_text if len(full_text) > 100 else None  # Ensure minimum content
+        return full_text if len(full_text) > 100 else None  # Ensure meaningful content
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
