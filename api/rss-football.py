@@ -42,7 +42,7 @@ def fetch_rss_articles():
             if not full_text:
                 summary = "Summary not available."
             else:
-                summary = summarize_text(full_text)  # Summarize to 300 characters
+                summary = summarize_text(full_text, 300)  # Summarize to 300 characters
 
             articles.append({"headline": article_title, "summary": summary, "url": article_url})
 
@@ -53,20 +53,13 @@ def fetch_rss_articles():
         return []
 
 def extract_content(entry):
-    """Extracts full article content from the RSS feed, prioritizing `content:encoded`."""
+    """Extracts full article content from `content:encoded`, removing HTML and unwanted characters."""
     try:
-        # Extract `content:encoded` if available
         if "content:encoded" in entry:
             raw_html = entry["content:encoded"]
             logging.info(f"Extracting `content:encoded` for article: {entry.get('link')}")
-        elif "summary" in entry:
-            raw_html = entry["summary"]
-            logging.warning(f"Falling back to `summary` for article: {entry.get('link')}")
-        elif "description" in entry:
-            raw_html = entry["description"]
-            logging.warning(f"Falling back to `description` for article: {entry.get('link')}")
         else:
-            logging.error(f"No usable content found for article: {entry.get('link')}")
+            logging.error(f"No `content:encoded` found for article: {entry.get('link')}")
             return None
 
         # Decode HTML entities (fixes encoding issues)
@@ -107,7 +100,7 @@ def summarize_text(text, limit=300):
                 break
             summary += sentence + ". "
 
-        # If the summary is still too short, take the first 300 characters
+        # If the summary is too short, take the first 300 characters
         if len(summary) < 100:
             summary = text[:limit] + "..."
 
@@ -119,15 +112,20 @@ def summarize_text(text, limit=300):
         return "Summary not available."
 
 def clean_text(text):
-    """Removes emojis and fixes text encoding issues."""
+    """Removes emojis, extra spaces, and fixes text encoding issues."""
     # Remove emojis using regex
     emoji_pattern = re.compile("["
-        u"\U0001F600-\U0001F64F"
-        u"\U0001F300-\U0001F5FF"
-        u"\U0001F680-\U0001F6FF"
-        u"\U0001F700-\U0001F77F"
+        u"\U0001F600-\U0001F64F"  # Emoticons
+        u"\U0001F300-\U0001F5FF"  # Symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # Transport & map symbols
+        u"\U0001F700-\U0001F77F"  # Alchemical symbols
+        u"\U0001FA00-\U0001FA6F"  # Miscellaneous symbols
+        u"\U0001FA70-\U0001FAFF"  # More symbols
         "]+", flags=re.UNICODE)
     text = emoji_pattern.sub(r'', text)
+
+    # Remove extra spaces
+    text = re.sub(r'\s+', ' ', text)
 
     # Fix encoding issues
     text = text.encode('utf-8', 'ignore').decode('utf-8')
