@@ -55,29 +55,28 @@ def fetch_rss_articles():
 def extract_content(entry):
     """Extracts full article content from the RSS feed, preferring `content:encoded`."""
     try:
-        # Prefer `content:encoded`, fallback to `summary` or `description`
         if "content:encoded" in entry:
             raw_html = entry["content:encoded"]
+            logging.info(f"Extracting `content:encoded` for article: {entry.get('link')}")
         elif "summary" in entry:
             raw_html = entry["summary"]
+            logging.warning(f"Falling back to `summary` for article: {entry.get('link')}")
         elif "description" in entry:
             raw_html = entry["description"]
+            logging.warning(f"Falling back to `description` for article: {entry.get('link')}")
         else:
+            logging.error(f"No content found for article: {entry.get('link')}")
             return None
 
-        # Decode HTML entities (fixes encoding issues)
         raw_html = html.unescape(raw_html)
 
-        # Parse HTML using BeautifulSoup
         soup = BeautifulSoup(raw_html, "html.parser")
-
-        # Extract text from HTML
         full_text = soup.get_text(separator=" ").strip()
 
-        # Remove emojis and fix encoding
         full_text = clean_text(full_text)
 
-        return full_text if len(full_text) > 100 else None  # Ensure enough content
+        logging.info(f"Extracted text length: {len(full_text)} for article: {entry.get('link')}")
+        return full_text if len(full_text) > 100 else None
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
@@ -87,27 +86,22 @@ def summarize_text(text, limit=300):
     """Summarizes the article into a natural length of ~300 characters."""
     try:
         text = text.strip()
+        logging.info(f"Summarizing text of length {len(text)}")
 
-        # If the text is already short, return it as is
         if len(text) <= limit:
             return text
 
-        # Split into sentences
         sentences = text.split(". ")
-
         summary = ""
         for sentence in sentences:
-            if len(summary) + len(sentence) + 2 > limit:  # +2 for ". "
+            if len(summary) + len(sentence) + 2 > limit:
                 break
             summary += sentence + ". "
 
-        # Ensure summary isn't too short
         if len(summary) < 100:
             summary = text[:limit] + "..."
 
-        # Remove emojis and fix encoding in summary
-        summary = clean_text(summary)
-
+        logging.info(f"Final summary length: {len(summary)}")
         return summary.strip()
 
     except Exception as e:
@@ -116,23 +110,14 @@ def summarize_text(text, limit=300):
 
 def clean_text(text):
     """Removes emojis and fixes text encoding issues."""
-    # Remove emojis using regex
-    emoji_pattern = re.compile(
-        "["
-        u"\U0001F600-\U0001F64F"  # Emoticons
-        u"\U0001F300-\U0001F5FF"  # Symbols & pictographs
-        u"\U0001F680-\U0001F6FF"  # Transport & map symbols
-        u"\U0001F700-\U0001F77F"  # Alchemical symbols
-        u"\U0001F780-\U0001F7FF"  # Geometric shapes
-        u"\U0001F800-\U0001F8FF"  # Supplemental symbols
-        u"\U0001F900-\U0001F9FF"  # Faces, hands, etc.
-        u"\U0001FA00-\U0001FA6F"  # Miscellaneous symbols
-        u"\U0001FA70-\U0001FAFF"  # More symbols
-        "]+", flags=re.UNICODE
-    )
+    emoji_pattern = re.compile("["
+        u"\U0001F600-\U0001F64F"
+        u"\U0001F300-\U0001F5FF"
+        u"\U0001F680-\U0001F6FF"
+        u"\U0001F700-\U0001F77F"
+        "]+", flags=re.UNICODE)
     text = emoji_pattern.sub(r'', text)
 
-    # Fix encoding issues
     text = text.encode('utf-8', 'ignore').decode('utf-8')
 
     return text
