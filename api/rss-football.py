@@ -2,7 +2,9 @@ from fastapi import FastAPI, HTTPException
 import feedparser
 import requests
 from bs4 import BeautifulSoup
+import html
 import logging
+import re
 
 app = FastAPI()
 
@@ -55,32 +57,62 @@ def extract_content(entry):
     try:
         if "content:encoded" in entry:
             raw_html = entry["content:encoded"]
+        elif "summary" in entry:
+            raw_html = entry["summary"]
         elif "description" in entry:
             raw_html = entry["description"]
         else:
             return None
 
-        # Parse the HTML content using BeautifulSoup
+        # Decode HTML entities (fixes encoding issues)
+        raw_html = html.unescape(raw_html)
+
+        # Parse HTML using BeautifulSoup
         soup = BeautifulSoup(raw_html, "html.parser")
 
         # Extract text from HTML
         full_text = soup.get_text(separator=" ").strip()
-        return full_text
+
+        # Remove emojis
+        full_text = remove_emojis(full_text)
+
+        return full_text if len(full_text) > 50 else None  # Avoid very short summaries
 
     except Exception as e:
         logging.error(f"Error extracting content: {e}")
         return None
 
 def summarize_text(text):
-    """Summarizes the article into 3 sentences."""
+    """Summarizes the article into 3 sentences using basic text splitting."""
     try:
         sentences = text.split(". ")
         summary = ". ".join(sentences[:3])  # Take first 3 sentences
-        return summary if summary else "Summary not available."
-    
+
+        # Remove emojis from summary
+        summary = remove_emojis(summary)
+
+        return summary if len(summary) > 10 else "Summary not available."  # Ensure summary isn't too short
+
     except Exception as e:
         logging.error(f"Error summarizing text: {e}")
         return "Summary not available."
+
+def remove_emojis(text):
+    """Removes all emojis from a given text."""
+    emoji_pattern = re.compile(
+        "["
+        u"\U0001F600-\U0001F64F"  # Emoticons
+        u"\U0001F300-\U0001F5FF"  # Symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # Transport & map symbols
+        u"\U0001F700-\U0001F77F"  # Alchemical symbols
+        u"\U0001F780-\U0001F7FF"  # Geometric shapes
+        u"\U0001F800-\U0001F8FF"  # Supplemental symbols
+        u"\U0001F900-\U0001F9FF"  # Faces, hands, etc.
+        u"\U0001FA00-\U0001FA6F"  # Miscellaneous symbols
+        u"\U0001FA70-\U0001FAFF"  # More symbols
+        "]+", flags=re.UNICODE
+    )
+    return emoji_pattern.sub(r'', text)
 
 @app.get("/api/articles")
 async def get_articles():
