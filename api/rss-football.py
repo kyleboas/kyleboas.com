@@ -5,7 +5,11 @@ from newspaper import Article
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
+import nltk
 import logging
+
+# Ensure NLTK tokenizer is available (fixes missing `punkt`)
+nltk.download('punkt')
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -55,7 +59,7 @@ def extract_article_data(url):
         article = Article(url)
         article.download()
 
-        if not article.html:  # Corrected check for failed download
+        if not article.html:  # Check if article actually downloaded
             logging.warning(f"Failed to download article: {url}")
             return None
 
@@ -75,10 +79,19 @@ def extract_article_data(url):
 
 def summarize_text(text):
     """Summarizes the article into 3 sentences."""
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summarizer = LsaSummarizer()
-    summary = summarizer(parser.document, 3)
-    return " ".join(str(sentence) for sentence in summary)
+    try:
+        # Ensure `punkt` tokenizer is available
+        nltk.download('punkt', quiet=True)
+
+        parser = PlaintextParser.from_string(text, Tokenizer("english"))
+        summarizer = LsaSummarizer()
+        summary = summarizer(parser.document, 3)
+
+        return " ".join(str(sentence) for sentence in summary)
+
+    except Exception as e:
+        logging.error(f"Error summarizing text: {e}")
+        return "Summary not available."
 
 @app.get("/api/articles")
 async def get_articles():
