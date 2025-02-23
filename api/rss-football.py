@@ -1,22 +1,13 @@
 from fastapi import FastAPI, HTTPException
 import feedparser
 import requests
-from newspaper import Article
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.lsa import LsaSummarizer
+from bs4 import BeautifulSoup
 import logging
 
-import nltk
-import os
-
-# Tell NLTK to use the downloaded models from `/tmp`
-nltk.data.path.append('/tmp')
+app = FastAPI()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
-
-app = FastAPI()
 
 RSS_FEED_URL = "https://www.molineux.news/news/feed/"
 
@@ -41,12 +32,17 @@ def fetch_rss_articles():
             return []
 
         articles = []
-        for entry in feed.entries[:5]:  # Limit to latest 5 articles
+        for entry in feed.entries[:5]:  # Get latest 5 articles
             article_url = entry.link
-            logging.info(f"Fetching article: {article_url}")
-            article_data = extract_article_data(article_url)
-            if article_data:
-                articles.append(article_data)
+            article_title = entry.title
+            full_text = extract_content(entry)
+
+            if not full_text:
+                summary = "Summary not available."
+            else:
+                summary = summarize_text(full_text)
+
+            articles.append({"headline": article_title, "summary": summary, "url": article_url})
 
         return articles
 
@@ -54,43 +50,34 @@ def fetch_rss_articles():
         logging.error(f"Error fetching RSS feed: {e}")
         return []
 
-def extract_article_data(url):
-    """Extracts the headline and summary from an article URL."""
+def extract_content(entry):
+    """Extracts full article content from the RSS feed."""
     try:
-        logging.info(f"Downloading article: {url}")
-        article = Article(url)
-        article.download()
-
-        if not article.html:  # Check if article actually downloaded
-            logging.warning(f"Failed to download article: {url}")
+        if "content:encoded" in entry:
+            raw_html = entry["content:encoded"]
+        elif "description" in entry:
+            raw_html = entry["description"]
+        else:
             return None
 
-        article.parse()
+        # Parse the HTML content using BeautifulSoup
+        soup = BeautifulSoup(raw_html, "html.parser")
 
-        headline = article.title
-        full_text = article.text
-        logging.info(f"Extracted article text: {len(full_text)} characters")
-
-        summary = summarize_text(full_text)
-
-        return {"headline": headline, "summary": summary, "url": url}
+        # Extract text from HTML
+        full_text = soup.get_text(separator=" ").strip()
+        return full_text
 
     except Exception as e:
-        logging.error(f"Error processing article {url}: {e}")
+        logging.error(f"Error extracting content: {e}")
         return None
 
 def summarize_text(text):
     """Summarizes the article into 3 sentences."""
     try:
-        # Ensure `punkt` tokenizer is available
-        nltk.download('punkt', quiet=True)
-
-        parser = PlaintextParser.from_string(text, Tokenizer("english"))
-        summarizer = LsaSummarizer()
-        summary = summarizer(parser.document, 3)
-
-        return " ".join(str(sentence) for sentence in summary)
-
+        sentences = text.split(". ")
+        summary = ". ".join(sentences[:3])  # Take first 3 sentences
+        return summary if summary else "Summary not available."
+    
     except Exception as e:
         logging.error(f"Error summarizing text: {e}")
         return "Summary not available."
