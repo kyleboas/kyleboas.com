@@ -5,3 +5,4 @@ newspaper3k
 sumy
 lxml
 lxml_html_clean
+nltk

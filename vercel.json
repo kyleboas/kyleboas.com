@@ -4,5 +4,6 @@
   ],
   "routes": [
     { "src": "/api/articles", "dest": "api/rss-football.py" }
-  ]
+  ],
+  "buildCommand": "bash build.sh"
 }

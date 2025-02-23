@@ -5,11 +5,13 @@ from newspaper import Article
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
-import nltk
 import logging
 
-# Ensure NLTK tokenizer is available (fixes missing `punkt`)
-nltk.download('punkt')
+import nltk
+import os
+
+# Tell NLTK to use the downloaded models from `/tmp`
+nltk.data.path.append('/tmp')
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
