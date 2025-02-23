@@ -57,22 +57,28 @@ def fetch_rss_articles():
 def extract_content(entry):
     """Extracts full article content from `content:encoded` and finds all quotes."""
     try:
-        # Extract `content:encoded` from multiple locations in RSS feed
-        raw_html = (
-            entry.get("content:encoded") or 
-            entry.get("content", [{}])[0].get("value") or 
-            entry.get("summary") or 
-            entry.get("description")
-        )
+        # Extract `content:encoded` first (priority), fallback to other fields
+        raw_html = entry.get("content:encoded")
 
         if not raw_html:
-            logging.error(f"No `content:encoded` found for article: {entry.get('link')}")
+            logging.warning(f"Missing `content:encoded` for article: {entry.get('link')}, trying other fields...")
+            raw_html = (
+                entry.get("content", [{}])[0].get("value") or 
+                entry.get("summary") or 
+                entry.get("description")
+            )
+
+        if not raw_html:
+            logging.error(f"No valid content found for article: {entry.get('link')}")
             return []
 
-        logging.info(f"Extracting content for article: {entry.get('link')}")
+        logging.info(f"Extracting content from article: {entry.get('link')}")
 
-        # Decode HTML entities (fixes `&#8220;` for quotes, `&#8217;` for apostrophes, etc.)
+        # Decode HTML entities
         raw_html = html.unescape(raw_html)
+
+        # Log extracted HTML content (for debugging)
+        logging.debug(f"Extracted HTML content: {raw_html[:500]}...")  # Log first 500 chars
 
         # Parse HTML using BeautifulSoup
         soup = BeautifulSoup(raw_html, "html.parser")
@@ -87,8 +93,8 @@ def extract_content(entry):
 def extract_quotes(soup):
     """Extracts all <p> tags that contain at least one quote character."""
     
-    # Quote characters to check
-    quote_chars = ['"', '"', '"', '&#8220;', '&#8221;']
+    # Characters that indicate a quote exists in the paragraph
+    quote_chars = ['"', '"', '"', '‘', '’', '&#8220;', '&#8221;']
 
     quotes = []
     paragraphs = soup.find_all("p")  # Get all <p> elements
@@ -103,8 +109,11 @@ def extract_quotes(soup):
         if any(q in text for q in quote_chars):
             quotes.append(text)
 
+    if not quotes:
+        logging.warning("No quotes found in article content.")
+
     return quotes if quotes else []
-     
+
 @app.get("/api/articles")
 async def get_articles():
     """API endpoint to fetch articles and extract only quotes."""
