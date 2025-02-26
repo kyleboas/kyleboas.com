@@ -3,12 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import logging
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-app = FastAPI()  # Required app instance for Vercel
 
 def fetch_articles():
     headers = {
@@ -50,9 +46,3 @@ def fetch_articles():
             })
 
     return articles
-
-@app.get("/rss-football")
-def get_articles():
-    """API endpoint to return articles with extracted quotes."""
-    articles = fetch_articles()
-    return JSONResponse(content={"articles": articles})
