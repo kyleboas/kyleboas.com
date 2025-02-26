@@ -1,7 +1,6 @@
 import feedparser
 import requests
 from bs4 import BeautifulSoup
-import re
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -10,8 +9,8 @@ def fetch_articles():
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
-    
     response = requests.get("https://www.molineux.news/news/feed/", headers=headers)
+    
     feed = feedparser.parse(response.text)
     
     articles = []
@@ -44,5 +43,5 @@ def fetch_articles():
                 "quotes": quotes,
                 "url": url
             })
-
+    
     return articles
