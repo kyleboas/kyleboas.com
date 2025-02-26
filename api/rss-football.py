@@ -14,28 +14,37 @@ def fetch_articles():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     response = requests.get("https://www.molineux.news/news/feed/", headers=headers)
-    
+
+    # Fix encoding issues
+    response.encoding = response.apparent_encoding  
+
     feed = feedparser.parse(response.text)
     
     articles = []
-    
+
     for entry in feed.entries[:5]:
         title = entry.title
         url = entry.link
-        
+
         content = entry.content[0].value
         soup = BeautifulSoup(content, 'html.parser')
 
-        # Extract paragraphs that contain a quote
+        # Fix encoding in title
+        title = BeautifulSoup(title, 'html.parser').text  
+
+        # Extract paragraphs that contain at least one quote
         paragraphs_with_quotes = []
         for p in soup.find_all('p'):
             text = p.get_text().strip()
 
-            # Regex to detect if the paragraph contains any quoted text
-            if re.search(r'[""]([^"""]+)[""]', text):  
+            # Fix encoding issues in paragraph text
+            text = text.encode("latin1").decode("utf-8")  
+
+            # Regex to check if paragraph contains a full quote
+            if re.search(r'[""\'‘](.*?)[""\']', text):  
                 paragraphs_with_quotes.append(text)
 
-        # Only include articles with at least one quoted paragraph
+        # Only include articles if at least one paragraph with a quote is found
         if paragraphs_with_quotes:
             articles.append({
                 "headline": title,
