@@ -1,3 +1,4 @@
+from fastapi import FastAPI
 import feedparser
 import requests
 from bs4 import BeautifulSoup
@@ -5,6 +6,8 @@ import re
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+app = FastAPI()  # Create FastAPI app instance
 
 def fetch_articles():
     headers = {
@@ -46,3 +49,7 @@ def fetch_articles():
             })
     
     return articles
+
+@app.get("/api/articles")  # Define API route
+def get_articles():
+    return fetch_articles()
