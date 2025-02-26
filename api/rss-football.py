@@ -7,7 +7,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-app = FastAPI()  # Create FastAPI app instance
+app = FastAPI()  # FastAPI instance
 
 def fetch_articles():
     headers = {
@@ -26,30 +26,25 @@ def fetch_articles():
         content = entry.content[0].value
         soup = BeautifulSoup(content, 'html.parser')
 
-        # Extract properly formatted quotes using regex
-        quotes = []
+        # Extract paragraphs that contain a quote
+        paragraphs_with_quotes = []
         for p in soup.find_all('p'):
             text = p.get_text().strip()
 
-            # Use regex to extract actual quotes
-            found_quotes = re.findall(r'"([^"]+)"|‘([^’]+)’|"([^"]+)"', text)
-            
-            # Flatten tuples returned by regex
-            extracted_quotes = [quote for tup in found_quotes for quote in tup if quote]
-            
-            # Append actual quotes found
-            quotes.extend(extracted_quotes)
+            # Regex to detect if the paragraph contains any quoted text
+            if re.search(r'[""]([^"""]+)[""]', text):  
+                paragraphs_with_quotes.append(text)
 
-        # Only include articles that contain at least one valid quote
-        if quotes:
+        # Only include articles with at least one quoted paragraph
+        if paragraphs_with_quotes:
             articles.append({
                 "headline": title,
-                "quotes": quotes,
+                "quotes": paragraphs_with_quotes,
                 "url": url
             })
     
     return articles
 
-@app.get("/api/articles")  # Define API route
+@app.get("/api/articles")  # API endpoint
 def get_articles():
     return fetch_articles()
