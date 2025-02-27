@@ -156,13 +156,13 @@ async function fetchArticles() {
 
 // **Copy function with blank > lines between first paragraph and quotes**
 function copyToClipboard(article) {
-    let markdownText = `> ${article.firstParagraph}\n>\n`; // Blank line after first paragraph
+    let markdownText = `> ${article.firstParagraph}\n> \n`; // Blank line after first paragraph with a space
     
     article.quoteParagraphs.forEach(quote => {
-        markdownText += `> ${quote}\n>\n`; // Each quote followed by a blank line
+        markdownText += `> ${quote}\n> \n`; // Each quote followed by a blank line with a space
     });
 
-    markdownText += `\n${article.url}`;
+    markdownText += `\n${article.url}`; // Add article URL on a new line
 
     navigator.clipboard.writeText(markdownText).then(() => {
         alert("Copied to clipboard!");
