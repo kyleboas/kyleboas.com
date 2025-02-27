@@ -27,7 +27,19 @@ async function fetchArticles() {
     const rssUrls = [
         "https://www.molineux.news/news/feed/",
         "https://www.wearepalace.uk/feed/",
-        "https://www.westhamzone.com/feed/"
+        "https://www.westhamzone.com/feed/",
+        "https://arseblog.news/feed/",
+        "https://www.astonvilla.news/feed/",
+        "https://cityxtra.co.uk/feed/",
+        "https://www.geordiebootboys.com/feed/",
+        "https://www.getfootballnewsgermany.com/feed/atom/",
+        "https://www.goodisonnews.com/feed/",
+        "https://hammyend.com/index.php/feed/",
+        "https://www.managingmadrid.com/rss/current.xml",
+        "https://www.nottinghamforest.news/feed/",
+        "https://www.spurs-web.com/wp-json/feed/v1/posts",
+        "https://www.thechelseachronicle.com/news/feed/",
+        "https://www.wearebrighton.com/newsopinion/feed/"
     ];
 
     const articlesContainer = document.getElementById("articles-container");
