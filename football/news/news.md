@@ -86,6 +86,11 @@ async function fetchArticles() {
                     let firstParagraph = paragraphs.length > 0 ? paragraphs[0] : ""; // Extract the first paragraph
                     let quoteParagraphs = paragraphs.filter(p => p.match(/["“”'](.*?)["“”']/));
 
+                    // **Skip articles that do not contain quotes**
+                    if (quoteParagraphs.length === 0) {
+                        return;
+                    }
+
                     // **Blacklist filtering for quote paragraphs**
                     if (quoteParagraphs.some(p => blacklist.some(word => p.toLowerCase().includes(word.toLowerCase())))) {
                         return; // Skip this article
