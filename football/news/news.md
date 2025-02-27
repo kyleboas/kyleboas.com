@@ -62,7 +62,7 @@ async function fetchArticles() {
             const rssText = await rssResponse.text();
             const xml = parser.parseFromString(rssText, "text/xml");
 
-            const items = Array.from(xml.querySelectorAll("item")).slice(0, 3);
+            const items = Array.from(xml.querySelectorAll("item")).slice(0, 10);
 
             let articleFetches = items.map(async (item) => {
                 let title = item.querySelector("title").textContent;
