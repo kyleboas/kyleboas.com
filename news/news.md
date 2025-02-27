@@ -1,6 +1,6 @@
 ---
 layout: news
-permalink: /news/
+permalink: /football/news/
 ---
 
 <style>
