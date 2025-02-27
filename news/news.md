@@ -8,6 +8,7 @@ permalink: /news/
         border: 1px solid #ddd;
         padding: 10px;
         margin-bottom: 15px;
+        font-family: Helvetica, sans-serif;
     }
     #post-title {
         font-weight: bold;
