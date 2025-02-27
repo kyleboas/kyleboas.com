@@ -51,57 +51,61 @@ async function fetchArticles() {
     const parser = new DOMParser();
     let allArticles = [];
 
-    for (let rssUrl of rssUrls) {
+    // Fetch all RSS feeds in parallel
+    let rssFetches = rssUrls.map(async (rssUrl) => {
         try {
-            // Fetch RSS feed
             const rssResponse = await fetch(rssUrl);
             const rssText = await rssResponse.text();
             const xml = parser.parseFromString(rssText, "text/xml");
 
-            const items = Array.from(xml.querySelectorAll("item")).slice(0, 5); // Get up to 5 articles per feed
+            const items = Array.from(xml.querySelectorAll("item")).slice(0, 3); // Reduce to 3 per feed for speed
 
-            for (let item of items) {
+            // Process each article in parallel
+            let articleFetches = items.map(async (item) => {
                 let title = item.querySelector("title").textContent;
                 let url = item.querySelector("link").textContent;
                 let pubDate = item.querySelector("pubDate") ? new Date(item.querySelector("pubDate").textContent) : new Date();
 
                 try {
-                    // Fetch the full article page
+                    // Fetch the article page
                     const articleResponse = await fetch(url);
                     const articleText = await articleResponse.text();
                     const articleDoc = parser.parseFromString(articleText, "text/html");
 
-                    // Extract paragraphs while filtering out unwanted content
+                    // Extract paragraphs while filtering out JavaScript artifacts
                     let paragraphs = Array.from(articleDoc.querySelectorAll("p"))
                         .map(p => p.textContent.trim())
-                        .filter(p => p.length > 20 && !p.includes("document.getElementById") && !p.includes("new Date()") && !p.includes("Δ")); // Remove JS-related lines
+                        .filter(p => p.length > 20 && !p.includes("document.getElementById") && !p.includes("new Date()") && !p.includes("Δ"));
 
                     // Find paragraphs containing quotes
                     let quoteParagraphs = paragraphs.filter(p => p.match(/["“”'](.*?)["“”']/));
 
-                    // Only store articles that contain quotes
+                    // Store only articles that contain quotes
                     if (quoteParagraphs.length > 0) {
-                        allArticles.push({
-                            title,
-                            url,
-                            pubDate,
-                            quoteParagraphs
-                        });
+                        allArticles.push({ title, url, pubDate, quoteParagraphs });
                     }
-
                 } catch (error) {
                     console.error("Error fetching article:", url, error);
                 }
-            }
+            });
+
+            // Wait for all articles from this RSS feed to be processed
+            await Promise.all(articleFetches);
+
         } catch (error) {
             console.error("Error fetching RSS feed:", rssUrl, error);
         }
-    }
+    });
 
-    // Sort articles by publication date (most recent first)
+    // Wait for all RSS feeds to be processed
+    await Promise.all(rssFetches);
+
+    // Sort articles by publication date (newest first)
     allArticles.sort((a, b) => b.pubDate - a.pubDate);
 
-    // Render only articles that contain quotes
+    // Render all articles at once (batch update for better performance)
+    let fragment = document.createDocumentFragment();
+
     allArticles.forEach(article => {
         let postDiv = document.createElement("div");
         postDiv.classList.add("Post");
@@ -118,11 +122,14 @@ async function fetchArticles() {
         quotesDiv.id = "post-quotes";
         quotesDiv.innerHTML = article.quoteParagraphs.map(p => `<p>${p}</p>`).join("");
 
-        // Append elements to the post container
+        // Append elements to the fragment
         postDiv.appendChild(titleDiv);
         postDiv.appendChild(quotesDiv);
-        articlesContainer.appendChild(postDiv);
+        fragment.appendChild(postDiv);
     });
+
+    // Append all articles to the DOM in one operation (faster)
+    articlesContainer.appendChild(fragment);
 }
 
 // Run the function on page load
