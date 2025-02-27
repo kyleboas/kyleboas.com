@@ -136,12 +136,12 @@ async function fetchArticles() {
         // Source
         let sourceDiv = document.createElement("div");
         sourceDiv.id = "post-source";
-        sourceDiv.textContent = `Source: ${article.sourceName}`;
+        sourceDiv.textContent = `${article.sourceName}`;
 
         // Time
         let timeDiv = document.createElement("div");
         timeDiv.id = "post-time";
-        timeDiv.textContent = `Published: ${article.pubDate.toLocaleString()}`;
+        timeDiv.textContent = `${article.pubDate.toLocaleString()}`;
 
         // First Paragraph
         let firstParagraphDiv = document.createElement("div");
