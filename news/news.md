@@ -14,7 +14,7 @@ permalink: /news/
         font-weight: bold;
         font-size: 18px;
     }
-    #post-title q {
+    #post-title a {
         text-decoration: none;
         color: #000;
     }
