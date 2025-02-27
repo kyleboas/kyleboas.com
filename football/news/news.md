@@ -47,7 +47,8 @@ async function fetchArticles() {
         "https://www.nottinghamforest.news/feed/",
         "https://www.spurs-web.com/wp-json/feed/v1/posts",
         "https://www.thechelseachronicle.com/news/feed/",
-        "https://www.wearebrighton.com/newsopinion/feed/"
+        "https://www.wearebrighton.com/newsopinion/feed/".
+        "http://newsrss.bbc.co.uk/rss/sportonline_uk_edition/football/rss.xml" 
     ];
 
     const blacklist = ["pundit", "match report", "player ratings"];
