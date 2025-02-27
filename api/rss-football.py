@@ -6,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import logging
+import traceback  # Helps with detailed error tracking
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -17,6 +18,7 @@ def fetch_articles():
     }
 
     try:
+        logging.info("Fetching RSS feed...")
         response = requests.get("https://www.molineux.news/news/feed/", headers=headers)
         response.encoding = response.apparent_encoding  
 
@@ -47,10 +49,10 @@ def fetch_articles():
                 for p in soup.find_all("p"):
                     text = p.get_text().strip()
 
-                    # Extract ALL quotes within a paragraph (instead of just one)
+                    # Extract ALL quotes in the paragraph
                     quotes_found = re.findall(r'[""‘](.*?)[""’]', text)
 
-                    # If at least one quote is found, store the full paragraph
+                    # If any quote is found, store the full paragraph
                     if quotes_found:
                         paragraphs_with_quotes.append(text)
 
@@ -68,11 +70,13 @@ def fetch_articles():
 
             except Exception as e:
                 logging.error(f"Error processing article '{title}': {e}")
+                logging.error(traceback.format_exc())  # Logs full error details
 
         return articles
 
     except Exception as e:
         logging.error(f"Critical failure in fetching articles: {e}")
+        logging.error(traceback.format_exc())  # Logs full traceback for debugging
         return []
 
 @app.get("/api/articles")
