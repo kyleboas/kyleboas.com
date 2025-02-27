@@ -98,9 +98,7 @@ async function fetchArticles() {
                         return; // Skip this article
                     }
 
-                    if (firstParagraph) {
-                        allArticles.push({ title, url, pubDate, firstParagraph, quoteParagraphs });
-                    }
+                    allArticles.push({ title, url, pubDate, firstParagraph, quoteParagraphs });
                 } catch (error) {
                     console.error("Error fetching article:", url, error);
                 }
@@ -123,29 +121,43 @@ async function fetchArticles() {
         let postDiv = document.createElement("div");
         postDiv.classList.add("Post");
 
-        let titleDiv = document.createElement("div");
-        titleDiv.id = "post-title";
-        let titleLink = document.createElement("a");
-        titleLink.href = article.url;
-        titleLink.id = "post-url";
-        titleLink.textContent = article.title;
-        titleDiv.appendChild(titleLink);
-
         let firstParagraphDiv = document.createElement("div");
-        firstParagraphDiv.id = "first-paragraph";
+        firstParagraphDiv.id = "post-first-paragraph";
         firstParagraphDiv.innerHTML = `<p>${article.firstParagraph}</p>`;
 
         let quotesDiv = document.createElement("div");
         quotesDiv.id = "post-quotes";
         quotesDiv.innerHTML = article.quoteParagraphs.map(p => `<p>${p}</p>`).join("");
 
-        postDiv.appendChild(titleDiv);
+        // Create "Copy" button
+        let copyButton = document.createElement("button");
+        copyButton.textContent = "Copy";
+        copyButton.addEventListener("click", () => copyToClipboard(article));
+
         postDiv.appendChild(firstParagraphDiv); // Include first paragraph
         postDiv.appendChild(quotesDiv);
+        postDiv.appendChild(copyButton); // Add copy button
         fragment.appendChild(postDiv);
     });
 
     articlesContainer.appendChild(fragment);
+}
+
+// **Copy function with blank > lines between first paragraph and quotes**
+function copyToClipboard(article) {
+    let markdownText = `> ${article.firstParagraph}\n>\n`; // Blank line after first paragraph
+    
+    article.quoteParagraphs.forEach(quote => {
+        markdownText += `> ${quote}\n>\n`; // Each quote followed by a blank line
+    });
+
+    markdownText += `\n${article.url}`;
+
+    navigator.clipboard.writeText(markdownText).then(() => {
+        alert("Copied to clipboard!");
+    }).catch(err => {
+        console.error("Error copying to clipboard: ", err);
+    });
 }
 
 // Run the function on page load
