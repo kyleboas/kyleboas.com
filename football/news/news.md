@@ -10,8 +10,11 @@ permalink: /football/news/
         margin-bottom: 15px;
         font-family: Helvetica, sans-serif;
     }
-    #first-paragraph {
+    #post-title {
         font-weight: bold;
+        font-size: 18px;
+    }
+    #first-paragraph {
         font-size: 18px;
     }
     #post-title a {
@@ -89,7 +92,7 @@ async function fetchArticles() {
                     }
 
                     if (firstParagraph) {
-                        allArticles.push({ url, pubDate, firstParagraph, quoteParagraphs });
+                        allArticles.push({ title, url, pubDate, firstParagraph, quoteParagraphs });
                     }
                 } catch (error) {
                     console.error("Error fetching article:", url, error);
@@ -113,6 +116,14 @@ async function fetchArticles() {
         let postDiv = document.createElement("div");
         postDiv.classList.add("Post");
 
+        let titleDiv = document.createElement("div");
+        titleDiv.id = "post-title";
+        let titleLink = document.createElement("a");
+        titleLink.href = article.url;
+        titleLink.id = "post-url";
+        titleLink.textContent = article.title;
+        titleDiv.appendChild(titleLink);
+
         let firstParagraphDiv = document.createElement("div");
         firstParagraphDiv.id = "first-paragraph";
         firstParagraphDiv.innerHTML = `<p>${article.firstParagraph}</p>`;
@@ -121,6 +132,7 @@ async function fetchArticles() {
         quotesDiv.id = "post-quotes";
         quotesDiv.innerHTML = article.quoteParagraphs.map(p => `<p>${p}</p>`).join("");
 
+        postDiv.appendChild(titleDiv);
         postDiv.appendChild(firstParagraphDiv); // Include first paragraph
         postDiv.appendChild(quotesDiv);
         fragment.appendChild(postDiv);
