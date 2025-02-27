@@ -80,6 +80,7 @@ async function fetchArticles() {
                         .map(p => p.textContent.trim())
                         .filter(p => p.length > 20 && !p.includes("document.getElementById") && !p.includes("new Date()") && !p.includes("Δ"));
 
+                    let firstParagraph = paragraphs.length > 0 ? paragraphs[0] : ""; // Extract the first paragraph
                     let quoteParagraphs = paragraphs.filter(p => p.match(/["“”'](.*?)["“”']/));
 
                     // **Blacklist filtering for quote paragraphs**
@@ -87,8 +88,8 @@ async function fetchArticles() {
                         return; // Skip this article
                     }
 
-                    if (quoteParagraphs.length > 0) {
-                        allArticles.push({ title, url, pubDate, quoteParagraphs });
+                    if (firstParagraph) {
+                        allArticles.push({ title, url, pubDate, firstParagraph, quoteParagraphs });
                     }
                 } catch (error) {
                     console.error("Error fetching article:", url, error);
@@ -120,11 +121,16 @@ async function fetchArticles() {
         titleLink.textContent = article.title;
         titleDiv.appendChild(titleLink);
 
+        let firstParagraphDiv = document.createElement("div");
+        firstParagraphDiv.id = "post-first-paragraph";
+        firstParagraphDiv.innerHTML = `<p>${article.firstParagraph}</p>`;
+
         let quotesDiv = document.createElement("div");
         quotesDiv.id = "post-quotes";
         quotesDiv.innerHTML = article.quoteParagraphs.map(p => `<p>${p}</p>`).join("");
 
         postDiv.appendChild(titleDiv);
+        postDiv.appendChild(firstParagraphDiv); // Include first paragraph
         postDiv.appendChild(quotesDiv);
         fragment.appendChild(postDiv);
     });
