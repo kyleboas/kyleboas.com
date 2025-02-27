@@ -26,8 +26,8 @@ permalink: /news/
 async function fetchArticles() {
     const rssUrls = [
         "https://www.molineux.news/news/feed/",
-        "https://www.example.com/rss-feed-1", // Add more RSS feeds here
-        "https://www.example.com/rss-feed-2"
+        "https://www.wearepalace.uk/feed/",
+        "https://www.westhamzone.com/feed/"
     ];
 
     const articlesContainer = document.getElementById("articles-container");
