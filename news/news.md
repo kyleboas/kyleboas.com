@@ -23,66 +23,87 @@ permalink: /news/
 <div id="articles-container"></div>
 
 <script>
-    async function fetchArticles() {
-    const rssUrl = "https://www.molineux.news/news/feed/";
+async function fetchArticles() {
+    const rssUrls = [
+        "https://www.molineux.news/news/feed/",
+        "https://www.example.com/rss-feed-1", // Add more RSS feeds here
+        "https://www.example.com/rss-feed-2"
+    ];
 
-    try {
-        // Fetch RSS feed
-        const rssResponse = await fetch(rssUrl);
-        const rssText = await rssResponse.text();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(rssText, "text/xml");
+    const articlesContainer = document.getElementById("articles-container");
+    const parser = new DOMParser();
+    let allArticles = [];
 
-        const items = Array.from(xml.querySelectorAll("item")).slice(0, 5); // Get 5 articles
-        const articlesContainer = document.getElementById("articles-container");
+    for (let rssUrl of rssUrls) {
+        try {
+            // Fetch RSS feed
+            const rssResponse = await fetch(rssUrl);
+            const rssText = await rssResponse.text();
+            const xml = parser.parseFromString(rssText, "text/xml");
 
-        for (let item of items) {
-            let title = item.querySelector("title").textContent;
-            let url = item.querySelector("link").textContent;
+            const items = Array.from(xml.querySelectorAll("item")).slice(0, 5); // Get up to 5 articles per feed
 
-            try {
-                // Fetch the full article page
-                const articleResponse = await fetch(url);
-                const articleText = await articleResponse.text();
-                const articleDoc = parser.parseFromString(articleText, "text/html");
+            for (let item of items) {
+                let title = item.querySelector("title").textContent;
+                let url = item.querySelector("link").textContent;
+                let pubDate = item.querySelector("pubDate") ? new Date(item.querySelector("pubDate").textContent) : new Date();
 
-                // Extract paragraphs
-                let paragraphs = Array.from(articleDoc.querySelectorAll("p")).map(p => p.textContent);
+                try {
+                    // Fetch the full article page
+                    const articleResponse = await fetch(url);
+                    const articleText = await articleResponse.text();
+                    const articleDoc = parser.parseFromString(articleText, "text/html");
 
-                // Find paragraphs containing quotes
-                let quoteParagraphs = paragraphs.filter(p => p.match(/["“”'](.*?)["“”']/));
+                    // Extract paragraphs
+                    let paragraphs = Array.from(articleDoc.querySelectorAll("p")).map(p => p.textContent);
 
-                // Create HTML elements dynamically
-                let postDiv = document.createElement("div");
-                postDiv.classList.add("Post");
+                    // Find paragraphs containing quotes
+                    let quoteParagraphs = paragraphs.filter(p => p.match(/["“”'](.*?)["“”']/));
 
-                let titleDiv = document.createElement("div");
-                titleDiv.id = "post-title";
-                let titleLink = document.createElement("a");
-                titleLink.href = url;
-                titleLink.id = "post-url";
-                titleLink.textContent = title;
-                titleDiv.appendChild(titleLink);
+                    // Store the article data
+                    allArticles.push({
+                        title,
+                        url,
+                        pubDate,
+                        quoteParagraphs
+                    });
 
-                let quotesDiv = document.createElement("div");
-                quotesDiv.id = "post-quotes";
-                quotesDiv.innerHTML = quoteParagraphs.length > 0 
-                    ? quoteParagraphs.map(p => `<p>${p}</p>`).join("") 
-                    : "<p>No quotes found.</p>";
-
-                // Append elements to the post container
-                postDiv.appendChild(titleDiv);
-                postDiv.appendChild(quotesDiv);
-                articlesContainer.appendChild(postDiv);
-
-            } catch (error) {
-                console.error("Error fetching article:", url, error);
+                } catch (error) {
+                    console.error("Error fetching article:", url, error);
+                }
             }
+        } catch (error) {
+            console.error("Error fetching RSS feed:", rssUrl, error);
         }
-
-    } catch (error) {
-        console.error("Error fetching RSS feed:", error);
     }
+
+    // Sort articles by publication date (most recent first)
+    allArticles.sort((a, b) => b.pubDate - a.pubDate);
+
+    // Render articles
+    allArticles.forEach(article => {
+        let postDiv = document.createElement("div");
+        postDiv.classList.add("Post");
+
+        let titleDiv = document.createElement("div");
+        titleDiv.id = "post-title";
+        let titleLink = document.createElement("a");
+        titleLink.href = article.url;
+        titleLink.id = "post-url";
+        titleLink.textContent = article.title;
+        titleDiv.appendChild(titleLink);
+
+        let quotesDiv = document.createElement("div");
+        quotesDiv.id = "post-quotes";
+        quotesDiv.innerHTML = article.quoteParagraphs.length > 0
+            ? article.quoteParagraphs.map(p => `<p>${p}</p>`).join("")
+            : "<p>No quotes found.</p>";
+
+        // Append elements to the post container
+        postDiv.appendChild(titleDiv);
+        postDiv.appendChild(quotesDiv);
+        articlesContainer.appendChild(postDiv);
+    });
 }
 
 // Run the function on page load
