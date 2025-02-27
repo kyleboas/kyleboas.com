@@ -98,7 +98,9 @@ async function fetchArticles() {
                         return; // Skip this article
                     }
 
-                    allArticles.push({ title, url, pubDate, firstParagraph, quoteParagraphs });
+                    if (firstParagraph) {
+                        allArticles.push({ title, url, pubDate, firstParagraph, quoteParagraphs });
+                    }
                 } catch (error) {
                     console.error("Error fetching article:", url, error);
                 }
@@ -121,8 +123,16 @@ async function fetchArticles() {
         let postDiv = document.createElement("div");
         postDiv.classList.add("Post");
 
+        let titleDiv = document.createElement("div");
+        titleDiv.id = "post-title";
+        let titleLink = document.createElement("a");
+        titleLink.href = article.url;
+        titleLink.id = "post-url";
+        titleLink.textContent = article.title;
+        titleDiv.appendChild(titleLink);
+
         let firstParagraphDiv = document.createElement("div");
-        firstParagraphDiv.id = "post-first-paragraph";
+        firstParagraphDiv.id = "first-paragraph";
         firstParagraphDiv.innerHTML = `<p>${article.firstParagraph}</p>`;
 
         let quotesDiv = document.createElement("div");
@@ -134,6 +144,7 @@ async function fetchArticles() {
         copyButton.textContent = "Copy";
         copyButton.addEventListener("click", () => copyToClipboard(article));
 
+        postDiv.appendChild(titleDiv);
         postDiv.appendChild(firstParagraphDiv); // Include first paragraph
         postDiv.appendChild(quotesDiv);
         postDiv.appendChild(copyButton); // Add copy button
