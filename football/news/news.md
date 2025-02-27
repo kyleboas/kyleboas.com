@@ -56,101 +56,119 @@ async function fetchArticles() {
     const parser = new DOMParser();
     let allArticles = [];
 
-    const rssUrls = Object.keys(rssSourceMap);
+    let rssFetches = Object.keys(rssSourceMap).map(async (rssUrl) => {
+        try {
+            const rssResponse = await fetch(rssUrl);
+            const rssText = await rssResponse.text();
+            const xml = parser.parseFromString(rssText, "text/xml");
 
-    // Fetch all RSS feeds in parallel
-    const rssResponses = await Promise.allSettled(rssUrls.map(url => fetch(url).then(res => res.text())));
+            const items = Array.from(xml.querySelectorAll("item")).slice(0, 10);
+            let sourceName = rssSourceMap[rssUrl];
 
-    // Process each RSS feed
-    rssResponses.forEach((result, index) => {
-        if (result.status !== "fulfilled") return;
-        const rssText = result.value;
-        const xml = parser.parseFromString(rssText, "text/xml");
-        const items = Array.from(xml.querySelectorAll("item")).slice(0, 5); // Limit to 5 articles per source
-        const sourceName = rssSourceMap[rssUrls[index]];
+            let articleFetches = items.map(async (item) => {
+                let title = item.querySelector("title").textContent;
+                let url = item.querySelector("link").textContent;
+                let pubDate = item.querySelector("pubDate") ? new Date(item.querySelector("pubDate").textContent) : new Date();
 
-        items.forEach(item => {
-            let title = item.querySelector("title")?.textContent ?? "Untitled";
-            let url = item.querySelector("link")?.textContent ?? "#";
-            let pubDate = item.querySelector("pubDate") ? new Date(item.querySelector("pubDate").textContent) : new Date();
-            let description = item.querySelector("description")?.textContent || "";
+                // Blacklist filtering for titles
+                if (blacklist.some(word => title.toLowerCase().includes(word.toLowerCase()))) {
+                    return;
+                }
 
-            // Blacklist filtering for titles
-            if (blacklist.some(word => title.toLowerCase().includes(word.toLowerCase()))) {
-                return;
-            }
+                try {
+                    const articleResponse = await fetch(url);
+                    const articleText = await articleResponse.text();
+                    const articleDoc = parser.parseFromString(articleText, "text/html");
 
-            allArticles.push({ title, sourceName, url, pubDate, firstParagraph: description, quoteParagraphs: [] });
-        });
+                    let paragraphs = Array.from(articleDoc.querySelectorAll("p"))
+                        .map(p => p.textContent.trim())
+                        .filter(p => p.length > 20 && !p.includes("document.getElementById") && !p.includes("new Date()") && !p.includes("Δ"));
+
+                    let firstParagraph = paragraphs.length > 0 ? paragraphs[0] : "";
+
+                    // Updated quote detection logic
+                    let quoteParagraphs = paragraphs.filter(p => p.match(/["“”']/));
+
+                    // Skip articles without quotes
+                    if (quoteParagraphs.length === 0) {
+                        return;
+                    }
+
+                    // Blacklist filtering for quote paragraphs
+                    if (quoteParagraphs.some(p => blacklist.some(word => p.toLowerCase().includes(word.toLowerCase())))) {
+                        return;
+                    }
+
+                    if (firstParagraph) {
+                        allArticles.push({ title, sourceName, url, pubDate, firstParagraph, quoteParagraphs });
+                    }
+                } catch (error) {
+                    console.error("Error fetching article:", url, error);
+                }
+            });
+
+            await Promise.all(articleFetches);
+        } catch (error) {
+            console.error("Error fetching RSS feed:", rssUrl, error);
+        }
     });
+
+    await Promise.all(rssFetches);
 
     // Sort articles by date (newest first)
     allArticles.sort((a, b) => b.pubDate - a.pubDate);
 
-    // Display articles in batches for smoother UI updates
-    function displayArticles(startIndex = 0) {
-        const batchSize = 5;
-        let fragment = document.createDocumentFragment();
+    let fragment = document.createDocumentFragment();
 
-        for (let i = startIndex; i < Math.min(startIndex + batchSize, allArticles.length); i++) {
-            let article = allArticles[i];
+    allArticles.forEach(article => {
+        let postDiv = document.createElement("div");
+        postDiv.classList.add("Post");
 
-            let postDiv = document.createElement("div");
-            postDiv.classList.add("Post");
+        // Title
+        let titleDiv = document.createElement("div");
+        titleDiv.id = "post-title";
+        let titleLink = document.createElement("a");
+        titleLink.href = article.url;
+        titleLink.id = "post-url";
+        titleLink.textContent = article.title;
+        titleDiv.appendChild(titleLink);
 
-            // Title
-            let titleDiv = document.createElement("div");
-            titleDiv.id = "post-title";
-            let titleLink = document.createElement("a");
-            titleLink.href = article.url;
-            titleLink.id = "post-url";
-            titleLink.textContent = article.title;
-            titleDiv.appendChild(titleLink);
+        // Source
+        let sourceDiv = document.createElement("div");
+        sourceDiv.id = "post-source";
+        sourceDiv.textContent = `Source: ${article.sourceName}`;
 
-            // Source
-            let sourceDiv = document.createElement("div");
-            sourceDiv.id = "post-source";
-            sourceDiv.textContent = `Source: ${article.sourceName}`;
+        // Time
+        let timeDiv = document.createElement("div");
+        timeDiv.id = "post-time";
+        timeDiv.textContent = `Published: ${article.pubDate.toLocaleString()}`;
 
-            // Time
-            let timeDiv = document.createElement("div");
-            timeDiv.id = "post-time";
-            timeDiv.textContent = `Published: ${article.pubDate.toLocaleString()}`;
+        // First Paragraph
+        let firstParagraphDiv = document.createElement("div");
+        firstParagraphDiv.id = "first-paragraph";
+        firstParagraphDiv.innerHTML = `<p>${article.firstParagraph}</p>`;
 
-            // First Paragraph
-            let firstParagraphDiv = document.createElement("div");
-            firstParagraphDiv.id = "first-paragraph";
-            firstParagraphDiv.innerHTML = `<p>${article.firstParagraph}</p>`;
+        // Quotes
+        let quotesDiv = document.createElement("div");
+        quotesDiv.id = "post-quotes";
+        quotesDiv.innerHTML = article.quoteParagraphs.map(p => `<p>${p}</p>`).join("");
 
-            // Quotes
-            let quotesDiv = document.createElement("div");
-            quotesDiv.id = "post-quotes";
-            quotesDiv.innerHTML = article.quoteParagraphs.map(p => `<p>${p}</p>`).join("");
+        // Copy Button
+        let copyButton = document.createElement("button");
+        copyButton.textContent = "Copy";
+        copyButton.addEventListener("click", () => copyToClipboard(article));
 
-            // Copy Button
-            let copyButton = document.createElement("button");
-            copyButton.textContent = "Copy";
-            copyButton.addEventListener("click", () => copyToClipboard(article));
+        // Append elements in order: Title → Source → Time → First Paragraph → Quotes → Button
+        postDiv.appendChild(titleDiv);
+        postDiv.appendChild(sourceDiv);
+        postDiv.appendChild(timeDiv);
+        postDiv.appendChild(firstParagraphDiv);
+        postDiv.appendChild(quotesDiv);
+        postDiv.appendChild(copyButton);
+        fragment.appendChild(postDiv);
+    });
 
-            // Append elements in order
-            postDiv.appendChild(titleDiv);
-            postDiv.appendChild(sourceDiv);
-            postDiv.appendChild(timeDiv);
-            postDiv.appendChild(firstParagraphDiv);
-            postDiv.appendChild(quotesDiv);
-            postDiv.appendChild(copyButton);
-            fragment.appendChild(postDiv);
-        }
-
-        articlesContainer.appendChild(fragment);
-
-        // Schedule next batch if there are more articles
-        if (startIndex + batchSize < allArticles.length) {
-            setTimeout(() => displayArticles(startIndex + batchSize), 100);
-        }
-    }
-
-    displayArticles();
+    articlesContainer.appendChild(fragment);
 }
 
 // **Copy function with proper formatting**
