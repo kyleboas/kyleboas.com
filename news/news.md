@@ -15,8 +15,7 @@ permalink: /news/
     }
     #post-quotes {
         margin-top: 10px;
-        font-style: italic;
-        color: #555;
+        color: #000;
     }
 </style>
 
