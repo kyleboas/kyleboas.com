@@ -71,8 +71,10 @@ async function fetchArticles() {
                     const articleText = await articleResponse.text();
                     const articleDoc = parser.parseFromString(articleText, "text/html");
 
-                    // Extract paragraphs
-                    let paragraphs = Array.from(articleDoc.querySelectorAll("p")).map(p => p.textContent);
+                    // Extract paragraphs while filtering out unwanted content
+                    let paragraphs = Array.from(articleDoc.querySelectorAll("p"))
+                        .map(p => p.textContent.trim())
+                        .filter(p => p.length > 20 && !p.includes("document.getElementById") && !p.includes("new Date()") && !p.includes("Δ")); // Remove JS-related lines
 
                     // Find paragraphs containing quotes
                     let quoteParagraphs = paragraphs.filter(p => p.match(/["“”'](.*?)["“”']/));
