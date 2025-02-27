@@ -22,29 +22,25 @@ def fetch_articles():
     
     articles = []
 
-    for entry in feed.entries[:5]:
+    for entry in feed.entries[:5]:  # Limit to 5 articles for now
         try:
             title = entry.title
             url = entry.link
 
-            # Ensure content exists
-            if "content" not in entry or not entry.content:
-                logging.warning(f"Missing content for article: {title}")
+            # Fetch full article content
+            page_response = requests.get(url, headers=headers)
+            if page_response.status_code != 200:
+                logging.warning(f"Failed to fetch article: {url}")
                 continue
 
-            content = entry.content[0].value
-            soup = BeautifulSoup(content, 'html.parser')
-
-            # Fix encoding in title
-            title = BeautifulSoup(title, 'html.parser').text  
+            soup = BeautifulSoup(page_response.text, 'html.parser')
 
             # Extract full paragraphs that contain at least one quote
             paragraphs_with_quotes = []
-            for p in soup.find_all('p'):
+            for p in soup.find_all("p"):
                 text = p.get_text().strip()
 
-                # Avoid unnecessary encoding conversions
-                # Directly use text without forcing a different encoding
+                # Detect quotes (curly and straight quotes)
                 if re.search(r'[""‘](.*?)[""’]', text):  
                     paragraphs_with_quotes.append(text)
 
@@ -57,7 +53,7 @@ def fetch_articles():
                 })
 
         except Exception as e:
-            logging.error(f"Error processing article '{entry.title}': {e}")
+            logging.error(f"Error processing article '{title}': {e}")
 
     return articles
 
