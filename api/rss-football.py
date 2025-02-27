@@ -15,7 +15,7 @@ def fetch_articles():
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
-    
+
     try:
         response = requests.get("https://www.molineux.news/news/feed/", headers=headers)
         response.encoding = response.apparent_encoding  
@@ -47,8 +47,11 @@ def fetch_articles():
                 for p in soup.find_all("p"):
                     text = p.get_text().strip()
 
-                    # Detect quotes (curly and straight quotes)
-                    if re.search(r'[""‘](.*?)[""’]', text):  
+                    # Extract ALL quotes within a paragraph (instead of just one)
+                    quotes_found = re.findall(r'[""‘](.*?)[""’]', text)
+
+                    # If at least one quote is found, store the full paragraph
+                    if quotes_found:
                         paragraphs_with_quotes.append(text)
 
                 # Log what is being extracted
