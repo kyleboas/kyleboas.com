@@ -84,7 +84,9 @@ async function fetchArticles() {
                         .filter(p => p.length > 20 && !p.includes("document.getElementById") && !p.includes("new Date()") && !p.includes("Δ"));
 
                     let firstParagraph = paragraphs.length > 0 ? paragraphs[0] : ""; // Extract the first paragraph
-                    let quoteParagraphs = paragraphs.filter(p => p.match(/["“”'](.*?)["“”']/));
+
+                    // **Updated quote detection logic**
+                    let quoteParagraphs = paragraphs.filter(p => p.match(/["“”']/));
 
                     // **Skip articles that do not contain quotes**
                     if (quoteParagraphs.length === 0) {
