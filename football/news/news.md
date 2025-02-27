@@ -51,7 +51,7 @@ async function fetchArticles() {
         "http://newsrss.bbc.co.uk/rss/sportonline_uk_edition/football/rss.xml": "BBC Sport"
     };
 
-    const blacklist = ["pundit", "match report", "player ratings"];
+    const blacklist = ["pundit", "match report", "Jason Cundy", "player ratings"];
     const articlesContainer = document.getElementById("articles-container");
     const parser = new DOMParser();
     let allArticles = [];
