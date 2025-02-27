@@ -86,8 +86,10 @@ async function fetchArticles() {
 
                     let firstParagraph = paragraphs.length > 0 ? paragraphs[0] : "";
 
-                    // Updated quote detection logic
-                    let quoteParagraphs = paragraphs.filter(p => p.match(/["“”']/));
+                    // Quote detection logic
+let quoteParagraphs = paragraphs.filter(p => 
+    p.match(/["“”']/) || p.includes("According to") || p.includes("Speaking to")
+);
 
                     // Skip articles without quotes
                     if (quoteParagraphs.length === 0) {
