@@ -15,10 +15,10 @@ def get_articles():
     
     try:
         feed = feedparser.parse(feed_url)
-        
+
         for entry in feed.entries:
             if len(result) >= 5:
-                break
+                break  # Stop once we have 5 valid articles
             
             title = entry.title
             url = entry.link
@@ -27,15 +27,19 @@ def get_articles():
             soup = BeautifulSoup(response.content, 'html.parser')
 
             quotes = []
+            quote_pattern = re.compile(r'["\'](.*?)["\']')  # Matches text inside quotes
+
             for p in soup.find_all('p'):
                 text = p.get_text().strip()
-                if '"' in text or "'" in text:
-                    quotes.append(text)
-            
+                found_quotes = quote_pattern.findall(text)  # Extract all quoted texts
+                
+                if found_quotes:
+                    quotes.extend(found_quotes)  # Add all found quotes
+                
             if quotes:
                 result.append({
                     "headline": title,
-                    "quotes": quotes,
+                    "quotes": quotes,  # Includes all quotes found in the article
                     "url": url
                 })
     
