@@ -14,6 +14,10 @@ permalink: /news/
         font-weight: bold;
         font-size: 18px;
     }
+    #post-title q {
+        text-decoration: none;
+        color: #000;
+    }
     #post-quotes {
         margin-top: 10px;
         color: #000;
@@ -21,7 +25,6 @@ permalink: /news/
     }
 </style>
 
-<h1>Latest Articles</h1>
 <div id="articles-container"></div>
 
 <script>
