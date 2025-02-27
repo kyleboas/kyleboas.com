@@ -47,40 +47,46 @@ async function fetchArticles() {
         "https://www.wearebrighton.com/newsopinion/feed/"
     ];
 
+    const blacklist = ["pundit", "match report", "player ratings"];
+
     const articlesContainer = document.getElementById("articles-container");
     const parser = new DOMParser();
     let allArticles = [];
 
-    // Fetch all RSS feeds in parallel
     let rssFetches = rssUrls.map(async (rssUrl) => {
         try {
             const rssResponse = await fetch(rssUrl);
             const rssText = await rssResponse.text();
             const xml = parser.parseFromString(rssText, "text/xml");
 
-            const items = Array.from(xml.querySelectorAll("item")).slice(0, 3); // Reduce to 3 per feed for speed
+            const items = Array.from(xml.querySelectorAll("item")).slice(0, 3);
 
-            // Process each article in parallel
             let articleFetches = items.map(async (item) => {
                 let title = item.querySelector("title").textContent;
                 let url = item.querySelector("link").textContent;
                 let pubDate = item.querySelector("pubDate") ? new Date(item.querySelector("pubDate").textContent) : new Date();
 
+                // **Blacklist filtering for titles**
+                if (blacklist.some(word => title.toLowerCase().includes(word.toLowerCase()))) {
+                    return; // Skip this article
+                }
+
                 try {
-                    // Fetch the article page
                     const articleResponse = await fetch(url);
                     const articleText = await articleResponse.text();
                     const articleDoc = parser.parseFromString(articleText, "text/html");
 
-                    // Extract paragraphs while filtering out JavaScript artifacts
                     let paragraphs = Array.from(articleDoc.querySelectorAll("p"))
                         .map(p => p.textContent.trim())
                         .filter(p => p.length > 20 && !p.includes("document.getElementById") && !p.includes("new Date()") && !p.includes("Δ"));
 
-                    // Find paragraphs containing quotes
                     let quoteParagraphs = paragraphs.filter(p => p.match(/["“”'](.*?)["“”']/));
 
-                    // Store only articles that contain quotes
+                    // **Blacklist filtering for quote paragraphs**
+                    if (quoteParagraphs.some(p => blacklist.some(word => p.toLowerCase().includes(word.toLowerCase())))) {
+                        return; // Skip this article
+                    }
+
                     if (quoteParagraphs.length > 0) {
                         allArticles.push({ title, url, pubDate, quoteParagraphs });
                     }
@@ -89,7 +95,6 @@ async function fetchArticles() {
                 }
             });
 
-            // Wait for all articles from this RSS feed to be processed
             await Promise.all(articleFetches);
 
         } catch (error) {
@@ -97,13 +102,10 @@ async function fetchArticles() {
         }
     });
 
-    // Wait for all RSS feeds to be processed
     await Promise.all(rssFetches);
 
-    // Sort articles by publication date (newest first)
     allArticles.sort((a, b) => b.pubDate - a.pubDate);
 
-    // Render all articles at once (batch update for better performance)
     let fragment = document.createDocumentFragment();
 
     allArticles.forEach(article => {
@@ -122,13 +124,11 @@ async function fetchArticles() {
         quotesDiv.id = "post-quotes";
         quotesDiv.innerHTML = article.quoteParagraphs.map(p => `<p>${p}</p>`).join("");
 
-        // Append elements to the fragment
         postDiv.appendChild(titleDiv);
         postDiv.appendChild(quotesDiv);
         fragment.appendChild(postDiv);
     });
 
-    // Append all articles to the DOM in one operation (faster)
     articlesContainer.appendChild(fragment);
 }
 
