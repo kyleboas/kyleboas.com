@@ -17,6 +17,7 @@ permalink: /news/
     #post-quotes {
         margin-top: 10px;
         color: #000;
+        font-size: 18px;
     }
 </style>
 
@@ -73,13 +74,15 @@ async function fetchArticles() {
                     // Find paragraphs containing quotes
                     let quoteParagraphs = paragraphs.filter(p => p.match(/["“”'](.*?)["“”']/));
 
-                    // Store the article data
-                    allArticles.push({
-                        title,
-                        url,
-                        pubDate,
-                        quoteParagraphs
-                    });
+                    // Only store articles that contain quotes
+                    if (quoteParagraphs.length > 0) {
+                        allArticles.push({
+                            title,
+                            url,
+                            pubDate,
+                            quoteParagraphs
+                        });
+                    }
 
                 } catch (error) {
                     console.error("Error fetching article:", url, error);
@@ -93,7 +96,7 @@ async function fetchArticles() {
     // Sort articles by publication date (most recent first)
     allArticles.sort((a, b) => b.pubDate - a.pubDate);
 
-    // Render articles
+    // Render only articles that contain quotes
     allArticles.forEach(article => {
         let postDiv = document.createElement("div");
         postDiv.classList.add("Post");
@@ -108,9 +111,7 @@ async function fetchArticles() {
 
         let quotesDiv = document.createElement("div");
         quotesDiv.id = "post-quotes";
-        quotesDiv.innerHTML = article.quoteParagraphs.length > 0
-            ? article.quoteParagraphs.map(p => `<p>${p}</p>`).join("")
-            : "<p>No quotes found.</p>";
+        quotesDiv.innerHTML = article.quoteParagraphs.map(p => `<p>${p}</p>`).join("");
 
         // Append elements to the post container
         postDiv.appendChild(titleDiv);
