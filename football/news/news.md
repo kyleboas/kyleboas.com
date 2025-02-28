@@ -51,7 +51,7 @@ async function fetchArticles() {
         "http://newsrss.bbc.co.uk/rss/sportonline_uk_edition/football/rss.xml": "BBC Sport"
     };
 
-    const blacklist = ["pundit", "match report", "round-up", "Jason Cundy", "Joe Cole", "Robbie Savage", "Neil Lennon", "player ratings"];
+    const blacklist = ["pundit", "match report", "round-up", "Jason Cundy", "Joe Cole", "Robbie Savage", "Neil Lennon", "opinion", "Alan Shearer", "Simon Jordan", "player ratings"];
     const articlesContainer = document.getElementById("articles-container");
     const parser = new DOMParser();
     let allArticles = [];
