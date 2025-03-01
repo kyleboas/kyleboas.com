@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    console.log("DOM Loaded, initializing map...");
-
     const canvas = document.getElementById("mapCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -9,6 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
+    // Variables for panning & zooming
     let worldData = null;
     let offsetX = 0, offsetY = 0, scale = 150;
     let isDragging = false, startX = 0, startY = 0;
@@ -16,79 +15,67 @@ document.addEventListener("DOMContentLoaded", async () => {
     let lastZoomDistance = null;
     let lastTapTime = 0;
 
+    // Fix pixelation on high-DPI screens
     function resizeCanvas() {
-        console.log("Resizing canvas...");
         const dpr = window.devicePixelRatio || 1;
         canvas.width = window.innerWidth * dpr;
         canvas.height = window.innerHeight * dpr;
         canvas.style.width = `${window.innerWidth}px`;
         canvas.style.height = `${window.innerHeight}px`;
-        ctx.scale(dpr, dpr);
-        drawMap();
+        ctx.scale(dpr, dpr); // Fix blurry lines
+
+        if (worldData) drawMap();
     }
     window.addEventListener("resize", resizeCanvas);
 
+    // Load TopoJSON land data (not country borders)
     try {
-        console.log("Fetching world map...");
         const response = await fetch("https://d3js.org/world-110m.v1.json");
         const topoData = await response.json();
-        
-        if (!window.topojson) {
-            throw new Error("TopoJSON is not loaded. Check your script imports in HTML.");
-        }
-
-        worldData = window.topojson.feature(topoData, topoData.objects.land);
-        console.log("Land Data Loaded:", worldData);
+        worldData = topojson.feature(topoData, topoData.objects.land); // Use 'land' only
     } catch (error) {
         console.error("Error loading world map:", error);
         return;
     }
 
-    console.log("Drawing initial map...");
-    drawMap();
+    console.log("Land Data Loaded:", worldData);
 
-    if (!window.d3) {
-        console.error("D3 is not loaded. Check your script imports in HTML.");
-        return;
-    }
-
-    const projection = window.d3.geoMercator()
+    // D3 Mercator Projection
+    const projection = d3.geoMercator()
         .scale(scale)
         .translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
-    const pathGenerator = window.d3.geoPath().projection(projection).context(ctx);
+    const pathGenerator = d3.geoPath().projection(projection).context(ctx);
 
+    // Draw only land-sea borders (coastlines)
     function drawMap() {
-        console.log("Redrawing map...");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         projection.scale(scale).translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
-        ctx.fillStyle = "transparent";
-        ctx.strokeStyle = "#ABB0B0";
+        ctx.fillStyle = "transparent"; // No fill for land
+        ctx.strokeStyle = "#ABB0B0"; // Land-sea border color
         ctx.lineWidth = 1.5;
 
         ctx.beginPath();
-        if (worldData) {
-            pathGenerator(worldData);
-            ctx.stroke();
-        } else {
-            console.error("worldData is null, map not drawn.");
-        }
+        pathGenerator(worldData); // Draw only the landmass
+        ctx.stroke();
 
-        console.log("Map drawn successfully.");
+        console.log("Coastlines drawn successfully.");
     }
 
+    // Inertia effect for smooth panning
     function applyInertia() {
         if (Math.abs(velocityX) > 0.1 || Math.abs(velocityY) > 0.1) {
             offsetX += velocityX;
             offsetY += velocityY;
-            velocityX *= 0.95;
+            velocityX *= 0.95; // Slow down over time
             velocityY *= 0.95;
             drawMap();
             requestAnimationFrame(applyInertia);
         }
     }
 
+    // Mouse drag for panning
     canvas.addEventListener("mousedown", (e) => {
         isDragging = true;
         startX = e.clientX;
@@ -121,6 +108,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         applyInertia();
     });
 
+    // Mouse wheel for zooming
     canvas.addEventListener("wheel", (e) => {
         e.preventDefault();
         const zoomFactor = 1.1;
@@ -129,6 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         drawMap();
     });
 
+    // Touch events for panning & pinch-to-zoom
     canvas.addEventListener("touchstart", (e) => {
         if (e.touches.length === 1) {
             isDragging = true;
@@ -137,6 +126,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             velocityX = 0;
             velocityY = 0;
 
+            // Double tap to zoom
             const currentTime = new Date().getTime();
             if (currentTime - lastTapTime < 300) {
                 scale *= 1.2;
@@ -194,10 +184,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         lastZoomDistance = null;
     });
 
+    // Helper function to calculate distance between two touch points
     function getDistance(touch1, touch2) {
         return Math.sqrt((touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2);
     }
 
-    console.log("Resizing canvas...");
     resizeCanvas();
 });
