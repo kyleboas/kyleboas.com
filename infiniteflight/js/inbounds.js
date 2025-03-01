@@ -406,7 +406,7 @@ async function fetchActiveATCAirports() {
 // ============================
 
 // Fetch airport latitude and longitude
-async function fetchAirportCoordinates(icao) {
+export async function fetchAirportCoordinates(icao) {
     const cached = getCache(icao, 'airportCoordinates', cacheExpiration.airportCoordinates);
     if (cached) {
         return cached;
@@ -1934,4 +1934,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-export { getFlights, allFlights, airportCoordinates, calculateDistance };
+export { getFlights, allFlights, airportCoordinates, calculateDistance, fetchAirportCoordinates };
