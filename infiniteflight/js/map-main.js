@@ -1,5 +1,3 @@
-import { fetchSIGMET } from "./api.js";
-
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("DOM Loaded, initializing map...");
 
@@ -12,7 +10,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     let worldData = null;
-    let sigmetData = [];
     let offsetX = 0, offsetY = 0, scale = 150;
     let isDragging = false, startX = 0, startY = 0;
     let velocityX = 0, velocityY = 0;
@@ -47,14 +44,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    try {
-        console.log("Fetching SIGMET data...");
-        sigmetData = await fetchSIGMET();
-        console.log("SIGMET Data Ready:", sigmetData);
-    } catch (error) {
-        console.error("Error fetching SIGMET data:", error);
-    }
-
     console.log("Drawing initial map...");
     drawMap();
 
@@ -86,43 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("worldData is null, map not drawn.");
         }
 
-        drawSIGMETs();
         console.log("Map drawn successfully.");
-    }
-
-    function drawSIGMETs() {
-        console.log("Drawing SIGMETs...");
-        if (!sigmetData || sigmetData.length === 0) {
-            console.warn("No SIGMETs to draw.");
-            return;
-        }
-
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
-
-        sigmetData.forEach(sigmet => {
-            if (!sigmet.coords || sigmet.coords.length === 0) {
-                console.warn("Invalid SIGMET data:", sigmet);
-                return;
-            }
-
-            ctx.beginPath();
-            sigmet.coords.forEach(({ lon, lat }, index) => {
-                if (isNaN(lon) || isNaN(lat)) {
-                    console.error("Invalid SIGMET coordinates:", lon, lat);
-                    return;
-                }
-                const [x, y] = projection([lon, lat]);
-                if (index === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-        });
-
-        console.log("SIGMETs drawn successfully.");
     }
 
     function applyInertia() {
