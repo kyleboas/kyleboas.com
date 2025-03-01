@@ -1,7 +1,7 @@
 import { getICAO } from "./icao.js";
 import { inputSearch } from "./search.js";
 import { getFlights, allFlights, airportCoordinates } from "./inbounds.js";
-import { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./map.js";
+import { initMap, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft } from "./inbounds-map.js";
 import { updateRunwaySpacingDisplay } from "./spacing.js";
 
 function setupEventListeners() {
