@@ -41,8 +41,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     let offsetX = 0, offsetY = 0, scale = 150;
     let isDragging = false, startX = 0, startY = 0;
     let velocityX = 0, velocityY = 0;
-    let lastZoomDistance = null;
-    let lastTapTime = 0;
 
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -77,8 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         projection.scale(scale).translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
-        ctx.fillStyle = "transparent"; // No fill for land
-        ctx.strokeStyle = "#ABB0B0"; // Land-sea border color
+        ctx.strokeStyle = "#ABB0B0";
         ctx.lineWidth = 1.5;
 
         ctx.beginPath();
