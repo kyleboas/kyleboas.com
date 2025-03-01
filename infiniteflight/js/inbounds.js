@@ -1934,4 +1934,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-export { getFlights, allFlights, airportCoordinates, calculateDistance, fetchAirportCoordinates };
+export { getFlights, allFlights, airportCoordinates, calculateDistance };
