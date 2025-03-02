@@ -51,7 +51,7 @@ async function fetchArticles() {
         "http://newsrss.bbc.co.uk/rss/sportonline_uk_edition/football/rss.xml": "BBC Sport"
     };
 
-    const blacklist = ["pundit", "match report", "round-up", "Jason Cundy", "Joe Cole", "Robbie Savage", "Neil Lennon", "opinion", "Alan Shearer", "Simon Jordan", "player ratings"];
+    const blacklist = ["pundit", "match report", "round-up", "Jason Cundy", "Joe Cole", "Robbie Savage", "Neil Lennon", "Ian Darke", "opinion", "Alan Shearer", "Simon Jordan", "player ratings"];
     const articlesContainer = document.getElementById("articles-container");
     const parser = new DOMParser();
     let allArticles = [];
@@ -70,7 +70,6 @@ async function fetchArticles() {
                 let url = item.querySelector("link").textContent;
                 let pubDate = item.querySelector("pubDate") ? new Date(item.querySelector("pubDate").textContent) : new Date();
 
-                // Blacklist filtering for titles
                 if (blacklist.some(word => title.toLowerCase().includes(word.toLowerCase()))) {
                     return;
                 }
@@ -80,24 +79,26 @@ async function fetchArticles() {
                     const articleText = await articleResponse.text();
                     const articleDoc = parser.parseFromString(articleText, "text/html");
 
-                    let paragraphs = Array.from(articleDoc.querySelectorAll("p"))
+                    // **Restrict to main content area**
+                    let articleBody = articleDoc.querySelector(".post-content, .entry-content, .single-post");
+                    if (!articleBody) return; // Skip if no main content area found
+
+                    let paragraphs = Array.from(articleBody.querySelectorAll("p"))
                         .map(p => p.textContent.trim())
                         .filter(p => p.length > 20 && !p.includes("document.getElementById") && !p.includes("new Date()") && !p.includes("Δ"));
 
                     let firstParagraph = paragraphs.length > 0 ? paragraphs[0] : "";
 
-                    // Quote detection logic
-let quoteParagraphs = paragraphs.filter(p => 
-    p.match(/["“”']/) || p.includes("According to") || p.includes("Speaking to") || p.includes("reported")
-);
+                    // **Extract quotes only from the main article body**
+                    let quoteParagraphs = paragraphs.filter(p =>
+                        (p.match(/["“”']/) || p.includes("According to") || p.includes("Speaking to") || p.includes("reported")) &&
+                        p.toLowerCase() !== firstParagraph.toLowerCase() // Avoid repeating first paragraph
+                    );
 
-                    // Skip articles without quotes
-                    if (quoteParagraphs.length === 0) {
-                        return;
-                    }
+                    if (quoteParagraphs.length === 0) return; // Skip articles without quotes
 
-                    // Blacklist filtering for quote paragraphs
-                    if (quoteParagraphs.some(p => blacklist.some(word => p.toLowerCase().includes(word.toLowerCase())))) {
+                    // **Ensure quotes are actually in this article**
+                    if (!quoteParagraphs.some(q => articleText.includes(q))) {
                         return;
                     }
 
@@ -126,7 +127,6 @@ let quoteParagraphs = paragraphs.filter(p =>
         let postDiv = document.createElement("div");
         postDiv.classList.add("Post");
 
-        // Title
         let titleDiv = document.createElement("div");
         titleDiv.id = "post-title";
         let titleLink = document.createElement("a");
@@ -135,32 +135,26 @@ let quoteParagraphs = paragraphs.filter(p =>
         titleLink.textContent = article.title;
         titleDiv.appendChild(titleLink);
 
-        // Source
         let sourceDiv = document.createElement("div");
         sourceDiv.id = "post-source";
         sourceDiv.textContent = `${article.sourceName}`;
 
-        // Time
         let timeDiv = document.createElement("div");
         timeDiv.id = "post-time";
         timeDiv.textContent = `${article.pubDate.toLocaleString()}`;
 
-        // First Paragraph
         let firstParagraphDiv = document.createElement("div");
         firstParagraphDiv.id = "first-paragraph";
         firstParagraphDiv.innerHTML = `<p>${article.firstParagraph}</p>`;
 
-        // Quotes
         let quotesDiv = document.createElement("div");
         quotesDiv.id = "post-quotes";
         quotesDiv.innerHTML = article.quoteParagraphs.map(p => `<p>${p}</p>`).join("");
 
-        // Copy Button
         let copyButton = document.createElement("button");
         copyButton.textContent = "Copy";
         copyButton.addEventListener("click", () => copyToClipboard(article));
 
-        // Append elements in order: Title → Source → Time → First Paragraph → Quotes → Button
         postDiv.appendChild(titleDiv);
         postDiv.appendChild(sourceDiv);
         postDiv.appendChild(timeDiv);
@@ -175,13 +169,13 @@ let quoteParagraphs = paragraphs.filter(p =>
 
 // **Copy function with proper formatting**
 function copyToClipboard(article) {
-    let markdownText = `> ${article.firstParagraph}\n> \n`; // Blank line after first paragraph with a space
-    
+    let markdownText = `> ${article.firstParagraph}\n> \n`;
+
     article.quoteParagraphs.forEach(quote => {
-        markdownText += `> ${quote}\n> \n`; // Each quote followed by a blank line with a space
+        markdownText += `> ${quote}\n> \n`;
     });
 
-    markdownText += `\n${article.url}`; // Add article URL on a new line
+    markdownText += `\n${article.url}`;
 
     navigator.clipboard.writeText(markdownText).then(() => {
         alert("Copied to clipboard!");
@@ -190,6 +184,6 @@ function copyToClipboard(article) {
     });
 }
 
-// Run the function on page load
+// Run on page load
 fetchArticles();
 </script>
