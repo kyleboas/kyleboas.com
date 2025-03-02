@@ -240,7 +240,7 @@ permalink: /infiniteflight/inbounds/
         <table id="keyTable">
         <thead>
             <tr>
-                <th>NM/ETA</th>
+                <th>NM/ETE</th>
                 <th>Description</th>
             </tr>
         </thead>
@@ -253,7 +253,7 @@ permalink: /infiniteflight/inbounds/
        </table>
       <p class="setting-title" style="margin-top: 20px;">Separation</p>
       <p class="setting-description">
-        The table is color coded based on ETA (Estimated Time of Arrival) separation.
+        The table is color coded based on ETE (Estimated Time Enroute) separation.
       </p>
       <div class="box-container" style="margin-top: 20px;">
         <div class="box" style="background-color:#fffa9f;"></div>
@@ -429,7 +429,7 @@ permalink: /infiniteflight/inbounds/
                 <th>MIN/MAX</th>
                 <th>GS/MACH</th>
                 <th>HDG/ALT</th>
-                <th>NM/ETA</th>
+                <th>NM/ETE</th>
             </tr>
         </thead>
         <tbody>
