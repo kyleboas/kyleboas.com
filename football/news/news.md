@@ -8,14 +8,16 @@ permalink: /football/news/
         border-bottom: 1px solid #ddd;
         padding: 10px;
         margin-bottom: 15px;
-        font-family: Helvetica, sans-serif;
+        font-family: ui-serif, sans-serif;
+        font-size: 16px;
     }
     #post-title {
         font-weight: bold;
-        font-size: 18px;
+        font-family: helvetica, sans-serif;
     }
     #first-paragraph {
-        font-size: 18px;
+        font-size: inherit;
+        line-height: 28px;
     }
     #post-title a {
         text-decoration: none;
@@ -24,7 +26,8 @@ permalink: /football/news/
     #post-quotes {
         margin-top: 10px;
         color: #000;
-        font-size: 18px;
+        font-size: inherit;
+        line-height: 28px;
     }
 </style>
 
