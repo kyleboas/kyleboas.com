@@ -5,7 +5,7 @@ permalink: /football/news/
 
 <style>
     .Post {
-        border: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
         padding: 10px;
         margin-bottom: 15px;
         font-family: Helvetica, sans-serif;
@@ -79,32 +79,24 @@ async function fetchArticles() {
                     const articleText = await articleResponse.text();
                     const articleDoc = parser.parseFromString(articleText, "text/html");
 
-                    // **Restrict to main content area**
                     let articleBody = articleDoc.querySelector(".post-content, .entry-content, .single-post");
-                    if (!articleBody) return; // Skip if no main content area found
+                    if (!articleBody) return;
 
                     let paragraphs = Array.from(articleBody.querySelectorAll("p"))
                         .map(p => p.textContent.trim())
-                        .filter(p => p.length > 20 && !p.includes("document.getElementById") && !p.includes("new Date()") && !p.includes("Δ"));
+                        .filter(p => p.length > 20);
 
                     let firstParagraph = paragraphs.length > 0 ? paragraphs[0] : "";
 
-                    // **Extract quotes only from the main article body**
+                    // **Ensure quotes are ONLY taken from the same article**
                     let quoteParagraphs = paragraphs.filter(p =>
                         (p.match(/["“”']/) || p.includes("According to") || p.includes("Speaking to") || p.includes("reported")) &&
-                        p.toLowerCase() !== firstParagraph.toLowerCase() // Avoid repeating first paragraph
+                        articleText.includes(p) // Verify quote exists within the fetched page
                     );
 
-                    if (quoteParagraphs.length === 0) return; // Skip articles without quotes
+                    if (quoteParagraphs.length === 0) return;
 
-                    // **Ensure quotes are actually in this article**
-                    if (!quoteParagraphs.some(q => articleText.includes(q))) {
-                        return;
-                    }
-
-                    if (firstParagraph) {
-                        allArticles.push({ title, sourceName, url, pubDate, firstParagraph, quoteParagraphs });
-                    }
+                    allArticles.push({ title, sourceName, url, pubDate, firstParagraph, quoteParagraphs });
                 } catch (error) {
                     console.error("Error fetching article:", url, error);
                 }
@@ -118,7 +110,6 @@ async function fetchArticles() {
 
     await Promise.all(rssFetches);
 
-    // Sort articles by date (newest first)
     allArticles.sort((a, b) => b.pubDate - a.pubDate);
 
     let fragment = document.createDocumentFragment();
@@ -167,7 +158,7 @@ async function fetchArticles() {
     articlesContainer.appendChild(fragment);
 }
 
-// **Copy function with proper formatting**
+// **Copy function**
 function copyToClipboard(article) {
     let markdownText = `> ${article.firstParagraph}\n> \n`;
 
