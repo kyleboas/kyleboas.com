@@ -9,7 +9,7 @@ permalink: /football/news/
         padding: 10px;
         margin-bottom: 15px;
         font-family: ui-serif, sans-serif;
-        font-size: 16px;
+        font-size: 18px;
     }
     #post-title {
         font-weight: bold;
@@ -17,7 +17,7 @@ permalink: /football/news/
     }
     #first-paragraph {
         font-size: inherit;
-        line-height: 28px;
+        line-height: 26px;
     }
     #post-title a {
         text-decoration: none;
@@ -27,7 +27,7 @@ permalink: /football/news/
         margin-top: 10px;
         color: #000;
         font-size: inherit;
-        line-height: 28px;
+        line-height: 26px;
     }
 </style>
 
