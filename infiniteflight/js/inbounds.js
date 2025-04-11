@@ -1630,6 +1630,56 @@ async function renderATCTable() {
     }
 }
 
+
+// Render ATC Table
+async function renderInboundTableWithAllAirports() {
+    const tableBody = document.querySelector("#inboundTable tbody");
+    if (!tableBody) {
+        console.error("Inbound table body not found.");
+        return;
+    }
+
+    try {
+        const worldData = await fetchWithProxy(`/sessions/${SESSION_ID}/world`);
+        const airportsWithInbound = (worldData.result || []).filter(a => a.inboundFlightsCount > 1);
+
+        if (!airportsWithInbound.length) {
+            tableBody.innerHTML = '<tr><td colspan="6">No airports with inbounds > 1</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = '';
+
+        for (const airport of airportsWithInbound) {
+            const { airportIcao, inboundFlightsCount } = airport;
+
+            const inboundFlightIds = await fetchInboundFlightIds(airportIcao);
+            const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
+
+            const coords = await fetchAirportCoordinates(airportIcao);
+            if (!coords) continue;
+
+            await updateDistancesAndETAs(airportFlights, coords);
+            const counts = countInboundFlightsByDistance(airportFlights);
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${airportIcao}</td>
+                <td>N/A</td>
+                <td>${counts["50nm"]}</td>
+                <td>${counts["200nm"]}</td>
+                <td>${counts["500nm"]}</td>
+                <td>${inboundFlightsCount}</td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+    } catch (error) {
+        console.error("Error rendering inbound table:", error.message);
+        tableBody.innerHTML = '<tr><td colspan="6">Error loading inbound data.</td></tr>';
+    }
+}
+
 // ============================
 // Table Rendering
 // ============================
@@ -1787,6 +1837,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await fetchActiveATCAirports();
         await renderATCTable();
+        await renderInboundTableWithAllAirports();
     } catch (error) {
         console.error('Error initializing ATC table:', error.message);
     }

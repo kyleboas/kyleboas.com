@@ -385,6 +385,23 @@ permalink: /infiniteflight/inbounds/
         <div class="nav-right" id="atcAirportsList">
         </div>
     </div>
+    
+    <!-- Inbound Table -->
+    <table id="inboundTable">
+        <thead>
+            <tr>
+                <th>Airport</th>
+                <th>Freq.</th>
+                <th>50nm</th>
+                <th>200nm</th>
+                <th>500nm</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamic rows will be added here -->
+        </tbody>
+    </table>
 
     <!-- ATC Table -->
     <table id="atcTable">
