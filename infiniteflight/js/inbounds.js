@@ -1632,6 +1632,8 @@ async function renderATCTable() {
 
 
 // Render Inbound Table
+let worldDataCache = null;
+
 async function renderInboundTable() {
     const tableBody = document.querySelector("#inboundTable tbody");
     if (!tableBody) {
@@ -1640,8 +1642,16 @@ async function renderInboundTable() {
     }
 
     try {
-        const worldData = await fetchWithProxy(`/sessions/${SESSION_ID}/world`);
-        const airportsWithInbound = (worldData.result || []).filter(a => a.inboundFlightsCount > 1);
+        // Fetch world data only once
+        if (!worldDataCache) {
+            const worldDataResponse = await fetchWithProxy(`/sessions/${SESSION_ID}/world`);
+            if (!worldDataResponse || !Array.isArray(worldDataResponse.result)) {
+                throw new Error("Invalid world data.");
+            }
+            worldDataCache = worldDataResponse.result;
+        }
+
+        const airportsWithInbound = worldDataCache.filter(a => a.inboundFlightsCount > 1);
 
         if (!airportsWithInbound.length) {
             tableBody.innerHTML = '<tr><td colspan="6">No airports with inbounds > 1</td></tr>';
