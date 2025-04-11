@@ -419,7 +419,6 @@ export async function fetchAirportCoordinates(icao) {
         return coordinates;
     } catch (error) {
         console.error('Error fetching airport coordinates:', error.message);
-        alert('Failed to fetch airport coordinates.');
         return null;
     }
 }
@@ -980,7 +979,6 @@ async function fetchAndUpdateFlights(icao) {
 
         // Fetch and set airport coordinates
         const coordinates = await fetchAirportCoordinates(icao);
-        if (!coordinates) throw new Error("Failed to fetch airport coordinates.");
         airportCoordinates = coordinates;
         
         // Clear previous flights and reset state
@@ -1903,9 +1901,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             airportCoordinates = await fetchAirportCoordinates(icao);
-            if (!airportCoordinates) {
-                throw new Error("Failed to fetch airport coordinates.");
-            }
             
             await fetchAndUpdateFlights(icao);
             updateAircraftOnMap(allFlights, airportCoordinates);
