@@ -470,6 +470,19 @@ permalink: /infiniteflight/inbounds/
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inboundTable = document.getElementById('inboundTable');
+    const atcAirportsList = document.getElementById('atcAirportsList');
+
+    // Hide the table initially
+    inboundTable.style.display = 'none';
+
+    // Show table on click
+    atcAirportsList.addEventListener('click', () => {
+        inboundTable.style.display = 'table';
+    });
+});
+
 // Function to save theme preference in localStorage
 function saveThemePreference(theme) {
     localStorage.setItem('theme', theme);
