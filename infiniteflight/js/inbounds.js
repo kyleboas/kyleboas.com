@@ -1631,8 +1631,8 @@ async function renderATCTable() {
 }
 
 
-// Render ATC Table
-async function renderInboundTableWithAllAirports() {
+// Render Inbound Table
+async function renderInboundTable() {
     const tableBody = document.querySelector("#inboundTable tbody");
     if (!tableBody) {
         console.error("Inbound table body not found.");
@@ -1648,28 +1648,49 @@ async function renderInboundTableWithAllAirports() {
             return;
         }
 
-        tableBody.innerHTML = '';
+        tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
 
-        for (const airport of airportsWithInbound) {
+        const airportDataPromises = airportsWithInbound.map(async (airport) => {
             const { airportIcao, inboundFlightsCount } = airport;
 
-            const inboundFlightIds = await fetchInboundFlightIds(airportIcao);
-            const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
+            try {
+                const [inboundFlightIds, coords] = await Promise.all([
+                    fetchInboundFlightIds(airportIcao),
+                    fetchAirportCoordinates(airportIcao)
+                ]);
 
-            const coords = await fetchAirportCoordinates(airportIcao);
-            if (!coords) continue;
+                if (!coords) return null;
 
-            await updateDistancesAndETAs(airportFlights, coords);
-            const counts = countInboundFlightsByDistance(airportFlights);
+                const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
+                await updateDistancesAndETAs(airportFlights, coords);
+                const counts = countInboundFlightsByDistance(airportFlights);
 
+                return {
+                    icao: airportIcao,
+                    inboundFlightsCount,
+                    counts
+                };
+            } catch (error) {
+                console.warn(`Skipping ${airportIcao} due to error:`, error.message);
+                return null;
+            }
+        });
+
+        const airportDataList = (await Promise.all(airportDataPromises))
+            .filter(Boolean)
+            .sort((a, b) => b.inboundFlightsCount - a.inboundFlightsCount);
+
+        tableBody.innerHTML = '';
+
+        for (const airport of airportDataList) {
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td>${airportIcao}</td>
+                <td>${airport.icao}</td>
                 <td>N/A</td>
-                <td>${counts["50nm"]}</td>
-                <td>${counts["200nm"]}</td>
-                <td>${counts["500nm"]}</td>
-                <td>${inboundFlightsCount}</td>
+                <td>${airport.counts["50nm"]}</td>
+                <td>${airport.counts["200nm"]}</td>
+                <td>${airport.counts["500nm"]}</td>
+                <td>${airport.inboundFlightsCount}</td>
             `;
             tableBody.appendChild(row);
         }
@@ -1837,7 +1858,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await fetchActiveATCAirports();
         await renderATCTable();
-        await renderInboundTableWithAllAirports();
+        await renderInboundTable();
     } catch (error) {
         console.error('Error initializing ATC table:', error.message);
     }
