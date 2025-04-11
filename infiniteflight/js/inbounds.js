@@ -518,7 +518,6 @@ document.getElementById('add').addEventListener('click', async (event) => {
             : 'No active controllers available.';
     } catch (error) {
         console.error(`Error fetching data for secondary airport ${secondaryIcao}:`, error.message);
-        alert(`Failed to fetch data for the secondary airport: ${secondaryIcao}`);
     }
 });
 
@@ -685,7 +684,6 @@ async function fetchInboundFlightIds(icao) {
         return inboundFlights;
     } catch (error) {
         console.error('Error fetching inbound flight IDs:', error.message);
-        alert('Failed to fetch inbound flight IDs.');
         return [];
     }
 }
@@ -723,7 +721,6 @@ async function fetchInboundFlightDetails(inboundFlightIds = []) {
         }));
     } catch (error) {
         console.error("Error fetching flight details:", error.message);
-        alert("Failed to fetch flight details.");
         stopAutoUpdate();
         return [];
     }
@@ -1907,7 +1904,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             startAutoUpdate(icao);
         } catch (error) {
             console.error("Error during search:", error.message);
-            alert("Failed to fetch and update flights. Please try again.");
         }
     }
 
