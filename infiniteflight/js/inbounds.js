@@ -1655,7 +1655,7 @@ async function renderInboundTable() {
 
         tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
 
-        const airportDataList = (await Promise.all(airportDataPromises))
+        const airportDataList =
             .filter(Boolean)
             .sort((a, b) => b.inboundFlightsCount - a.inboundFlightsCount);
 
