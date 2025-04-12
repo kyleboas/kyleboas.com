@@ -1665,10 +1665,6 @@ async function renderInboundTable() {
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${airport.icao}</td>
-                <td>N/A</td>
-                <td>${airport.counts["50nm"] || 0}</td>
-                <td>${airport.counts["200nm"] || 0}</td>
-                <td>${airport.counts["500nm"] || 0}</td>
                 <td>${airport.inboundFlightsCount}</td>
             `;
             tableBody.appendChild(row);

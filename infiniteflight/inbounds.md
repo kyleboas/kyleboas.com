@@ -391,10 +391,6 @@ permalink: /infiniteflight/inbounds/
         <thead>
             <tr>
                 <th>Airport</th>
-                <th>Freq.</th>
-                <th>50nm</th>
-                <th>200nm</th>
-                <th>500nm</th>
                 <th>Total</th>
             </tr>
         </thead>
