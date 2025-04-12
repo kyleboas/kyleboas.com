@@ -1655,18 +1655,20 @@ async function renderInboundTable() {
 
         tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
 
+        // Fetch all inbound flights once
+        const allInboundFlights = await fetchAllInboundFlights();
+
         const airportDataPromises = airportsWithInbound.map(async (airport) => {
             const { airportIcao, inboundFlightsCount } = airport;
 
             try {
-                const [inboundFlightIds, coords] = await Promise.all([
-                    fetchInboundFlightIds(airportIcao),
-                    fetchAirportCoordinates(airportIcao)
-                ]);
-
+                const coords = await fetchAirportCoordinates(airportIcao);
                 if (!coords) return null;
 
-                const airportFlights = await fetchInboundFlightDetails(inboundFlightIds);
+                const airportFlights = allInboundFlights.filter(
+                    (flight) => flight.destinationIcao === airportIcao
+                );
+
                 await updateDistancesAndETAs(airportFlights, coords);
                 const counts = countInboundFlightsByDistance(airportFlights);
 
@@ -1692,9 +1694,9 @@ async function renderInboundTable() {
             row.innerHTML = `
                 <td>${airport.icao}</td>
                 <td>N/A</td>
-                <td>${airport.counts["50nm"]}</td>
-                <td>${airport.counts["200nm"]}</td>
-                <td>${airport.counts["500nm"]}</td>
+                <td>${airport.counts["50nm"] || 0}</td>
+                <td>${airport.counts["200nm"] || 0}</td>
+                <td>${airport.counts["500nm"] || 0}</td>
                 <td>${airport.inboundFlightsCount}</td>
             `;
             tableBody.appendChild(row);
