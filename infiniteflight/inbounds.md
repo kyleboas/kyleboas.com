@@ -473,9 +473,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hide the table initially
     inboundTable.style.display = 'none';
 
-    // Show table on click
+    // Toggle table visibility on click
     atcAirportsList.addEventListener('click', () => {
-        inboundTable.style.display = 'table';
+        inboundTable.style.display =
+            inboundTable.style.display === 'none' ? 'table' : 'none';
     });
 });
 
