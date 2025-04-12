@@ -1655,34 +1655,6 @@ async function renderInboundTable() {
 
         tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
 
-        // Fetch all inbound flights once
-        const allInboundFlights = await fetchAllInboundFlights();
-
-        const airportDataPromises = airportsWithInbound.map(async (airport) => {
-            const { airportIcao, inboundFlightsCount } = airport;
-
-            try {
-                const coords = await fetchAirportCoordinates(airportIcao);
-                if (!coords) return null;
-
-                const airportFlights = allInboundFlights.filter(
-                    (flight) => flight.destinationIcao === airportIcao
-                );
-
-                await updateDistancesAndETAs(airportFlights, coords);
-                const counts = countInboundFlightsByDistance(airportFlights);
-
-                return {
-                    icao: airportIcao,
-                    inboundFlightsCount,
-                    counts
-                };
-            } catch (error) {
-                console.warn(`Skipping ${airportIcao} due to error:`, error.message);
-                return null;
-            }
-        });
-
         const airportDataList = (await Promise.all(airportDataPromises))
             .filter(Boolean)
             .sort((a, b) => b.inboundFlightsCount - a.inboundFlightsCount);
