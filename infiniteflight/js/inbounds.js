@@ -1655,9 +1655,9 @@ async function renderInboundTable() {
 
         tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
 
-        const airportDataList =
-            .filter(Boolean)
-            .sort((a, b) => b.inboundFlightsCount - a.inboundFlightsCount);
+        const airportDataList = airportsWithInbound
+    .filter(Boolean)
+    .sort((a, b) => b.inboundFlightsCount - a.inboundFlightsCount);
 
         tableBody.innerHTML = '';
 
