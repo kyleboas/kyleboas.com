@@ -1664,7 +1664,7 @@ async function renderInboundTable() {
         for (const airport of airportDataList) {
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td>${airport.icao}</td>
+                <td>${airport.airportIcao}</td>
                 <td>${airport.inboundFlightsCount}</td>
             `;
             tableBody.appendChild(row);
