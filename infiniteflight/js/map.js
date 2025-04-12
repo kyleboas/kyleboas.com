@@ -48,7 +48,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         canvas.height = window.innerHeight * dpr;
         canvas.style.width = `${window.innerWidth}px`;
         canvas.style.height = `${window.innerHeight}px`;
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset any transforms
         ctx.scale(dpr, dpr);
+
+        projection = d3.geoMercator()
+            .scale(scale)
+            .translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
         if (worldData) drawMap();
     }
@@ -65,9 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     console.log("Land Data Loaded:", worldData);
 
-    const projection = d3.geoMercator()
-        .scale(scale)
-        .translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
+    let projection;
 
     const pathGenerator = d3.geoPath().projection(projection).context(ctx);
 
