@@ -1646,26 +1646,33 @@ async function renderInboundTable() {
             worldDataCache = worldDataResponse.result;
         }
 
-        const airportsWithInbound = worldDataCache.filter(a => a.inboundFlightsCount > 1);
+        // Include airports with at least 1 inbound
+        const airportsWithInbound = worldDataCache.filter(a => a.inboundFlightsCount >= 1);
 
         if (!airportsWithInbound.length) {
-            tableBody.innerHTML = '<tr><td colspan="6">No airports with inbounds > 1</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="6">No airports with inbounds >= 1</td></tr>';
             return;
         }
 
         tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
 
+        // Sort descending by inbound count
         const airportDataList = airportsWithInbound
-    .filter(Boolean)
-    .sort((a, b) => b.inboundFlightsCount - a.inboundFlightsCount);
+            .filter(Boolean)
+            .sort((a, b) => b.inboundFlightsCount - a.inboundFlightsCount);
 
         tableBody.innerHTML = '';
 
         for (const airport of airportDataList) {
+            console.log("Rendering airport row:", airport);
+
+            const icao = airport.airportIcao || 'UNKNOWN';
+            const count = airport.inboundFlightsCount ?? 0;
+
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td>${airport.airportIcao}</td>
-                <td>${airport.inboundFlightsCount}</td>
+                <td>${icao}</td>
+                <td>${count}</td>
             `;
             tableBody.appendChild(row);
         }
