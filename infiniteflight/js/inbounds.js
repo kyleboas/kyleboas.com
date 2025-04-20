@@ -7,6 +7,8 @@ import { updateAircraftOnMap, showMapPopup } from "./inbounds-map.js";
 const PROXY_URL = 'https://infiniteflightapi.deno.dev/api/if';
 const SESSION_ID = '9bdfef34-f03b-4413-b8fa-c29949bb18f8';
 
+Yes that is using 24.4 expert server. If u use ed323139-baa7-4834-b9d6-5fb9f19ff11e (25.1) session it doesn’t return anything
+
 let allFlights = [];
 let headingFilterActive = false;
 let boldedHeadings = { minHeading: null, maxHeading: null };

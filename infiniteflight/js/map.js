@@ -29,21 +29,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.body.appendChild(inputContainer);
 
+    button.addEventListener("click", async () => {
+        const icao = input.value.trim().toUpperCase();
+        if (icao) {
+            await plotAirport(icao, ctx, projection);
+        }
+    });
+
     // Variables for map
     let worldData = null;
     let offsetX = 0, offsetY = 0, scale = 150;
     let isDragging = false, startX = 0, startY = 0;
     let velocityX = 0, velocityY = 0;
-    let lastTapTime = 0;
-    let lastZoomDistance = null;
-
-    // Initialize projection right away
-    let projection = d3.geoMercator()
-        .scale(scale)
-        .translate([window.innerWidth / 2 + offsetX, window.innerHeight / 2 + offsetY]);
-
-    // Initialize pathGenerator with the projection
-    const pathGenerator = d3.geoPath().projection(projection).context(ctx);
 
     function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -51,24 +48,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         canvas.height = window.innerHeight * dpr;
         canvas.style.width = `${window.innerWidth}px`;
         canvas.style.height = `${window.innerHeight}px`;
-        ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset any transforms
         ctx.scale(dpr, dpr);
-
-        // Update projection instead of recreating it
-        projection.scale(scale)
-            .translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
 
         if (worldData) drawMap();
     }
     window.addEventListener("resize", resizeCanvas);
-
-    // Add click handler for plotting airports after projection is initialized
-    button.addEventListener("click", async () => {
-        const icao = input.value.trim().toUpperCase();
-        if (icao) {
-            await plotAirport(icao, ctx, projection);
-        }
-    });
 
     try {
         const response = await fetch("https://d3js.org/world-110m.v1.json");
@@ -80,6 +64,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     console.log("Land Data Loaded:", worldData);
+
+    const projection = d3.geoMercator()
+        .scale(scale)
+        .translate([canvas.width / 2 + offsetX, canvas.height / 2 + offsetY]);
+
+    const pathGenerator = d3.geoPath().projection(projection).context(ctx);
 
     function drawMap() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -221,6 +211,5 @@ document.addEventListener("DOMContentLoaded", async () => {
         return Math.sqrt((touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2);
     }
 
-    // Call resizeCanvas to set initial dimensions and render the map
     resizeCanvas();
 });

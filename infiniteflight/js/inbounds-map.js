@@ -35,8 +35,8 @@ function toggleScale() {
 
 // Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
-    const centerX = mapCanvas.width * 0.25;
-    const centerY = mapCanvas.height * 0.25; 
+    const centerX = mapCanvas.width / 2;
+    const centerY = mapCanvas.height / 2; 
 
     const nmPerDegree = 60;
 
@@ -101,9 +101,9 @@ function drawILS(lat, lon, heading) {
 function drawBaseMap() {
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     
-    // Dynamically adjust the center of the canvas
-    const centerX = mapCanvas.width * 0.25;
-    const centerY = mapCanvas.height * 0.25;
+    // Fix: Use the same center coordinates as in convertToXY
+    const centerX = mapCanvas.width / 2;
+    const centerY = mapCanvas.height / 2;
 
     // Draw rings at true center
     drawRing(50, "", centerX, centerY);
