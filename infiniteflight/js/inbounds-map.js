@@ -11,7 +11,12 @@ let scale = scaleOptions[scaleIndex];
 let baseWidth;
 const fixedHeight = 210;
 
-// Ensure canvas is 100% width but height remains fixed at 150px
+// Center point of the canvas - defined as constants for consistency
+// Using 0.5 ensures the airport is properly centered on all browsers
+const CENTER_X_FACTOR = 0.5;
+const CENTER_Y_FACTOR = 0.5;
+
+// Ensure canvas is 100% width but height remains fixed
 function resizeCanvas() {
     baseWidth = mapCanvas.parentElement.clientWidth; // 100% of container
     const dpr = window.devicePixelRatio || 1;
@@ -35,8 +40,9 @@ function toggleScale() {
 
 // Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
-    const centerX = mapCanvas.width / 2;
-    const centerY = mapCanvas.height / 2; 
+    // Use consistent center coordinates based on the defined factors
+    const centerX = mapCanvas.width * CENTER_X_FACTOR;
+    const centerY = mapCanvas.height * CENTER_Y_FACTOR; 
 
     const nmPerDegree = 60;
 
@@ -44,7 +50,7 @@ function convertToXY(lat, lon, airportLat, airportLon) {
     const deltaLat = (lat - airportLat) * nmPerDegree * scale;
 
     const x = centerX + deltaLon;
-    const y = centerY - deltaLat;
+    const y = centerY - deltaLat;  // Note: y decreases as latitude increases
 
     return { x, y };
 }
@@ -101,9 +107,9 @@ function drawILS(lat, lon, heading) {
 function drawBaseMap() {
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     
-    // Fix: Use the same center coordinates as in convertToXY
-    const centerX = mapCanvas.width / 2;
-    const centerY = mapCanvas.height / 2;
+    // Use the same center coordinates as in convertToXY for consistency
+    const centerX = mapCanvas.width * CENTER_X_FACTOR;
+    const centerY = mapCanvas.height * CENTER_Y_FACTOR;
 
     // Draw rings at true center
     drawRing(50, "", centerX, centerY);
@@ -112,7 +118,6 @@ function drawBaseMap() {
     
     drawILSPaths();
 }
-
 
 // Draw rings with a consistent size
 function drawRing(radius, label, centerX, centerY) {
