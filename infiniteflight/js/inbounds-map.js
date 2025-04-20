@@ -202,6 +202,16 @@ function showMapPopup(flight, airport) {
     updateAircraftOnMap(getFlights(), airport);
 }
 
+function observeCanvasResize() {
+    const observer = new ResizeObserver(() => {
+        resizeCanvas();
+        drawBaseMap();
+        updateAircraftOnMap(getFlights(), airportCoordinates);
+    });
+
+    observer.observe(mapCanvas.parentElement);
+}
+
 function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
     if (!mapCanvas) {
@@ -211,9 +221,11 @@ function initMap() {
 
     ctx = mapCanvas.getContext("2d");
     resizeCanvas();
-    drawBaseMap(); 
-    setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
-
+    drawBaseMap();
+    showMapPopup(allFlights[0], airportCoordinates);
+    
+    observeCanvasResize();
+    
     mapCanvas.addEventListener("click", toggleScale);
 
     let lastTouchEnd = 0;
