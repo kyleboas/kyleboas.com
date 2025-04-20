@@ -11,12 +11,7 @@ let scale = scaleOptions[scaleIndex];
 let baseWidth;
 const fixedHeight = 210;
 
-// Center point of the canvas - defined as constants for consistency
-// Using 0.5 ensures the airport is properly centered on all browsers
-const CENTER_X_FACTOR = 0.5;
-const CENTER_Y_FACTOR = 0.5;
-
-// Ensure canvas is 100% width but height remains fixed
+// Ensure canvas is 100% width but height remains fixed at 150px
 function resizeCanvas() {
     baseWidth = mapCanvas.parentElement.clientWidth; // 100% of container
     const dpr = window.devicePixelRatio || 1;
@@ -40,9 +35,8 @@ function toggleScale() {
 
 // Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
-    // Use consistent center coordinates based on the defined factors
-    const centerX = mapCanvas.width * CENTER_X_FACTOR;
-    const centerY = mapCanvas.height * CENTER_Y_FACTOR; 
+    const centerX = mapCanvas.width / 2;
+    const centerY = mapCanvas.height / 2;
 
     const nmPerDegree = 60;
 
@@ -50,7 +44,7 @@ function convertToXY(lat, lon, airportLat, airportLon) {
     const deltaLat = (lat - airportLat) * nmPerDegree * scale;
 
     const x = centerX + deltaLon;
-    const y = centerY - deltaLat;  // Note: y decreases as latitude increases
+    const y = centerY - deltaLat;
 
     return { x, y };
 }
@@ -107,10 +101,10 @@ function drawILS(lat, lon, heading) {
 function drawBaseMap() {
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     
-    // Use the same center coordinates as in convertToXY for consistency
-    const centerX = mapCanvas.width * CENTER_X_FACTOR;
-    const centerY = mapCanvas.height * CENTER_Y_FACTOR;
-
+    // Dynamically adjust the center of the canvas
+    const centerX = mapCanvas.width / 2;
+    const centerY = mapCanvas.height / 2;
+    
     // Draw rings at true center
     drawRing(50, "", centerX, centerY);
     drawRing(200, "", centerX, centerY);
@@ -118,6 +112,7 @@ function drawBaseMap() {
     
     drawILSPaths();
 }
+
 
 // Draw rings with a consistent size
 function drawRing(radius, label, centerX, centerY) {
@@ -215,19 +210,9 @@ function initMap() {
     }
 
     ctx = mapCanvas.getContext("2d");
-
-    // Delay resize to ensure layout is finalized
-    requestAnimationFrame(() => {
-        resizeCanvas();
-        drawBaseMap();
-
-        // Redraw after brief delay as safety net for Chrome layout quirks
-        setTimeout(() => {
-            resizeCanvas();
-            drawBaseMap();
-            showMapPopup(allFlights[0], airportCoordinates);
-        }, 100); // Small delay ensures Chrome layout complete
-    });
+    resizeCanvas();
+    drawBaseMap(); 
+    setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
 
     mapCanvas.addEventListener("click", toggleScale);
 
@@ -239,13 +224,6 @@ function initMap() {
         }
         lastTouchEnd = now;
     }, { passive: false });
-
-    // Handle window resizing
-    window.addEventListener("resize", () => {
-        resizeCanvas();
-        drawBaseMap();
-        updateAircraftOnMap(getFlights(), airportCoordinates);
-    });
 }
 
 export { initMap, showMapPopup, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft };
