@@ -215,9 +215,19 @@ function initMap() {
     }
 
     ctx = mapCanvas.getContext("2d");
-    resizeCanvas();
-    drawBaseMap(); 
-    setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
+
+    // Delay resize to ensure layout is finalized
+    requestAnimationFrame(() => {
+        resizeCanvas();
+        drawBaseMap();
+
+        // Redraw after brief delay as safety net for Chrome layout quirks
+        setTimeout(() => {
+            resizeCanvas();
+            drawBaseMap();
+            showMapPopup(allFlights[0], airportCoordinates);
+        }, 100); // Small delay ensures Chrome layout complete
+    });
 
     mapCanvas.addEventListener("click", toggleScale);
 
@@ -229,6 +239,13 @@ function initMap() {
         }
         lastTouchEnd = now;
     }, { passive: false });
+
+    // Handle window resizing
+    window.addEventListener("resize", () => {
+        resizeCanvas();
+        drawBaseMap();
+        updateAircraftOnMap(getFlights(), airportCoordinates);
+    });
 }
 
 export { initMap, showMapPopup, updateAircraftOnMap, resizeCanvas, drawBaseMap, selectedAircraft };
