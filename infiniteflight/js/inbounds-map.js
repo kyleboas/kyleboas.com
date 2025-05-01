@@ -36,7 +36,7 @@ function toggleScale() {
 // Convert latitude/longitude to X/Y coordinates
 function convertToXY(lat, lon, airportLat, airportLon) {
     const centerX = mapCanvas.width * 0.25;
-    const centerY = mapCanvas.height * 0.25;
+    const centerY = mapCanvas.height * 0.25; 
 
     const nmPerDegree = 60;
 
@@ -104,7 +104,7 @@ function drawBaseMap() {
     // Dynamically adjust the center of the canvas
     const centerX = mapCanvas.width * 0.25;
     const centerY = mapCanvas.height * 0.25;
-    
+
     // Draw rings at true center
     drawRing(50, "", centerX, centerY);
     drawRing(200, "", centerX, centerY);
@@ -202,16 +202,6 @@ function showMapPopup(flight, airport) {
     updateAircraftOnMap(getFlights(), airport);
 }
 
-function observeCanvasResize() {
-    const observer = new ResizeObserver(() => {
-        resizeCanvas();
-        drawBaseMap();
-        updateAircraftOnMap(getFlights(), airportCoordinates);
-    });
-
-    observer.observe(mapCanvas.parentElement);
-}
-
 function initMap() {
     mapCanvas = document.getElementById("mapCanvas");
     if (!mapCanvas) {
@@ -221,11 +211,9 @@ function initMap() {
 
     ctx = mapCanvas.getContext("2d");
     resizeCanvas();
-    drawBaseMap();
-    showMapPopup(allFlights[0], airportCoordinates);
-    
-    observeCanvasResize();
-    
+    drawBaseMap(); 
+    setTimeout(() => showMapPopup(allFlights[0], airportCoordinates), 500);
+
     mapCanvas.addEventListener("click", toggleScale);
 
     let lastTouchEnd = 0;
