@@ -2,7 +2,7 @@
 layout: post
 date: 2025-05-05 08:55 UTC-5
 title: "Trent Alexander-Arnold leaving Liverpool unveiled their toxic relationship"
-l1: "https://www.telegraph.co.uk/football/2025/05/05/trent-alexander-arnold-anfield-hero-to-kop-rival-liverpool/
+l1: "https://www.telegraph.co.uk/football/2025/05/05/trent-alexander-arnold-anfield-hero-to-kop-rival-liverpool/"
 t1: "Trent Alexander-Arnold has gone from Anfield hero to Kop rival"
 ---
 
