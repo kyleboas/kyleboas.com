@@ -20,10 +20,10 @@
       {{ end }}
     {{ end }}
 
-    {{ if $qualifies }}
-      {{ $dbKey := joinStr "" "starboard_msg_" (str $msg.ID) }}
-      {{ $starboardMsgID := str (dbGet 0 $dbKey).Value }}
+    {{ $dbKey := joinStr "" "starboard_msg_" (str $msg.ID) }}
+    {{ $starboardMsgID := str (dbGet 0 $dbKey).Value }}
 
+    {{ if $qualifies }}
       {{ $img := "" }}
       {{ if gt (len $msg.Attachments) 0 }}
         {{ $img = (index $msg.Attachments 0).URL }}
@@ -49,47 +49,42 @@
       }}
 
       {{ if $starboardMsgID }}
-        {{ sendMessage $logChannel (joinStr "" $log "Message already in starboard, updating existing entry ID: " $starboardMsgID) }}
-        {{ $editSuccess := false }}
         {{ with (getMessage $starboard $starboardMsgID) }}
           {{ $editErr := editMessage $starboard $starboardMsgID $embed }}
           {{ if not $editErr }}
-            {{ $editSuccess = true }}
-            {{ sendMessage $logChannel (joinStr "" $log "Successfully updated starboard message") }}
+            {{ sendMessage $logChannel (joinStr "" $log "Updated existing starboard message") }}
           {{ else }}
-            {{ sendMessage $logChannel (joinStr "" $log "Failed to edit message: " $editErr) }}
+            {{ sendMessage $logChannel (joinStr "" $log "Failed to update, retrying with new message") }}
+            {{ $newID := sendMessageRetID $starboard $embed }}
+            {{ if $newID }}
+              {{ dbSet 0 $dbKey (str $newID) }}
+              {{ sendMessage $logChannel (joinStr "" $log "Reposted to starboard with new ID: " $newID) }}
+            {{ end }}
           {{ end }}
         {{ else }}
-          {{ sendMessage $logChannel (joinStr "" $log "Message not found, cannot edit") }}
-        {{ end }}
-
-        {{ if not $editSuccess }}
-          {{ sendMessage $logChannel (joinStr "" $log "Creating replacement starboard entry") }}
+          {{ sendMessage $logChannel (joinStr "" $log "Original starboard message not found, reposting") }}
           {{ $newID := sendMessageRetID $starboard $embed }}
           {{ if $newID }}
-            {{ sendMessage $logChannel (joinStr "" $log "New starboard message created with ID: " $newID) }}
             {{ dbSet 0 $dbKey (str $newID) }}
-          {{ else }}
-            {{ sendMessage $logChannel (joinStr "" $log "Failed to create new starboard message") }}
           {{ end }}
         {{ end }}
       {{ else }}
-        {{ sendMessage $logChannel (joinStr "" $log "Creating new starboard entry") }}
+        {{ sendMessage $logChannel (joinStr "" $log "New starboard post") }}
         {{ $newID := sendMessageRetID $starboard $embed }}
         {{ if $newID }}
-          {{ sendMessage $logChannel (joinStr "" $log "New starboard message created with ID: " $newID) }}
           {{ dbSet 0 $dbKey (str $newID) }}
-        {{ else }}
-          {{ sendMessage $logChannel (joinStr "" $log "Failed to create new starboard message") }}
         {{ end }}
       {{ end }}
+    {{ else if $starboardMsgID }}
+      {{ sendMessage $logChannel (joinStr "" $log "Message no longer qualifies, removing starboard entry") }}
+      {{ deleteMessage $starboard $starboardMsgID 0 }}
+      {{ dbDel 0 $dbKey }}
     {{ else }}
-      {{ sendMessage $logChannel (joinStr "" $log "No single emoji reaction meets threshold") }}
+      {{ sendMessage $logChannel (joinStr "" $log "No emoji met threshold, not on starboard yet") }}
     {{ end }}
   {{ else }}
-    {{ sendMessage $logChannel (joinStr "" $log "Ignoring reaction in starboard channel") }}
+    {{ sendMessage $logChannel (joinStr "" $log "Ignoring starboard reactions in starboard channel") }}
   {{ end }}
 {{ else }}
-  {{ sendMessage $logChannel (joinStr "" $log "Invalid event context - no message data available") }}
-  {{ sendMessage $logChannel (joinStr "" $log "Command data: MessageID=" .MessageID " ChannelID=" .Channel.ID) }}
+  {{ sendMessage $logChannel (joinStr "" $log "No message context available") }}
 {{ end }}
