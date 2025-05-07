@@ -3,78 +3,68 @@
 {{ $threshold := 5 }}
 {{ $logChannel := 1369658945278443620 }}
 
-{{/* Log function */}}
+{{/* Logging */}}
 {{ $log := (joinStr "" "STARBOARD DEBUG [" (currentTime.Format "15:04:05") "]: ") }}
-
 {{ sendMessage $logChannel (joinStr "" "EVENT DEBUG: CCID=" .CCID " Type=" .Trigger " User=" .User.Username " Channel=" .Channel.Name) }}
 
 {{ if and .Message .Message.ID }}
 
   {{ if ne .Channel.ID $starboard }}
     {{ $msg := .Message }}
-    {{ if $msg }}
+    {{ $qualifies := false }}
 
-      {{ $totalReactions := 0 }}
-      {{ range $msg.Reactions }}
-        {{ $totalReactions = add $totalReactions .Count }}
+    {{ range $r := $msg.Reactions }}
+      {{ if ge $r.Count $threshold }}
+        {{ $qualifies = true }}
       {{ end }}
+    {{ end }}
 
+    {{ if $qualifies }}
       {{ $dbKey := joinStr "" "starboard_msg_" (str $msg.ID) }}
       {{ $starboardMsgID := str (dbGet 0 $dbKey).Value }}
 
-      {{ if ge $totalReactions $threshold }}
-        {{ $img := "" }}
-        {{ if gt (len $msg.Attachments) 0 }}
-          {{ $img = (index $msg.Attachments 0).URL }}
-        {{ else if gt (len $msg.Embeds) 0 }}
-          {{ range $e := $msg.Embeds }}
-            {{ if and (eq $img "") $e.Thumbnail }}
-              {{ $img = $e.Thumbnail.URL }}
-            {{ else if and (eq $img "") $e.Image }}
-              {{ $img = $e.Image.URL }}
-            {{ end }}
+      {{ $img := "" }}
+      {{ if gt (len $msg.Attachments) 0 }}
+        {{ $img = (index $msg.Attachments 0).URL }}
+      {{ else if gt (len $msg.Embeds) 0 }}
+        {{ range $e := $msg.Embeds }}
+          {{ if and (eq $img "") $e.Thumbnail }}
+            {{ $img = $e.Thumbnail.URL }}
+          {{ else if and (eq $img "") $e.Image }}
+            {{ $img = $e.Image.URL }}
           {{ end }}
         {{ end }}
+      {{ end }}
 
-        {{ $jump := printf "https://discord.com/channels/%s/%s/%s" (str .Guild.ID) (str $msg.ChannelID) (str $msg.ID) }}
-        {{ $channelName := (print "#" .Channel.Name) }}
+      {{ $jump := printf "https://discord.com/channels/%s/%s/%s" (str .Guild.ID) (str $msg.ChannelID) (str $msg.ID) }}
+      {{ $channelName := (print "#" .Channel.Name) }}
 
-        {{ $embed := cembed
-          "author" (sdict "name" $msg.Author.Username "icon_url" ($msg.Author.AvatarURL "256"))
-          "description" (print $msg.Content "\n\n→ [original message](" $jump ") in " $channelName)
-          "image" (sdict "url" $img)
-          "footer" (sdict "text" (printf "⭐ %d | %s" $totalReactions (currentTime.Format "Mon Jan 2 15:04")))
-          "color" 15844367
-        }}
+      {{ $embed := cembed
+        "author" (sdict "name" $msg.Author.Username "icon_url" ($msg.Author.AvatarURL "256"))
+        "description" (print $msg.Content "\n\n→ [original message](" $jump ") in " $channelName)
+        "image" (sdict "url" $img)
+        "footer" (sdict "text" (printf "⭐ %d | %s" (add 0) (currentTime.Format "Mon Jan 2 15:04")))
+        "color" 15844367
+      }}
 
-        {{ if $starboardMsgID }}
-          {{ sendMessage $logChannel (joinStr "" $log "Message already in starboard, updating existing entry ID: " $starboardMsgID) }}
+      {{ if $starboardMsgID }}
+        {{ sendMessage $logChannel (joinStr "" $log "Message already in starboard, updating existing entry ID: " $starboardMsgID) }}
 
-          {{ $editSuccess := false }}
-          {{ with (getMessage $starboard $starboardMsgID) }}
-            {{ $editErr := editMessage $starboard $starboardMsgID $embed }}
-            {{ if not $editErr }}
-              {{ $editSuccess = true }}
-              {{ sendMessage $logChannel (joinStr "" $log "Successfully updated starboard message") }}
-            {{ else }}
-              {{ sendMessage $logChannel (joinStr "" $log "Failed to edit message: " $editErr) }}
-            {{ end }}
+        {{ $editSuccess := false }}
+        {{ with (getMessage $starboard $starboardMsgID) }}
+          {{ $editErr := editMessage $starboard $starboardMsgID $embed }}
+          {{ if not $editErr }}
+            {{ $editSuccess = true }}
+            {{ sendMessage $logChannel (joinStr "" $log "Successfully updated starboard message") }}
           {{ else }}
-            {{ sendMessage $logChannel (joinStr "" $log "Message not found, cannot edit") }}
-          {{ end }}
-
-          {{ if not $editSuccess }}
-            {{ sendMessage $logChannel (joinStr "" $log "Creating replacement starboard entry") }}
-            {{ $newID := sendMessageRetID $starboard $embed }}
-            {{ if $newID }}
-              {{ sendMessage $logChannel (joinStr "" $log "New starboard message created with ID: " $newID) }}
-              {{ dbSet 0 $dbKey (str $newID) }}
-            {{ else }}
-              {{ sendMessage $logChannel (joinStr "" $log "Failed to create new starboard message") }}
-            {{ end }}
+            {{ sendMessage $logChannel (joinStr "" $log "Failed to edit message: " $editErr) }}
           {{ end }}
         {{ else }}
-          {{ sendMessage $logChannel (joinStr "" $log "Creating new starboard entry") }}
+          {{ sendMessage $logChannel (joinStr "" $log "Message not found, cannot edit") }}
+        {{ end }}
+
+        {{ if not $editSuccess }}
+          {{ sendMessage $logChannel (joinStr "" $log "Creating replacement starboard entry") }}
           {{ $newID := sendMessageRetID $starboard $embed }}
           {{ if $newID }}
             {{ sendMessage $logChannel (joinStr "" $log "New starboard message created with ID: " $newID) }}
@@ -84,10 +74,17 @@
           {{ end }}
         {{ end }}
       {{ else }}
-        {{ sendMessage $logChannel (joinStr "" $log "Not enough reactions yet (" $totalReactions "/" $threshold ")") }}
+        {{ sendMessage $logChannel (joinStr "" $log "Creating new starboard entry") }}
+        {{ $newID := sendMessageRetID $starboard $embed }}
+        {{ if $newID }}
+          {{ sendMessage $logChannel (joinStr "" $log "New starboard message created with ID: " $newID) }}
+          {{ dbSet 0 $dbKey (str $newID) }}
+        {{ else }}
+          {{ sendMessage $logChannel (joinStr "" $log "Failed to create new starboard message") }}
+        {{ end }}
       {{ end }}
     {{ else }}
-      {{ sendMessage $logChannel (joinStr "" $log "Failed to retrieve message data") }}
+      {{ sendMessage $logChannel (joinStr "" $log "No single emoji reaction meets threshold") }}
     {{ end }}
   {{ else }}
     {{ sendMessage $logChannel (joinStr "" $log "Ignoring reaction in starboard channel") }}
