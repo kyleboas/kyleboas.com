@@ -8,12 +8,13 @@
 {{ sendMessage $logChannel (joinStr "" "EVENT DEBUG: CCID=" .CCID " Type=" .Trigger " User=" .User.Username " Channel=" .Channel.Name) }}
 
 {{ if and .Message .Message.ID }}
-
   {{ if ne .Channel.ID $starboard }}
     {{ $msg := .Message }}
     {{ $qualifies := false }}
+    {{ $totalReacts := 0 }}
 
     {{ range $r := $msg.Reactions }}
+      {{ $totalReacts = add $totalReacts $r.Count }}
       {{ if ge $r.Count $threshold }}
         {{ $qualifies = true }}
       {{ end }}
@@ -43,13 +44,12 @@
         "author" (sdict "name" $msg.Author.Username "icon_url" ($msg.Author.AvatarURL "256"))
         "description" (print $msg.Content "\n\n→ [original message](" $jump ") in " $channelName)
         "image" (sdict "url" $img)
-        "footer" (sdict "text" (printf "⭐ %d | %s" (add 0) (currentTime.Format "Mon Jan 2 15:04")))
+        "footer" (sdict "text" (printf "⭐ %d | %s" $totalReacts (currentTime.Format "Mon Jan 2 15:04")))
         "color" 15844367
       }}
 
       {{ if $starboardMsgID }}
         {{ sendMessage $logChannel (joinStr "" $log "Message already in starboard, updating existing entry ID: " $starboardMsgID) }}
-
         {{ $editSuccess := false }}
         {{ with (getMessage $starboard $starboardMsgID) }}
           {{ $editErr := editMessage $starboard $starboardMsgID $embed }}
