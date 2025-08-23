@@ -6,7 +6,7 @@ l1: "https://www.theargumentmag.com/p/we-have-to-stay-at-the-nazi-bar"
 t1: "The case for staying on Twitter"
 ---
 
-Jerusalem Demsas:
+Jerusalem Demsas: 
 
 > For a hot second, it seemed like if enough people migrated to a Twitter clone, the old site would collapse and we could all build a new Nazi-free platform. Like many, I joined Threads and Mastodon and Bluesky, filled with hope that entire networks could reform on a new platform. But Mastodon was clunky, Meta banned news and politics, and Bluesky turned into a boring progressive echo chamber (unsurprisingly, usage is falling off).
 > 
