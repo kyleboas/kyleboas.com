@@ -1,6 +1,6 @@
 ---
 layout: post
-date: 2025-08-24 14:42 UTC-5
+date: 2025-08-23 14:42 UTC-5
 title: "The case for staying on Twitter is flawed"
 l1: "https://www.theargumentmag.com/p/we-have-to-stay-at-the-nazi-bar"
 t1: "The case for staying on Twitter"
