@@ -18,7 +18,7 @@ jobs:
 
       # Check for new files only
       - name: Check for newly added files
-        id: check_new_files
+        id: check_new_files 
         run: |
           git fetch --no-tags origin ${{ github.ref }} --depth=2
           added_files=$(git diff --name-status HEAD^ HEAD | awk '$1 == "A" {print $2}' | grep '^_posts/')
