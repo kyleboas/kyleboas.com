@@ -12,13 +12,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Check for new files only
+      - name: Check for newly added files
+        id: check_new_files
+        run: |
+          git fetch --no-tags origin ${{ github.ref }} --depth=2
+          added_files=$(git diff --name-status HEAD^ HEAD | awk '$1 == "A" {print $2}' | grep '^_posts/')
+          
+          if [ -z "$added_files" ]; then
+            echo "No new posts detected. Exiting workflow."
+            exit 0
+          else
+            echo "New posts detected:"
+            echo "$added_files"
+          fi
+
       # Initial two-minute delay
       - name: Initial Delay
         run: |
           echo "Waiting for 1 minute before starting..."
           sleep 60
 
-      # Install required tools
+      # Install xmllint and dateutils
       - name: Install xmllint and dateutils
         run: |
           sudo apt-get update && sudo apt-get install -y libxml2-utils dateutils
@@ -28,43 +47,23 @@ jobs:
         id: fetch_post
         run: |
           RSS_FEED_URL="https://kyleboas.com/feed"
-          
-          # Fetch RSS feed
+         
           response=$(curl -s "$RSS_FEED_URL")
+          description=$(echo "$response" | xmllint --xpath "string(//item[1]/title)" -)
+          url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" -)
+          pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" -)
 
-          # Parse the first <item> (Debugging)
-          first_item=$(echo "$response" | xmllint --xpath "//item[1]" - 2>/dev/null || echo "PARSE_ERROR")
-          echo "First Item: $first_item"
-
-          # Parse specific fields from the first <item>
-          description=$(echo "$response" | xmllint --xpath "string(//item[1]/description)" - 2>/dev/null || echo "PARSE_ERROR")
-          url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" - 2>/dev/null || echo "PARSE_ERROR")
-          pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || echo "PARSE_ERROR")
-
-          # Log parsed data
-          echo "Parsed Data - Description: $description, URL: $url, PubDate: $pub_date"
-
-          # Handle parsing errors
-          if [[ "$description" == "PARSE_ERROR" || "$url" == "PARSE_ERROR" || "$pub_date" == "PARSE_ERROR" ]]; then
-            echo "Error: Failed to parse one or more required fields from the RSS feed. Exiting."
-            exit 1
-          fi
-
-          # Extract and compare dates
           today=$(date -R)
+
           pub_date_only=$(echo "$pub_date" | awk '{print $1", "$2" "$3" "$4}')
           today_only=$(echo "$today" | awk '{print $1", "$2" "$3" "$4}')
           
-          echo "Today's Date: $today_only"
-          echo "Publication Date: $pub_date_only"
-
           if [[ "$pub_date_only" != "$today_only" ]]; then
-            echo "The blog post is not from today ($pub_date_only). Exiting."
+            echo "The $pub_date_only for the blog post is not from $today_only. Exiting."
             exit 0
           fi
 
-          # Format and export environment variables
-          description=$(echo "$description" | xargs)
+          description=$(echo "$description" | tr '\n' '\0' | xargs -0)
           preview="$description $url"
 
           echo "preview=$preview" >> $GITHUB_ENV
@@ -78,9 +77,3 @@ jobs:
           link-preview-url: "${{ env.rss_url }}"
           identifier: kyleboas.com
           password: ${{ secrets.BSS }}
-
-      # Debug step: Print environment variables (optional, remove after debugging)
-      - name: Debug Environment Variables
-        run: |
-          echo "Preview Text: ${{ env.preview }}"
-          echo "RSS URL: ${{ env.rss_url }}"
