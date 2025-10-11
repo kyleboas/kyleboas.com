@@ -59,7 +59,7 @@ jobs:
           # Compare calendar date (RFC2822 → strip time zone; keep DOW, DD, Mon, YYYY)
           today="$(date -R)"
           pub_date_only="$(awk '{print $1", "$2" "$3" "$4}' <<< "$pub_date")"
-          today_only="$(awk '{print $1", "$2" "$3" "$4}' <<< "$today")"
+          today_only="$(awk '{print $1", "$2" "$3" "$4}' <<< "$today")" 
 
           if [[ "$pub_date_only" != "$today_only" ]]; then
             echo "should_post=false" >> "$GITHUB_OUTPUT"
