@@ -37,11 +37,11 @@ jobs:
           echo "Waiting for 1 minute before starting…"
           sleep 60
 
-      - name: Install xmllint and dateutils
+      - name: Install tools
         if: steps.check_new_files.outputs.found == 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxml2-utils dateutils
+          sudo apt-get install -y libxml2-utils curl
 
       - name: Fetch Latest Blog Post (RSS)
         id: fetch_post
@@ -70,20 +70,42 @@ jobs:
           fi
 
           # --- SANITIZE LINK STRICTLY ---
-          # 1) trim whitespace/newlines
+          # 1) trim CR/LF + outer whitespace
           link="$(printf '%s' "$link_raw" | tr -d '\r' | xargs)"
           # 2) unescape minimal HTML entities (&amp; -> &)
           link="${link//&amp;/&}"
-          # 3) if it lacks a scheme, prepend https://
-          if ! grep -Eiq '^(https?)://.' <<< "$link"; then
-            link="https://$link" 
+          # 3) ensure scheme
+          if ! grep -Eiq '^(https?)://.+' <<< "$link"; then
+            link="https://$link"
           fi
-          # 4) final validation: must be a clean URI (no spaces)
-          if grep -q '[[:space:]]' <<< "$link"; then
-            echo "WARN: RSS link contains whitespace after sanitize; will NOT set link-preview-url."
-            valid_link_preview=false
-          else
+          # 4) resolve redirects to get a canonical, clean URL
+          resolved="$(curl -sIL -o /dev/null -w '%{url_effective}' "$link" || true)"
+          if [ -n "$resolved" ]; then
+            link="$resolved"
+          fi
+          # 5) final validation using Python's urllib.parse
+          python3 - "$link" <<'PY' || echo "::warning::Python URL validation failed (continuing without preview)" 
+import sys
+from urllib.parse import urlparse
+u=sys.argv[1]
+p=urlparse(u)
+if p.scheme not in ("http","https") or not p.netloc or any(c.isspace() for c in u):
+    print("INVALID")
+    sys.exit(1)
+print("OK")
+PY
+
+          if python3 - "$link" <<'PY'
+import sys
+from urllib.parse import urlparse
+u=sys.argv[1]
+p=urlparse(u)
+sys.exit(0 if (p.scheme in ("http","https") and p.netloc and (not any(c.isspace() for c in u))) else 1)
+PY
+          then
             valid_link_preview=true
+          else
+            valid_link_preview=false
           fi
 
           # Compose post text (<=300) -- space only between title and link
@@ -107,6 +129,7 @@ jobs:
           link-preview-url: ${{ steps.fetch_post.outputs.url }}
           identifier: kyleboas.com
           password: ${{ secrets.BSS }}
+          service: https://bsky.social
 
       - name: Post to Bluesky (no preview fallback)
         if: steps.fetch_post.outputs.should_post == 'true' && steps.fetch_post.outputs.valid_link_preview != 'true'
@@ -115,3 +138,4 @@ jobs:
           text: ${{ steps.fetch_post.outputs.text }}
           identifier: kyleboas.com
           password: ${{ secrets.BSS }}
+          service: https://bsky.social
