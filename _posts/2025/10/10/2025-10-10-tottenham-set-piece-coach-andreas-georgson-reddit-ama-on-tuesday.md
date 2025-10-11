@@ -2,7 +2,7 @@
 layout: post
 date: 2025-10-10 22:26 UTC-5
 title: "Tottenham Set-Piece Coach Andreas Georgson Reddit AMA on Tuesday"
-l1: "https://www.reddit.com/r/soccer/s/J4FplV5LUw
+l1: "https://www.reddit.com/r/soccer/s/J4FplV5LUw"
 t1: "I'm a Premier League set-piece coach, ask me anything!"
 ---
 
