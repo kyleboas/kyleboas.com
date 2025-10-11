@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - _posts/**
-
   workflow_dispatch:
 
 jobs:
@@ -12,68 +11,83 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Check for new files only
+      # Detect newly added files (so we can short-circuit gracefully)
       - name: Check for newly added files
-        id: check_new_files 
+        id: check_new_files
         run: |
-          git fetch --no-tags origin ${{ github.ref }} --depth=2
-          added_files=$(git diff --name-status HEAD^ HEAD | awk '$1 == "A" {print $2}' | grep '^_posts/')
-          
-          if [ -z "$added_files" ]; then
-            echo "No new posts detected. Exiting workflow."
-            exit 0
-          else
+          git fetch --no-tags origin "${GITHUB_REF}" --depth=2
+          added_files="$(git diff --name-status HEAD^ HEAD | awk '$1 == "A" {print $2}' | grep '^_posts/' || true)"
+          if [ -n "$added_files" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
             echo "New posts detected:"
             echo "$added_files"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "No new posts detected."
           fi
 
-      # Initial two-minute delay
       - name: Initial Delay
+        if: steps.check_new_files.outputs.found == 'true'
         run: |
-          echo "Waiting for 1 minute before starting..."
+          echo "Waiting for 1 minute before starting…"
           sleep 60
 
-      # Install xmllint and dateutils
       - name: Install xmllint and dateutils
+        if: steps.check_new_files.outputs.found == 'true'
         run: |
-          sudo apt-get update && sudo apt-get install -y libxml2-utils dateutils
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils dateutils
 
-      # Fetch the latest blog post from RSS feed
-      - name: Fetch Latest Blog Post
+      - name: Fetch Latest Blog Post (RSS)
         id: fetch_post
+        if: steps.check_new_files.outputs.found == 'true'
+        shell: bash
         run: |
+          set -euo pipefail
+
           RSS_FEED_URL="https://kyleboas.com/feed"
-         
-          response=$(curl -s "$RSS_FEED_URL")
-          description=$(echo "$response" | xmllint --xpath "string(//item[1]/title)" -)
-          url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" -)
-          pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" -)
+          response="$(curl -fsSL "$RSS_FEED_URL")"
 
-          today=$(date -R)
+          # Extract first item fields
+          title="$(printf '%s' "$response" | xmllint --xpath 'string(//item[1]/title)' -)"
+          link="$(printf '%s' "$response" | xmllint --xpath 'string(//item[1]/link)' -)"
+          pub_date="$(printf '%s' "$response" | xmllint --xpath 'string(//item[1]/pubDate)' -)"
 
-          pub_date_only=$(echo "$pub_date" | awk '{print $1", "$2" "$3" "$4}')
-          today_only=$(echo "$today" | awk '{print $1", "$2" "$3" "$4}')
-          
+          # Compare calendar date (RFC2822 → strip time zone; keep DOW, DD, Mon, YYYY)
+          today="$(date -R)"
+          pub_date_only="$(awk '{print $1", "$2" "$3" "$4}' <<< "$pub_date")"
+          today_only="$(awk '{print $1", "$2" "$3" "$4}' <<< "$today")"
+
           if [[ "$pub_date_only" != "$today_only" ]]; then
-            echo "The $pub_date_only for the blog post is not from $today_only. Exiting."
+            echo "should_post=false" >> "$GITHUB_OUTPUT"
+            echo "The latest item ($pub_date_only) is not from today ($today_only). Skipping."
             exit 0
           fi
 
-          description=$(echo "$description" | tr '\n' '\0' | xargs -0)
-          preview="$description $url"
+          # Compose text (<= 300 chars)
+          # Use: "Title link"
+          raw_text="${title} ${link}"
 
-          echo "preview=$preview" >> $GITHUB_ENV
-          echo "rss_url=$url" >> $GITHUB_ENV
+          # Hard cap at 300 chars (Bluesky post limit)
+          if [ "${#raw_text}" -gt 300 ]; then
+            trimmed="$(printf '%s' "$raw_text" | cut -c1-297)…"
+          else
+            trimmed="$raw_text"
+          fi
 
-      # Post to Bluesky
+          # Outputs for downstream step
+          echo "should_post=true" >> "$GITHUB_OUTPUT"
+          printf 'text=%s\n' "$trimmed" >> "$GITHUB_OUTPUT"
+          printf 'url=%s\n' "$link" >> "$GITHUB_OUTPUT"
+
       - name: Post to Bluesky
+        if: steps.fetch_post.outputs.should_post == 'true'
         uses: myConsciousness/bluesky-post@v5
         with:
-          text: "${{ env.preview }}"
-          link-preview-url: "${{ env.rss_url }}"
+          text: ${{ steps.fetch_post.outputs.text }}
+          link-preview-url: ${{ steps.fetch_post.outputs.url }}
           identifier: kyleboas.com
-          password: ${{ secrets.BSS }} 
+          password: ${{ secrets.BSS }}
