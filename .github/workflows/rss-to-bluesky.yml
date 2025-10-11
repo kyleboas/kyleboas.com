@@ -114,7 +114,7 @@ PY
             trimmed="$(printf '%s' "$raw_text" | cut -c1-297)…"
           else
             trimmed="$raw_text"
-          fi
+          fi 
 
           echo "should_post=true" >> "$GITHUB_OUTPUT"
           printf 'text=%s\n' "$trimmed" >> "$GITHUB_OUTPUT"
