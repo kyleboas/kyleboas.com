@@ -76,7 +76,7 @@ jobs:
           link="${link//&amp;/&}"
           # 3) if it lacks a scheme, prepend https://
           if ! grep -Eiq '^(https?)://.' <<< "$link"; then
-            link="https://$link"
+            link="https://$link" 
           fi
           # 4) final validation: must be a clean URI (no spaces)
           if grep -q '[[:space:]]' <<< "$link"; then
