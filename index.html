@@ -15,14 +15,14 @@ layout: default
     <div class="post">
       <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
       <p>{{ post.content }}</p>
-{% if page.l1 and page.t1 %}
-     <p class="link">Referencing: <a href="{{ page.l1 }}">{{ page.t1 }}</a></p>
+{% if post.l1 and post.t1 %}
+     <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</a></p>
   {% endif %}
-  {% if page.l2 and page.t2 %}
-     <p class="link">Referencing: <a href="{{ page.l1 }}">{{ page.t1 }}</a>, <a href="{{ page.l2 }}">{{ page.t2 }}</a></p>
+  {% if post.l2 and post.t2 %}
+     <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</a>, <a href="{{ post.l2 }}">{{ post.t2 }}</a></p>
   {% endif %}
-  {% if page.l3 and page.t3 %}
-      <p class="link">Referencing: <a href="{{ page.l1 }}">{{ page.t1 }}</a>, <a href="{{ page.l2 }}">{{ page.t2 }}</a>, <a href="{{ page.l3 }}">{{ page.t3 }}</a></p>
+  {% if post.l3 and post.t3 %}
+      <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</a>, <a href="{{ post.l2 }}">{{ post.t2 }}</a>, <a href="{{ post.l3 }}">{{ post.t3 }}</a></p>
   {% endif %}
     </div>
   </div>
