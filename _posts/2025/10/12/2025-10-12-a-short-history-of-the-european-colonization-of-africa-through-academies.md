@@ -1,7 +1,7 @@
 ---
 layout: post
 date: 2025-10-12 19:53 UTC-5
-title: "A Short History of the European Colonization of Africa Through Academies"
+title: "A Short History of the European Colonization of Football in Africa Through Academies"
 l1: "https://cenital.com/esta-lleno-de-negros-la-diversidad-cultural-en-el-futbol-un-acto-de-resistencia/"
 t1: "Está lleno de negros: la diversidad cultural en el fútbol, un acto de resistencia"
 ---
