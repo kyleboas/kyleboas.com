@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - _posts/**
+
   workflow_dispatch:
 
 jobs:
@@ -11,131 +12,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      # Detect newly added files (so we can short-circuit gracefully)
-      - name: Check for newly added files
-        id: check_new_files
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --no-tags origin "${GITHUB_REF}" --depth=2 || true
-          added_files="$(git diff --name-status HEAD^ HEAD | awk '$1 == "A" {print $2}' | grep '^_posts/' || true)"
-          if [ -n "$added_files" ]; then
-            echo "found=true" >> "$GITHUB_OUTPUT"
-            echo "New posts detected:"
-            echo "$added_files"
-          else
-            echo "found=false" >> "$GITHUB_OUTPUT"
-            echo "No new posts detected."
-          fi
-
+      # Initial two-minute delay
       - name: Initial Delay
-        if: steps.check_new_files.outputs.found == 'true'
         run: |
-          echo "Waiting for 1 minute before starting…"
+          echo "Waiting for 1 minutes before starting..."
           sleep 60
 
-      - name: Install tools
-        if: steps.check_new_files.outputs.found == 'true'
+      # Install xmllint and dateutils
+      - name: Install xmllint and dateutils
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libxml2-utils curl
+          sudo apt-get update && sudo apt-get install -y libxml2-utils dateutils
 
-      - name: Fetch Latest Blog Post (RSS)
+      # Fetch the latest blog post from RSS feed
+      - name: Fetch Latest Blog Post
         id: fetch_post
-        if: steps.check_new_files.outputs.found == 'true'
-        shell: bash
         run: |
-          set -euo pipefail
-
           RSS_FEED_URL="https://kyleboas.com/feed"
-          response="$(curl -fsSL "$RSS_FEED_URL")"
+         
+          response=$(curl -s "$RSS_FEED_URL")
+          description=$(echo "$response" | xmllint --xpath "string(//item[1]/title)" -)
+          url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" -)
+          pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" -)
 
-          # Extract fields
-          title="$(printf '%s' "$response" | xmllint --xpath 'string(//item[1]/title)' -)"
-          link_raw="$(printf '%s' "$response" | xmllint --xpath 'string(//item[1]/link)' -)"
-          pub_date="$(printf '%s' "$response" | xmllint --xpath 'string(//item[1]/pubDate)' -)"
+          today=$(date -R)
 
-          # Compare calendar date (RFC2822 → DOW, DD, Mon, YYYY)
-          today="$(date -R)"
-          pub_date_only="$(awk '{print $1", "$2" "$3" "$4}' <<< "$pub_date")"
-          today_only="$(awk '{print $1", "$2" "$3" "$4}' <<< "$today")"
-
+          pub_date_only=$(echo "$pub_date" | awk '{print $1", "$2" "$3" "$4}')
+          today_only=$(echo "$today" | awk '{print $1", "$2" "$3" "$4}')
+          
           if [[ "$pub_date_only" != "$today_only" ]]; then
-            echo "should_post=false" >> "$GITHUB_OUTPUT"
-            echo "Latest item ($pub_date_only) is not from today ($today_only). Skipping."
+            echo "The $pub_date_only for the blog post is not from $today_only. Exiting."
             exit 0
           fi
 
-          # --- SANITIZE LINK STRICTLY ---
-          # 1) trim CR/LF + outer whitespace
-          link="$(printf '%s' "$link_raw" | tr -d '\r' | xargs)"
-          # 2) unescape minimal HTML entities (&amp; -> &)
-          link="${link//&amp;/&}"
-          # 3) ensure scheme
-          if ! grep -Eiq '^(https?)://.+' <<< "$link"; then
-            link="https://$link"
-          fi
-          # 4) resolve redirects to get a canonical, clean URL
-          resolved="$(curl -sIL -o /dev/null -w '%{url_effective}' "$link" || true)"
-          if [ -n "$resolved" ]; then
-            link="$resolved"
-          fi
-          # 5) final validation using Python's urllib.parse
-          python3 - "$link" <<'PY' || echo "::warning::Python URL validation failed (continuing without preview)" 
-import sys
-from urllib.parse import urlparse
-u=sys.argv[1]
-p=urlparse(u)
-if p.scheme not in ("http","https") or not p.netloc or any(c.isspace() for c in u):
-    print("INVALID")
-    sys.exit(1)
-print("OK")
-PY
+          description=$(echo "$description" | xargs)
+          preview="$description $url"
 
-          if python3 - "$link" <<'PY'
-import sys
-from urllib.parse import urlparse
-u=sys.argv[1]
-p=urlparse(u)
-sys.exit(0 if (p.scheme in ("http","https") and p.netloc and (not any(c.isspace() for c in u))) else 1)
-PY
-          then
-            valid_link_preview=true
-          else
-            valid_link_preview=false
-          fi
+          echo "preview=$preview" >> $GITHUB_ENV
+          echo "rss_url=$url" >> $GITHUB_ENV
 
-          # Compose post text (<=300) -- space only between title and link
-          raw_text="${title} ${link}"
-          if [ "${#raw_text}" -gt 300 ]; then
-            trimmed="$(printf '%s' "$raw_text" | cut -c1-297)…"
-          else
-            trimmed="$raw_text"
-          fi 
-
-          echo "should_post=true" >> "$GITHUB_OUTPUT"
-          printf 'text=%s\n' "$trimmed" >> "$GITHUB_OUTPUT"
-          printf 'url=%s\n' "$link" >> "$GITHUB_OUTPUT"
-          printf 'valid_link_preview=%s\n' "$valid_link_preview" >> "$GITHUB_OUTPUT"
-
-      - name: Post to Bluesky (with preview)
-        if: steps.fetch_post.outputs.should_post == 'true' && steps.fetch_post.outputs.valid_link_preview == 'true'
+      # Post to Bluesky
+      - name: Post to Bluesky
         uses: myConsciousness/bluesky-post@v5
         with:
-          text: ${{ steps.fetch_post.outputs.text }}
-          link-preview-url: ${{ steps.fetch_post.outputs.url }}
+          text: "${{ env.preview }}"
+          link-preview-url: "${{ env.rss_url }}"
           identifier: kyleboas.com
           password: ${{ secrets.BSS }}
-          service: https://bsky.social
-
-      - name: Post to Bluesky (no preview fallback)
-        if: steps.fetch_post.outputs.should_post == 'true' && steps.fetch_post.outputs.valid_link_preview != 'true'
-        uses: myConsciousness/bluesky-post@v5
-        with:
-          text: ${{ steps.fetch_post.outputs.text }}
-          identifier: kyleboas.com
-          password: ${{ secrets.BSS }}
-          service: https://bsky.social
