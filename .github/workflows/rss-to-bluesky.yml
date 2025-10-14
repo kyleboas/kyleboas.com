@@ -97,7 +97,7 @@ jobs:
             # Ensure it's reachable (2xx/3xx)
             code="$(curl -sIL -o /dev/null -w '%{http_code}' "$final_url" || true)"
             if [[ "$code" =~ ^2|3 ]]; then
-              can_embed=true
+              can_embed=true 
             fi
           fi
 
