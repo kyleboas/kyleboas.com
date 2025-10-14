@@ -11,15 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Optional small delay (helps feeds settle on fresh builds/CDNs)
       - name: Initial Delay
         run: |
           echo "Waiting for 1 minute before starting..."
           sleep 60
 
-      - name: Install xmllint
+      - name: Install tools
         run: |
-          sudo apt-get update && sudo apt-get install -y libxml2-utils
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
 
       - name: Fetch Latest Blog Post
         id: fetch_post
@@ -31,41 +31,53 @@ jobs:
           response="$(curl -sfL "$RSS_FEED_URL")"
 
           title="$(echo "$response" | xmllint --xpath "string(//item[1]/title)" - | xargs)"
-          url="$(echo "$response" | xmllint --xpath "string(//item[1]/link)" - | xargs)"
+          url_raw="$(echo "$response" | xmllint --xpath "string(//item[1]/link)" - | tr -d '\r' | xargs)"
           pub_date_raw="$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - | xargs)"
 
-          # Normalize both to YYYY-MM-DD
           pub_date_ymd="$(date -d "$pub_date_raw" +%Y-%m-%d || true)"
           today_ymd="$(date +%Y-%m-%d)"
 
-          if [[ -z "$pub_date_ymd" ]]; then
-            echo "Could not parse pubDate: '$pub_date_raw'. Skipping post."
+          if [[ -z "$pub_date_ymd" || "$pub_date_ymd" != "$today_ymd" ]]; then
             echo "should_post=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          if [[ "$pub_date_ymd" != "$today_ymd" ]]; then
-            echo "Latest item is from $pub_date_ymd, not today ($today_ymd). Skipping post."
-            echo "should_post=false" >> "$GITHUB_OUTPUT"
-            exit 0
+          # Strict URL sanitization: strip spaces/newlines, ensure scheme, and percent-encode spaces just in case
+          clean_url="$(printf '%s' "$url_raw" | awk '{$1=$1};1')"              # trim inner/outer whitespace collapse
+          clean_url="${clean_url// /%20}"                                      # encode spaces if any slipped through
+
+          # Basic absolute-URI check
+          if [[ "$clean_url" =~ ^https?://[^[:space:]]+$ ]]; then
+            link_ok="true"
+          else
+            link_ok="false"
           fi
 
-          preview="$title $url"
+          # Compose text. Include URL in text always; the action will facet-ify it.
+          preview="$title $clean_url"
 
-          # Expose outputs (use heredoc for safety)
           {
             echo "should_post=true"
-            echo "rss_url=$url"
             echo "preview<<EOF"
             echo "$preview"
             echo "EOF"
+            echo "rss_url=$clean_url"
+            echo "link_ok=$link_ok"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Post to Bluesky
-        if: steps.fetch_post.outputs.should_post == 'true'
+      - name: Post to Bluesky (with preview card)
+        if: steps.fetch_post.outputs.should_post == 'true' && steps.fetch_post.outputs.link_ok == 'true'
         uses: myConsciousness/bluesky-post@v5
         with:
           text: ${{ steps.fetch_post.outputs.preview }}
           link-preview-url: ${{ steps.fetch_post.outputs.rss_url }}
+          identifier: kyleboas.com
+          password: ${{ secrets.BSS }}
+
+      - name: Post to Bluesky (no preview card; fallback)
+        if: steps.fetch_post.outputs.should_post == 'true' && steps.fetch_post.outputs.link_ok != 'true'
+        uses: myConsciousness/bluesky-post@v5
+        with:
+          text: ${{ steps.fetch_post.outputs.preview }}
           identifier: kyleboas.com
           password: ${{ secrets.BSS }}
