@@ -11,11 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout (for the "new files only" gate)
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2) Gate: only run if new files were added under _posts/
       - name: Check for newly added files
         id: check_new_files
         shell: bash
@@ -32,21 +30,18 @@ jobs:
             echo "has_new=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # 3) Short delay to let your site/feed/CDN settle
       - name: Initial Delay
         if: steps.check_new_files.outputs.has_new == 'true'
         run: |
           echo "Waiting for 1 minute before starting..."
           sleep 60
 
-      # 4) Tools
       - name: Install xmllint
         if: steps.check_new_files.outputs.has_new == 'true'
         run: |
           sudo apt-get update && sudo apt-get install -y libxml2-utils
 
-      # 5) Fetch + normalize + validate for preview
-      - name: Fetch Latest Blog Post (preview-only mode)
+      - name: Fetch Latest Blog Post (preview required)
         id: fetch_post
         if: steps.check_new_files.outputs.has_new == 'true'
         shell: bash
@@ -56,6 +51,7 @@ jobs:
           RSS_FEED_URL="https://kyleboas.com/feed"
           response="$(curl -sfL "$RSS_FEED_URL")"
 
+          # Parse fields (trim CR, collapse leading/trailing WS)
           title="$(echo "$response" | xmllint --xpath "string(//item[1]/title)" - | tr -d '\r' | xargs)"
           link_raw="$(echo "$response" | xmllint --xpath "string(//item[1]/link)" - | tr -d '\r' | xargs)"
           pub_date_raw="$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - | xargs)"
@@ -68,17 +64,22 @@ jobs:
             exit 1
           fi
 
-          # Clean & percent-encode stray spaces
+          # --- Sanitize link_raw aggressively ---
+          # 1) Remove all control characters except newline, then remove newline too
+          link_raw="$(printf '%s' "$link_raw" | tr -d '\000-\010\013\014\016-\037' | tr -d '\n' )"
+          # 2) Collapse internal whitespace to single spaces, then percent-encode any remaining space
           link_raw="$(printf '%s' "$link_raw" | awk '{$1=$1};1')"
           link_raw="${link_raw// /%20}"
 
-          # Resolve final canonical URL (follow redirects)
-          final_url="$(curl -sIL -o /dev/null -w '%{url_effective}' "$link_raw" || true)"
+          # Resolve canonical final URL (follow redirects)
+          # Also capture the redirect chain for debug
+          redirect_trace="$(mktemp)"
+          final_url="$(curl -sIL "$link_raw" -o /dev/null -w '%{url_effective}' -D "$redirect_trace" || true)"
           if [[ -z "$final_url" ]]; then
             final_url="$link_raw"
           fi
 
-          # Enforce HTTPS (upgrade http -> https if reachable)
+          # Enforce HTTPS (upgrade if possible)
           if [[ "$final_url" =~ ^http:// ]]; then
             https_url="$(echo "$final_url" | sed 's|^http://|https://|')"
             code_https="$(curl -sIL -o /dev/null -w '%{http_code}' "$https_url" || true)"
@@ -87,57 +88,73 @@ jobs:
             fi
           fi
 
-          # Re-resolve after upgrade to capture last hop
+          # Re-resolve after upgrade
           final_url="$(curl -sIL -o /dev/null -w '%{url_effective}' "$final_url" || echo "$final_url")"
 
-          # Strict checks for Bluesky external embed
-          #  - must be HTTPS
-          #  - host must be kyleboas.com (adjust if you want to allow others)
-          #  - must be reachable (2xx/3xx)
-          if [[ ! "$final_url" =~ ^https://[^[:space:]]+$ ]]; then
-            echo "::error::Final URL is not a strict HTTPS absolute URI: '$final_url'"
-            exit 1
-          fi
-
-          if [[ ! "$final_url" =~ ^https://(www\.)?kyleboas\.com/ ]]; then
-            echo "::error::Final URL host is not kyleboas.com: '$final_url'"
+          # Hard checks for Bluesky external embed
+          # Must be strict HTTPS absolute URI on your host and be reachable
+          if [[ ! "$final_url" =~ ^https://(www\.)?kyleboas\.com/[^[:space:]]*$ ]]; then
+            echo "::group::DEBUG: URL validation failure"
+            echo "Raw link: $link_raw"
+            echo "Final URL (as seen): $final_url"
+            echo "::endgroup::"
+            echo "::error::Final URL is not a strict HTTPS absolute URI on kyleboas.com"
             exit 1
           fi
 
           code="$(curl -sIL -o /dev/null -w '%{http_code}' "$final_url" || true)"
           if [[ ! "$code" =~ ^2|3 ]]; then
-            echo "::error::Final URL is not reachable (HTTP $code): '$final_url'"
+            echo "::error::Final URL not reachable (HTTP $code): $final_url"
             exit 1
           fi
 
-          # Compose "Title URL" under ~300 chars total
+          # Compose post text "Title URL" and keep under 300 chars
           max_total=300
           reserve=$(( ${#final_url} + 1 ))
           max_title_len=$(( max_total - reserve ))
           if (( max_title_len < 1 )); then
-            echo "::error::Final URL too long to fit in a post with title."
+            echo "::error::Final URL too long to fit with a title."
             exit 1
           fi
           if (( ${#title} > max_title_len )); then
             ell="…"
             cut=$(( max_title_len - ${#ell} ))
             if (( cut < 1 )); then
-              echo "::error::Title cannot be truncated safely to fit with URL."
+              echo "::error::Title cannot be truncated safely."
               exit 1
             fi
             title="${title:0:cut}${ell}"
-          fi 
-
+          fi
           text="$title $final_url"
 
+          # --- DEBUG BLOCK (shows exactly what we will pass) ---
+          echo "::group::DEBUG: Values to be posted"
+          echo "Title length: ${#title}"
+          echo "Final URL length: ${#final_url}"
+          echo "Text length: ${#text}"
+          echo "Redirect chain headers:"
+          sed -n '1,200p' "$redirect_trace" || true
+          echo
+          echo "HEX of final URL:"
+          printf '%s' "$final_url" | xxd -p
+          echo
+          echo "Base64 of final URL:"
+          printf '%s' "$final_url" | base64
+          echo
+          echo "Regex test (strict https + host):"
+          if [[ "$final_url" =~ ^https://(www\.)?kyleboas\.com/[^[:space:]]*$ ]]; then
+            echo "PASS"
+          else
+            echo "FAIL"
+          fi
+          echo "::endgroup::"
+
+          # Write outputs with printf to avoid stray newlines
           {
-            echo "text<<EOF"
-            echo "$text"
-            echo "EOF"
-            echo "final_url=$final_url"
+            printf 'text<<EOF\n%s\nEOF\n' "$text"
+            printf 'final_url=%s\n' "$final_url"
           } >> "$GITHUB_OUTPUT"
 
-      # 6) Post WITH preview card ONLY (no fallback)
       - name: Post to Bluesky (preview required)
         uses: myConsciousness/bluesky-post@v5
         with:
