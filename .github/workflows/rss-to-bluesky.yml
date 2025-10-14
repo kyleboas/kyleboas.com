@@ -126,7 +126,7 @@ jobs:
               exit 1
             fi
             title="${title:0:cut}${ell}"
-          fi
+          fi 
 
           text="$title $final_url"
 
