@@ -109,7 +109,7 @@ jobs:
           reserve=$(( ${#final_url} + 1 ))
           max_title_len=$(( max_total - reserve ))
           if (( max_title_len < 1 )); then
-            echo "Final URL too long to fit in a post. Skipping."
+            echo "Final URL too long to fit in a post. Skipping." 
             echo "should_post=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
