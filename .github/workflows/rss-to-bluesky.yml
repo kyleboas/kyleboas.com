@@ -81,9 +81,9 @@ jobs:
 
           # If http://, try upgrading to https:// and keep it if reachable
           if [[ "$final_url" =~ ^http:// ]]; then
-            https_url="$(echo "$final_url" | sed 's|^http://|https://|')"
+            https_url="${final_url/http:\/\//https://}"
             code_https="$(curl -sIL -o /dev/null -w '%{http_code}' "$https_url" || true)"
-            if [[ "$code_https" =~ ^2|3 ]]; then
+            if [[ "$code_https" =~ ^(2|3)[0-9]{2}$ ]]; then
               final_url="$https_url"
             fi
           fi
@@ -91,13 +91,16 @@ jobs:
           # One more resolve to ensure we captured the last hop (after http->https upgrade)
           final_url="$(curl -sIL -o /dev/null -w '%{url_effective}' "$final_url" || echo "$final_url")"
 
+          # *** CRITICAL: strip CR/LF + surrounding whitespace ***
+          final_url="$(printf '%s' "$final_url" | tr -d '\r\n' | awk '{$1=$1};1')"
+
           # Strict HTTPS absolute-URI check (Bluesky embed requirement)
           can_embed=false
-          if [[ "$final_url" =~ ^https://[^[:space:]]+$ ]]; then
+          if [[ "$final_url" =~ ^https://[[:graph:]]+$ ]]; then
             # Ensure it's reachable (2xx/3xx)
             code="$(curl -sIL -o /dev/null -w '%{http_code}' "$final_url" || true)"
-            if [[ "$code" =~ ^2|3 ]]; then
-              can_embed=true 
+            if [[ "$code" =~ ^(2|3)[0-9]{2}$ ]]; then
+              can_embed=true
             fi
           fi
 
@@ -121,11 +124,21 @@ jobs:
           {
             echo "should_post=true"
             echo "can_embed=$can_embed"
-            echo "final_url=$final_url"
+            # use multiline blocks for BOTH outputs to avoid any parsing issues
+            echo "final_url<<EOF"
+            echo "$final_url"
+            echo "EOF"
             echo "text<<EOF"
             echo "$text"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
+
+      # (Optional) Debug - see exactly what we pass to the action
+      - name: Debug final URL
+        if: steps.fetch_post.outputs.should_post == 'true'
+        run: |
+          echo "::notice::final_url='${{ steps.fetch_post.outputs.final_url }}'"
+          printf 'printf-quoted: %q\n' "${{ steps.fetch_post.outputs.final_url }}"
 
       # 6) Try WITH preview card (external embed)
       - name: Post with link preview
