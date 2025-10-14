@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Repo checkout (used for the "new files only" gate)
+      # 1) Checkout (for the "new files only" gate)
       - name: Checkout Repository
         uses: actions/checkout@v3
 
@@ -32,7 +32,7 @@ jobs:
             echo "has_new=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # 3) Small delay (lets your site/feed/CDN settle)
+      # 3) Short delay to let your site/feed/CDN settle
       - name: Initial Delay
         if: steps.check_new_files.outputs.has_new == 'true'
         run: |
@@ -45,8 +45,8 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y libxml2-utils
 
-      # 5) Fetch title + permalink + pubDate, normalize date, resolve canonical URL, enforce HTTPS
-      - name: Fetch Latest Blog Post
+      # 5) Fetch + normalize + validate for preview
+      - name: Fetch Latest Blog Post (preview-only mode)
         id: fetch_post
         if: steps.check_new_files.outputs.has_new == 'true'
         shell: bash
@@ -60,105 +60,89 @@ jobs:
           link_raw="$(echo "$response" | xmllint --xpath "string(//item[1]/link)" - | tr -d '\r' | xargs)"
           pub_date_raw="$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - | xargs)"
 
-          # Only post if the latest item is today (server-local day)
+          # Require "today"
           pub_date_ymd="$(date -d "$pub_date_raw" +%Y-%m-%d || true)"
           today_ymd="$(date +%Y-%m-%d)"
           if [[ -z "$pub_date_ymd" || "$pub_date_ymd" != "$today_ymd" ]]; then
-            echo "Latest feed item is not from today ($pub_date_raw). Skipping."
-            echo "should_post=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "::error::Latest feed item is not from today ($pub_date_raw). Aborting because preview is required."
+            exit 1
           fi
 
-          # Clean raw link (collapse/trim whitespace, encode spaces)
+          # Clean & percent-encode stray spaces
           link_raw="$(printf '%s' "$link_raw" | awk '{$1=$1};1')"
           link_raw="${link_raw// /%20}"
 
-          # Resolve to canonical final URL (follow redirects)
+          # Resolve final canonical URL (follow redirects)
           final_url="$(curl -sIL -o /dev/null -w '%{url_effective}' "$link_raw" || true)"
           if [[ -z "$final_url" ]]; then
             final_url="$link_raw"
           fi
 
-          # If http://, try upgrading to https:// and keep it if reachable
+          # Enforce HTTPS (upgrade http -> https if reachable)
           if [[ "$final_url" =~ ^http:// ]]; then
-            https_url="${final_url/http:\/\//https://}"
+            https_url="$(echo "$final_url" | sed 's|^http://|https://|')"
             code_https="$(curl -sIL -o /dev/null -w '%{http_code}' "$https_url" || true)"
-            if [[ "$code_https" =~ ^(2|3)[0-9]{2}$ ]]; then
+            if [[ "$code_https" =~ ^2|3 ]]; then
               final_url="$https_url"
             fi
           fi
 
-          # One more resolve to ensure we captured the last hop (after http->https upgrade)
+          # Re-resolve after upgrade to capture last hop
           final_url="$(curl -sIL -o /dev/null -w '%{url_effective}' "$final_url" || echo "$final_url")"
 
-          # *** CRITICAL: strip CR/LF + surrounding whitespace ***
-          final_url="$(printf '%s' "$final_url" | tr -d '\r\n' | awk '{$1=$1};1')"
-
-          # Strict HTTPS absolute-URI check (Bluesky embed requirement)
-          can_embed=false
-          if [[ "$final_url" =~ ^https://[[:graph:]]+$ ]]; then
-            # Ensure it's reachable (2xx/3xx)
-            code="$(curl -sIL -o /dev/null -w '%{http_code}' "$final_url" || true)"
-            if [[ "$code" =~ ^(2|3)[0-9]{2}$ ]]; then
-              can_embed=true
-            fi
+          # Strict checks for Bluesky external embed
+          #  - must be HTTPS
+          #  - host must be kyleboas.com (adjust if you want to allow others)
+          #  - must be reachable (2xx/3xx)
+          if [[ ! "$final_url" =~ ^https://[^[:space:]]+$ ]]; then
+            echo "::error::Final URL is not a strict HTTPS absolute URI: '$final_url'"
+            exit 1
           fi
 
-          # Compose text as: "Title ␣ URL", capped to ~300 chars total
+          if [[ ! "$final_url" =~ ^https://(www\.)?kyleboas\.com/ ]]; then
+            echo "::error::Final URL host is not kyleboas.com: '$final_url'"
+            exit 1
+          fi
+
+          code="$(curl -sIL -o /dev/null -w '%{http_code}' "$final_url" || true)"
+          if [[ ! "$code" =~ ^2|3 ]]; then
+            echo "::error::Final URL is not reachable (HTTP $code): '$final_url'"
+            exit 1
+          fi
+
+          # Compose "Title URL" under ~300 chars total
           max_total=300
           reserve=$(( ${#final_url} + 1 ))
           max_title_len=$(( max_total - reserve ))
           if (( max_title_len < 1 )); then
-            echo "Final URL too long to fit in a post. Skipping." 
-            echo "should_post=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "::error::Final URL too long to fit in a post with title."
+            exit 1
           fi
           if (( ${#title} > max_title_len )); then
-            # Leave room for an ellipsis
             ell="…"
             cut=$(( max_title_len - ${#ell} ))
+            if (( cut < 1 )); then
+              echo "::error::Title cannot be truncated safely to fit with URL."
+              exit 1
+            fi
             title="${title:0:cut}${ell}"
           fi
+
           text="$title $final_url"
 
           {
-            echo "should_post=true"
-            echo "can_embed=$can_embed"
-            # use multiline blocks for BOTH outputs to avoid any parsing issues
-            echo "final_url<<EOF"
-            echo "$final_url"
-            echo "EOF"
             echo "text<<EOF"
             echo "$text"
             echo "EOF"
+            echo "final_url=$final_url"
           } >> "$GITHUB_OUTPUT"
 
-      # (Optional) Debug - see exactly what we pass to the action
-      - name: Debug final URL
-        if: steps.fetch_post.outputs.should_post == 'true'
-        run: |
-          echo "::notice::final_url='${{ steps.fetch_post.outputs.final_url }}'"
-          printf 'printf-quoted: %q\n' "${{ steps.fetch_post.outputs.final_url }}"
-
-      # 6) Try WITH preview card (external embed)
-      - name: Post with link preview
-        id: post_with_embed
-        if: steps.fetch_post.outputs.should_post == 'true' && steps.fetch_post.outputs.can_embed == 'true'
-        continue-on-error: true
+      # 6) Post WITH preview card ONLY (no fallback)
+      - name: Post to Bluesky (preview required)
         uses: myConsciousness/bluesky-post@v5
         with:
           text: ${{ steps.fetch_post.outputs.text }}
           link-preview-url: ${{ steps.fetch_post.outputs.final_url }}
-          identifier: kyleboas.com
-          password: ${{ secrets.BSS }}
-          retry-count: 3
-
-      # 7) Fallback: post text-only if embed was skipped or failed
-      - name: Post without preview (fallback)
-        if: steps.fetch_post.outputs.should_post == 'true' && (steps.fetch_post.outputs.can_embed != 'true' || steps.post_with_embed.outcome == 'failure')
-        uses: myConsciousness/bluesky-post@v5
-        with:
-          text: ${{ steps.fetch_post.outputs.text }}
           identifier: kyleboas.com
           password: ${{ secrets.BSS }}
           retry-count: 3
