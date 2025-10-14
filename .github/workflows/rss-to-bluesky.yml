@@ -28,7 +28,7 @@ jobs:
         id: fetch_post
         shell: bash
         run: |
-          set -euo pipefail
+          set -euo pipefail 
 
           RSS_FEED_URL="https://kyleboas.com/feed"
           response="$(curl -sfL "$RSS_FEED_URL")"
