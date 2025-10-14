@@ -106,7 +106,7 @@ jobs:
           if [[ ! "$code" =~ ^2|3 ]]; then
             echo "::error::Final URL not reachable (HTTP $code): $final_url"
             exit 1
-          fi
+          fi 
 
           # Compose post text "Title URL" and keep under 300 chars
           max_total=300
