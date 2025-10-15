@@ -12,7 +12,7 @@ Matt Lawton for The Times:
 > 
 > Both Manchester United and Manchester City are known to oppose a proposal that would limit spending on wages and transfers to five times the amount paid by the Premier League in prize money and broadcast revenue to the club who finish bottom. Based on the 2023-24 season, when Sheffield United occupied 20th place and received £109.5million, that would be £550million.
 > 
-> Premier League clubs operate under Profitability and Sustainability Rules (PSR) which allow losses of £105million over three years, but they are scheduled to vote on proposed new financial regulations when they meet towards the end of November. This will be divided into three parts — squad cost ratio rules, anchoring and sustainability rules linked to football’s new independent regulator.
+> [...] Premier League clubs operate under Profitability and Sustainability Rules (PSR) which allow losses of £105million over three years, but they are scheduled to vote on proposed new financial regulations when they meet towards the end of November. This will be divided into three parts — squad cost ratio rules, anchoring and sustainability rules linked to football’s new independent regulator.
 
 As someone who grew up watching American sports, I do not like salary caps. One of the main reasons why I love and I am so invested in European football is because they don't have a salary cap.
 
