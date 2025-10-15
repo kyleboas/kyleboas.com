@@ -10,18 +10,21 @@ jobs:
   fetch-and-post:
     runs-on: ubuntu-latest
     env:
-      TZ: America/New_York  # force local time for all `date` calls
+      TZ: America/New_York  # Force local time for all `date` calls in this job
 
     steps:
+      # Optional small delay (kept from your version)
       - name: Initial Delay
         run: |
           echo "Waiting for 1 minute before starting..."
           sleep 60
 
+      # Install required tools
       - name: Install xmllint
         run: |
           sudo apt-get update && sudo apt-get install -y libxml2-utils
 
+      # Fetch the latest blog post from RSS feed
       - name: Fetch Latest Blog Post
         id: fetch_post
         shell: bash
@@ -29,29 +32,29 @@ jobs:
           set -euo pipefail
 
           RSS_FEED_URL="https://kyleboas.com/feed"
-          echo "Fetching RSS: $RSS_FEED_URL"
-          response="$(curl -fsSL "$RSS_FEED_URL")"
 
+          echo "Fetching RSS: $RSS_FEED_URL"
+          response="$(curl -fsSL "$RSS_FEED_URL")" 
+
+          # Extract first item and key fields
           first_item="$(echo "$response" | xmllint --xpath "//item[1]" - 2>/dev/null || true)"
-          echo "First <item> snippet (link masked):"
+          echo "First <item> snippet:"
           echo "$first_item" | sed -e 's/<link>.*<\/link>/<link>…<\/link>/'
 
-          title="$(echo "$response"    | xmllint --xpath "string(//item[1]/title)"   - 2>/dev/null || true)"
-          guid_url="$(echo "$response" | xmllint --xpath "string(//item[1]/guid[@isPermaLink='true'])" - 2>/dev/null || true)"
-          link_url="$(echo "$response" | xmllint --xpath "string(//item[1]/link)"    - 2>/dev/null || true)"
-          pub_date="$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || true)"
+          title="$(echo "$response"   | xmllint --xpath "string(//item[1]/title)"   - 2>/dev/null || true)"
+          url="$(echo "$response"     | xmllint --xpath "string(//item[1]/link)"    - 2>/dev/null || true)"
+          pub_date="$(echo "$response"| xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || true)"
 
-          if [[ -z "${title// }" || ( -z "${guid_url// }" && -z "${link_url// }" ) || -z "${pub_date// }" ]]; then
-            echo "Error: Missing one or more required fields."
-            echo "title=[$title]"
-            echo "guid_url=[$guid_url]"
-            echo "link_url=[$link_url]"
-            echo "pub_date=[$pub_date]"
+          if [[ -z "${title// }" || -z "${url// }" || -z "${pub_date// }" ]]; then
+            echo "Error: Missing one or more required fields: title=[$title], url=[$url], pubDate=[$pub_date]"
             exit 1
           fi
 
+          # Normalize both dates to America/New_York and compare by YYYY-MM-DD
+          # pubDate is RFC 2822 (e.g., Tue, 14 Oct 2025 22:39:00 -0400)
           pub_day_local="$(TZ="America/New_York" date -d "$pub_date" +%Y-%m-%d)"
           today_local="$(TZ="America/New_York" date +%Y-%m-%d)"
+
           echo "Publication Day (local): $pub_day_local"
           echo "Today's Day (local):     $today_local"
 
@@ -61,52 +64,33 @@ jobs:
             exit 0
           fi
 
-          # ------- URL CHOICE + SANITIZATION + VALIDATION -------
-          url_raw="${guid_url:-$link_url}"
-
-          url_clean="$(printf '%s' "$url_raw" \
-            | tr -d '\000-\037\177' \
-            | tr -d '\r' \
-            | tr -s '\n' \
-            | xargs)"
-
-          final_url="$(curl -fsSL -o /dev/null -w '%{url_effective}' "$url_clean" || true)"
-          url="${final_url:-$url_clean}"
-
-          url="$(printf '%s' "$url" | tr -d '\r' | tr -s '\n' | xargs)"
-
-          if echo "$url" | grep -Eq '^https?://[^[:space:]]+$'; then
-            echo "link_preview_url=$url" >> "$GITHUB_ENV"
-          else
-            echo "Warning: URL failed URI check for embed: [$url]"
-            echo "link_preview_url=" >> "$GITHUB_ENV"
-          fi
-
+          # Clean up whitespace and prepare preview
           title="$(echo "$title" | xargs)"
           preview="$title $url"
+
+          echo "Preview text: $preview"
+
+          # Export for later step
           {
             echo "preview=$preview"
             echo "rss_url=$url"
           } >> "$GITHUB_ENV"
 
-          echo "DEBUG url (hex):"
-          printf '%s' "$url" | hexdump -C || true
-
           echo "has_today_post=true" >> "$GITHUB_OUTPUT"
 
+      # Post to Bluesky (only if we found a post from 'today' in local time)
       - name: Post to Bluesky
         if: steps.fetch_post.outputs.has_today_post == 'true'
         uses: myConsciousness/bluesky-post@v5
         with:
           text: "${{ env.preview }}"
-          link-preview-url: "${{ env.link_preview_url }}"
-          identifier: "kyleboas.com"
+          link-preview-url: "${{ env.rss_url }}"
+          identifier: kyleboas.com
           password: ${{ secrets.BSS }}
-          # service: "api.bsky.app"
 
+      # Debug (optional)
       - name: Debug Environment Variables
         if: steps.fetch_post.outputs.has_today_post == 'true'
         run: |
           echo "Preview Text: ${{ env.preview }}"
           echo "RSS URL: ${{ env.rss_url }}"
-          echo "Link Preview URL: ${{ env.link_preview_url }}"
