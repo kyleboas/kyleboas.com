@@ -13,18 +13,15 @@ jobs:
       TZ: America/New_York  # force local time for all `date` calls
 
     steps:
-      # Optional delay
       - name: Initial Delay
         run: |
           echo "Waiting for 1 minute before starting..."
           sleep 60
 
-      # Tools
       - name: Install xmllint
         run: |
           sudo apt-get update && sudo apt-get install -y libxml2-utils
 
-      # Fetch & parse RSS
       - name: Fetch Latest Blog Post
         id: fetch_post
         shell: bash
@@ -35,7 +32,6 @@ jobs:
           echo "Fetching RSS: $RSS_FEED_URL"
           response="$(curl -fsSL "$RSS_FEED_URL")"
 
-          # Extract first item (masked for log readability)
           first_item="$(echo "$response" | xmllint --xpath "//item[1]" - 2>/dev/null || true)"
           echo "First <item> snippet (link masked):"
           echo "$first_item" | sed -e 's/<link>.*<\/link>/<link>…<\/link>/'
@@ -54,7 +50,6 @@ jobs:
             exit 1
           fi
 
-          # Compare by YYYY-MM-DD in local time
           pub_day_local="$(TZ="America/New_York" date -d "$pub_date" +%Y-%m-%d)"
           today_local="$(TZ="America/New_York" date +%Y-%m-%d)"
           echo "Publication Day (local): $pub_day_local"
@@ -67,32 +62,26 @@ jobs:
           fi
 
           # ------- URL CHOICE + SANITIZATION + VALIDATION -------
-          # Prefer GUID(permalink) if present; otherwise fall back to <link>
           url_raw="${guid_url:-$link_url}"
 
-          # Remove control chars, CRs, extra newlines; trim
           url_clean="$(printf '%s' "$url_raw" \
             | tr -d '\000-\037\177' \
             | tr -d '\r' \
             | tr -s '\n' \
             | xargs)"
 
-          # Optionally resolve redirects to final URL (if any)
           final_url="$(curl -fsSL -o /dev/null -w '%{url_effective}' "$url_clean" || true)"
           url="${final_url:-$url_clean}"
 
-          # Re-trim just in case
           url="$(printf '%s' "$url" | tr -d '\r' | tr -s '\n' | xargs)"
 
-          # Validate shape; only use for embed if it's a proper http(s) URI with no spaces
           if echo "$url" | grep -Eq '^https?://[^[:space:]]+$'; then
             echo "link_preview_url=$url" >> "$GITHUB_ENV"
           else
             echo "Warning: URL failed URI check for embed: [$url]"
-            echo "link_preview_url=" >> "$GITHUB_ENV"   # omit embed
+            echo "link_preview_url=" >> "$GITHUB_ENV"
           fi
 
-          # Prepare post text
           title="$(echo "$title" | xargs)"
           preview="$title $url"
           {
@@ -100,24 +89,21 @@ jobs:
             echo "rss_url=$url"
           } >> "$GITHUB_ENV"
 
-          # Debug: show URL bytes to catch hidden characters if any
           echo "DEBUG url (hex):"
           printf '%s' "$url" | hexdump -C || true
 
           echo "has_today_post=true" >> "$GITHUB_OUTPUT"
 
-      # Post to Bluesky only when today's post exists
       - name: Post to Bluesky
         if: steps.fetch_post.outputs.has_today_post == 'true'
         uses: myConsciousness/bluesky-post@v5
         with:
           text: "${{ env.preview }}"
-          link-preview-url: "${{ env.link_preview_url }}"  # sanitized + validated
-          identifier: kyleboas.com                         # use your handle/email if different
+          link-preview-url: "${{ env.link_preview_url }}"
+          identifier: "kyleboas.com"
           password: ${{ secrets.BSS }}
-          service: "https://api.bsky.app"                  # explicit endpoint (recommended)
+          # service: "api.bsky.app"
 
-      # Debug (optional)
       - name: Debug Environment Variables
         if: steps.fetch_post.outputs.has_today_post == 'true'
         run: |
