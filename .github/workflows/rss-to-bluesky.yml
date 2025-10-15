@@ -34,7 +34,7 @@ jobs:
           RSS_FEED_URL="https://kyleboas.com/feed"
 
           echo "Fetching RSS: $RSS_FEED_URL"
-          response="$(curl -fsSL "$RSS_FEED_URL")"
+          response="$(curl -fsSL "$RSS_FEED_URL")" 
 
           # Extract first item and key fields
           first_item="$(echo "$response" | xmllint --xpath "//item[1]" - 2>/dev/null || true)"
