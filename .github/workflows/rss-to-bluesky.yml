@@ -4,83 +4,93 @@ on:
   push:
     paths:
       - _posts/**
-
   workflow_dispatch:
 
 jobs:
   fetch-and-post:
     runs-on: ubuntu-latest
+    env:
+      TZ: America/New_York  # Force local time for all `date` calls in this job
 
     steps:
-      # Initial two-minute delay
+      # Optional small delay (kept from your version)
       - name: Initial Delay
         run: |
           echo "Waiting for 1 minute before starting..."
           sleep 60
 
       # Install required tools
-      - name: Install xmllint and dateutils
+      - name: Install xmllint
         run: |
-          sudo apt-get update && sudo apt-get install -y libxml2-utils dateutils 
+          sudo apt-get update && sudo apt-get install -y libxml2-utils
 
       # Fetch the latest blog post from RSS feed
       - name: Fetch Latest Blog Post
         id: fetch_post
+        shell: bash
         run: |
+          set -euo pipefail
+
           RSS_FEED_URL="https://kyleboas.com/feed"
-          
-          # Fetch RSS feed
-          response=$(curl -s "$RSS_FEED_URL")
 
-          # Parse the first <item> (Debugging)
-          first_item=$(echo "$response" | xmllint --xpath "//item[1]" - 2>/dev/null || echo "PARSE_ERROR")
-          echo "First Item: $first_item"
+          echo "Fetching RSS: $RSS_FEED_URL"
+          response="$(curl -fsSL "$RSS_FEED_URL")"
 
-          # Parse specific fields from the first <item>
-          title=$(echo "$response" | xmllint --xpath "string(//item[1]/title)" - 2>/dev/null || echo "PARSE_ERROR")
-          url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" - 2>/dev/null || echo "PARSE_ERROR")
-          pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || echo "PARSE_ERROR") 
+          # Extract first item and key fields
+          first_item="$(echo "$response" | xmllint --xpath "//item[1]" - 2>/dev/null || true)"
+          echo "First <item> snippet:"
+          echo "$first_item" | sed -e 's/<link>.*<\/link>/<link>…<\/link>/'
 
-          # Log parsed data
-          echo "Parsed Data - title: $title, URL: $url, PubDate: $pub_date"
+          title="$(echo "$response"   | xmllint --xpath "string(//item[1]/title)"   - 2>/dev/null || true)"
+          url="$(echo "$response"     | xmllint --xpath "string(//item[1]/link)"    - 2>/dev/null || true)"
+          pub_date="$(echo "$response"| xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || true)"
 
-          # Handle parsing errors
-          if [[ "$title" == "PARSE_ERROR" || "$url" == "PARSE_ERROR" || "$pub_date" == "PARSE_ERROR" ]]; then
-            echo "Error: Failed to parse one or more required fields from the RSS feed. Exiting."
+          if [[ -z "${title// }" || -z "${url// }" || -z "${pub_date// }" ]]; then
+            echo "Error: Missing one or more required fields: title=[$title], url=[$url], pubDate=[$pub_date]"
             exit 1
           fi
 
-          # Extract and compare dates
-          today=$(date -R)
-          pub_date_only=$(echo "$pub_date" | awk '{print $1", "$2" "$3" "$4}')
-          today_only=$(echo "$today" | awk '{print $1", "$2" "$3" "$4}')
-          
-          echo "Today's Date: $today_only"
-          echo "Publication Date: $pub_date_only"
+          # Normalize both dates to America/New_York and compare by YYYY-MM-DD
+          # pubDate is RFC 2822 (e.g., Tue, 14 Oct 2025 22:39:00 -0400)
+          pub_day_local="$(TZ="America/New_York" date -d "$pub_date" +%Y-%m-%d)"
+          today_local="$(TZ="America/New_York" date +%Y-%m-%d)"
 
-          if [[ "$pub_date_only" != "$today_only" ]]; then
-            echo "The blog post is not from today ($pub_date_only). Exiting."
+          echo "Publication Day (local): $pub_day_local"
+          echo "Today's Day (local):     $today_local"
+
+          if [[ "$pub_day_local" != "$today_local" ]]; then
+            echo "The latest post is not from today (local). Skipping Bluesky post."
+            echo "has_today_post=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # Format and export environment variables
-          title=$(echo "$title" | xargs)
+          # Clean up whitespace and prepare preview
+          title="$(echo "$title" | xargs)"
           preview="$title $url"
 
-          echo "preview=$preview" >> $GITHUB_ENV
-          echo "rss_url=$url" >> $GITHUB_ENV
+          echo "Preview text: $preview"
 
-      # Post to Bluesky
+          # Export for later step
+          {
+            echo "preview=$preview"
+            echo "rss_url=$url"
+          } >> "$GITHUB_ENV"
+
+          echo "has_today_post=true" >> "$GITHUB_OUTPUT"
+
+      # Post to Bluesky (only if we found a post from 'today' in local time)
       - name: Post to Bluesky
+        if: steps.fetch_post.outputs.has_today_post == 'true'
         uses: myConsciousness/bluesky-post@v5
         with:
           text: "${{ env.preview }}"
           link-preview-url: "${{ env.rss_url }}"
           identifier: kyleboas.com
-          password: ${{ secrets.BSS }} 
+          password: ${{ secrets.BSS }}
 
-      # Debug step: Print environment variables (optional, remove after debugging)
+      # Debug (optional)
       - name: Debug Environment Variables
+        if: steps.fetch_post.outputs.has_today_post == 'true'
         run: |
           echo "Preview Text: ${{ env.preview }}"
           echo "RSS URL: ${{ env.rss_url }}"
