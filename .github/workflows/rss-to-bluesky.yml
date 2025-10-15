@@ -77,7 +77,7 @@ jobs:
           text: "${{ env.preview }}"
           link-preview-url: "${{ env.rss_url }}"
           identifier: kyleboas.com
-          password: ${{ secrets.BSS }}
+          password: ${{ secrets.BSS }} 
 
       # Debug step: Print environment variables (optional, remove after debugging)
       - name: Debug Environment Variables
