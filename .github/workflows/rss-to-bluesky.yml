@@ -10,21 +10,21 @@ jobs:
   fetch-and-post:
     runs-on: ubuntu-latest
     env:
-      TZ: America/New_York  # Force local time for all `date` calls in this job
+      TZ: America/New_York  # force local time for all `date` calls
 
     steps:
-      # Optional small delay (kept from your version)
+      # Optional delay
       - name: Initial Delay
         run: |
           echo "Waiting for 1 minute before starting..."
           sleep 60
 
-      # Install required tools
+      # Tools
       - name: Install xmllint
         run: |
           sudo apt-get update && sudo apt-get install -y libxml2-utils
 
-      # Fetch the latest blog post from RSS feed
+      # Fetch & parse RSS
       - name: Fetch Latest Blog Post
         id: fetch_post
         shell: bash
@@ -32,29 +32,31 @@ jobs:
           set -euo pipefail
 
           RSS_FEED_URL="https://kyleboas.com/feed"
-
           echo "Fetching RSS: $RSS_FEED_URL"
-          response="$(curl -fsSL "$RSS_FEED_URL")" 
+          response="$(curl -fsSL "$RSS_FEED_URL")"
 
-          # Extract first item and key fields
+          # Extract first item (masked for log readability)
           first_item="$(echo "$response" | xmllint --xpath "//item[1]" - 2>/dev/null || true)"
-          echo "First <item> snippet:"
+          echo "First <item> snippet (link masked):"
           echo "$first_item" | sed -e 's/<link>.*<\/link>/<link>…<\/link>/'
 
-          title="$(echo "$response"   | xmllint --xpath "string(//item[1]/title)"   - 2>/dev/null || true)"
-          url="$(echo "$response"     | xmllint --xpath "string(//item[1]/link)"    - 2>/dev/null || true)"
-          pub_date="$(echo "$response"| xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || true)"
+          title="$(echo "$response"    | xmllint --xpath "string(//item[1]/title)"   - 2>/dev/null || true)"
+          guid_url="$(echo "$response" | xmllint --xpath "string(//item[1]/guid[@isPermaLink='true'])" - 2>/dev/null || true)"
+          link_url="$(echo "$response" | xmllint --xpath "string(//item[1]/link)"    - 2>/dev/null || true)"
+          pub_date="$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || true)"
 
-          if [[ -z "${title// }" || -z "${url// }" || -z "${pub_date// }" ]]; then
-            echo "Error: Missing one or more required fields: title=[$title], url=[$url], pubDate=[$pub_date]"
+          if [[ -z "${title// }" || ( -z "${guid_url// }" && -z "${link_url// }" ) || -z "${pub_date// }" ]]; then
+            echo "Error: Missing one or more required fields."
+            echo "title=[$title]"
+            echo "guid_url=[$guid_url]"
+            echo "link_url=[$link_url]"
+            echo "pub_date=[$pub_date]"
             exit 1
           fi
 
-          # Normalize both dates to America/New_York and compare by YYYY-MM-DD
-          # pubDate is RFC 2822 (e.g., Tue, 14 Oct 2025 22:39:00 -0400)
+          # Compare by YYYY-MM-DD in local time
           pub_day_local="$(TZ="America/New_York" date -d "$pub_date" +%Y-%m-%d)"
           today_local="$(TZ="America/New_York" date +%Y-%m-%d)"
-
           echo "Publication Day (local): $pub_day_local"
           echo "Today's Day (local):     $today_local"
 
@@ -64,29 +66,56 @@ jobs:
             exit 0
           fi
 
-          # Clean up whitespace and prepare preview
+          # ------- URL CHOICE + SANITIZATION + VALIDATION -------
+          # Prefer GUID(permalink) if present; otherwise fall back to <link>
+          url_raw="${guid_url:-$link_url}"
+
+          # Remove control chars, CRs, extra newlines; trim
+          url_clean="$(printf '%s' "$url_raw" \
+            | tr -d '\000-\037\177' \
+            | tr -d '\r' \
+            | tr -s '\n' \
+            | xargs)"
+
+          # Optionally resolve redirects to final URL (if any)
+          final_url="$(curl -fsSL -o /dev/null -w '%{url_effective}' "$url_clean" || true)"
+          url="${final_url:-$url_clean}"
+
+          # Re-trim just in case
+          url="$(printf '%s' "$url" | tr -d '\r' | tr -s '\n' | xargs)"
+
+          # Validate shape; only use for embed if it's a proper http(s) URI with no spaces
+          if echo "$url" | grep -Eq '^https?://[^[:space:]]+$'; then
+            echo "link_preview_url=$url" >> "$GITHUB_ENV"
+          else
+            echo "Warning: URL failed URI check for embed: [$url]"
+            echo "link_preview_url=" >> "$GITHUB_ENV"   # omit embed
+          fi
+
+          # Prepare post text
           title="$(echo "$title" | xargs)"
           preview="$title $url"
-
-          echo "Preview text: $preview"
-
-          # Export for later step
           {
             echo "preview=$preview"
             echo "rss_url=$url"
           } >> "$GITHUB_ENV"
 
+          # Debug: show URL bytes to catch hidden characters if any
+          echo "DEBUG url (hex):"
+          printf '%s' "$url" | hexdump -C || true
+
           echo "has_today_post=true" >> "$GITHUB_OUTPUT"
 
-      # Post to Bluesky (only if we found a post from 'today' in local time)
+      # Post to Bluesky only when today's post exists
       - name: Post to Bluesky
         if: steps.fetch_post.outputs.has_today_post == 'true'
         uses: myConsciousness/bluesky-post@v5
         with:
           text: "${{ env.preview }}"
-          link-preview-url: "${{ env.rss_url }}"
-          identifier: kyleboas.com
+          link-preview-url: "${{ env.link_preview_url }}"  # sanitized + validated
+          identifier: kyleboas.com                         # use your handle/email if different
           password: ${{ secrets.BSS }}
+          service: "https://api.bsky.app"                  # explicit endpoint (recommended)
 
       # Debug (optional)
       - name: Debug Environment Variables
@@ -94,3 +123,4 @@ jobs:
         run: |
           echo "Preview Text: ${{ env.preview }}"
           echo "RSS URL: ${{ env.rss_url }}"
+          echo "Link Preview URL: ${{ env.link_preview_url }}"
