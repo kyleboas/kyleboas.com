@@ -39,7 +39,7 @@ jobs:
           # Parse specific fields from the first <item>
           title=$(echo "$response" | xmllint --xpath "string(//item[1]/title)" - 2>/dev/null || echo "PARSE_ERROR")
           url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" - 2>/dev/null || echo "PARSE_ERROR")
-          pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || echo "PARSE_ERROR")
+          pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || echo "PARSE_ERROR") 
 
           # Log parsed data
           echo "Parsed Data - title: $title, URL: $url, PubDate: $pub_date"
