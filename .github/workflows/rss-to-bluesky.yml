@@ -39,7 +39,7 @@ jobs:
           # Extract first item and key fields
           first_item="$(echo "$response" | xmllint --xpath "//item[1]" - 2>/dev/null || true)"
           echo "First <item> snippet:"
-          echo "$first_item" | sed -e 's/<link>.*<\/link>/<link>…<\/link>/'
+          echo "$first_item" | sed -e 's/<link>.*<\/link>/<link>…<\/link>/' 
 
           title="$(echo "$response"   | xmllint --xpath "string(//item[1]/title)"   - 2>/dev/null || true)"
           url="$(echo "$response"     | xmllint --xpath "string(//item[1]/link)"    - 2>/dev/null || true)"
