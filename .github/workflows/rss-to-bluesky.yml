@@ -1,12 +1,10 @@
 name: Post Latest Blog from RSS to Bluesky
 
 on:
-  workflow_run:
-    workflows:
-      - "Schedule Posts"
-      - "Pages Build and Deployment"
-    types:
-      - completed
+  push:
+    paths:
+      - _posts/**
+
   workflow_dispatch:
 
 jobs:
@@ -14,105 +12,75 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Give Pages/CDN a moment to settle
+      # Initial two-minute delay
       - name: Initial Delay
         run: |
           echo "Waiting for 1 minute before starting..."
           sleep 60
 
-      - name: Install xmllint
+      # Install required tools
+      - name: Install xmllint and dateutils
         run: |
-          sudo apt-get update && sudo apt-get install -y libxml2-utils
+          sudo apt-get update && sudo apt-get install -y libxml2-utils dateutils
 
-      - name: Fetch Latest Blog Post (kyleboas.com, preview REQUIRED)
+      # Fetch the latest blog post from RSS feed
+      - name: Fetch Latest Blog Post
         id: fetch_post
-        shell: bash
         run: |
-          set -euo pipefail 
-
           RSS_FEED_URL="https://kyleboas.com/feed"
-          response="$(curl -sfL "$RSS_FEED_URL")"
+          
+          # Fetch RSS feed
+          response=$(curl -s "$RSS_FEED_URL")
 
-          # Use <title> for the post title (not description)
-          title="$(echo "$response" | xmllint --xpath "string(//item[1]/title)" - | tr -d '\r' | xargs)"
-          link_raw="$(echo "$response" | xmllint --xpath "string(//item[1]/link)" - | tr -d '\r' | xargs)"
-          pub_date_raw="$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - | xargs)"
+          # Parse the first <item> (Debugging)
+          first_item=$(echo "$response" | xmllint --xpath "//item[1]" - 2>/dev/null || echo "PARSE_ERROR")
+          echo "First Item: $first_item"
 
-          # Require "today"
-          pub_date_ymd="$(date -d "$pub_date_raw" +%Y-%m-%d || true)"
-          today_ymd="$(date +%Y-%m-%d)"
-          if [[ -z "$pub_date_ymd" || "$pub_date_ymd" != "$today_ymd" ]]; then
-            echo "::error::Latest item is not from today ($pub_date_raw). Preview required, aborting."
+          # Parse specific fields from the first <item>
+          title=$(echo "$response" | xmllint --xpath "string(//item[1]/title)" - 2>/dev/null || echo "PARSE_ERROR")
+          url=$(echo "$response" | xmllint --xpath "string(//item[1]/link)" - 2>/dev/null || echo "PARSE_ERROR")
+          pub_date=$(echo "$response" | xmllint --xpath "string(//item[1]/pubDate)" - 2>/dev/null || echo "PARSE_ERROR")
+
+          # Log parsed data
+          echo "Parsed Data - title: $title, URL: $url, PubDate: $pub_date"
+
+          # Handle parsing errors
+          if [[ "$title" == "PARSE_ERROR" || "$url" == "PARSE_ERROR" || "$pub_date" == "PARSE_ERROR" ]]; then
+            echo "Error: Failed to parse one or more required fields from the RSS feed. Exiting."
             exit 1
           fi
 
-          # Aggressive sanitize of link
-          link_raw="$(printf '%s' "$link_raw" | tr -d '\000-\010\013\014\016-\037' | tr -d '\n')"
-          link_raw="$(printf '%s' "$link_raw" | awk '{$1=$1};1')"   # trim/collapse internal whitespace
-          link_raw="${link_raw// /%20}"
+          # Extract and compare dates
+          today=$(date -R)
+          pub_date_only=$(echo "$pub_date" | awk '{print $1", "$2" "$3" "$4}')
+          today_only=$(echo "$today" | awk '{print $1", "$2" "$3" "$4}')
+          
+          echo "Today's Date: $today_only"
+          echo "Publication Date: $pub_date_only"
 
-          # Resolve canonical URL (follow redirects)
-          final_url="$(curl -sIL "$link_raw" -o /dev/null -w '%{url_effective}' || true)"
-          [[ -z "$final_url" ]] && final_url="$link_raw"
-
-          # Enforce HTTPS if possible
-          if [[ "$final_url" =~ ^http:// ]]; then
-            https_url="$(echo "$final_url" | sed 's|^http://|https://|')"
-            code_https="$(curl -sIL -o /dev/null -w '%{http_code}' "$https_url" || true)"
-            [[ "$code_https" =~ ^2|3 ]] && final_url="$https_url"
+          if [[ "$pub_date_only" != "$today_only" ]]; then
+            echo "The blog post is not from today ($pub_date_only). Exiting."
+            exit 0
           fi
 
-          # Normalize: lowercase scheme/host + strip trailing slash (where safe)
-          scheme_host="$(printf '%s' "$final_url" | sed -E 's#^([a-zA-Z]+)://([^/]+).*#\1://\2#')"
-          rest="$(printf '%s' "$final_url" | sed -E 's#^[a-zA-Z]+://[^/]+(.*)$#\1#')"
-          scheme_host_lc="$(printf '%s' "$scheme_host" | tr 'A-Z' 'a-z')"
-          [[ "$rest" == "/" ]] && rest=""
-          [[ "$rest" =~ /$ ]] && rest="${rest%/}"
-          normalized_url="${scheme_host_lc}${rest}"
+          # Format and export environment variables
+          title=$(echo "$title" | xargs)
+          preview="$title $url"
 
-          # Re-resolve after normalization
-          normalized_url="$(curl -sIL -o /dev/null -w '%{url_effective}' "$normalized_url" || echo "$normalized_url")"
+          echo "preview=$preview" >> $GITHUB_ENV
+          echo "rss_url=$url" >> $GITHUB_ENV
 
-          # Validate strict https + host and reachability (required for embed)
-          if [[ ! "$normalized_url" =~ ^https://(www\.)?kyleboas\.com(/[^[:space:]]*)?$ ]]; then
-            echo "::error::Normalized URL not a strict HTTPS kyleboas.com URI: $normalized_url"
-            exit 1
-          fi
-          code="$(curl -sIL -o /dev/null -w '%{http_code}' "$normalized_url" || true)"
-          if [[ ! "$code" =~ ^2|3 ]]; then
-            echo "::error::Normalized URL not reachable (HTTP $code): $normalized_url"
-            exit 1
-          fi
-
-          # Compose "Title URL" under ~300 chars total
-          max_total=300
-          reserve=$(( ${#normalized_url} + 1 ))
-          max_title_len=$(( max_total - reserve ))
-          if (( ${#title} > max_title_len )); then
-            ell="…"; cut=$(( max_title_len - ${#ell} ))
-            (( cut < 1 )) && { echo "::error::Title too long to pair with URL."; exit 1; }
-            title="${title:0:cut}${ell}"
-          fi
-          text="$title $normalized_url"
-
-          # Outputs (use step outputs, not env)
-          {
-            printf 'text<<EOF\n%s\nEOF\n' "$text"
-            printf 'final_url=%s\n' "$normalized_url"
-          } >> "$GITHUB_OUTPUT"
-
-      # Post to Bluesky (preview required; no fallback)
+      # Post to Bluesky
       - name: Post to Bluesky
         uses: myConsciousness/bluesky-post@v5
         with:
-          text: ${{ steps.fetch_post.outputs.text }}
-          link-preview-url: ${{ steps.fetch_post.outputs.final_url }}
-          identifier: kyleboas.com          # use the handle tied to your app password
+          text: "${{ env.preview }}"
+          link-preview-url: "${{ env.rss_url }}"
+          identifier: kyleboas.com
           password: ${{ secrets.BSS }}
-          retry-count: 3
 
-      # Optional: debug what we sent (remove when stable)
-      - name: Debug Values
+      # Debug step: Print environment variables (optional, remove after debugging)
+      - name: Debug Environment Variables
         run: |
-          echo "Text: ${{ steps.fetch_post.outputs.text }}"
-          echo "Embed URL: ${{ steps.fetch_post.outputs.final_url }}"
+          echo "Preview Text: ${{ env.preview }}"
+          echo "RSS URL: ${{ env.rss_url }}"
