@@ -21,3 +21,15 @@ Jamie Hamilton on the Training Ground Guru Podcast discussing the differences in
 > Of course, it can be, it can lead to incoherence and things falling apart and all the rest of it, but it's also very important that systems have an aspect of chaos within them to allow new things to emerge because if things become too static and too ordered, we get a very stagnant, let's say, landscape, which doesn't really help the emergence of new things. This concept of chaos and order, very interesting for this.
 
 I'm pro chaos, I don't believe it's negative if the team knows how to use it as a tool against the opponent.
+
+> When do we ever talk about football history? When do we ever challenge coaches to learn really go deep on football history? If you're a film director or music producer, probably you're going to know about the history of films, probably you're going to know about the history of music or arts.
+> 
+> I think in football, we have set up a real big blind spot. We think it's some kind of like inferior stuff that is just like overly simplistic, and we've moved beyond it now. We don't need to worry about it.
+> 
+> If you go back and watch The Hungry, the destroyed England at Wembley in 1953, you'll find some very interesting things. Watch the total football of Johann Cruyff. Don't just read a book about it.
+> 
+> Watch the games. You'll see some very interesting things. Watch Columbia of 1990, or even now, watch Malmo over the last couple of years under Henrik Rydström, two-time Swedish champions.
+> 
+> Watch Racing Santander, who currently top of the Spanish Second Division. I've mentioned Mjálbj, who already won the Swedish Premier League. The Argentinian national team, another one.
+> 
+> Columbus Crew under Wilfred Nansi. Very interesting team. But this is what I'm getting.
