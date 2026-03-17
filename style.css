@@ -1,4 +1,5 @@
 *{margin:0;padding:0;box-sizing:border-box}
+svg[hidden]{display:none}
 :root{--c:#1a1a1a;--c2:#666;--c3:#999;--bg:#fcfcfc;--bdr:rgba(0,0,0,.06);--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;--serif:'Libre Baskerville',Georgia,serif}
 body{background:var(--bg);color:var(--c);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
 ::selection{background:#f0eeea}
