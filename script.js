@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   const tw=document.getElementById('tw');
   if(tw){
-    const p=["writing about football tactics","building with Jekyll and JavaScript","reading and watching","analyzing the Premier League"];
+    const p=["writing about football","building websites","creating agentic systems","analyzing football tactics"];
     let i=0,c=0,d=false;
     !function t(){const s=p[i];d?(tw.textContent=s.substring(0,--c)):(tw.textContent=s.substring(0,++c));let n=d?50:100;if(!d&&c===s.length){n=1500;d=true}else if(d&&c===0){d=false;i=(i+1)%p.length;n=500}setTimeout(t,n)}()
   }
