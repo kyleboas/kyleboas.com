@@ -1,0 +1,12 @@
+title: Kyle Boas
+description: Writer & Developer
+url: "https://kyleboas.com"
+baseurl: ""
+
+# Exclude files Jekyll doesn't need to process
+exclude:
+  - README.md
+  - LICENSE
+
+# No plugins needed for static portfolio
+plugins: []
