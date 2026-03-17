@@ -6,7 +6,7 @@ a{color:inherit;text-decoration:none}
 ul{list-style:none}
 h1,h3{font-size:15px;font-weight:500}
 
-.wrap{max-width:680px;margin:0 auto;padding:64px 24px 128px}
+.wrap{max-width:680px;margin:0 auto;padding:32px 24px 80px}
 
 /* Animation */
 .fade{opacity:0;filter:blur(5px);transform:translateY(-6px)}
@@ -109,7 +109,7 @@ footer{display:flex;align-items:center;gap:12px;margin-top:64px}
 
 /* Mobile */
 @media(max-width:640px){
-  .wrap{padding:48px 20px 80px}
+  .wrap{padding:24px 20px 60px}
   section{margin-bottom:48px}
   .wi{flex-direction:column;align-items:flex-start;gap:4px}
   .dt{margin-left:0}
