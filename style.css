@@ -96,8 +96,8 @@ footer{display:flex;align-items:center;gap:12px;margin-top:64px}
 .post-body p{margin-bottom:16px;line-height:1.7}
 .post-body a{color:var(--c);font-weight:500;border-bottom:1px dotted rgba(0,0,0,.2);transition:border-color .2s}
 .post-body a:hover{border-color:rgba(0,0,0,.8)}
-.post-body blockquote{border-left:2px solid var(--bdr);padding-left:16px;margin:16px 0;color:var(--c3);font-style:italic}
-.post-body blockquote p{color:var(--c3)}
+.post-body blockquote{border-left:2px solid var(--bdr);padding-left:16px;margin:16px 0;color:var(--c2)}
+.post-body blockquote p{color:var(--c2)}
 .post-body img{max-width:100%;height:auto;border-radius:6px;margin:16px 0}
 .post-body code{font-family:var(--mono);font-size:13px;background:rgba(0,0,0,.04);padding:2px 5px;border-radius:3px}
 .post-body pre{background:rgba(0,0,0,.04);padding:16px;border-radius:6px;overflow-x:auto;margin:16px 0}
