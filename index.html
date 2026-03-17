@@ -1,31 +1,139 @@
----
-layout: default
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kyle Boas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" hidden>
+  <symbol id="star" viewBox="0 0 16 16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
 
-<div class="home">
-{% for post in site.posts %}
-  {% assign currentdate = post.date | date: "%B %d, %Y" %}
-  {% if currentdate != date %}
-    {% unless forloop.first %}{% endunless %} 
-   <div class="day">
-    <h3 class="date">{{post.date | date: "%B %d, %Y"}}</h3>
-    <div class="post">
-    {% assign date = currentdate %}
-  {% endif %}
-    <div class="post">
-      <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
-      {% if post.l1 and post.t1 %}
-      <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</a></p>
-      {% endif %}
-      {% if post.l2 and post.t2 %}
-         <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</a>, <a href="{{ post.l2 }}">{{ post.t2 }}</a></p>
-      {% endif %}
-      {% if post.l3 and post.t3 %}
-          <p class="link">Referencing: <a href="{{ post.l1 }}">{{ post.t1 }}</a>, <a href="{{ post.l2 }}">{{ post.t2 }}</a>, <a href="{{ post.l3 }}">{{ post.t3 }}</a></p>
-      {% endif %}
-      <p>{{ post.content }}</p>
+<div class="wrap">
+  <header class="fade">
+    <img src="https://kyleboas.com/assets/IMG_0124.png" alt="Kyle Boas" class="avatar">
+    <div>
+      <h1>Kyle Boas</h1>
+      <p class="sub">Currently <span id="tw"></span><span class="cur">|</span></p>
     </div>
-  </div>
-  {% if forloop.last %}{% endif %}
-{% endfor %}
-</div> 
+  </header>
+
+  <main>
+    <section class="fade" data-s="1">
+      <h2 class="label">ABOUT</h2>
+      <p class="body">Author of the <a href="https://tacticsjournal.com" target="_blank" rel="noopener noreferrer">Tactics Journal</a>, a blog analyzing football tactics from across the globe, focusing primarily on teams in Europe. I point out <em class="accent">what works</em>, what doesn't work, and what we should be paying attention to.</p>
+      <p class="body">When I'm not writing about football, I build things for the web. Based in Philadelphia.</p>
+    </section>
+
+    <section class="fade" data-s="2">
+      <h2 class="label">PROJECTS</h2>
+      <div class="tl">
+        <div class="tl-i">
+          <span class="dot"></span>
+          <a href="https://github.com/kyleboas/discord-tacticsjournal" class="tl-a" target="_blank" rel="noopener noreferrer">
+            <img src="https://github.githubassets.com/favicons/favicon-dark.svg" alt="" class="tl-img">
+            <div>
+              <div class="tl-h"><h3>Tactics Journal Discord Bot</h3><span class="yr">2025</span></div>
+              <p class="desc">Discord bot for the Tactics Journal community.</p>
+              <span class="stat"><svg width="14" height="14" fill="currentColor"><use href="#star"/></svg> 0</span>
+            </div>
+          </a>
+        </div>
+        <div class="tl-i">
+          <span class="dot"></span>
+          <a href="https://github.com/kyleboas/kyleboas.com" class="tl-a" target="_blank" rel="noopener noreferrer">
+            <img src="https://kyleboas.com/assets/IMG_0124.png" alt="" class="tl-img">
+            <div>
+              <div class="tl-h"><h3>kyleboas.com</h3><span class="yr">2024</span></div>
+              <p class="desc">Personal website. A minimal portfolio and link blog.</p>
+              <span class="stat"><svg width="14" height="14" fill="currentColor"><use href="#star"/></svg> 0</span>
+            </div>
+          </a>
+        </div>
+        <div class="tl-i">
+          <span class="dot"></span>
+          <a href="https://github.com/kyleboas/scriptable" class="tl-a" target="_blank" rel="noopener noreferrer">
+            <img src="https://raw.githubusercontent.com/kyleboas/scriptable/main/images/3A417EA7-07AD-474E-AD46-CEC1A800CD27.jpeg" alt="" class="tl-img" onerror="this.src='https://github.githubassets.com/favicons/favicon-dark.svg'">
+            <div>
+              <div class="tl-h"><h3>Scriptable</h3><span class="yr">2021</span></div>
+              <p class="desc">A collection of iOS widgets I've made or modified.</p>
+              <span class="stat"><svg width="14" height="14" fill="currentColor"><use href="#star"/></svg> 1</span>
+            </div>
+          </a>
+        </div>
+      </div>
+      <button class="more" id="moreBtn"><span id="moreTxt">Show in-progress projects</span> <svg width="14" height="14" class="more-ic"><use href="#chev"/></svg></button>
+      <div class="tl hidden" id="wip">
+        <div class="tl-i">
+          <span class="dot active"></span>
+          <a href="https://github.com/kyleboas/secondbrain" class="tl-a" target="_blank" rel="noopener noreferrer">
+            <img src="https://raw.githubusercontent.com/kyleboas/secondbrain/main/assets/logo.png" alt="" class="tl-img" onerror="this.src='https://github.githubassets.com/favicons/favicon-dark.svg'">
+            <div>
+              <div class="tl-h"><h3>Second Brain</h3><span class="yr">2026</span></div>
+              <p class="desc">A shared memory for AI.</p>
+              <span class="stat"><svg width="14" height="14" fill="currentColor"><use href="#star"/></svg> 0</span>
+            </div>
+          </a>
+        </div>
+        <div class="tl-i">
+          <span class="dot active"></span>
+          <a href="https://github.com/kyleboas/blob" class="tl-a" target="_blank" rel="noopener noreferrer">
+            <img src="https://github.githubassets.com/favicons/favicon-dark.svg" alt="" class="tl-img">
+            <div>
+              <div class="tl-h"><h3>Blob</h3><span class="yr">2026</span></div>
+              <p class="desc">Slack-driven autonomous coding worker built on Cloudflare Workers + Durable Objects.</p>
+              <span class="stat"><svg width="14" height="14" fill="currentColor"><use href="#star"/></svg> 0</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="fade" data-s="3">
+      <h2 class="label">WRITING</h2>
+      <div class="wl">
+        <a href="#" class="wi"><span>CHATGPTactics</span><span class="dt">Nov 2, 2025</span></a>
+        <a href="#" class="wi"><span>Adding Bluesky Comments to a Jekyll Blog</span><span class="dt">Nov 25, 2024</span></a>
+        <a href="#" class="wi"><span>Benefits of an Open Network from a Developer</span><span class="dt">Nov 24, 2024</span></a>
+        <a href="#" class="wi"><span>Full Content Should Be the Default for RSS Feeds</span><span class="dt">Jan 22, 2025</span></a>
+      </div>
+      <a href="#" class="more-link">View all posts →</a>
+    </section>
+
+    <section class="fade" data-s="4">
+      <h2 class="label">EXPERIENCE</h2>
+      <ul class="exp">
+        <li><div><h3>Freelance Writer</h3></div><span class="dt">Jun 2024 – Present</span></li>
+        <li><div><h3>Founder</h3><p class="sub">Syncd</p></div><span class="dt">Dec 2025 – Present</span></li>
+        <li><div><h3>Writer / Author</h3><p class="sub">Tactics Journal</p></div><span class="dt">Jan 2023 – Present</span></li>
+        <li><div><h3>Editor in Chief</h3><p class="sub">IFATC Education Group</p></div><span class="dt">Jan 2018 – Aug 2022</span></li>
+      </ul>
+    </section>
+
+    <section class="fade" data-s="5">
+      <h2 class="label">LINKS</h2>
+      <div class="links">
+        <a href="https://tacticsjournal.com" target="_blank" rel="noopener noreferrer">Tactics Journal</a>
+        <a href="https://bsky.app/profile/kyleboas.com" target="_blank" rel="noopener noreferrer">Bluesky</a>
+        <a href="https://www.linkedin.com/in/kyle-boas" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a href="https://x.com/KyleBoas_" target="_blank" rel="noopener noreferrer">X/Twitter</a>
+        <a href="mailto:kyle@tacticsjournal.com">Email</a>
+        <a href="https://kyleboas.com/feed" target="_blank" rel="noopener noreferrer">RSS</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="fade" data-s="6">
+    <span class="badge">v1.0</span>
+    <span class="copy">Kyle Boas © 2026</span>
+  </footer>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

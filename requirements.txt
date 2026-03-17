@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-feedparser
-newspaper3k
-sumy
-lxml
-lxml_html_clean
-nltk
-pydantic
