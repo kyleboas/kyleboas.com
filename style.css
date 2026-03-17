@@ -23,7 +23,7 @@ h1,h3{font-size:15px;font-weight:500}
 
 /* Header */
 header{display:flex;align-items:flex-start;gap:16px;margin-bottom:24px}
-.avatar{width:44px;height:44px;border-radius:50%;outline:1px solid rgba(0,0,0,.05);display:block}
+.avatar{width:48px;height:48px;border-radius:50%;display:block}
 .sub{color:var(--c2);font-size:14px}
 .cur{animation:bk 1s step-end infinite}
 #tw{color:var(--c)}
