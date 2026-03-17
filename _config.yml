@@ -2,11 +2,16 @@ title: Kyle Boas
 description: Writer & Developer
 url: "https://kyleboas.com"
 baseurl: ""
+timezone: America/New_York
+
+permalink: /:year/:month/:day/:title/
 
 # Exclude files Jekyll doesn't need to process
 exclude:
   - README.md
   - LICENSE
+  - Gemfile
+  - Gemfile.lock
 
-# No plugins needed for static portfolio
-plugins: []
+plugins:
+  - jekyll-feed

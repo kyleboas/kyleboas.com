@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ page.title }} — Kyle Boas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="/" class="back">← Kyle Boas</a>
+  </header>
+  <article class="post">
+    <h1 class="post-title">{{ page.title }}</h1>
+    <time class="post-date" datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%B %-d, %Y" }}</time>
+    <div class="post-body">
+      {{ content }}
+    </div>
+  </article>
+  <footer>
+    <span class="badge">v1.0</span>
+    <span class="copy">Kyle Boas © 2026</span>
+  </footer>
+</div>
+</body>
+</html>

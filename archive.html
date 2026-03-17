@@ -1,0 +1,41 @@
+---
+layout: null
+title: Archive
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archive — Kyle Boas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="/" class="back">← Kyle Boas</a>
+  </header>
+  <main>
+    <section class="archive-section">
+      <h1 class="archive-title">All Posts</h1>
+      {% assign posts_by_year = site.posts | group_by_exp: "post", "post.date | date: '%Y'" %}
+      {% for year in posts_by_year %}
+      <h2 class="label archive-year">{{ year.name }}</h2>
+      <div class="wl">
+        {% for post in year.items %}
+        <a href="{{ post.url }}" class="wi"><span>{{ post.title }}</span><span class="dt">{{ post.date | date: "%b %-d, %Y" }}</span></a>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </section>
+  </main>
+  <footer>
+    <span class="badge">v1.0</span>
+    <span class="copy">Kyle Boas © 2026</span>
+  </footer>
+</div>
+</body>
+</html>

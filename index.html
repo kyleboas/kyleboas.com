@@ -19,7 +19,7 @@
 
 <div class="wrap">
   <header class="fade">
-    <img src="https://kyleboas.com/assets/IMG_0124.png" alt="Kyle Boas" class="avatar">
+    <img src="/assets/IMG_0124.png" alt="Kyle Boas" class="avatar">
     <div>
       <h1>Kyle Boas</h1>
       <p class="sub">Currently <span id="tw"></span><span class="cur">|</span></p>
@@ -50,7 +50,7 @@
         <div class="tl-i">
           <span class="dot"></span>
           <a href="https://github.com/kyleboas/kyleboas.com" class="tl-a" target="_blank" rel="noopener noreferrer">
-            <img src="https://kyleboas.com/assets/IMG_0124.png" alt="" class="tl-img">
+            <img src="/assets/IMG_0124.png" alt="" class="tl-img">
             <div>
               <div class="tl-h"><h3>kyleboas.com</h3><span class="yr">2024</span></div>
               <p class="desc">Personal website. A minimal portfolio and link blog.</p>
@@ -100,12 +100,11 @@
     <section class="fade" data-s="3">
       <h2 class="label">WRITING</h2>
       <div class="wl">
-        <a href="#" class="wi"><span>CHATGPTactics</span><span class="dt">Nov 2, 2025</span></a>
-        <a href="#" class="wi"><span>Adding Bluesky Comments to a Jekyll Blog</span><span class="dt">Nov 25, 2024</span></a>
-        <a href="#" class="wi"><span>Benefits of an Open Network from a Developer</span><span class="dt">Nov 24, 2024</span></a>
-        <a href="#" class="wi"><span>Full Content Should Be the Default for RSS Feeds</span><span class="dt">Jan 22, 2025</span></a>
+        {% for post in site.posts limit:5 %}
+        <a href="{{ post.url }}" class="wi"><span>{{ post.title }}</span><span class="dt">{{ post.date | date: "%b %-d, %Y" }}</span></a>
+        {% endfor %}
       </div>
-      <a href="#" class="more-link">View all posts →</a>
+      <a href="/archive" class="more-link">View all posts →</a>
     </section>
 
     <section class="fade" data-s="4">
