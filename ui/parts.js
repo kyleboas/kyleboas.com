@@ -125,25 +125,6 @@ export const SPECIMENS = [
 }`
   },
   {
-    id: 'watchful-row',
-    name: 'Watchful dashboard row',
-    blurb: 'Dark density where the hierarchy is type and spacing, never a second colour.',
-    project: { name: 'Scouting dashboard' },
-    source: { repo: 'yourscout', path: 'DESIGN.md', public: false },
-    theme: 'watchful',
-    surface: 'tall',
-    scope: 'pattern',
-    tags: ['dark', 'density', 'tables'],
-    variants: ['rows', 'tiles'],
-    status: 'shipped',
-    code: `.watch{--bg:#08090a;--panel:#0f1011;--line:#23252a;--line-t:#ffffff0d;
-  --ink:#f7f8f8;--mut:#8a8f98;--mut-2:#62666d;--accent:#8fbd78}
-.watch th{font-size:11px;font-weight:510;text-transform:uppercase;
-  letter-spacing:.06em;color:var(--mut-2);border-bottom:1px solid var(--line)}
-.watch td{border-bottom:1px solid var(--line-t);vertical-align:top;padding:10px 16px}
-.watch tr:hover td{background:#1c1c1f}`
-  },
-  {
     id: 'alternating-tiles',
     name: 'Alternating tile surfaces',
     blurb: 'Parchment, white, dark. The surface change is the divider, so nothing else has to be.',
@@ -228,6 +209,30 @@ if (typeof document !== 'undefined') {
       } catch {
         setStatus(section, 'Copy was blocked. Open the code and copy it manually.');
       }
+    });
+  }
+
+  /* ---- top nav menu: a disclosure, not a framework ---- */
+  const menuBtn = document.querySelector('[data-menu-toggle]');
+  const menu = menuBtn && document.getElementById(menuBtn.getAttribute('aria-controls'));
+  if (menuBtn && menu) {
+    const setMenu = (open) => {
+      menuBtn.setAttribute('aria-expanded', String(open));
+      menu.hidden = !open;
+    };
+    setMenu(false);
+    menuBtn.addEventListener('click', () => {
+      setMenu(menuBtn.getAttribute('aria-expanded') !== 'true');
+    });
+    document.addEventListener('keydown', (e) => {
+      /* The dialog owns Escape while it is open; it traps focus anyway. */
+      if (e.key !== 'Escape' || menu.hidden || document.querySelector('dialog[open]')) return;
+      setMenu(false);
+      menuBtn.focus();
+    });
+    document.addEventListener('click', (e) => {
+      if (menu.hidden || e.target.closest('.topnav')) return;
+      setMenu(false);
     });
   }
 
@@ -349,12 +354,20 @@ if (typeof document !== 'undefined') {
     }
   }
 
-  /* ---- replay ---- */
+  /* ---- replay ----
+     One play function per animated stage, owned by that stage alone: it cancels
+     its own pending timer, clears the classes, forces a reflow so the animation
+     restarts from zero, then runs once. The replay button and a variant change
+     both call it, so choosing "Staggered" plays immediately with no second
+     click. Under reduced motion it writes the end state and no motion runs. */
   for (const btn of document.querySelectorAll('[data-replay]')) {
     const stage = document.getElementById(btn.dataset.replay);
     if (!stage) continue;
-    btn.addEventListener('click', () => {
-      const section = btn.closest('section[id]');
+    const section = btn.closest('section[id]');
+    let timer = 0;
+
+    const play = (note) => {
+      window.clearTimeout(timer);
       if (reduced.matches) {
         stage.classList.remove('is-playing');
         stage.classList.add('is-done');
@@ -364,12 +377,17 @@ if (typeof document !== 'undefined') {
       stage.classList.remove('is-playing', 'is-done');
       void stage.offsetWidth;
       stage.classList.add('is-playing');
-      setStatus(section, 'Replayed.');
-      window.setTimeout(
+      setStatus(section, note);
+      timer = window.setTimeout(
         () => stage.classList.remove('is-playing'),
         ms('--duration-very-slow', 500) * 3
       );
-    });
+    };
+
+    btn.addEventListener('click', () => play('Replayed.'));
+    /* Fires for pointer and keyboard selection alike: the variant control
+       dispatches this after it has written data-variant on the stage. */
+    stage.addEventListener('variantchange', (e) => play(`Playing: ${e.detail}.`));
   }
 
   /* ---- the one-purpose tool's state machine ---- */
@@ -470,26 +488,12 @@ if (typeof document !== 'undefined') {
     render();
   }
 
-  /* ---- rail highlight + section reveal + ambient loops ---- */
-  const links = [...document.querySelectorAll('.rail a[href^="#"]')];
+  /* ---- section reveal + ambient loops ---- */
   const sections = [...byId.keys()]
     .map((id) => document.getElementById(id))
     .filter(Boolean);
 
   if ('IntersectionObserver' in window) {
-    const current = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          for (const a of links) {
-            a.setAttribute('aria-current', a.hash === `#${entry.target.id}` ? 'true' : 'false');
-          }
-        }
-      },
-      { rootMargin: '-15% 0px -70% 0px' }
-    );
-    for (const el of sections) current.observe(el);
-
     /* Reveal is an enhancement: sections are visible, then JS opts them into
        the transition and a fallback timer un-hides them no matter what. */
     if (!reduced.matches) {

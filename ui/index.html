@@ -15,22 +15,22 @@
 
 <div class="shell">
 
-  <nav class="rail" aria-label="Collection index">
-    <p class="rail-t">UI collection</p>
-    <ol class="rail-list">
-      <li><span class="rail-n">01</span><a href="#blur-lift">Blur-lift entrance</a></li>
-      <li><span class="rail-n">02</span><a href="#timeline-dots">Timeline state dots</a></li>
-      <li><span class="rail-n">03</span><a href="#dotted-rule-links">Dotted-rule link row</a></li>
-      <li><span class="rail-n">04</span><a href="#one-purpose-tool">One-purpose tool</a></li>
-      <li><span class="rail-n">05</span><a href="#motion-tokens">Three durations, two curves</a></li>
-      <li><span class="rail-n">06</span><a href="#drawn-check">Check that draws itself</a></li>
-      <li><span class="rail-n">07</span><a href="#watchful-row">Watchful dashboard row</a></li>
-      <li><span class="rail-n">08</span><a href="#alternating-tiles">Alternating tile surfaces</a></li>
-    </ol>
-    <p class="rail-foot"><a href="/">Kyle Boas</a></p>
-  </nav>
-
   <div class="col">
+
+    <nav class="topnav" aria-label="Site">
+      <a class="topnav-id" href="/">
+        <img class="topnav-face" src="/assets/IMG_0124.png" alt="" width="28" height="28" decoding="async">
+        <span>Kyle Boas</span>
+      </a>
+      <button type="button" class="topnav-toggle" data-menu-toggle aria-expanded="false" aria-controls="topnav-menu" aria-label="Menu">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 5h11"/><path d="M2.5 11h11"/></svg>
+      </button>
+      <div class="topnav-menu" id="topnav-menu" hidden>
+        <a href="/">Home</a>
+        <a href="/archive.html">Archive</a>
+        <a href="/ui/" aria-current="page">UI collection</a>
+      </div>
+    </nav>
 
     <header class="ui-head">
       <h1 class="ui-title">UI collection</h1>
@@ -269,55 +269,9 @@
 }</code></pre>
       </section>
 
-      <section class="spec" id="watchful-row" aria-labelledby="watchful-row-h">
-        <div class="spec-head">
-          <span class="spec-n">07</span>
-          <h2 id="watchful-row-h">Watchful dashboard row</h2>
-          <p class="spec-blurb">Dark density where the hierarchy is type and spacing, never a second colour.</p>
-        </div>
-        <div class="surface">
-          <div class="surface-actions">
-            <button type="button" class="ibtn" data-copy aria-label="Copy the dashboard CSS"><svg class="i-copy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.8"/><path d="M10.5 3.2A1.7 1.7 0 0 0 8.8 2H4.2A2.2 2.2 0 0 0 2 4.2v4.6c0 .8.5 1.4 1.2 1.7"/></svg><svg class="i-done" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.6 6.2 12 13 4.6"/></svg></button>
-            <button type="button" class="ibtn" data-code aria-label="View the dashboard CSS"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.6 4.2 1.8 8l3.8 3.8"/><path d="M10.4 4.2 14.2 8l-3.8 3.8"/></svg></button>
-          </div>
-          <div class="surface-in surface-in--wide">
-            <div class="stage stage--watchful" id="watchful-row-stage" data-variant="rows">
-              <div class="demo-watch">
-                <div class="demo-watch-tiles">
-                  <div class="demo-tile"><span class="lbl">Open</span><span class="num">18</span><span class="names">four scouts reporting</span></div>
-                  <div class="demo-tile"><span class="lbl">Replied</span><span class="num">6</span><span class="names">since Monday</span></div>
-                  <div class="demo-tile"><span class="lbl">Stale</span><span class="num">2</span><span class="names">older than 14 days</span></div>
-                </div>
-                <table class="demo-watch-table">
-                  <thead><tr><th>Finding</th><th>Why it matters</th><th>Age</th></tr></thead>
-                  <tbody>
-                    <tr><td>Regional side hiring</td><td>Matches the analysis brief exactly</td><td>2d</td></tr>
-                    <tr><td>Federation posting</td><td>Same remit, wider territory</td><td>5d</td></tr>
-                    <tr><td>League data role</td><td>Adjacent, worth a short note</td><td>11d</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <p class="spec-prov"><span class="proj">Scouting dashboard</span> <span class="sep">/</span> <span class="path">DESIGN.md</span></p>
-          <div class="variants" role="radiogroup" aria-label="Dashboard emphasis" data-variants="watchful-row-stage">
-            <span class="variants-pill" aria-hidden="true"></span>
-            <button type="button" role="radio" aria-checked="true" data-variant="rows">Rows</button>
-            <button type="button" role="radio" aria-checked="false" data-variant="tiles">Tiles</button>
-          </div>
-        </div>
-        <p class="spec-status" data-status aria-live="polite"></p>
-        <pre class="spec-src"><code>.watch{--bg:#08090a;--panel:#0f1011;--line:#23252a;--line-t:#ffffff0d;
-  --ink:#f7f8f8;--mut:#8a8f98;--mut-2:#62666d;--accent:#8fbd78}
-.watch th{font-size:11px;font-weight:510;text-transform:uppercase;
-  letter-spacing:.06em;color:var(--mut-2);border-bottom:1px solid var(--line)}
-.watch td{border-bottom:1px solid var(--line-t);vertical-align:top;padding:10px 16px}
-.watch tr:hover td{background:#1c1c1f}</code></pre>
-      </section>
-
       <section class="spec" id="alternating-tiles" aria-labelledby="alternating-tiles-h">
         <div class="spec-head">
-          <span class="spec-n">08</span>
+          <span class="spec-n">07</span>
           <h2 id="alternating-tiles-h">Alternating tile surfaces</h2>
           <p class="spec-blurb">Parchment, white, dark. The surface change is the divider, so nothing else has to be.</p>
         </div>
@@ -356,6 +310,7 @@
 
     <footer class="ui-foot">
       <p class="copy">Sources for private projects are named as provenance only. The code shown is presentational.</p>
+      <p class="ui-foot-back"><a href="/">Kyle Boas</a></p>
     </footer>
 
   </div>

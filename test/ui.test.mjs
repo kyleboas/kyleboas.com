@@ -41,12 +41,65 @@ test('the renderer refuses entries missing required source fields', () => {
   assert.equal(isRenderable({ ...SPECIMENS[0], project: {} }), false);
 });
 
-test('each entry has a matching section and rail anchor in the page', () => {
+test('each entry has a matching section and heading in the page', () => {
   for (const s of SPECIMENS) {
     assert.match(html, new RegExp(`<section class="spec" id="${s.id}" aria-labelledby="${s.id}-h">`), s.id);
     assert.match(html, new RegExp(`<h2 id="${s.id}-h">`), `${s.id}: heading`);
-    assert.match(html, new RegExp(`href="#${s.id}"`), `${s.id}: rail link`);
   }
+});
+
+test('the watchful dashboard specimen is gone, leaving nothing behind', () => {
+  assert.equal(SPECIMENS.length, 7, 'seven specimens remain');
+  assert.equal(SPECIMENS.find((s) => s.id === 'watchful-row'), undefined);
+  for (const f of [html, css, js]) {
+    for (const dangling of [/watchful/i, /demo-watch/, /stage--watchful/, /yourscout/]) {
+      assert.doesNotMatch(f, dangling, `dangling reference: ${dangling}`);
+    }
+  }
+});
+
+test('the top index block is gone at every width', () => {
+  for (const f of [html, css, js]) {
+    for (const dangling of [/\brail-/, /class="rail"/, /\.rail\b/, /Collection index/]) {
+      assert.doesNotMatch(f, dangling, `index rail must not survive: ${dangling}`);
+    }
+  }
+  assert.doesNotMatch(html, /<ol class="[^"]*rail/, 'no numbered index list');
+});
+
+test('the top nav is the page chrome: identity, local face, disclosure menu', () => {
+  assert.match(html, /<nav class="topnav" aria-label="Site">/);
+  assert.match(html, /<img class="topnav-face" src="\/assets\/IMG_0124\.png"[^>]*width="28" height="28"/,
+    'local avatar with intrinsic size, so the nav does not shift');
+  assert.doesNotMatch(html, /raw\.githubusercontent\.com/, 'no remote image dependency');
+  const toggle = (html.match(/<button[^>]*data-menu-toggle[^>]*>/) || [])[0];
+  assert.ok(toggle, 'the hamburger is a real button');
+  assert.match(toggle, /type="button"/);
+  assert.match(toggle, /aria-expanded="false"/);
+  assert.match(toggle, /aria-controls="topnav-menu"/);
+  assert.match(html, /<div class="topnav-menu" id="topnav-menu" hidden>/);
+  for (const href of ['href="/"', 'href="/archive.html"', 'href="/ui/"']) {
+    assert.ok(html.includes(href), `menu link missing: ${href}`);
+  }
+  /* Keyboard: Escape closes it and focus goes back to the button. */
+  assert.match(js, /e\.key !== 'Escape'/);
+  assert.match(js, /menuBtn\.focus\(\)/);
+  /* The menu expands in flow, so it never covers the specimens on a phone. */
+  assert.doesNotMatch(css, /\.topnav-menu \{[^}]*position: absolute/);
+});
+
+test('choosing a variant replays that specimen without a second click', () => {
+  /* The variant control announces the change on the stage; each animated
+     stage plays itself from that event, cancelling its own pending timer. */
+  assert.match(js, /new CustomEvent\('variantchange'/, 'variant selection announces itself');
+  assert.match(js, /stage\.addEventListener\('variantchange'/, 'the stage replays on variant change');
+  assert.match(js, /const play = \(note\) => \{/, 'one play function drives button and variant alike');
+  assert.match(js, /window\.clearTimeout\(timer\)/, 'a new play cancels the previous one');
+  assert.match(js, /void stage\.offsetWidth;/, 'a reflow restarts the animation');
+  /* Keyboard selection runs the same select(), so arrows replay too. */
+  assert.match(js, /next\.focus\(\);\s*\n\s*select\(next\);/);
+  /* Reduced motion: state changes, no motion, nothing left blank. */
+  assert.match(js, /if \(reduced\.matches\) \{[\s\S]{0,220}?is-done/);
 });
 
 test('every section carries one compact header row: number, name, blurb', () => {
@@ -104,14 +157,13 @@ test('the big-type form is gone, replaced by the one-purpose tool', () => {
   assert.match(css, /\.demo-tool textarea \{[\s\S]*?font-size: 15px;/, '15px field');
 });
 
-test('the fixed-rail and viewport-measurement scaffolding is gone', () => {
+test('the viewport-measurement scaffolding is gone', () => {
   for (const f of [html, css, js]) {
     assert.doesNotMatch(f, /stage--bleed/, 'stage--bleed must not survive');
     assert.doesNotMatch(f, /--vw\b/, 'viewport measurement must not survive');
   }
   assert.doesNotMatch(js, /clientWidth/, 'no viewport width measurement in JS');
-  assert.match(css, /grid-template-columns: 232px 720px;/, 'rail + content shell');
-  assert.match(css, /max-width: 952px;/, 'centered shell width');
+  assert.match(css, /\.shell \{[\s\S]*?max-width: 720px;/, 'one centered column');
 });
 
 test('the surface is the visual focus', () => {

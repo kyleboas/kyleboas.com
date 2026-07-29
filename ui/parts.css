@@ -1,6 +1,7 @@
-/* UI collection — one centered framed shell: a stacked index rail beside a
-   single column of specimens. Each specimen is a compact header row plus one
-   surface; the surface is the thing you look at. Page chrome stays native to
+/* UI collection — one centered framed shell holding a single column of
+   specimens, with no index list above or beside them. Each specimen is a
+   compact header row plus one surface; the surface is the thing you look at.
+   Page chrome stays native to
    kyleboas.com (Inter / JetBrains Mono / Libre Baskerville, #fcfcfc, ink). */
 
 /* ---- motion tokens ---- */
@@ -54,34 +55,59 @@
 /* ---- shell ---- */
 .shell {
   display: grid;
-  grid-template-columns: 232px 720px;
-  max-width: 952px;
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+  max-width: 720px;
   margin: 0 auto;
   border-inline: 1px solid var(--line);
 }
 
-.rail {
-  border-right: 1px solid var(--line);
-  padding: 40px 20px 40px 24px;
+.col { padding: 40px 32px 72px; min-width: 0; }
+
+/* ---- top nav: the page's only chrome above the specimens ---- */
+/* The menu expands in flow rather than over the page, so nothing on a phone
+   is ever covered by it. Without JS the links are simply always visible. */
+.topnav {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  margin-bottom: 40px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
 }
-.rail-t {
-  font: 400 11px/1 var(--mono);
-  text-transform: uppercase; letter-spacing: .08em;
-  color: var(--ink-2); margin-bottom: 18px;
+.topnav-id {
+  display: flex; align-items: center; gap: 9px; margin-right: auto;
+  font-size: 13px; font-weight: 500; color: var(--ink);
 }
-.rail-list { display: flex; flex-direction: column; gap: 9px; }
-.rail-list li { display: flex; gap: 8px; align-items: baseline; }
-.rail-n { font: 400 11px/1.5 var(--mono); color: var(--ink-2); flex: 0 0 auto; }
-.rail a {
-  font-size: 12.5px; line-height: 1.5; color: var(--ink-2);
+.topnav-face {
+  width: 28px; height: 28px; flex: 0 0 auto;
+  border-radius: 50%; display: block; background: var(--field);
+}
+.topnav-toggle {
+  display: none;
+  width: 28px; height: 28px; flex: 0 0 auto;
+  place-items: center;
+  border: 0; border-radius: 8px; padding: 0; cursor: pointer;
+  background: none; color: var(--ink-2);
+  transition: color var(--duration-quick) var(--ease-out),
+              background-color var(--duration-quick) var(--ease-out);
+}
+.js .topnav-toggle { display: grid; }
+.topnav-toggle:hover { color: var(--ink); background: var(--hover); }
+.topnav-toggle[aria-expanded="true"] { color: var(--ink); background: var(--field); }
+.topnav-toggle svg {
+  width: 16px; height: 16px; display: block;
+  fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round;
+}
+.topnav-menu {
+  display: flex; flex-wrap: wrap; gap: 6px 18px;
+  flex: 1 0 100%; padding-top: 12px;
+}
+.js .topnav-menu[hidden] { display: none; }
+.topnav-menu a {
+  font: 400 12px var(--mono); color: var(--ink-2);
+  border-bottom: 1px dotted var(--line-strong);
   transition: color var(--duration-quick) var(--ease-out);
 }
-.rail a:hover { color: var(--ink); }
-.rail a[aria-current="true"] { color: var(--ink); font-weight: 500; }
-.rail-foot { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line); }
-.rail-foot a { font: 11px var(--mono); border-bottom: 1px dotted var(--line-strong); }
-
-.col { padding: 40px 32px 72px; min-width: 0; }
+.topnav-menu a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.topnav-menu a[aria-current="page"] { color: var(--ink); }
 
 /* ---- page head ---- */
 /* The site sheet lays header/footer out as flex rows; here they are prose. */
@@ -127,8 +153,7 @@
   background: var(--canvas);
   box-shadow: 0 0 0 1px var(--line);
 }
-/* Two specimens need more room; they still sit inside the standard surface. */
-#watchful-row .surface { min-height: 336px; }
+/* One specimen needs more room; it still sits inside the standard surface. */
 #alternating-tiles .surface { min-height: 424px; }
 .surface-in { width: 100%; min-width: 0; max-width: 480px; padding: 26px 6px 46px; }
 .stage { min-width: 0; }
@@ -461,47 +486,7 @@
   to   { opacity: 1; transform: rotate(45deg) scale(1); clip-path: inset(0 0 0 0); }
 }
 
-/* ---- 7. watchful dashboard ---- */
-.stage--watchful {
-  background: #08090a; border-radius: 10px; padding: 14px; color-scheme: dark;
-}
-.demo-watch {
-  --w-panel: #0f1011; --w-line: #23252a; --w-line-t: #ffffff0d;
-  --w-ink: #f7f8f8; --w-mut: #a2a8b1; --w-mut-2: #9aa0a9;
-  color: var(--w-ink);
-}
-.demo-watch-tiles {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 8px;
-}
-.demo-tile {
-  background: var(--w-panel); border: 1px solid var(--w-line); border-radius: 8px;
-  padding: 12px 14px; display: flex; flex-direction: column;
-}
-.demo-tile .lbl { font: 400 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--w-mut-2); }
-.demo-tile .num { font-size: 22px; font-weight: 500; letter-spacing: -.02em; margin-top: 4px; line-height: 1.15; }
-.demo-tile .names { font-size: 12px; color: var(--w-mut); margin-top: 6px; line-height: 1.4; }
-.demo-watch-table {
-  width: 100%; border-collapse: collapse; font-size: 13px;
-  background: var(--w-panel); border: 1px solid var(--w-line); border-radius: 8px;
-}
-.demo-watch-table th {
-  text-align: left; padding: 9px 14px;
-  font: 400 11px var(--mono); text-transform: uppercase; letter-spacing: .06em;
-  color: var(--w-mut-2); border-bottom: 1px solid var(--w-line); white-space: nowrap;
-}
-.demo-watch-table td {
-  text-align: left; vertical-align: top; padding: 9px 14px;
-  border-bottom: 1px solid var(--w-line-t); color: var(--w-ink);
-  transition: background-color var(--duration-quick) var(--ease-out);
-}
-.demo-watch-table tbody tr:last-child td { border-bottom: 0; }
-.demo-watch-table tbody tr:hover td { background: #1c1c1f; }
-.demo-watch-table td:last-child { color: var(--w-mut); font-family: var(--mono); font-size: 12px; }
-#watchful-row-stage[data-variant="tiles"] .demo-watch-table { display: none; }
-#watchful-row-stage[data-variant="rows"] .demo-watch-tiles { display: none; }
-
-/* ---- 8. alternating tiles ---- */
+/* ---- 7. alternating tiles ---- */
 .stage--editorial { border-radius: 10px; overflow: hidden; color-scheme: light; }
 .demo-tilev { padding: 26px 22px; }
 .demo-tilev .inner { max-width: 60ch; margin: 0 auto; }
@@ -518,19 +503,9 @@
 .demo-tilev--dark :focus-visible { outline-color: #79b8ff; }
 #alternating-tiles-stage[data-variant="dark"] .demo-tile-stack { display: flex; flex-direction: column-reverse; }
 
-/* ---- below the shell width: the rail becomes a document head ---- */
-@media (max-width: 1079px) {
-  .shell {
-    grid-template-columns: minmax(0, 1fr);
-    max-width: 720px;
-    border-inline: 0;
-  }
-  .rail {
-    border-right: 0; border-bottom: 1px solid var(--line);
-    padding: 32px 24px 24px;
-  }
-  .rail-list { gap: 7px; }
-  .rail-foot { display: none; }
+/* ---- below the shell width: the frame gives up its edges ---- */
+@media (max-width: 767px) {
+  .shell { border-inline: 0; }
   .col { padding: 32px 24px 64px; }
 }
 
@@ -542,18 +517,15 @@
 }
 
 @media (max-width: 560px) {
-  .rail { padding: 24px 20px 20px; }
   .col { padding: 28px 20px 56px; }
   .ui-title { font-size: 23px; }
   .spec { margin-bottom: 40px; }
   .surface { min-height: 244px; }
-  #watchful-row .surface { min-height: 300px; }
   #alternating-tiles .surface { min-height: 380px; }
   .surface-in { padding: 26px 2px 48px; }
   .demo-tl li { flex-direction: column; align-items: flex-start; gap: 2px; }
   .demo-track li { flex-direction: column; align-items: stretch; gap: 6px; }
   .demo-track-l { flex: none; }
-  .demo-watch-table { display: block; overflow-x: auto; }
   .spec-prov { position: static; margin-top: 10px; max-width: none; text-align: center; }
   .surface-in { padding-bottom: 8px; }
   .surface { padding-bottom: 46px; }
@@ -575,7 +547,7 @@
 }
 
 @media print {
-  .rail, .surface-actions, .variants, .code-dialog { display: none !important; }
+  .topnav, .surface-actions, .variants, .code-dialog { display: none !important; }
   .js .spec-src { display: block; }
   .shell { display: block; border: 0; }
 }
