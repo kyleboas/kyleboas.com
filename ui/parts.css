@@ -45,6 +45,8 @@
   --line: rgba(0, 0, 0, .1);
   --line-strong: rgba(0, 0, 0, .18);
   --accent: #1a1a1a;
+  --blue: #0b57d0;
+  --blue-deep: #08409b;
 
   --z-modal: 100;
 
@@ -76,11 +78,12 @@
   display: flex; align-items: center; gap: 9px; margin-right: auto;
   min-width: 0; color: var(--ink);
 }
-.topnav-mark {
+/* The face carries its own width/height attributes, so the row reserves the
+   disc before the file loads and nothing shifts under the specimens. */
+.topnav-face {
   width: 26px; height: 26px; flex: 0 0 auto;
-  display: grid; place-items: center; border-radius: 50%;
-  background: var(--ink); color: var(--page);
-  font: 400 9.5px/1 var(--mono); letter-spacing: .04em;
+  display: block; border-radius: 50%;
+  object-fit: cover; background: var(--field);
 }
 .topnav-name {
   font-size: 13px; font-weight: 500; letter-spacing: -.005em;
@@ -89,12 +92,13 @@
 .topnav-link {
   flex: 0 0 auto;
   padding: 7px 15px; border-radius: 999px;
-  background: var(--ink); color: var(--page);
+  background: var(--blue); color: #fff;
   font-size: 12.5px; font-weight: 500; line-height: 1;
-  transition: opacity var(--duration-quick) var(--ease-out);
+  transition: background var(--duration-quick) var(--ease-out);
 }
 .topnav-id:hover .topnav-name { text-decoration: underline; text-underline-offset: 3px; }
-.topnav-link:hover { opacity: .82; }
+.topnav-link:hover { background: var(--blue-deep); }
+.topnav-link:focus-visible { outline-color: var(--blue); }
 
 /* ---- page head ---- */
 /* The site sheet lays header/footer out as flex rows; here they are prose. */
