@@ -12,6 +12,7 @@ exclude:
   - LICENSE
   - Gemfile
   - Gemfile.lock
+  - test
 
 plugins:
   - jekyll-feed

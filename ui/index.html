@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI collection — Kyle Boas</title>
+<meta name="description" content="Interface parts pulled out of the projects they ship in: motion, state, density, and layout, each shown running.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/ui/parts.css">
+</head>
+<body class="ui-body">
+
+<nav class="ui-index" aria-label="Collection index">
+  <p class="ui-index-t">UI collection</p>
+  <ul>
+    <li><a href="#blur-lift">Blur-lift entrance</a></li>
+    <li><a href="#timeline-dots">Timeline state dots</a></li>
+    <li><a href="#dotted-rule-links">Dotted-rule link row</a></li>
+    <li><a href="#big-type-form">Big-type utility form</a></li>
+    <li><a href="#motion-tokens">Three durations, two curves</a></li>
+    <li><a href="#drawn-check">Check that draws itself</a></li>
+    <li><a href="#watchful-row">Watchful dashboard row</a></li>
+    <li><a href="#alternating-tiles">Alternating tile surfaces</a></li>
+  </ul>
+</nav>
+
+<div class="wrap ui-wrap">
+
+  <header class="ui-head">
+    <p class="ui-back"><a href="/">Kyle Boas</a></p>
+    <h1 class="ui-title">UI collection</h1>
+    <p class="body">Interface parts taken out of the projects they already ship in — a personal site, a notes app, a scouting dashboard, a football publication, a one-purpose tool. Each one runs on this page rather than sitting in a screenshot, and the code underneath it is the code that runs.</p>
+    <p class="body">Nothing here is a component library. They are <span class="accent">decisions</span>: how a page enters, how a list shows state, how density stays readable, how one surface becomes the divider for the next.</p>
+  </header>
+
+  <main>
+
+    <section id="blur-lift" aria-labelledby="blur-lift-h">
+      <div class="spec-head">
+        <h2 id="blur-lift-h">Blur-lift entrance</h2>
+        <p class="spec-blurb">Content is visible first, then lifts the last six pixels out of a five-pixel blur. Stagger comes from a data attribute, not per-element CSS.</p>
+        <p class="spec-meta"><span class="proj">kyleboas.com</span> <span class="sep">/</span> <a href="/style.css">style.css</a> <span class="sep">/</span> motion</p>
+      </div>
+      <div class="stage stage--paper" id="blur-lift-stage" data-variant="single">
+        <div class="demo-lift">
+          <p class="lift" data-s="1">Currently reading the weekend's matches.</p>
+          <p class="lift" data-s="2">Three notes filed since Tuesday.</p>
+          <p class="lift" data-s="3">One draft still arguing with itself.</p>
+        </div>
+      </div>
+      <div class="spec-controls">
+        <div class="variants" role="radiogroup" aria-label="Blur-lift timing" data-variants="blur-lift-stage">
+          <button type="button" role="radio" aria-checked="true" data-variant="single">Single</button>
+          <button type="button" role="radio" aria-checked="false" data-variant="staggered">Staggered</button>
+        </div>
+        <button type="button" class="ghost" data-replay="blur-lift-stage" hidden>Replay</button>
+        <button type="button" class="ghost" data-copy hidden>Copy CSS</button>
+      </div>
+      <p class="spec-status" data-status aria-live="polite"></p>
+      <pre><code>.fade{opacity:0;filter:blur(5px);transform:translateY(-6px)}
+.fade.v{animation:fi .55s cubic-bezier(.2,.8,.2,1) forwards}
+[data-s="1"]{animation-delay:80ms}
+[data-s="2"]{animation-delay:160ms}
+@keyframes fi{to{opacity:1;filter:blur(0);transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){
+  .fade{opacity:1;filter:none;transform:none;animation:none!important}
+}</code></pre>
+    </section>
+
+    <section id="timeline-dots" aria-labelledby="timeline-dots-h">
+      <div class="spec-head">
+        <h2 id="timeline-dots-h">Timeline state dots</h2>
+        <p class="spec-blurb">A one-pixel rule with dots sitting on it. The active dot changes fill and gains a soft ring instead of a second colour or an icon.</p>
+        <p class="spec-meta"><span class="proj">kyleboas.com</span> <span class="sep">/</span> <a href="/style.css">style.css</a> <span class="sep">/</span> component</p>
+      </div>
+      <div class="stage stage--paper" id="timeline-dots-stage" data-variant="resting">
+        <ol class="demo-tl">
+          <li><span class="demo-dot"></span><span class="demo-tl-n">Signal picked up</span><span class="demo-tl-y">2026</span></li>
+          <li><span class="demo-dot"></span><span class="demo-tl-n">Sources read</span><span class="demo-tl-y">2026</span></li>
+          <li><span class="demo-dot"></span><span class="demo-tl-n">Draft filed</span><span class="demo-tl-y">2025</span></li>
+        </ol>
+      </div>
+      <div class="spec-controls">
+        <div class="variants" role="radiogroup" aria-label="Dot state" data-variants="timeline-dots-stage">
+          <button type="button" role="radio" aria-checked="true" data-variant="resting">Resting</button>
+          <button type="button" role="radio" aria-checked="false" data-variant="active">Active</button>
+        </div>
+        <button type="button" class="ghost" data-copy hidden>Copy CSS</button>
+      </div>
+      <p class="spec-status" data-status aria-live="polite"></p>
+      <pre><code>.tl{position:relative;padding-left:24px}
+.tl::before{content:'';position:absolute;left:4px;top:8px;bottom:8px;
+  width:1px;background:rgba(0,0,0,.06)}
+.dot{position:absolute;left:-24px;top:14px;width:9px;height:9px;
+  border-radius:50%;background:#999;transform:translateX(.5px)}
+.dot.active{background:#1a1a1a;box-shadow:0 0 0 3px rgba(26,26,26,.12)}</code></pre>
+    </section>
+
+    <section id="dotted-rule-links" aria-labelledby="dotted-rule-links-h">
+      <div class="spec-head">
+        <h2 id="dotted-rule-links-h">Dotted-rule link row</h2>
+        <p class="spec-blurb">The underline is a repeating four-pixel gradient parked on the baseline, so it can change colour on hover without a border repaint or layout shift.</p>
+        <p class="spec-meta"><span class="proj">kyleboas.com</span> <span class="sep">/</span> <a href="/style.css">style.css</a> <span class="sep">/</span> component</p>
+      </div>
+      <div class="stage stage--paper" id="dotted-rule-links-stage" data-variant="row">
+        <div class="demo-links">
+          <a href="#dotted-rule-links">Writing</a>
+          <a href="#dotted-rule-links">Projects</a>
+          <a href="#dotted-rule-links">Elsewhere</a>
+        </div>
+        <p class="demo-links-prose">Set inline, the same rule sits under <a href="#dotted-rule-links">a phrase mid-sentence</a> without breaking the line's rhythm.</p>
+      </div>
+      <div class="spec-controls">
+        <div class="variants" role="radiogroup" aria-label="Link treatment" data-variants="dotted-rule-links-stage">
+          <button type="button" role="radio" aria-checked="true" data-variant="row">Row</button>
+          <button type="button" role="radio" aria-checked="false" data-variant="inline">Inline</button>
+        </div>
+        <button type="button" class="ghost" data-copy hidden>Copy CSS</button>
+      </div>
+      <p class="spec-status" data-status aria-live="polite"></p>
+      <pre><code>.links a{color:#666;background-image:linear-gradient(to right,#999 50%,transparent 50%);
+  background-position:0 1.2em;background-repeat:repeat-x;background-size:4px 1px;
+  padding-bottom:2px;transition:color .2s,background-image .2s}
+.links a:hover{color:#1a1a1a;
+  background-image:linear-gradient(to right,#1a1a1a 50%,transparent 50%)}</code></pre>
+    </section>
+
+    <section id="big-type-form" aria-labelledby="big-type-form-h">
+      <div class="spec-head">
+        <h2 id="big-type-form-h">Big-type utility form</h2>
+        <p class="spec-blurb">A single-purpose tool with no chrome: thirty-pixel label, thirty-pixel field, one filled button and one outlined one. The mobile step is a wholesale rescale, not a tweak.</p>
+        <p class="spec-meta"><span class="proj">Tools</span> <span class="sep">/</span> <span class="path">tools-kyleboas/public/plain-text/index.html</span> <span class="sep">/</span> pattern</p>
+      </div>
+      <div class="stage stage--utility" id="big-type-form-stage" data-variant="desktop">
+        <div class="demo-form">
+          <label for="demo-field">Plain text</label>
+          <p>One job, stated at the size of the job.</p>
+          <textarea id="demo-field" rows="3" placeholder="Paste anything..."></textarea>
+          <div class="demo-form-btns">
+            <button type="button">Copy plain text</button>
+            <button type="button" class="secondary">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div class="spec-controls">
+        <div class="variants" role="radiogroup" aria-label="Form scale" data-variants="big-type-form-stage">
+          <button type="button" role="radio" aria-checked="true" data-variant="desktop">Desktop scale</button>
+          <button type="button" role="radio" aria-checked="false" data-variant="compact">Compact scale</button>
+        </div>
+        <button type="button" class="ghost" data-copy hidden>Copy CSS</button>
+      </div>
+      <p class="spec-status" data-status aria-live="polite"></p>
+      <pre><code>label{display:block;margin:0 0 16px;font-size:30px;line-height:1.1;
+  font-weight:700;letter-spacing:-.025em}
+textarea{width:100%;border:2px solid #d9d9d9;border-radius:18px;padding:26px 25px;
+  font:inherit;font-size:30px;line-height:1.25}
+button{min-height:84px;border:2px solid #111;border-radius:19px;padding:0 30px;
+  background:#111;color:#fff;font-size:30px;font-weight:700}
+button.secondary{background:#fff;color:#111;border-color:#d9d9d9}</code></pre>
+    </section>
+
+    <section id="motion-tokens" aria-labelledby="motion-tokens-h">
+      <div class="spec-head">
+        <h2 id="motion-tokens-h">Three durations, two curves</h2>
+        <p class="spec-blurb">Every animation in the app spends one of three durations and one of two curves, so a route change, a drawer and a button press read as the same hand.</p>
+        <p class="spec-meta"><span class="proj">Notes app</span> <span class="sep">/</span> <span class="path">diver-notes/src/app/globals.css</span> <span class="sep">/</span> tokens</p>
+      </div>
+      <div class="stage stage--tokens" id="motion-tokens-stage" data-variant="base">
+        <ul class="demo-track">
+          <li><span class="demo-track-l">fast · 120ms</span><span class="demo-rail"><span class="demo-pip" data-d="fast"></span></span></li>
+          <li><span class="demo-track-l">base · 200ms</span><span class="demo-rail"><span class="demo-pip" data-d="base"></span></span></li>
+          <li><span class="demo-track-l">slow · 280ms</span><span class="demo-rail"><span class="demo-pip" data-d="slow"></span></span></li>
+        </ul>
+      </div>
+      <div class="spec-controls">
+        <div class="variants" role="radiogroup" aria-label="Easing curve" data-variants="motion-tokens-stage">
+          <button type="button" role="radio" aria-checked="true" data-variant="base">ease-out</button>
+          <button type="button" role="radio" aria-checked="false" data-variant="inout">ease-in-out</button>
+        </div>
+        <button type="button" class="ghost" data-replay="motion-tokens-stage" hidden>Replay</button>
+        <button type="button" class="ghost" data-copy hidden>Copy CSS</button>
+      </div>
+      <p class="spec-status" data-status aria-live="polite"></p>
+      <pre><code>:root{
+  --motion-fast:120ms;
+  --motion-base:200ms;
+  --motion-slow:280ms;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-in-out:cubic-bezier(.4,0,.2,1);
+  --press-scale:.97;
+}</code></pre>
+    </section>
+
+    <section id="drawn-check" aria-labelledby="drawn-check-h">
+      <div class="spec-head">
+        <h2 id="drawn-check-h">Check that draws itself</h2>
+        <p class="spec-blurb">The mark is an L of two borders turned forty-five degrees. Clipping it before the rotation walks the pen from one free end, through the corner, to the other; the box fills first and the mark lands a beat later.</p>
+        <p class="spec-meta"><span class="proj">Notes app</span> <span class="sep">/</span> <span class="path">diver-notes/src/app/globals.css</span> <span class="sep">/</span> component</p>
+      </div>
+      <div class="stage stage--tokens" id="drawn-check-stage" data-variant="unchecked">
+        <ul class="demo-checks">
+          <li><label><input type="checkbox" class="demo-check"> Re-read the second half</label></li>
+          <li><label><input type="checkbox" class="demo-check" checked> File the pressing note</label></li>
+          <li><label><input type="checkbox" class="demo-check"> Ask about the left side</label></li>
+        </ul>
+      </div>
+      <div class="spec-controls">
+        <div class="variants" role="radiogroup" aria-label="Accent" data-variants="drawn-check-stage">
+          <button type="button" role="radio" aria-checked="true" data-variant="unchecked">Teal</button>
+          <button type="button" role="radio" aria-checked="false" data-variant="checked">Blue</button>
+        </div>
+        <button type="button" class="ghost" data-copy hidden>Copy CSS</button>
+      </div>
+      <p class="spec-status" data-status aria-live="polite"></p>
+      <pre><code>.check::after{content:"";position:absolute;left:5px;top:2px;width:4px;height:8px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.check:checked::after{animation:checkmark-in 160ms var(--ease-out) 40ms both}
+@keyframes checkmark-in{
+  from{opacity:0;transform:rotate(45deg) scale(.8);clip-path:inset(75% 100% 0 0)}
+  30%{opacity:1;clip-path:inset(75% 0 0 0)}
+  to{opacity:1;transform:rotate(45deg) scale(1);clip-path:inset(0 0 0 0)}
+}</code></pre>
+    </section>
+
+    <section id="watchful-row" aria-labelledby="watchful-row-h">
+      <div class="spec-head">
+        <h2 id="watchful-row-h">Watchful dashboard row</h2>
+        <p class="spec-blurb">A dark workspace where hierarchy comes from type and spacing. Uppercase eleven-pixel labels, a tabular number, and a hairline that is stronger under the header than between rows.</p>
+        <p class="spec-meta"><span class="proj">Scouting dashboard</span> <span class="sep">/</span> <span class="path">yourscout/DESIGN.md, make-dashboard.py</span> <span class="sep">/</span> pattern</p>
+      </div>
+      <div class="stage stage--bleed stage--watchful" id="watchful-row-stage" data-variant="rows">
+        <div class="stage-inner">
+          <div class="demo-watch">
+            <div class="demo-watch-tiles">
+              <div class="demo-tile"><span class="lbl">Open</span><span class="num">18</span><span class="names">four scouts reporting</span></div>
+              <div class="demo-tile"><span class="lbl">Replied</span><span class="num">6</span><span class="names">since Monday</span></div>
+              <div class="demo-tile"><span class="lbl">Stale</span><span class="num">2</span><span class="names">older than 14 days</span></div>
+            </div>
+            <table class="demo-watch-table">
+              <thead><tr><th>Finding</th><th>Why it matters</th><th>Age</th></tr></thead>
+              <tbody>
+                <tr><td>Regional side hiring</td><td>Matches the analysis brief exactly</td><td>2d</td></tr>
+                <tr><td>Federation posting</td><td>Same remit, wider territory</td><td>5d</td></tr>
+                <tr><td>League data role</td><td>Adjacent, worth a short note</td><td>11d</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="spec-controls">
+        <div class="variants" role="radiogroup" aria-label="Dashboard emphasis" data-variants="watchful-row-stage">
+          <button type="button" role="radio" aria-checked="true" data-variant="rows">Rows</button>
+          <button type="button" role="radio" aria-checked="false" data-variant="tiles">Tiles</button>
+        </div>
+        <button type="button" class="ghost" data-copy hidden>Copy CSS</button>
+      </div>
+      <p class="spec-status" data-status aria-live="polite"></p>
+      <pre><code>.watch{--bg:#08090a;--panel:#0f1011;--line:#23252a;--line-t:#ffffff0d;
+  --ink:#f7f8f8;--mut:#8a8f98;--mut-2:#62666d;--accent:#8fbd78}
+.watch th{font-size:11px;font-weight:510;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--mut-2);border-bottom:1px solid var(--line)}
+.watch td{border-bottom:1px solid var(--line-t);vertical-align:top;padding:10px 16px}
+.watch tr:hover td{background:#1c1c1f}</code></pre>
+    </section>
+
+    <section id="alternating-tiles" aria-labelledby="alternating-tiles-h">
+      <div class="spec-head">
+        <h2 id="alternating-tiles-h">Alternating tile surfaces</h2>
+        <p class="spec-blurb">Full-bleed sections stacked parchment, white, dark. The surface change is the divider, so no borders, shadows or cards are needed to separate them.</p>
+        <p class="spec-meta"><span class="proj">Tactics Journal</span> <span class="sep">/</span> <span class="path">tacticsjournal/DESIGN.md</span> <span class="sep">/</span> pattern</p>
+      </div>
+      <div class="stage stage--bleed stage--editorial" id="alternating-tiles-stage" data-variant="parchment">
+        <div class="demo-tile-stack">
+          <div class="demo-tilev demo-tilev--parchment"><div class="inner"><h3>One idea per surface</h3><p>The tile holds a single claim and the evidence for it. Everything else waits for the next surface.</p></div></div>
+          <div class="demo-tilev demo-tilev--canvas"><div class="inner"><h3>White is a pause</h3><p>The canvas tile carries proof: a table, a list of sources, a short quotation. It reads lighter because it follows something heavier.</p></div></div>
+          <div class="demo-tilev demo-tilev--dark"><div class="inner"><h3>Dark is the turn</h3><p>The dark tile is where the argument changes direction. <a href="https://tacticsjournal.com">Read the publication</a> for the version with the football in it.</p></div></div>
+        </div>
+      </div>
+      <div class="spec-controls">
+        <div class="variants" role="radiogroup" aria-label="Opening surface" data-variants="alternating-tiles-stage">
+          <button type="button" role="radio" aria-checked="true" data-variant="parchment">Open parchment</button>
+          <button type="button" role="radio" aria-checked="false" data-variant="dark">Open dark</button>
+        </div>
+        <button type="button" class="ghost" data-copy hidden>Copy CSS</button>
+      </div>
+      <p class="spec-status" data-status aria-live="polite"></p>
+      <pre><code>.tile{padding:80px 24px}
+.tile&gt;.inner{max-width:760px;margin:0 auto}
+.tile--parchment{background:#f5f5f7;color:#1d1d1f}
+.tile--canvas{background:#fff;color:#1d1d1f}
+.tile--dark{background:#272729;color:#d2d2d7}
+.tile--dark a{color:#2997ff}
+@media(max-width:640px){.tile{padding:56px 20px}}</code></pre>
+    </section>
+
+  </main>
+
+  <footer class="ui-foot">
+    <p class="copy">Sources for private projects are named as provenance only. The code shown is presentational.</p>
+  </footer>
+
+</div>
+
+<script type="module" src="/ui/parts.js"></script>
+</body>
+</html>
