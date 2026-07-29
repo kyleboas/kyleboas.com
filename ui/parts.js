@@ -212,30 +212,6 @@ if (typeof document !== 'undefined') {
     });
   }
 
-  /* ---- top nav menu: a disclosure, not a framework ---- */
-  const menuBtn = document.querySelector('[data-menu-toggle]');
-  const menu = menuBtn && document.getElementById(menuBtn.getAttribute('aria-controls'));
-  if (menuBtn && menu) {
-    const setMenu = (open) => {
-      menuBtn.setAttribute('aria-expanded', String(open));
-      menu.hidden = !open;
-    };
-    setMenu(false);
-    menuBtn.addEventListener('click', () => {
-      setMenu(menuBtn.getAttribute('aria-expanded') !== 'true');
-    });
-    document.addEventListener('keydown', (e) => {
-      /* The dialog owns Escape while it is open; it traps focus anyway. */
-      if (e.key !== 'Escape' || menu.hidden || document.querySelector('dialog[open]')) return;
-      setMenu(false);
-      menuBtn.focus();
-    });
-    document.addEventListener('click', (e) => {
-      if (menu.hidden || e.target.closest('.topnav')) return;
-      setMenu(false);
-    });
-  }
-
   /* ---- code dialog ---- */
   const dialog = document.getElementById('code-dialog');
   if (dialog) {

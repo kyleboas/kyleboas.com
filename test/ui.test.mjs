@@ -67,25 +67,25 @@ test('the top index block is gone at every width', () => {
   assert.doesNotMatch(html, /<ol class="[^"]*rail/, 'no numbered index list');
 });
 
-test('the top nav is the page chrome: identity, local face, disclosure menu', () => {
-  assert.match(html, /<nav class="topnav" aria-label="Site">/);
-  assert.match(html, /<img class="topnav-face" src="\/assets\/IMG_0124\.png"[^>]*width="28" height="28"/,
-    'local avatar with intrinsic size, so the nav does not shift');
+test('the top nav is one compact pill row: identity plus one destination', () => {
+  const nav = (html.match(/<nav class="topnav"[\s\S]*?<\/nav>/) || [])[0];
+  assert.ok(nav, 'the nav is present');
+  assert.match(nav, /aria-label="Site"/);
+  /* Both destinations are plain links that are always visible. */
+  assert.ok(nav.includes('href="/"'), 'the identity links home');
+  assert.ok(nav.includes('href="/archive/"'), 'the archive link is in the row');
+  assert.doesNotMatch(nav, /<img/, 'no avatar image: the mark is drawn in CSS, so nothing can shift');
+  assert.doesNotMatch(nav, /<button/, 'no hamburger: nothing in the nav opens');
   assert.doesNotMatch(html, /raw\.githubusercontent\.com/, 'no remote image dependency');
-  const toggle = (html.match(/<button[^>]*data-menu-toggle[^>]*>/) || [])[0];
-  assert.ok(toggle, 'the hamburger is a real button');
-  assert.match(toggle, /type="button"/);
-  assert.match(toggle, /aria-expanded="false"/);
-  assert.match(toggle, /aria-controls="topnav-menu"/);
-  assert.match(html, /<div class="topnav-menu" id="topnav-menu" hidden>/);
-  for (const href of ['href="/"', 'href="/archive.html"', 'href="/ui/"']) {
-    assert.ok(html.includes(href), `menu link missing: ${href}`);
+  /* Nothing anywhere still drives or styles the removed disclosure menu. */
+  for (const f of [html, css, js]) {
+    for (const dangling of [/data-menu-toggle/, /topnav-menu/, /topnav-toggle/, /topnav-face/, /IMG_0124/]) {
+      assert.doesNotMatch(f, dangling, `dangling menu reference: ${dangling}`);
+    }
   }
-  /* Keyboard: Escape closes it and focus goes back to the button. */
-  assert.match(js, /e\.key !== 'Escape'/);
-  assert.match(js, /menuBtn\.focus\(\)/);
-  /* The menu expands in flow, so it never covers the specimens on a phone. */
-  assert.doesNotMatch(css, /\.topnav-menu \{[^}]*position: absolute/);
+  /* The row is a pill and stays one line, so it reads as chrome, not content. */
+  assert.match(css, /\.topnav \{[^}]*border-radius: 999px/);
+  assert.doesNotMatch(css, /\.topnav \{[^}]*flex-wrap: wrap/);
 });
 
 test('choosing a variant replays that specimen without a second click', () => {

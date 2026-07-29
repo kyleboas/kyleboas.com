@@ -64,50 +64,37 @@
 
 .col { padding: 40px 32px 72px; min-width: 0; }
 
-/* ---- top nav: the page's only chrome above the specimens ---- */
-/* The menu expands in flow rather than over the page, so nothing on a phone
-   is ever covered by it. Without JS the links are simply always visible. */
+/* ---- top nav: one pill row, the page's only chrome above the specimens ---- */
+/* Two destinations, both always visible: no disclosure, no menu to open, so
+   there is nothing to cover the specimens on a phone. */
 .topnav {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
-  margin-bottom: 40px; padding-bottom: 14px;
-  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 40px; padding: 6px 6px 6px 10px;
+  border-radius: 999px; background: var(--canvas);
 }
 .topnav-id {
   display: flex; align-items: center; gap: 9px; margin-right: auto;
-  font-size: 13px; font-weight: 500; color: var(--ink);
+  min-width: 0; color: var(--ink);
 }
-.topnav-face {
-  width: 28px; height: 28px; flex: 0 0 auto;
-  border-radius: 50%; display: block; background: var(--field);
+.topnav-mark {
+  width: 26px; height: 26px; flex: 0 0 auto;
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--ink); color: var(--page);
+  font: 400 9.5px/1 var(--mono); letter-spacing: .04em;
 }
-.topnav-toggle {
-  display: none;
-  width: 28px; height: 28px; flex: 0 0 auto;
-  place-items: center;
-  border: 0; border-radius: 8px; padding: 0; cursor: pointer;
-  background: none; color: var(--ink-2);
-  transition: color var(--duration-quick) var(--ease-out),
-              background-color var(--duration-quick) var(--ease-out);
+.topnav-name {
+  font-size: 13px; font-weight: 500; letter-spacing: -.005em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.js .topnav-toggle { display: grid; }
-.topnav-toggle:hover { color: var(--ink); background: var(--hover); }
-.topnav-toggle[aria-expanded="true"] { color: var(--ink); background: var(--field); }
-.topnav-toggle svg {
-  width: 16px; height: 16px; display: block;
-  fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round;
+.topnav-link {
+  flex: 0 0 auto;
+  padding: 7px 15px; border-radius: 999px;
+  background: var(--ink); color: var(--page);
+  font-size: 12.5px; font-weight: 500; line-height: 1;
+  transition: opacity var(--duration-quick) var(--ease-out);
 }
-.topnav-menu {
-  display: flex; flex-wrap: wrap; gap: 6px 18px;
-  flex: 1 0 100%; padding-top: 12px;
-}
-.js .topnav-menu[hidden] { display: none; }
-.topnav-menu a {
-  font: 400 12px var(--mono); color: var(--ink-2);
-  border-bottom: 1px dotted var(--line-strong);
-  transition: color var(--duration-quick) var(--ease-out);
-}
-.topnav-menu a:hover { color: var(--ink); border-bottom-color: var(--ink); }
-.topnav-menu a[aria-current="page"] { color: var(--ink); }
+.topnav-id:hover .topnav-name { text-decoration: underline; text-underline-offset: 3px; }
+.topnav-link:hover { opacity: .82; }
 
 /* ---- page head ---- */
 /* The site sheet lays header/footer out as flex rows; here they are prose. */
