@@ -7,11 +7,11 @@ export const SPECIMENS = [
   {
     id: 'blur-lift',
     name: 'Blur-lift entrance',
-    blurb: 'Content is visible first, then lifts the last six pixels out of a five-pixel blur. Stagger comes from a data attribute, not per-element CSS.',
+    blurb: 'Visible first, then the last six pixels lift out of a five-pixel blur.',
     project: { name: 'kyleboas.com' },
     source: { repo: 'kyleboas/kyleboas.com', path: 'style.css', public: true, href: '/style.css' },
     theme: 'paper',
-    surface: 'inline',
+    surface: 'standard',
     scope: 'motion',
     tags: ['motion', 'entrance', 'stagger'],
     variants: ['single', 'staggered'],
@@ -28,11 +28,11 @@ export const SPECIMENS = [
   {
     id: 'timeline-dots',
     name: 'Timeline state dots',
-    blurb: 'A one-pixel rule with dots sitting on it. The active dot changes fill and gains a soft ring instead of a second colour or an icon.',
+    blurb: 'A hairline with dots on it; the active one changes fill and gains a ring.',
     project: { name: 'kyleboas.com' },
     source: { repo: 'kyleboas/kyleboas.com', path: 'style.css', public: true, href: '/style.css' },
     theme: 'paper',
-    surface: 'inline',
+    surface: 'standard',
     scope: 'component',
     tags: ['list', 'state', 'hairline'],
     variants: ['resting', 'active'],
@@ -47,11 +47,11 @@ export const SPECIMENS = [
   {
     id: 'dotted-rule-links',
     name: 'Dotted-rule link row',
-    blurb: 'The underline is a repeating four-pixel gradient parked on the baseline, so it can change colour on hover without a border repaint or layout shift.',
+    blurb: 'The underline is a repeating gradient on the baseline, so hover never shifts layout.',
     project: { name: 'kyleboas.com' },
     source: { repo: 'kyleboas/kyleboas.com', path: 'style.css', public: true, href: '/style.css' },
     theme: 'paper',
-    surface: 'inline',
+    surface: 'standard',
     scope: 'component',
     tags: ['links', 'typography', 'hover'],
     variants: ['row', 'inline'],
@@ -63,36 +63,36 @@ export const SPECIMENS = [
   background-image:linear-gradient(to right,#1a1a1a 50%,transparent 50%)}`
   },
   {
-    id: 'big-type-form',
-    name: 'Big-type utility form',
-    blurb: 'A single-purpose tool with no chrome: thirty-pixel label, thirty-pixel field, one filled button and one outlined one. The mobile step is a wholesale rescale, not a tweak.',
+    id: 'one-purpose-tool',
+    name: 'One-purpose tool',
+    blurb: 'Four states, one field: empty, has value, copied, cleared. The label carries the state.',
     project: { name: 'Tools' },
-    source: { repo: 'tools-kyleboas', path: 'public/plain-text/index.html', public: false },
+    source: { repo: 'tools', path: 'plain-text', public: false },
     theme: 'utility',
-    surface: 'inline',
+    surface: 'standard',
     scope: 'pattern',
-    tags: ['forms', 'scale', 'responsive'],
-    variants: ['desktop scale', 'compact scale'],
+    tags: ['forms', 'state', 'feedback'],
+    variants: ['empty', 'filled'],
     status: 'shipped',
-    code: `label{display:block;margin:0 0 16px;font-size:30px;line-height:1.1;
-  font-weight:700;letter-spacing:-.025em}
-textarea{width:100%;border:2px solid #d9d9d9;border-radius:18px;padding:26px 25px;
-  font:inherit;font-size:30px;line-height:1.25}
-button{min-height:84px;border:2px solid #111;border-radius:19px;padding:0 30px;
-  background:#111;color:#fff;font-size:30px;font-weight:700}
-button.secondary{background:#fff;color:#111;border-color:#d9d9d9}`
+    code: `.tool label{display:block;margin:0 0 6px;font-size:15px;font-weight:500}
+.tool textarea{width:100%;border:1px solid var(--line);border-radius:10px;
+  padding:10px 12px;font:inherit;font-size:15px;line-height:1.45}
+.tool button{min-height:44px;border-radius:10px;padding:0 16px;font-size:15px}
+.tool[data-state="copied"] .go{background:var(--ink)}
+.tool.is-clearing textarea{opacity:0;filter:blur(2px);
+  transition:opacity 400ms ease-in-out,filter 400ms ease-in-out}`
   },
   {
     id: 'motion-tokens',
     name: 'Three durations, two curves',
-    blurb: 'Every animation in the app spends one of three durations and one of two curves, so a route change, a drawer and a button press read as the same hand.',
+    blurb: 'A route change, a drawer and a button press read as one hand because they share a scale.',
     project: { name: 'Notes app' },
-    source: { repo: 'diver-notes', path: 'src/app/globals.css', public: false },
+    source: { repo: 'diver-notes', path: 'globals.css', public: false },
     theme: 'tokens',
-    surface: 'inline',
+    surface: 'standard',
     scope: 'tokens',
     tags: ['motion', 'tokens', 'system'],
-    variants: ['fast', 'base', 'slow'],
+    variants: ['base', 'inout'],
     status: 'shipped',
     code: `:root{
   --motion-fast:120ms;
@@ -106,11 +106,11 @@ button.secondary{background:#fff;color:#111;border-color:#d9d9d9}`
   {
     id: 'drawn-check',
     name: 'Check that draws itself',
-    blurb: 'The mark is an L of two borders turned forty-five degrees. Clipping it before the rotation walks the pen from one free end, through the corner, to the other; the box fills first and the mark lands a beat later.',
+    blurb: 'Clipping the mark before its rotation walks the pen from one free end to the other.',
     project: { name: 'Notes app' },
-    source: { repo: 'diver-notes', path: 'src/app/globals.css', public: false },
+    source: { repo: 'diver-notes', path: 'globals.css', public: false },
     theme: 'tokens',
-    surface: 'inline',
+    surface: 'standard',
     scope: 'component',
     tags: ['motion', 'forms', 'feedback'],
     variants: ['unchecked', 'checked'],
@@ -127,11 +127,11 @@ button.secondary{background:#fff;color:#111;border-color:#d9d9d9}`
   {
     id: 'watchful-row',
     name: 'Watchful dashboard row',
-    blurb: 'A dark workspace where hierarchy comes from type and spacing. Uppercase eleven-pixel labels, a tabular number, and a hairline that is stronger under the header than between rows.',
+    blurb: 'Dark density where the hierarchy is type and spacing, never a second colour.',
     project: { name: 'Scouting dashboard' },
-    source: { repo: 'yourscout', path: 'DESIGN.md, make-dashboard.py', public: false },
+    source: { repo: 'yourscout', path: 'DESIGN.md', public: false },
     theme: 'watchful',
-    surface: 'bleed',
+    surface: 'tall',
     scope: 'pattern',
     tags: ['dark', 'density', 'tables'],
     variants: ['rows', 'tiles'],
@@ -146,13 +146,13 @@ button.secondary{background:#fff;color:#111;border-color:#d9d9d9}`
   {
     id: 'alternating-tiles',
     name: 'Alternating tile surfaces',
-    blurb: 'Full-bleed sections stacked parchment, white, dark. The surface change is the divider, so no borders, shadows or cards are needed to separate them.',
+    blurb: 'Parchment, white, dark. The surface change is the divider, so nothing else has to be.',
     project: { name: 'Tactics Journal' },
     source: { repo: 'tacticsjournal', path: 'DESIGN.md', public: false },
     theme: 'editorial',
-    surface: 'bleed',
+    surface: 'tall',
     scope: 'pattern',
-    tags: ['layout', 'full-bleed', 'editorial'],
+    tags: ['layout', 'surfaces', 'editorial'],
     variants: ['parchment', 'dark'],
     status: 'shipped',
     code: `.tile{padding:80px 24px}
@@ -183,50 +183,147 @@ export const RENDERABLE = SPECIMENS.filter(isRenderable);
 if (typeof document !== 'undefined') {
   const byId = new Map(RENDERABLE.map((s) => [s.id, s]));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const root = document.documentElement;
 
-  document.documentElement.classList.add('js');
+  root.classList.add('js');
 
-  /* Full-bleed stages measure against the viewport minus its scrollbar; 100vw
-     includes the scrollbar and would push the page sideways by its width. */
-  const setViewportWidth = () => {
-    document.documentElement.style.setProperty('--vw', `${document.documentElement.clientWidth}px`);
+  /* Durations come from the stylesheet so JS and CSS never drift apart. */
+  const ms = (name, fallback) => {
+    const raw = getComputedStyle(document.body).getPropertyValue(name).trim();
+    const n = parseFloat(raw);
+    if (!raw || Number.isNaN(n)) return fallback;
+    return raw.endsWith('ms') ? n : n * 1000;
   };
-  setViewportWidth();
-  window.addEventListener('resize', setViewportWidth);
 
-  /* Copy buttons: the code shown in the page is the code copied. */
-  for (const btn of document.querySelectorAll('[data-copy]')) {
+  const setStatus = (section, text) => {
+    const el = section && section.querySelector('[data-status]');
+    if (el) el.textContent = text;
+  };
+
+  const codeOf = (section) => {
+    const pre = section && section.querySelector('.spec-src code');
+    return pre ? pre.textContent.replace(/\s+$/, '') : '';
+  };
+
+  async function copyText(text) {
+    if (!navigator.clipboard) throw new Error('unavailable');
+    await navigator.clipboard.writeText(text);
+  }
+
+  /* Copy: the icon swaps to a check for a beat; the live region carries the
+     same news for anyone who can't see the swap. */
+  const flashCopied = (btn) => {
+    btn.setAttribute('data-copied', '');
+    window.setTimeout(() => btn.removeAttribute('data-copied'), ms('--duration-very-slow', 500) * 3);
+  };
+
+  for (const btn of document.querySelectorAll('.surface-actions [data-copy]')) {
     const section = btn.closest('section[id]');
-    const pre = section && section.querySelector('pre');
-    const status = section && section.querySelector('[data-status]');
-    if (!pre) continue;
-    btn.hidden = false;
+    if (!section || !codeOf(section)) continue;
     btn.addEventListener('click', async () => {
-      const text = pre.textContent.replace(/\s+$/, '');
       try {
-        if (!navigator.clipboard) throw new Error('unavailable');
-        await navigator.clipboard.writeText(text);
-        if (status) status.textContent = 'Copied to clipboard.';
+        await copyText(codeOf(section));
+        flashCopied(btn);
+        setStatus(section, 'Code copied to the clipboard.');
       } catch {
-        const range = document.createRange();
-        range.selectNodeContents(pre);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-        if (status) status.textContent = 'Copy was blocked. The code is selected — copy it manually.';
+        setStatus(section, 'Copy was blocked. Open the code and copy it manually.');
       }
     });
   }
 
-  /* Variant controls: plain buttons in a radio-group, arrow keys included. */
+  /* ---- code dialog ---- */
+  const dialog = document.getElementById('code-dialog');
+  if (dialog) {
+    const title = dialog.querySelector('#code-dialog-t');
+    const path = dialog.querySelector('[data-dialog-path]');
+    const body = dialog.querySelector('[data-dialog-code]');
+    const live = dialog.querySelector('[data-dialog-status]');
+    const copyBtn = dialog.querySelector('[data-dialog-copy]');
+    const closeBtn = dialog.querySelector('[data-dialog-close]');
+    let opener = null;
+
+    const close = () => {
+      if (!dialog.open) return;
+      if (reduced.matches) {
+        dialog.close();
+        return;
+      }
+      dialog.classList.add('is-closing');
+      window.setTimeout(() => {
+        dialog.classList.remove('is-closing');
+        dialog.close();
+      }, ms('--duration-quick', 150));
+    };
+
+    dialog.addEventListener('close', () => {
+      dialog.classList.remove('is-closing');
+      if (live) live.textContent = '';
+      if (opener && document.contains(opener)) opener.focus();
+      opener = null;
+    });
+    dialog.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      close();
+    });
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) close();
+    });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await copyText(body.textContent.replace(/\s+$/, ''));
+          flashCopied(copyBtn);
+          if (live) live.textContent = 'Code copied to the clipboard.';
+        } catch {
+          if (live) live.textContent = 'Copy was blocked. Select the code and copy it manually.';
+        }
+      });
+    }
+
+    for (const btn of document.querySelectorAll('[data-code]')) {
+      const section = btn.closest('section[id]');
+      const entry = section && byId.get(section.id);
+      if (!section || !entry) continue;
+      btn.addEventListener('click', () => {
+        opener = btn;
+        title.textContent = entry.name;
+        path.textContent = `${entry.project.name} / ${entry.source.path}`;
+        body.textContent = codeOf(section);
+        dialog.showModal();
+        if (closeBtn) closeBtn.focus();
+      });
+    }
+  }
+
+  /* ---- variant tabs: the pill slides between options ---- */
   for (const group of document.querySelectorAll('[data-variants]')) {
     const buttons = [...group.querySelectorAll('button')];
+    const pill = group.querySelector('.variants-pill');
     const target = document.getElementById(group.dataset.variants);
     if (!target || !buttons.length) continue;
-    const select = (btn) => {
+
+    const movePill = (btn, animate) => {
+      if (!pill) return;
+      if (!animate) pill.style.transition = 'none';
+      pill.style.width = `${btn.offsetWidth}px`;
+      pill.style.transform = `translateX(${btn.offsetLeft - 2}px)`;
+      if (!animate) {
+        void pill.offsetWidth;
+        pill.style.transition = '';
+      }
+    };
+
+    const select = (btn, animate = true) => {
       for (const b of buttons) b.setAttribute('aria-checked', String(b === btn));
       target.dataset.variant = btn.dataset.variant;
+      movePill(btn, animate);
+      target.dispatchEvent(new CustomEvent('variantchange', { detail: btn.dataset.variant }));
     };
+
+    const current = () => buttons.find((b) => b.getAttribute('aria-checked') === 'true') || buttons[0];
+
     group.addEventListener('click', (e) => {
       const btn = e.target.closest('button');
       if (btn) select(btn);
@@ -242,32 +339,145 @@ if (typeof document !== 'undefined') {
       next.focus();
       select(next);
     });
+
+    /* First paint and every resize write the pill's position without a
+       transition, so it never animates in from zero width. */
+    movePill(current(), false);
+    window.addEventListener('resize', () => movePill(current(), false));
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => movePill(current(), false));
+    }
   }
 
-  /* Animation examples replay on demand. Nothing autoplays. */
+  /* ---- replay ---- */
   for (const btn of document.querySelectorAll('[data-replay]')) {
     const stage = document.getElementById(btn.dataset.replay);
     if (!stage) continue;
-    btn.hidden = false;
     btn.addEventListener('click', () => {
-      const status = btn.closest('section[id]').querySelector('[data-status]');
+      const section = btn.closest('section[id]');
       if (reduced.matches) {
         stage.classList.remove('is-playing');
         stage.classList.add('is-done');
-        if (status) status.textContent = 'Reduced motion: end state shown immediately.';
+        setStatus(section, 'Reduced motion: end state shown immediately.');
         return;
       }
       stage.classList.remove('is-playing', 'is-done');
       void stage.offsetWidth;
       stage.classList.add('is-playing');
-      if (status) status.textContent = 'Replayed.';
+      setStatus(section, 'Replayed.');
+      window.setTimeout(
+        () => stage.classList.remove('is-playing'),
+        ms('--duration-very-slow', 500) * 3
+      );
     });
   }
 
-  /* Sticky index highlights the section in view. */
-  const links = [...document.querySelectorAll('.ui-index a')];
-  if (links.length && 'IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(
+  /* ---- the one-purpose tool's state machine ---- */
+  const tool = document.querySelector('[data-tool]');
+  if (tool) {
+    const field = tool.querySelector('[data-tool-field]');
+    const hint = tool.querySelector('[data-tool-hint]');
+    const go = tool.querySelector('[data-tool-go]');
+    const goLabel = tool.querySelector('[data-tool-go-label]');
+    const clear = tool.querySelector('[data-tool-clear]');
+    const section = tool.closest('section[id]');
+    const stage = document.getElementById('one-purpose-tool-stage');
+    const SAMPLE = 'The second half was the same shape as the first, played faster.';
+
+    const swap = (el, text) => {
+      if (el.textContent === text) return;
+      el.classList.remove('is-swapping');
+      void el.offsetWidth;
+      el.textContent = text;
+      if (!reduced.matches) el.classList.add('is-swapping');
+    };
+
+    let state = 'empty';
+    const render = () => {
+      const has = field.value.trim().length > 0;
+      tool.dataset.state = state;
+      go.disabled = !has;
+      clear.disabled = !has;
+      if (state === 'copied') {
+        swap(goLabel, 'Copied');
+        swap(hint, `${field.value.trim().length} characters on the clipboard.`);
+      } else if (state === 'cleared') {
+        swap(goLabel, 'Copy plain text');
+        swap(hint, 'Cleared.');
+      } else if (has) {
+        swap(goLabel, 'Copy plain text');
+        swap(hint, `${field.value.trim().length} characters ready.`);
+      } else {
+        swap(goLabel, 'Copy plain text');
+        swap(hint, 'One job, stated once.');
+      }
+    };
+
+    field.addEventListener('input', () => {
+      state = field.value.trim() ? 'filled' : 'empty';
+      render();
+    });
+
+    tool.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!field.value.trim()) return;
+      try {
+        await copyText(field.value);
+        state = 'copied';
+        render();
+        setStatus(section, 'Copied the field to the clipboard.');
+      } catch {
+        setStatus(section, 'Copy was blocked. Select the text and copy it manually.');
+      }
+      window.setTimeout(() => {
+        if (state !== 'copied') return;
+        state = field.value.trim() ? 'filled' : 'empty';
+        render();
+      }, ms('--duration-very-slow', 500) * 4);
+    });
+
+    clear.addEventListener('click', () => {
+      if (!field.value) return;
+      const finish = () => {
+        tool.classList.remove('is-clearing');
+        field.value = '';
+        state = 'cleared';
+        render();
+        setStatus(section, 'Field cleared.');
+        window.setTimeout(() => {
+          if (state !== 'cleared') return;
+          state = 'empty';
+          render();
+        }, ms('--duration-very-slow', 500) * 3);
+      };
+      if (reduced.matches) {
+        finish();
+        return;
+      }
+      tool.classList.add('is-clearing');
+      window.setTimeout(finish, ms('--duration-slow', 400));
+    });
+
+    /* The variant tabs are the same state machine, driven from outside. */
+    if (stage) {
+      stage.addEventListener('variantchange', (e) => {
+        field.value = e.detail === 'filled' ? SAMPLE : '';
+        state = e.detail === 'filled' ? 'filled' : 'empty';
+        render();
+      });
+    }
+
+    render();
+  }
+
+  /* ---- rail highlight + section reveal + ambient loops ---- */
+  const links = [...document.querySelectorAll('.rail a[href^="#"]')];
+  const sections = [...byId.keys()]
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+
+  if ('IntersectionObserver' in window) {
+    const current = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
@@ -276,11 +486,47 @@ if (typeof document !== 'undefined') {
           }
         }
       },
-      { rootMargin: '-20% 0px -70% 0px' }
+      { rootMargin: '-15% 0px -70% 0px' }
     );
-    for (const id of byId.keys()) {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
+    for (const el of sections) current.observe(el);
+
+    /* Reveal is an enhancement: sections are visible, then JS opts them into
+       the transition and a fallback timer un-hides them no matter what. */
+    if (!reduced.matches) {
+      for (const el of sections) el.classList.add('reveal');
+      const revealAll = () => {
+        for (const el of sections) el.classList.add('is-revealed');
+      };
+      const revealer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.classList.add('is-revealed');
+            revealer.unobserve(entry.target);
+          }
+        },
+        { rootMargin: '0px 0px -8% 0px' }
+      );
+      for (const el of sections) revealer.observe(el);
+      window.setTimeout(revealAll, ms('--duration-very-slow', 500) * 4);
+      window.addEventListener('beforeprint', revealAll);
+    }
+
+    /* Ambient loops run only for the two specimens whose subject is timing,
+       only while they are on screen, and never under reduced motion. */
+    if (!reduced.matches) {
+      const ambient = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            entry.target.classList.toggle('is-ambient', entry.isIntersecting);
+          }
+        },
+        { threshold: 0.55 }
+      );
+      for (const id of ['blur-lift-stage', 'motion-tokens-stage']) {
+        const el = document.getElementById(id);
+        if (el) ambient.observe(el);
+      }
     }
   }
 }
