@@ -1,0 +1,101 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kyle Boas Newsletter API",
+    "version": "1.0.0",
+    "description": "Consent-based newsletter signup and email confirmation."
+  },
+  "servers": [{ "url": "https://kyleboas.com" }],
+  "paths": {
+    "/api/newsletter/signup": {
+      "post": {
+        "operationId": "signupNewsletter",
+        "summary": "Request a newsletter confirmation email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SignupRequest" }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Confirmation email sent", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Status" } } } },
+          "400": { "description": "Invalid request or missing consent", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "502": { "description": "Confirmation email could not be sent", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      },
+      "options": { "summary": "CORS preflight", "responses": { "204": { "description": "CORS headers" } } }
+    },
+    "/api/newsletter/confirm": {
+      "get": {
+        "operationId": "confirmNewsletter",
+        "summary": "Confirm a newsletter subscription",
+        "parameters": [{ "name": "token", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Subscription confirmed; JSON is returned when application/json is accepted, otherwise HTML." },
+          "400": { "description": "Missing or invalid token" },
+          "404": { "description": "Unknown, expired, or already-used token" }
+        }
+      }
+    },
+    "/api/newsletter/latest": {
+      "get": {
+        "operationId": "getLatestNewsletter",
+        "summary": "Get the latest newsletter item from the public site feed",
+        "responses": {
+          "200": { "description": "Latest newsletter item", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NewsletterIssue" } } } },
+          "404": { "description": "The feed has no entries", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "502": { "description": "The public feed could not be fetched", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SignupRequest": {
+        "type": "object",
+        "required": ["email", "consent"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "name": { "type": "string" },
+          "source": { "type": "string", "description": "Optional acquisition source." },
+          "agent": { "type": "object", "additionalProperties": true },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "metadata": { "type": "object", "additionalProperties": true },
+          "consent": {
+            "type": "object",
+            "required": ["newsletter"],
+            "properties": { "newsletter": { "const": true } }
+          }
+        }
+      },
+      "Status": {
+        "type": "object",
+        "required": ["status", "email"],
+        "properties": {
+          "status": { "type": "string", "enum": ["confirmation_sent", "already_subscribed", "subscribed"] },
+          "email": { "type": "string", "format": "email" }
+        }
+      },
+      "NewsletterIssue": {
+        "type": "object",
+        "required": ["title", "url", "published_at", "summary"],
+        "properties": {
+          "title": { "type": ["string", "null"] },
+          "url": { "type": ["string", "null"], "format": "uri" },
+          "published_at": { "type": ["string", "null"], "description": "Published or updated date supplied by the feed." },
+          "summary": { "type": ["string", "null"] }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["code"],
+        "properties": {
+          "code": { "type": "string", "description": "Stable machine-readable error code." },
+          "error": { "type": "string", "description": "Deprecated alias of code." }
+        }
+      }
+    }
+  }
+}

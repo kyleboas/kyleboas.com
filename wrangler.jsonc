@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kyleboas-newsletter-api",
+  "main": "src/newsletter-worker.js",
+  "compatibility_date": "2025-03-01",
+  "routes": ["kyleboas.com/api/newsletter/*"],
+  "d1_databases": [
+    {
+      "binding": "NEWSLETTER_DB",
+      "database_name": "kyleboas-newsletter",
+      "database_id": "882fcb57-8baa-4267-a9f4-36b309ba3f42",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "NEWSLETTER_FROM": "Kyle Boas <newsletter@kyleboas.com>",
+    "NEWSLETTER_PUBLIC_BASE_URL": "https://kyleboas.com",
+    "CORS_ORIGIN": "https://kyleboas.com"
+  }
+}

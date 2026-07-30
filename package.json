@@ -1,0 +1,10 @@
+{
+  "name": "kyleboas-com",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "deploy:newsletter": "wrangler deploy --config wrangler.jsonc",
+    "secret:newsletter:resend": "wrangler secret put RESEND_API_KEY --config wrangler.jsonc"
+  }
+}

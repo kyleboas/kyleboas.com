@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "name": "Kyle Boas newsletter API",
+  "description": "Consent-based newsletter signup and email confirmation API.",
+  "openapi": "https://kyleboas.com/openapi.json",
+  "endpoints": {
+    "signup": "https://kyleboas.com/api/newsletter/signup",
+    "confirm": "https://kyleboas.com/api/newsletter/confirm",
+    "latest": "https://kyleboas.com/api/newsletter/latest"
+  },
+  "actions": [
+    {
+      "id": "newsletter.signup",
+      "endpoint": "https://kyleboas.com/api/newsletter/signup",
+      "method": "POST",
+      "requires_user_consent": true
+    },
+    {
+      "id": "newsletter.read_latest",
+      "endpoint": "https://kyleboas.com/api/newsletter/latest",
+      "method": "GET",
+      "requires_user_consent": false
+    }
+  ],
+  "consent": {
+    "required": true,
+    "field": "consent.newsletter",
+    "value": true
+  }
+}
