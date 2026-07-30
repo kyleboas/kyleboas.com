@@ -96,6 +96,14 @@ test('the top nav keeps a compact Subscribe pill and opens a docked sheet', () =
   assert.match(css, /\.newsletter-sheet \{[\s\S]*position: fixed;[\s\S]*bottom: 20px;/,
     'desktop sheet docks near the bottom corner');
   assert.match(css, /\.newsletter-sheet\[hidden\], \.newsletter-scrim\[hidden\] \{ display: none; \}/);
+  assert.match(css, /\.newsletter-sheet-title \{[\s\S]*font-weight: 500;/,
+    'the sheet title stays at the site weight rather than a browser-bold h2');
+  assert.match(css, /\.newsletter-sheet-row \{[\s\S]*border-radius: 999px;[\s\S]*\}/,
+    'the field and action sit inside one pill row');
+  assert.match(css, /\.newsletter-sheet-row:focus-within \{/,
+    'the pill row carries the focus ring, not the bare input');
+  assert.match(css, /\.newsletter-sheet input \{[\s\S]*border: 0;[\s\S]*background: transparent;/,
+    'the input is bare inside the pill');
 
   assert.doesNotMatch(nav, /Archive/, 'archive is not a destination in this nav');
   for (const f of [html, css, js]) {
@@ -116,6 +124,8 @@ test('the docked sheet is a mobile bottom sheet rather than a stretched nav pill
     'phone layout docks the sheet to the bottom edges');
   assert.match(css, /\.newsletter-sheet-handle \{[\s\S]*display: block;/,
     'phones get a grab-handle cue instead of an X');
+  assert.match(css, /\.newsletter-sheet-row \{ gap: 4px; padding: 4px 4px 4px 14px; \}/,
+    'the pill row keeps its shape on phones');
   assert.match(css, /\.newsletter-sheet input \{ min-height: 44px; \}/,
     'mobile field stays thumb-sized');
   assert.match(css, /\.newsletter-sheet-go \{ min-height: 44px;/,
