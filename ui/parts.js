@@ -168,6 +168,69 @@ if (typeof document !== 'undefined') {
 
   root.classList.add('js');
 
+  /* ---- newsletter signup ---- */
+  const newsletter = document.querySelector('[data-newsletter-signup]');
+  if (newsletter) {
+    const email = newsletter.querySelector('input[type="email"]');
+    const submit = newsletter.querySelector('button[type="submit"]');
+    const status = newsletter.querySelector('[data-newsletter-status]');
+    const idleLabel = submit?.textContent || 'Subscribe';
+
+    const announce = (message, state) => {
+      if (!status) return;
+      status.textContent = message;
+      status.dataset.state = state;
+    };
+
+    const errorMessage = (code) => {
+      if (code === 'invalid_email') return 'Enter a valid email address.';
+      if (code === 'email_send_failed') return 'We could not send the confirmation email. Please try again.';
+      return 'We could not subscribe you right now. Please try again.';
+    };
+
+    email?.addEventListener('input', () => {
+      if (status?.dataset.state === 'error') announce('', 'idle');
+    });
+
+    newsletter.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!email || !submit || !newsletter.reportValidity()) return;
+
+      submit.disabled = true;
+      submit.textContent = 'Subscribing…';
+      announce('Submitting your email…', 'submitting');
+
+      try {
+        const response = await fetch('/api/newsletter/signup', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            email: email.value.trim(),
+            source: 'website',
+            consent: { newsletter: true }
+          })
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) throw new Error(result.error || 'signup_failed');
+        if (result.status === 'confirmation_sent') {
+          email.value = '';
+          announce('Check your inbox to confirm your subscription.', 'success');
+        } else if (result.status === 'already_subscribed') {
+          email.value = '';
+          announce('You are already subscribed.', 'success');
+        } else {
+          throw new Error('signup_failed');
+        }
+      } catch (error) {
+        announce(errorMessage(error.message), 'error');
+      } finally {
+        submit.disabled = false;
+        submit.textContent = idleLabel;
+      }
+    });
+  }
+
   /* Durations come from the stylesheet so JS and CSS never drift apart. */
   const ms = (name, fallback) => {
     const raw = getComputedStyle(document.body).getPropertyValue(name).trim();

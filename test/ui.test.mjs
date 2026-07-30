@@ -67,15 +67,21 @@ test('the top index block is gone at every width', () => {
   assert.doesNotMatch(html, /<ol class="[^"]*rail/, 'no numbered index list');
 });
 
-test('the top nav is one compact pill row: identity plus one destination', () => {
+test('the top nav has a compact, accessible newsletter signup', () => {
   const nav = (html.match(/<nav class="topnav"[\s\S]*?<\/nav>/) || [])[0];
   assert.ok(nav, 'the nav is present');
   assert.match(nav, /aria-label="Site"/);
-  /* Both destinations are plain links that are always visible. */
   assert.ok(nav.includes('href="/"'), 'the identity links home');
-  assert.ok(nav.includes('href="/feed"'), 'the subscribe link is in the row');
-  assert.match(nav, />Subscribe</, 'the destination is labelled Subscribe');
+  assert.match(nav, /<form class="topnav-signup"[^>]*data-newsletter-signup/);
+  assert.match(nav, /action="\/api\/newsletter\/signup" method="post"/);
+  assert.match(nav, /<label[^>]*for="newsletter-email"[^>]*>Email address<\/label>/);
+  assert.match(nav, /<input[^>]*type="email"[^>]*autocomplete="email"[^>]*required>/);
+  assert.match(nav, /<button type="submit">Subscribe<\/button>/);
+  assert.match(nav, /data-newsletter-status[^>]*aria-live="polite"/);
+  assert.match(nav, /<noscript>[\s\S]*href="\/feed"/, 'no-JS readers get an RSS fallback');
+  assert.doesNotMatch(nav, /<a class="topnav-link" href="\/feed">Subscribe<\/a>/);
   assert.doesNotMatch(nav, /Archive/, 'archive is not a destination in this nav');
+
   /* The mark is the site face, sized in markup so the row never shifts. */
   assert.match(
     nav,
@@ -84,22 +90,30 @@ test('the top nav is one compact pill row: identity plus one destination', () =>
   );
   assert.doesNotMatch(nav, /KB</, 'no initials mark survives');
   assert.doesNotMatch(css, /\.topnav-mark/, 'the drawn initials mark is gone from the sheet');
-  assert.doesNotMatch(nav, /<button/, 'no hamburger: nothing in the nav opens');
   assert.doesNotMatch(html, /raw\.githubusercontent\.com/, 'no remote image dependency');
+
   /* Nothing anywhere still drives or styles the removed disclosure menu. */
   for (const f of [html, css, js]) {
     for (const dangling of [/data-menu-toggle/, /topnav-menu/, /topnav-toggle/]) {
       assert.doesNotMatch(f, dangling, `dangling menu reference: ${dangling}`);
     }
   }
-  /* Subscribe reads as the one blue action, with hover and focus of its own. */
+
   assert.match(css, /--blue: #[0-9a-f]{6}/i, 'a blue token exists');
-  assert.match(css, /\.topnav-link \{[^}]*background: var\(--blue\);[^}]*color: #fff;/);
-  assert.match(css, /\.topnav-link:hover \{ background: var\(--blue-deep\); \}/);
-  assert.match(css, /\.topnav-link:focus-visible \{ outline-color: var\(--blue\); \}/);
-  /* The row is a pill and stays one line, so it reads as chrome, not content. */
-  assert.match(css, /\.topnav \{[^}]*border-radius: 999px/);
-  assert.doesNotMatch(css, /\.topnav \{[^}]*flex-wrap: wrap/);
+  assert.match(css, /\.topnav-signup button \{[\s\S]*?background: var\(--blue\); color: #fff;/);
+  assert.match(css, /\.topnav-signup button:hover \{ background: var\(--blue-deep\); \}/);
+  assert.match(css, /\.topnav-signup:focus-within \{ box-shadow: 0 0 0 2px var\(--blue\); \}/);
+  assert.match(css, /@media \(max-width: 560px\) \{[\s\S]*?\.topnav-signup input \{ min-height: 44px;/);
+});
+
+test('newsletter signup posts explicit consent and handles API success states', () => {
+  assert.match(js, /fetch\('\/api\/newsletter\/signup'/);
+  assert.match(js, /source: 'website'/);
+  assert.match(js, /consent: \{ newsletter: true \}/);
+  assert.match(js, /result\.status === 'confirmation_sent'/);
+  assert.match(js, /result\.status === 'already_subscribed'/);
+  assert.match(js, /submit\.disabled = true/);
+  assert.match(js, /newsletter\.reportValidity\(\)/);
 });
 
 test('choosing a variant replays that specimen without a second click', () => {
@@ -230,8 +244,8 @@ test('controls are real buttons with visible focus and a live region', () => {
   assert.match(css, /:focus-visible \{ outline: 2px solid/);
   assert.equal(
     (html.match(/aria-live="polite"/g) || []).length,
-    SPECIMENS.length + 1,
-    'one live region per specimen plus the dialog'
+    SPECIMENS.length + 2,
+    'one live region per specimen, the dialog, and newsletter signup'
   );
   for (const attr of html.match(/<button[^>]*>/g) || []) {
     assert.match(attr, /type="(button|submit)"/, `button missing an explicit type: ${attr}`);
