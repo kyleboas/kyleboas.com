@@ -22,13 +22,18 @@
         <img class="topnav-face" src="/assets/IMG_0124.png" alt="Kyle Boas" width="26" height="26" decoding="async">
         <span class="topnav-name">Kyle Boas</span>
       </a>
-      <form class="topnav-signup" data-newsletter-signup action="/api/newsletter/signup" method="post">
-        <label class="topnav-signup-label" for="newsletter-email">Email address</label>
-        <input id="newsletter-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address" aria-describedby="newsletter-status" required>
-        <button type="submit">Subscribe</button>
-        <p class="topnav-signup-status" id="newsletter-status" data-newsletter-status aria-live="polite" aria-atomic="true"></p>
-      </form>
-      <noscript><a class="topnav-fallback" href="/feed">JavaScript is required to subscribe here. Follow the RSS feed instead.</a></noscript>
+      <!-- One slot, three states: the anchor without JS, the pill with it, and
+           the field the pill turns into. -->
+      <div class="topnav-cta" data-newsletter-cta>
+        <a class="topnav-link topnav-link--nojs" href="/feed">Subscribe</a>
+        <button type="button" class="topnav-link topnav-link--js" data-newsletter-open aria-expanded="false" aria-controls="newsletter-form">Subscribe</button>
+        <form class="topnav-signup" id="newsletter-form" data-newsletter-signup action="/api/newsletter/signup" method="post" hidden>
+          <input id="newsletter-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address" aria-label="Email address" aria-describedby="newsletter-status" required>
+          <button type="submit" class="topnav-signup-go">Subscribe</button>
+          <button type="button" class="topnav-signup-cancel" data-newsletter-cancel aria-label="Cancel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+          <p class="topnav-signup-status" id="newsletter-status" data-newsletter-status aria-live="polite" aria-atomic="true"></p>
+        </form>
+      </div>
     </nav>
 
     <header class="ui-head">
