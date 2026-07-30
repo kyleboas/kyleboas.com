@@ -22,16 +22,21 @@
         <img class="topnav-face" src="/assets/IMG_0124.png" alt="Kyle Boas" width="26" height="26" decoding="async">
         <span class="topnav-name">Kyle Boas</span>
       </a>
-      <!-- One slot, three states: the anchor without JS, the pill with it, and
-           the field the pill turns into. -->
+      <!-- The no-JS link keeps the old RSS escape hatch. parts.js swaps it for
+           the button and opens a docked signup sheet. -->
       <div class="topnav-cta" data-newsletter-cta>
         <a class="topnav-link topnav-link--nojs" href="/feed">Subscribe</a>
         <button type="button" class="topnav-link topnav-link--js" data-newsletter-open aria-expanded="false" aria-controls="newsletter-form">Subscribe</button>
-        <form class="topnav-signup" id="newsletter-form" data-newsletter-signup action="/api/newsletter/signup" method="post" hidden>
-          <input id="newsletter-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address" aria-label="Email address" aria-describedby="newsletter-status" required>
-          <button type="submit" class="topnav-signup-go">Subscribe</button>
-          <button type="button" class="topnav-signup-cancel" data-newsletter-cancel aria-label="Cancel"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
-          <p class="topnav-signup-status" id="newsletter-status" data-newsletter-status aria-live="polite" aria-atomic="true"></p>
+        <div class="newsletter-scrim" data-newsletter-scrim hidden></div>
+        <form class="newsletter-sheet" id="newsletter-form" data-newsletter-signup action="/api/newsletter/signup" method="post" role="dialog" aria-modal="true" aria-labelledby="newsletter-title" hidden>
+          <span class="newsletter-sheet-handle" aria-hidden="true"></span>
+          <h2 class="newsletter-sheet-title" id="newsletter-title">Get the next note</h2>
+          <p class="newsletter-sheet-copy">Occasional posts and experiments, sent only after you confirm by email.</p>
+          <div class="newsletter-sheet-row">
+            <input id="newsletter-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address" aria-label="Email address" aria-describedby="newsletter-status" required>
+            <button type="submit" class="newsletter-sheet-go">Subscribe</button>
+          </div>
+          <p class="newsletter-sheet-status" id="newsletter-status" data-newsletter-status aria-live="polite" aria-atomic="true"></p>
         </form>
       </div>
     </nav>

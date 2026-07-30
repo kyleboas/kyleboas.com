@@ -180,11 +180,11 @@ if (typeof document !== 'undefined') {
   const cta = document.querySelector('[data-newsletter-cta]');
   const openBtn = cta && cta.querySelector('[data-newsletter-open]');
   const newsletter = cta && cta.querySelector('[data-newsletter-signup]');
+  const scrim = cta && cta.querySelector('[data-newsletter-scrim]');
   if (cta && openBtn && newsletter) {
     const email = newsletter.querySelector('input[type="email"]');
     const submit = newsletter.querySelector('button[type="submit"]');
     const status = newsletter.querySelector('[data-newsletter-status]');
-    const cancelBtn = newsletter.querySelector('[data-newsletter-cancel]');
     const idleLabel = submit?.textContent || 'Subscribe';
 
     const announce = (message, state) => {
@@ -203,15 +203,15 @@ if (typeof document !== 'undefined') {
       cta.dataset.state = 'open';
       openBtn.setAttribute('aria-expanded', 'true');
       newsletter.hidden = false;
+      if (scrim) scrim.hidden = false;
       announce('', 'idle');
       if (email) email.focus();
     };
 
-    /* Closing puts the pill back where it was; focus follows it unless the
-       reader left the row on their own. */
     const closeSignup = ({ restoreFocus = true } = {}) => {
       if (newsletter.hidden) return;
       newsletter.hidden = true;
+      if (scrim) scrim.hidden = true;
       cta.dataset.state = 'idle';
       openBtn.setAttribute('aria-expanded', 'false');
       announce('', 'idle');
@@ -219,16 +219,14 @@ if (typeof document !== 'undefined') {
     };
 
     openBtn.addEventListener('click', openSignup);
-    if (cancelBtn) cancelBtn.addEventListener('click', () => closeSignup());
+    if (scrim) scrim.addEventListener('click', () => closeSignup({ restoreFocus: false }));
     newsletter.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
       closeSignup();
     });
-    /* A click outside collapses the row again, but never on top of typing. */
     document.addEventListener('pointerdown', (event) => {
-      if (newsletter.hidden || cta.contains(event.target)) return;
-      if (email && email.value.trim()) return;
+      if (newsletter.hidden || cta.contains(event.target) || newsletter.contains(event.target)) return;
       closeSignup({ restoreFocus: false });
     });
 
