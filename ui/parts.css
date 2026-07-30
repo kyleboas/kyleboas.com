@@ -106,69 +106,75 @@
 
 /* The pill's slot: open, the pill steps out and the field takes its place, so
    the row grows sideways instead of stacking a panel over the page. */
-.topnav-cta {
-  position: relative; display: flex; align-items: center;
-  flex: 0 0 auto; min-width: 0;
+.topnav-cta { position: relative; }
+.topnav-link--js { display: none; }
+.js .topnav-link--nojs { display: none; }
+.js .topnav-link--js { display: inline-flex; appearance: none; border: 0; cursor: pointer; font: inherit; }
+.newsletter-scrim {
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(13, 20, 38, .18);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--fast) var(--ease);
 }
-.topnav-cta[data-state="open"] { flex: 0 1 300px; }
-.topnav-cta[data-state="open"] .topnav-link { display: none; }
-.topnav-signup {
-  display: flex; align-items: center; gap: 2px; flex: 1 1 auto;
-  min-width: 0; padding-left: 12px;
-  border-radius: 999px; background: var(--surface);
-  box-shadow: 0 0 0 1px var(--line);
-  animation: ui-cta-open var(--duration-fast) var(--ease-smooth-out) both;
+.newsletter-sheet {
+  position: fixed; right: 20px; bottom: 20px; z-index: 90;
+  width: min(360px, calc(100vw - 40px));
+  display: grid; gap: 12px;
+  padding: 18px;
+  border: 1px solid rgba(20, 78, 220, .14);
+  border-radius: 24px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 24px 60px rgba(20, 38, 90, .24), 0 2px 0 rgba(255,255,255,.7) inset;
+  transform: translateY(10px) scale(.98);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--duration-fast) var(--ease-smooth-out), transform var(--duration-fast) var(--ease-smooth-out);
 }
-.topnav-signup[hidden] { display: none; }
-@keyframes ui-cta-open {
-  from { opacity: 0; transform: translateX(var(--distance-base)) scaleX(var(--scale-large)); }
-  to   { opacity: 1; transform: none; }
+.newsletter-sheet:not([hidden]) { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+.newsletter-scrim:not([hidden]) { opacity: 1; pointer-events: auto; }
+.newsletter-sheet[hidden], .newsletter-scrim[hidden] { display: none; }
+.newsletter-sheet-handle { display: none; }
+.newsletter-sheet-title {
+  margin: 0;
+  font-size: 15px; line-height: 1.2; letter-spacing: -.01em;
+  color: var(--ink);
 }
-.topnav-signup:focus-within { box-shadow: 0 0 0 2px var(--blue); }
-.topnav-signup input {
-  width: 100%; min-width: 60px; min-height: 32px; border: 0; padding: 0 4px 0 0;
-  background: transparent; color: var(--ink);
-  font: inherit; font-size: 12.5px; line-height: 1;
+.newsletter-sheet-copy {
+  margin: -6px 0 0;
+  font-size: 13px; line-height: 1.4;
+  color: var(--ink-2);
 }
-.topnav-signup input::placeholder { color: var(--ink-2); opacity: 1; }
-/* The pill itself carries the focus ring, so the field inside stays plain. */
-.topnav-signup input:focus-visible { outline: 0; }
-.topnav-signup-go {
-  min-height: 32px; flex: 0 0 auto; border: 0; padding: 0 14px;
-  border-radius: 999px; background: var(--blue); color: #fff;
-  font: inherit; font-size: 12.5px; font-weight: 500; line-height: 1;
+.newsletter-sheet-row {
+  display: flex; align-items: center; gap: 7px;
+  min-width: 0;
+}
+.newsletter-sheet input {
+  flex: 1 1 auto; min-width: 0; min-height: 44px;
+  border: 1px solid rgba(20, 78, 220, .18);
+  border-radius: 999px;
+  padding: 0 14px;
+  background: white; color: var(--ink);
+  font: inherit; font-size: 16px; outline: 2px solid transparent;
+  box-shadow: 0 1px 0 rgba(255,255,255,.85) inset;
+}
+.newsletter-sheet input:focus { border-color: rgba(20,78,220,.52); box-shadow: 0 0 0 4px rgba(20,78,220,.12); }
+.newsletter-sheet-go {
+  flex: 0 0 auto;
+  min-height: 44px; padding: 0 17px;
+  border: 0; border-radius: 999px;
+  background: var(--blue); color: white;
+  font: inherit; font-weight: 800; font-size: 13px;
   cursor: pointer;
-  transition: background-color var(--duration-quick) var(--ease-out),
-              opacity var(--duration-quick) var(--ease-out);
+  box-shadow: 0 10px 22px rgba(20, 78, 220, .22);
 }
-.topnav-signup-go:hover { background: var(--blue-deep); }
-.topnav-signup-go:focus-visible { outline-color: var(--blue); outline-offset: 2px; }
-.topnav-signup-go:disabled { opacity: .65; cursor: wait; }
-.topnav-signup-cancel {
-  width: 28px; height: 28px; flex: 0 0 auto; margin-right: 2px;
-  display: grid; place-items: center;
-  border: 0; border-radius: 50%; padding: 0; cursor: pointer;
-  background: transparent; color: var(--ink-2);
-  transition: color var(--duration-quick) var(--ease-out),
-              background-color var(--duration-quick) var(--ease-out);
+.newsletter-sheet-go:hover { transform: translateY(-1px); }
+.newsletter-sheet-go:disabled { cursor: wait; opacity: .72; transform: none; }
+.newsletter-sheet-status {
+  margin: 0; min-height: 17px;
+  font-size: 12px; line-height: 1.35; color: var(--ink-2);
 }
-.topnav-signup-cancel:hover { color: var(--ink); background: var(--hover); }
-.topnav-signup-cancel svg {
-  width: 13px; height: 13px; display: block;
-  fill: none; stroke: currentColor; stroke-width: 1.5;
-  stroke-linecap: round; stroke-linejoin: round;
-}
-.topnav-signup-status {
-  position: absolute; top: calc(100% + 8px); right: 4px;
-  max-width: min(320px, calc(100vw - 48px));
-  color: var(--ink-2); font-size: 11px; line-height: 1.35; text-align: right;
-}
-.topnav-signup-status:empty { display: none; }
-.topnav-signup-status[data-state="success"] { color: #27613f; }
-.topnav-signup-status[data-state="error"] { color: #a12820; }
+.newsletter-sheet-status[data-state="success"] { color: #138a52; font-weight: 750; }
+.newsletter-sheet-status[data-state="error"] { color: #b42318; font-weight: 750; }
 
-/* ---- page head ---- */
-/* The site sheet lays header/footer out as flex rows; here they are prose. */
 .ui-head { display: block; margin-bottom: 56px; }
 .ui-title {
   font-size: 26px; font-weight: 500; letter-spacing: -.02em;
@@ -576,20 +582,26 @@
 
 @media (max-width: 560px) {
   .col { padding: 28px 20px 56px; }
-  .topnav { flex-wrap: wrap; padding: 5px 5px 5px 10px; }
-  .topnav-id { min-height: 36px; }
+  .topnav { padding: 5px; }
+  .topnav-id { min-height: 36px; padding-left: 5px; }
   .topnav-link { min-height: 36px; padding: 0 17px; }
-  /* No room beside the name here, so the open field takes the next row whole. */
-  .topnav-cta[data-state="open"] { flex: 1 0 100%; margin-top: 6px; }
-  .topnav-signup { flex-wrap: wrap; }
-  /* 16px stops iOS zooming the page when the field takes focus. */
-  .topnav-signup input { min-height: 44px; font-size: 16px; }
-  .topnav-signup-go { min-height: 44px; }
-  .topnav-signup-cancel { width: 36px; height: 36px; }
-  .topnav-signup-status {
-    position: static; flex: 1 0 100%; max-width: none;
-    padding: 3px 4px 7px; text-align: left;
+  .newsletter-sheet {
+    left: 10px; right: 10px; bottom: 10px;
+    width: auto;
+    padding: 10px 12px 14px;
+    border-radius: 26px;
+    box-shadow: 0 18px 46px rgba(20, 38, 90, .26);
   }
+  .newsletter-sheet-handle {
+    display: block;
+    width: 42px; height: 4px;
+    margin: 0 auto 2px;
+    border-radius: 999px;
+    background: rgba(20, 38, 90, .16);
+  }
+  .newsletter-sheet-row { gap: 6px; }
+  .newsletter-sheet input { min-height: 44px; }
+  .newsletter-sheet-go { min-height: 44px; padding: 0 15px; }
   .ui-title { font-size: 23px; }
   .spec { margin-bottom: 40px; }
   .surface { min-height: 244px; }
