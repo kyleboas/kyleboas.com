@@ -4,6 +4,9 @@ url: "https://kyleboas.com"
 baseurl: ""
 timezone: America/New_York
 
+include:
+  - .well-known
+
 permalink: /:year/:month/:day/:title/
 
 # Exclude files Jekyll doesn't need to process
