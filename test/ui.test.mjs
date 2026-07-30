@@ -67,20 +67,35 @@ test('the top index block is gone at every width', () => {
   assert.doesNotMatch(html, /<ol class="[^"]*rail/, 'no numbered index list');
 });
 
-test('the top nav has a compact, accessible newsletter signup', () => {
+test('the top nav is one compact Subscribe pill, not an inline field', () => {
   const nav = (html.match(/<nav class="topnav"[\s\S]*?<\/nav>/) || [])[0];
   assert.ok(nav, 'the nav is present');
   assert.match(nav, /aria-label="Site"/);
   assert.ok(nav.includes('href="/"'), 'the identity links home');
-  assert.match(nav, /<form class="topnav-signup"[^>]*data-newsletter-signup/);
-  assert.match(nav, /action="\/api\/newsletter\/signup" method="post"/);
-  assert.match(nav, /<label[^>]*for="newsletter-email"[^>]*>Email address<\/label>/);
-  assert.match(nav, /<input[^>]*type="email"[^>]*autocomplete="email"[^>]*required>/);
-  assert.match(nav, /<button type="submit">Subscribe<\/button>/);
-  assert.match(nav, /data-newsletter-status[^>]*aria-live="polite"/);
-  assert.match(nav, /<noscript>[\s\S]*href="\/feed"/, 'no-JS readers get an RSS fallback');
-  assert.doesNotMatch(nav, /<a class="topnav-link" href="\/feed">Subscribe<\/a>/);
+
+  /* The visible control is a compact pill; the field it opens ships hidden. */
+  assert.match(
+    nav,
+    /<button type="button" class="topnav-link topnav-link--js" data-newsletter-open aria-expanded="false" aria-controls="newsletter-form">Subscribe<\/button>/,
+    'a compact Subscribe button is the resting state'
+  );
+  assert.match(nav, /<form class="topnav-signup" id="newsletter-form"[^>]*data-newsletter-signup[^>]*hidden>/,
+    'the field is hidden until the pill is clicked');
+  assert.match(css, /\.topnav-signup\[hidden\] \{ display: none; \}/);
+
+  /* Without JS the same pill is an anchor to the feed; the sheet swaps them. */
+  assert.match(nav, /<a class="topnav-link topnav-link--nojs" href="\/feed">Subscribe<\/a>/);
+  assert.match(css, /\.topnav-link--js \{ display: none; \}/);
+  assert.match(css, /\.js \.topnav-link--js \{ display: inline-flex; \}/);
+  assert.match(css, /\.js \.topnav-link--nojs \{ display: none; \}/);
+
   assert.doesNotMatch(nav, /Archive/, 'archive is not a destination in this nav');
+  /* Nothing left of the modal attempt, and no visible label to leak. */
+  for (const f of [html, css, js]) {
+    for (const dangling of [/signup-dialog/, /newsletter-dialog/, /topnav-signup-label/, /topnav-fallback/]) {
+      assert.doesNotMatch(f, dangling, `stale reference: ${dangling}`);
+    }
+  }
 
   /* The mark is the site face, sized in markup so the row never shifts. */
   assert.match(
@@ -100,10 +115,43 @@ test('the top nav has a compact, accessible newsletter signup', () => {
   }
 
   assert.match(css, /--blue: #[0-9a-f]{6}/i, 'a blue token exists');
-  assert.match(css, /\.topnav-signup button \{[\s\S]*?background: var\(--blue\); color: #fff;/);
-  assert.match(css, /\.topnav-signup button:hover \{ background: var\(--blue-deep\); \}/);
-  assert.match(css, /\.topnav-signup:focus-within \{ box-shadow: 0 0 0 2px var\(--blue\); \}/);
-  assert.match(css, /@media \(max-width: 560px\) \{[\s\S]*?\.topnav-signup input \{ min-height: 44px;/);
+  assert.match(css, /\.topnav-link \{[\s\S]*?background: var\(--blue\); color: #fff;/);
+  assert.match(css, /\.topnav-link:hover \{ background: var\(--blue-deep\); \}/);
+  assert.match(css, /@media \(max-width: 560px\) \{[\s\S]*?\.topnav-link \{ min-height: 36px;/);
+  assert.match(css, /@media \(max-width: 560px\) \{[\s\S]*?\.topnav-signup input \{ min-height: 44px; font-size: 16px;/);
+});
+
+test('clicking Subscribe turns the nav slot into the field, not a popup', () => {
+  const nav = (html.match(/<nav class="topnav"[\s\S]*?<\/nav>/) || [])[0];
+  assert.match(nav, /<div class="topnav-cta" data-newsletter-cta>/, 'pill and field share one slot');
+  assert.match(nav, /action="\/api\/newsletter\/signup" method="post"/);
+  assert.match(
+    nav,
+    /<input id="newsletter-email"[^>]*type="email"[^>]*autocomplete="email"[^>]*aria-label="Email address"[^>]*required>/,
+    'the field is named without a visible label in the row'
+  );
+  assert.match(nav, /<button type="submit" class="topnav-signup-go">Subscribe<\/button>/);
+  assert.match(nav, /data-newsletter-cancel aria-label="Cancel"/, 'a cancel affordance exists');
+  assert.match(nav, /data-newsletter-status[^>]*aria-live="polite"/);
+
+  /* Open swaps the pill for the field in place; nothing overlays the page. */
+  assert.match(js, /cta\.dataset\.state = 'open'/);
+  assert.match(js, /newsletter\.hidden = false/);
+  assert.match(js, /openBtn\.setAttribute\('aria-expanded', 'true'\)/);
+  assert.match(js, /if \(email\) email\.focus\(\)/, 'focus lands on the field');
+  assert.match(css, /\.topnav-cta\[data-state="open"\] \.topnav-link \{ display: none; \}/);
+  assert.match(css, /\.topnav-signup \{[^}]*animation: ui-cta-open/, 'the field grows out of the row');
+  assert.doesNotMatch(css, /\.topnav-signup \{[^}]*position: (?:fixed|absolute)/, 'the field stays in the row');
+  /* The code viewer keeps its own dialog; the signup must not have one. */
+  assert.doesNotMatch(html, /<dialog[^>]*newsletter/i, 'signup lives in the nav, not a dialog');
+  assert.doesNotMatch(js, /signupDialog/, 'no signup dialog is driven from JS');
+
+  /* Cancel and Escape put the pill back and hand focus with it. */
+  assert.match(js, /if \(event\.key !== 'Escape'\) return;/);
+  assert.match(js, /newsletter\.hidden = true/);
+  assert.match(js, /openBtn\.setAttribute\('aria-expanded', 'false'\)/);
+  assert.match(js, /if \(restoreFocus\) openBtn\.focus\(\)/, 'focus returns to the pill');
+  assert.match(js, /cta\.contains\(event\.target\)/, 'a click outside collapses the row');
 });
 
 test('newsletter signup posts explicit consent and handles API success states', () => {
@@ -112,8 +160,13 @@ test('newsletter signup posts explicit consent and handles API success states', 
   assert.match(js, /consent: \{ newsletter: true \}/);
   assert.match(js, /result\.status === 'confirmation_sent'/);
   assert.match(js, /result\.status === 'already_subscribed'/);
+  assert.match(js, /announce\('Submitting your email…', 'submitting'\)/, 'a submitting state is announced');
+  assert.match(js, /announce\(errorMessage\(error\.message\), 'error'\)/, 'failures land in the live region');
   assert.match(js, /submit\.disabled = true/);
   assert.match(js, /newsletter\.reportValidity\(\)/);
+  assert.match(css, /\.topnav-signup-status\[data-state="success"\]/);
+  assert.match(css, /\.topnav-signup-status\[data-state="error"\]/);
+  assert.match(css, /\.topnav-signup-go:disabled \{ opacity: \.65; cursor: wait; \}/);
 });
 
 test('choosing a variant replays that specimen without a second click', () => {
