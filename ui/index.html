@@ -22,7 +22,13 @@
         <img class="topnav-face" src="/assets/IMG_0124.png" alt="Kyle Boas" width="26" height="26" decoding="async">
         <span class="topnav-name">Kyle Boas</span>
       </a>
-      <a class="topnav-link" href="/feed">Subscribe</a>
+      <form class="topnav-signup" data-newsletter-signup action="/api/newsletter/signup" method="post">
+        <label class="topnav-signup-label" for="newsletter-email">Email address</label>
+        <input id="newsletter-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address" aria-describedby="newsletter-status" required>
+        <button type="submit">Subscribe</button>
+        <p class="topnav-signup-status" id="newsletter-status" data-newsletter-status aria-live="polite" aria-atomic="true"></p>
+      </form>
+      <noscript><a class="topnav-fallback" href="/feed">JavaScript is required to subscribe here. Follow the RSS feed instead.</a></noscript>
     </nav>
 
     <header class="ui-head">
