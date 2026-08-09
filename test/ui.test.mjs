@@ -311,7 +311,8 @@ test('private provenance is never emitted as a link', () => {
 });
 
 test('the page links nowhere unexpected', () => {
-  const allowed = ['https://tacticsjournal.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://github.com/kasturikhanke/generative-loaders'];
+  /* The site's own origin is allowed: the canonical link has to be absolute. */
+  const allowed = ['https://kyleboas.com', 'https://tacticsjournal.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://github.com/kasturikhanke/generative-loaders'];
   for (const m of html.matchAll(/href="(https?:[^"]+)"/g)) {
     assert.ok(
       allowed.some((a) => m[1].startsWith(a)),
@@ -359,4 +360,58 @@ test('the complete MIT-licensed Generative Loaders collection is present', async
     }
   }
   assert.equal(Object.values(GENERATIVE_LOADERS).flat().length, 46, 'all available loaders are shown');
+});
+
+test('the page shares with a canonical URL, an Open Graph card, and a Twitter card', () => {
+  const head = (html.match(/<head>[\s\S]*?<\/head>/) || [])[0];
+  assert.ok(head, 'the head is present');
+
+  const PAGE = 'https://kyleboas.com/ui/';
+  const IMAGE = 'https://kyleboas.com/assets/ui-social-card.png';
+  const TITLE = 'UI collection — Kyle Boas';
+  const DESC = html.match(/<meta name="description" content="([^"]+)">/)[1];
+
+  assert.match(head, new RegExp(`<link rel="canonical" href="${PAGE}">`));
+
+  /* The page title and description crawlers already read stay the source of
+     truth; the card tags repeat them rather than inventing a second voice. */
+  assert.match(head, new RegExp(`<title>${TITLE}</title>`));
+  const og = Object.fromEntries(
+    [...head.matchAll(/<meta property="(og:[^"]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]])
+  );
+  const tw = Object.fromEntries(
+    [...head.matchAll(/<meta name="(twitter:[^"]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]])
+  );
+
+  assert.equal(og['og:type'], 'website');
+  assert.equal(og['og:url'], PAGE);
+  assert.equal(og['og:title'], TITLE);
+  assert.equal(og['og:description'], DESC);
+  assert.equal(og['og:image'], IMAGE);
+  assert.equal(og['og:image:secure_url'], IMAGE);
+  assert.equal(og['og:image:type'], 'image/png');
+  assert.equal(og['og:image:width'], '1200');
+  assert.equal(og['og:image:height'], '630');
+  assert.ok(og['og:image:alt']?.trim().length, 'the card carries alt text');
+
+  assert.equal(tw['twitter:card'], 'summary_large_image');
+  assert.equal(tw['twitter:title'], TITLE);
+  assert.equal(tw['twitter:description'], DESC);
+  assert.equal(tw['twitter:image'], IMAGE);
+  assert.equal(tw['twitter:image:alt'], og['og:image:alt']);
+
+  /* Crawlers do not resolve relative paths for us: every shared URL is absolute. */
+  for (const url of [og['og:url'], og['og:image'], tw['twitter:image']]) {
+    assert.match(url, /^https:\/\/kyleboas\.com\//, `must be an absolute production URL: ${url}`);
+  }
+});
+
+test('the social card is a real 1200x630 PNG that crawlers will accept', () => {
+  const png = readFileSync(join(root, 'assets/ui-social-card.png'));
+  assert.deepEqual([...png.subarray(0, 8)], [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 'PNG signature');
+  assert.equal(png.toString('ascii', 12, 16), 'IHDR');
+  assert.equal(png.readUInt32BE(16), 1200, 'width');
+  assert.equal(png.readUInt32BE(20), 630, 'height');
+  /* Facebook and X both refuse images past 5MB; stay far under it. */
+  assert.ok(png.length < 1_000_000, `card is ${png.length} bytes`);
 });
