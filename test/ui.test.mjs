@@ -49,7 +49,7 @@ test('each entry has a matching section and heading in the page', () => {
 });
 
 test('the watchful dashboard specimen is gone, leaving nothing behind', () => {
-  assert.equal(SPECIMENS.length, 7, 'seven specimens remain');
+  assert.equal(SPECIMENS.length, 7, 'seven original specimens remain');
   assert.equal(SPECIMENS.find((s) => s.id === 'watchful-row'), undefined);
   for (const f of [html, css, js]) {
     for (const dangling of [/watchful/i, /demo-watch/, /stage--watchful/, /yourscout/]) {
@@ -175,8 +175,8 @@ test('choosing a variant replays that specimen without a second click', () => {
 
 test('every section carries one compact header row: number, name, blurb', () => {
   const heads = [...html.matchAll(/<div class="spec-head">([\s\S]*?)<\/div>/g)].map((m) => m[1]);
-  assert.equal(heads.length, SPECIMENS.length, 'one spec-head per specimen');
-  for (const [i, head] of heads.entries()) {
+  assert.equal(heads.length, SPECIMENS.length + 1, 'one extra header introduces the loader collection');
+  for (const [i, head] of heads.slice(0, SPECIMENS.length).entries()) {
     const s = SPECIMENS[i];
     assert.match(head, /<span class="spec-n">\d{2}<\/span>/, `${s.id}: catalogue number`);
     assert.match(head, new RegExp(`<h2 id="${s.id}-h">${s.name}</h2>`), `${s.id}: name`);
@@ -287,8 +287,8 @@ test('controls are real buttons with visible focus and a live region', () => {
   assert.match(css, /:focus-visible \{ outline: 2px solid/);
   assert.equal(
     (html.match(/aria-live="polite"/g) || []).length,
-    SPECIMENS.length + 2,
-    'one live region per specimen, the dialog, and newsletter signup'
+    SPECIMENS.length + 3,
+    'one live region per specimen, loader collection, dialog, and newsletter signup'
   );
   for (const attr of html.match(/<button[^>]*>/g) || []) {
     assert.match(attr, /type="(button|submit)"/, `button missing an explicit type: ${attr}`);
@@ -304,12 +304,13 @@ test('private provenance is never emitted as a link', () => {
     const linked = new RegExp(`<a[^>]*>[^<]*${escaped}`);
     assert.doesNotMatch(html, linked, `${s.id}: private path rendered inside an anchor`);
   }
-  assert.doesNotMatch(html, /href="[^"]*github\.com/, 'no GitHub links on the page');
+  const githubLinks = html.match(/href="https:\/\/github\.com\/kasturikhanke\/generative-loaders"/g) || [];
+  assert.equal(githubLinks.length, 1, 'only the public Generative Loaders attribution links to GitHub');
   assert.doesNotMatch(html, /href="[^"]*(diver-notes|yourscout|tools-kyleboas)/, 'no private repo links');
 });
 
 test('the page links nowhere unexpected', () => {
-  const allowed = ['https://tacticsjournal.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'];
+  const allowed = ['https://tacticsjournal.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://github.com/kasturikhanke/generative-loaders'];
   for (const m of html.matchAll(/href="(https?:[^"]+)"/g)) {
     assert.ok(
       allowed.some((a) => m[1].startsWith(a)),
@@ -331,7 +332,24 @@ test('specimen code carries no external or private URLs', () => {
 });
 
 test('assets stay small and dependency-free', () => {
-  const bytes = [html, css, js].reduce((n, f) => n + Buffer.byteLength(f), 0);
-  assert.ok(bytes < 100_000, `custom /ui/ assets are ${bytes} bytes`);
+  const generativeCss = readFileSync(join(root, 'ui/generative-loaders.css'), 'utf8');
+  const generativeJs = readFileSync(join(root, 'ui/generative-loaders.js'), 'utf8');
+  const bytes = [html, css, js, generativeCss, generativeJs].reduce((n, f) => n + Buffer.byteLength(f), 0);
+  assert.ok(bytes < 190_000, `custom /ui/ assets are ${bytes} bytes`);
   assert.doesNotMatch(html, /<script[^>]+src="https?:/, 'no third-party scripts');
+});
+
+test('the complete MIT-licensed Generative Loaders collection is present', async () => {
+  const { GENERATIVE_LOADERS } = await import(new URL('../ui/generative-loaders.js', import.meta.url));
+  const expected = { text: 16, inline: 18, image: 12 };
+  assert.match(html, /id="generative-loaders"/);
+  assert.match(html, /GENERATIVE_LOADERS_LICENSE\.md/);
+  assert.match(html, /github\.com\/kasturikhanke\/generative-loaders/);
+  for (const [collection, count] of Object.entries(expected)) {
+    assert.equal(GENERATIVE_LOADERS[collection].length, count, `${collection}: full collection`);
+    for (const variant of GENERATIVE_LOADERS[collection]) {
+      assert.match(html, new RegExp(`data-gl-loader="${collection}-${variant}"`), `${collection}: ${variant}`);
+    }
+  }
+  assert.equal(Object.values(GENERATIVE_LOADERS).flat().length, 46, 'all available loaders are shown');
 });
