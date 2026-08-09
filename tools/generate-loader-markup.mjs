@@ -38,8 +38,12 @@ function charNodes(text, render) {
   return text.split(/(\s+)/).filter(Boolean).map((token) => {
     const start = offset;
     offset += Array.from(token).length;
+    /* Upstream drops the raw whitespace into .tl-space (which is pre-wrap) and
+       only routes word characters through the per-character render. */
     if (/^\s+$/.test(token)) {
-      return `<span class="tl-space">${Array.from(token).map((_, i) => render(' ', start + i)).join('')}</span>`;
+      const parts = token.split('\n');
+      return `<span class="tl-space">${parts
+        .map((part, i) => `<span>${part}${i < parts.length - 1 ? '<br>' : ''}</span>`).join('')}</span>`;
     }
     return `<span class="tl-word">${Array.from(token).map((char, i) => render(char, start + i)).join('')}</span>`;
   }).join('');
@@ -62,34 +66,48 @@ const dissolveChar = (char, index) => {
 };
 
 const coalesceChar = (char, index) => {
+  /* Upstream leaves coalesce's debris unmarked; only dissolve's is aria-hidden. */
   const particles = char === ' ' ? '' : particleOffsets.slice(0, 3)
-    .map(([x, y], p) => `<i aria-hidden="true" style="--gl-px:${x * .55}px;--gl-py:${y * .55}px;--gl-p:${p}"></i>`)
+    .map(([x, y], p) => `<i style="--gl-px:${x * .55}px;--gl-py:${y * .55}px;--gl-p:${p}"></i>`)
     .join('');
   return `<span class="tl-coalesce-char" style="--gl-i:${index}"><b>${glyph(char)}</b>${particles}</span>`;
 };
 
+/* Upstream shears the three bands apart before they settle: x = -3, 3, 2. */
+const sliceOffsets = [-3, 3, 2];
+
 const sliceChar = (char, index) =>
-  `<span class="tl-slice-char" style="--gl-i:${index}">${[0, 1, 2]
-    .map((part) => `<i class="tl-slice-part tl-slice-part-${part + 1}">${glyph(char)}</i>`).join('')}</span>`;
+  `<span class="tl-slice-char" style="--gl-i:${index}">${sliceOffsets
+    .map((x, part) => `<i class="tl-slice-part tl-slice-part-${part + 1}" style="--gl-px:${x}px;--gl-p:${part}">${glyph(char)}</i>`).join('')}</span>`;
 
 const fragmentChar = (char, index) =>
   `<span class="tl-fragment-char" style="--gl-i:${index}">${fragmentOffsets
-    .map(([x, y], f) => `<i class="tl-fragment tl-fragment-${f + 1}" style="--gl-px:${x}px;--gl-py:${y}px">${glyph(char)}</i>`).join('')}</span>`;
+    .map(([x, y], f) => `<i class="tl-fragment tl-fragment-${f + 1}" style="--gl-px:${x}px;--gl-py:${y}px;--gl-f:${f}">${glyph(char)}</i>`).join('')}</span>`;
 
-function textVisual(variant, text) {
-  if (variant === 'skeleton') return `<span class="tl-copy tl-skeleton-wrap"><span class="tl-skeleton"><i></i><i></i></span></span>`;
+/* Upstream's stream variants never run through charNodes(). SkeletonText,
+   WipeText, RedactText and LineText splitAt() the stream cursor and animate the
+   incoming remainder as a single element over an already-settled stable half.
+   The gallery replays one loop from a cursor at 0, so the stable span is empty
+   and the whole phrase is the incoming token. */
+const streamText = (text) => Array.from(text).map(esc).join('');
+
+export function textVisual(variant, text) {
+  /* Upstream only falls back to shimmer bars while the stream is still empty. */
+  if (variant === 'skeleton') return text
+    ? `<span class="tl-copy tl-skeleton-stream"><span></span><span class="tl-skeleton-token">${streamText(text)}</span></span>`
+    : `<span class="tl-copy tl-skeleton-wrap"><span class="tl-skeleton"><i></i><i></i></span></span>`;
+  if (variant === 'wipe') return `<span class="tl-copy tl-wipe-stream"><span></span><span>${streamText(text)}</span></span>`;
+  if (variant === 'line') return `<span class="tl-copy tl-line-stream"><span></span><span>${streamText(text)}</span></span>`;
+  if (variant === 'redact') return `<span class="tl-copy tl-redact"><span></span><span class="tl-redact-word"><span>${streamText(text)}</span><i></i></span></span>`;
   if (variant === 'decode') return `<span class="tl-copy tl-decode">${charNodes(text, decodeChar)}</span>`;
   if (variant === 'dissolve') return `<span class="tl-copy tl-dissolve">${charNodes(text, dissolveChar)}</span>`;
   if (variant === 'coalesce') return `<span class="tl-copy tl-coalesce">${charNodes(text, coalesceChar)}</span>`;
   if (variant === 'slice') return `<span class="tl-copy tl-slice">${charNodes(text, sliceChar)}</span>`;
   if (variant === 'fragments') return `<span class="tl-copy tl-fragments">${charNodes(text, fragmentChar)}</span>`;
   if (variant === 'typewriter') return `<span class="tl-copy tl-typewriter">${charNodes(text, plainChar)}<i class="tl-cursor"></i></span>`;
-  if (variant === 'terminal') return `<span class="tl-copy tl-terminal"><b aria-hidden="true">&rsaquo;</b><span>${charNodes(text, plainChar)}</span><i class="tl-terminal-cursor"></i></span>`;
-  if (variant === 'redact') return `<span class="tl-copy tl-redact">${text.split(/(\s+)/).filter(Boolean).map((token, i, all) => {
-    if (/^\s+$/.test(token)) return `<span class="tl-space">&nbsp;</span>`;
-    const start = all.slice(0, i).reduce((n, t) => n + Array.from(t).length, 0);
-    return `<span class="tl-redact-word" style="--gl-i:${start}"><span>${Array.from(token).map(esc).join('')}</span><i></i></span>`;
-  }).join('')}</span>`;
+  /* Terminal streams too: upstream fades the incoming remainder in as one span
+     behind the prompt glyph, with no charNodes() splitting. */
+  if (variant === 'terminal') return `<span class="tl-copy tl-terminal"><b aria-hidden="true">&rsaquo;</b><span><span>${streamText(text)}</span></span><i class="tl-terminal-cursor"></i></span>`;
   return `<span class="tl-copy tl-${variant}">${charNodes(text, plainChar)}</span>`;
 }
 
@@ -142,13 +160,17 @@ function imageVisual(variant) {
 function card(collection, variant, index) {
   const title = TITLES[collection][variant];
   const label = `${title} loading demonstration`;
+  /* Upstream exposes the loader state on the element itself; the gallery script
+     keeps data-paused honest when the Pause control is used. */
+  const state = `data-speed="1" data-paused="false"`;
   let loader;
   if (collection === 'text') {
-    loader = `<span class="tl-loader gl-text-loader" data-variant="${variant}" role="status" aria-label="${label}"><span class="tl-visual" aria-hidden="true">${textVisual(variant, SAMPLE_TEXT)}</span></span>`;
+    const received = Array.from(SAMPLE_TEXT).length;
+    loader = `<span class="tl-loader gl-text-loader" data-variant="${variant}" ${state} data-received-length="${received}" role="status" aria-label="${label}"><span class="tl-visual" aria-hidden="true">${textVisual(variant, SAMPLE_TEXT)}</span></span>`;
   } else if (collection === 'inline') {
-    loader = `<span class="il-loader" data-variant="${variant}" role="status" aria-label="${label}">${inlineVisual(variant)}</span>`;
+    loader = `<span class="il-loader" data-variant="${variant}" ${state} role="status" aria-label="${label}">${inlineVisual(variant)}</span>`;
   } else {
-    loader = `<span class="iml-loader" data-variant="${variant}" role="status" aria-label="${label}"><span class="iml-visual" aria-hidden="true">${imageVisual(variant)}</span></span>`;
+    loader = `<span class="iml-loader" data-variant="${variant}" ${state} role="status" aria-label="${label}"><span class="iml-visual" aria-hidden="true">${imageVisual(variant)}</span></span>`;
   }
   return `<article class="gl-card gl-card--${collection}" data-gl-loader="${collection}-${variant}">\n`
     + `  <span class="gl-card-n">${pad(index)}</span>\n`

@@ -21,7 +21,7 @@ const css = readFileSync(join(root, 'ui/generative-loaders.css'), 'utf8');
 const js = readFileSync(join(root, 'ui/generative-loaders.js'), 'utf8');
 
 const { GENERATIVE_LOADERS } = await import(new URL('../ui/generative-loaders.js', import.meta.url));
-const { buildCollections, renderInto } = await import(new URL('../tools/generate-loader-markup.mjs', import.meta.url));
+const { buildCollections, renderInto, textVisual } = await import(new URL('../tools/generate-loader-markup.mjs', import.meta.url));
 
 const card = (key) => {
   const match = new RegExp(`<article class="gl-card[^"]*" data-gl-loader="${key}">[\\s\\S]*?</article>`).exec(html);
@@ -160,16 +160,97 @@ test('tiles, pixel-grid and resolution keep their upstream fields', () => {
 
 /* --- text loader structure: the vendored CSS must have something to target --- */
 
-test('text loaders keep upstream word grouping and character elements', () => {
+/* Upstream splits its text variants in two. Stream variants (SkeletonText,
+   WipeText, RedactText, LineText, TerminalText) splitAt() the stream cursor and
+   animate the incoming remainder as ONE element; everything else runs through
+   charNodes(). Getting this backwards is the exact class of defect that shipped
+   skeleton bars over real copy and four redact bars instead of one. */
+const STREAM_TEXT = ['skeleton', 'wipe', 'redact', 'line', 'terminal'];
+
+test('stream text variants reveal one incoming token, not per-character markup', () => {
+  for (const variant of STREAM_TEXT) {
+    const markup = card(`text-${variant}`);
+    assert.doesNotMatch(markup, /tl-word|tl-char|gl-text-char/,
+      `${variant}: upstream never routes a stream variant through charNodes()`);
+    assert.match(markup, />Thinking through the details\.</,
+      `${variant}: the incoming phrase is emitted as one intact run`);
+  }
+});
+
+test('stream text variants emit upstream element structure exactly', () => {
+  const phrase = 'Thinking through the details.';
+  /* Left-hand <span> is upstream's already-settled stable half; the gallery
+     replays a cursor at 0, so it is empty and the phrase is all incoming. */
+  const expected = {
+    skeleton: `<span class="tl-copy tl-skeleton-stream"><span></span><span class="tl-skeleton-token">${phrase}</span></span>`,
+    wipe: `<span class="tl-copy tl-wipe-stream"><span></span><span>${phrase}</span></span>`,
+    line: `<span class="tl-copy tl-line-stream"><span></span><span>${phrase}</span></span>`,
+    redact: `<span class="tl-copy tl-redact"><span></span><span class="tl-redact-word"><span>${phrase}</span><i></i></span></span>`,
+    terminal: `<span class="tl-copy tl-terminal"><b aria-hidden="true">&rsaquo;</b><span><span>${phrase}</span></span><i class="tl-terminal-cursor"></i></span>`,
+  };
+  for (const [variant, markup] of Object.entries(expected)) {
+    assert.ok(card(`text-${variant}`).includes(markup), `${variant}: upstream structure`);
+  }
+  /* Skeleton only falls back to shimmer bars while the stream is still empty. */
+  assert.match(textVisual('skeleton', ''), /tl-skeleton-wrap.*tl-skeleton.*<i><\/i><i><\/i>/);
+  assert.doesNotMatch(card('text-skeleton'), /tl-skeleton-wrap/,
+    'a non-empty stream must show copy, not bars');
+});
+
+test('charNodes variants keep upstream word grouping and raw whitespace', () => {
   for (const variant of GENERATIVE_LOADERS.text) {
     const markup = card(`text-${variant}`);
     assert.match(markup, /<span class="tl-visual" aria-hidden="true">/, `${variant}: decorative visual is hidden`);
-    /* Skeleton shows bars rather than copy, and redact groups by its own
-       word element, so neither runs through upstream's charNodes(). */
-    if (variant === 'skeleton') continue;
-    if (variant !== 'redact') assert.match(markup, /<span class="tl-word">/, `${variant}: words stay unbreakable`);
-    assert.match(markup, /<span class="tl-space">/, `${variant}: spaces are their own token`);
+    if (STREAM_TEXT.includes(variant)) continue;
+    assert.match(markup, /<span class="tl-word">/, `${variant}: words stay unbreakable`);
+    /* Upstream puts the raw whitespace in .tl-space (styled pre-wrap) rather
+       than routing spaces through the per-character render. */
+    assert.match(markup, /<span class="tl-space"><span> <\/span><\/span>/, `${variant}: raw space token`);
+    assert.doesNotMatch(markup, /<span class="tl-space">(?:(?!<\/span>).)*&nbsp;/, `${variant}: no padded space chars`);
   }
+});
+
+test('the port matches the canonical upstream DOM for every text and image loader', () => {
+  /* Element/class/content parity, checked against the shapes recorded from
+     react-dom/server output of kasturikhanke/generative-loaders. Inline styles
+     legitimately differ: upstream emits framer-motion's initial frame, the
+     static port drives the same reveal from CSS keyframes. */
+  const shapes = {
+    'text-decode': /tl-copy tl-decode.*<span class="tl-decode-char"[^>]*><b>T<\/b><i>A<\/i><\/span>/,
+    'text-dissolve': /tl-copy tl-dissolve.*<span class="tl-dissolve-char"[^>]*><b>T<\/b><i aria-hidden="true"/,
+    'text-coalesce': /tl-copy tl-coalesce.*<span class="tl-coalesce-char"[^>]*><b>T<\/b><i style/,
+    'text-slice': /<i class="tl-slice-part tl-slice-part-1" style="--gl-px:-3px;--gl-p:0">T<\/i>/,
+    'text-fragments': /<i class="tl-fragment tl-fragment-1" style="--gl-px:-8px;--gl-py:-6px;--gl-f:0">T<\/i>/,
+    'image-skeleton': /<span class="iml-skeleton"><i><\/i><b><\/b><\/span>/,
+    'image-bands': /<span class="iml-bands"><i><\/i><i><\/i><i><\/i><b><\/b><\/span>/,
+    'image-scan': /<span class="iml-scan"><i><\/i><b><\/b><em><\/em><\/span>/,
+    'image-bloom': /<span class="iml-bloom"><i><\/i><b><\/b><em><\/em><\/span>/,
+    'image-focus': /<span class="iml-focus"><i><\/i><i><\/i><i><\/i><b><\/b><\/span>/,
+    'image-shutter': /<span class="iml-shutter"><i><\/i><i><\/i><b><\/b><em><\/em><\/span>/,
+  };
+  for (const [key, shape] of Object.entries(shapes)) assert.match(card(key), shape, key);
+  /* Upstream marks dissolve's debris aria-hidden and leaves coalesce's bare. */
+  assert.doesNotMatch(card('text-coalesce'), /aria-hidden="true"><\/i>/,
+    'coalesce particles carry no aria-hidden upstream');
+  /* Element counts upstream fixes per variant. */
+  const counts = { 'image-tiles': 16, 'image-pixel-grid': 16, 'image-resolution': 36, 'image-diffusion': 28, 'image-raster': 8 };
+  for (const [key, n] of Object.entries(counts)) {
+    assert.equal((card(key).match(/<i /g) || []).length, n, `${key}: ${n} elements`);
+  }
+  assert.equal((card('image-coalesce').match(/<i /g) || []).length, 24, 'image-coalesce: 24 particles');
+});
+
+test('loaders expose the upstream state attributes', () => {
+  for (const collection of Object.keys(GENERATIVE_LOADERS)) {
+    for (const variant of GENERATIVE_LOADERS[collection]) {
+      assert.match(card(`${collection}-${variant}`), /data-speed="1" data-paused="false"/,
+        `${collection}-${variant}: upstream state hooks`);
+    }
+  }
+  assert.match(card('text-decode'), /data-received-length="29"/, 'text loaders report the received length');
+  /* The gallery controls must keep those attributes honest. */
+  assert.match(js, /loader\.dataset\.paused = String\(paused\)/);
+  assert.match(js, /loader\.dataset\.speed = String\(speed\)/);
 });
 
 test('wave and tracking carry tl-char so their per-character sizing applies', () => {
@@ -204,8 +285,10 @@ test('dissolve and coalesce emit their particle debris', () => {
   assert.equal((firstDissolve.match(/<i aria-hidden="true"/g) || []).length, 6, 'six dissolve particles');
   const coalesce = card('text-coalesce');
   assert.match(coalesce, /<span class="tl-coalesce-char"/);
+  /* Upstream marks only dissolve's debris aria-hidden; coalesce's <i> are bare. */
   const firstCoalesce = /<span class="tl-coalesce-char"[^>]*>[\s\S]*?<\/span>/.exec(coalesce)[0];
-  assert.equal((firstCoalesce.match(/<i aria-hidden="true"/g) || []).length, 3, 'three coalesce particles');
+  assert.equal((firstCoalesce.match(/<i style/g) || []).length, 3, 'three coalesce particles');
+  assert.doesNotMatch(firstCoalesce, /aria-hidden/, 'coalesce debris carries no aria-hidden');
   assert.match(css, /@keyframes gl-particle\b/);
   assert.match(css, /@keyframes gl-particle-in/);
 });
@@ -220,16 +303,64 @@ test('slice and fragments keep their clip-path layers', () => {
   assert.match(css, /@keyframes gl-fragment/);
 });
 
-test('redact bars each word rather than the whole line', () => {
+test('redact draws one bar over the incoming phrase', () => {
   const redact = card('text-redact');
-  const words = redact.match(/<span class="tl-redact-word"/g) || [];
-  assert.equal(words.length, 4, 'one bar per word in the sample sentence');
-  assert.match(css, /\.tl-redact-word > i \{ animation: gl-redact[^}]*--gl-i/, 'bars lift in reading order');
+  const bars = redact.match(/<span class="tl-redact-word"/g) || [];
+  assert.equal(bars.length, 1, 'upstream bars the incoming run once, not per word');
+  assert.doesNotMatch(redact, /--gl-i/, 'a single bar has no per-character stagger');
+  /* transform-origin: right upstream, so the bar wipes off toward the end. */
+  assert.match(css, /@keyframes gl-redact \{[\s\S]*?scaleX\(\.18\)/, 'bar collapses through .18');
+  assert.match(css, /\.tl-redact-word > span \{ animation: gl-redact-copy/, 'copy lifts out from under it');
 });
 
-test('line-by-line reveals a wrapped paragraph, not one word per row', () => {
-  /* Upstream's legacy .tl-line grid makes every child span its own row. */
-  assert.match(css, /\.tl-line > span \{ display: inline; width: auto; \}/);
+test('line-by-line clips one incoming run rather than per-character spans', () => {
+  assert.match(card('text-line'), /tl-copy tl-line-stream/, 'upstream uses the stream wrapper');
+  assert.doesNotMatch(css, /\.tl-line \{ display: block; \}/, 'the invented .tl-line override is gone');
+  assert.match(css, /\.tl-line-stream > span:last-child \{ animation-name: gl-line-stream; \}/);
+  /* opacity 0, x -3, clipPath inset(0 100% 0 0) upstream. */
+  assert.match(css, /@keyframes gl-line-stream \{[^}]*translateX\(-3px\)[^}]*inset\(0 100% 0 0\)/);
+});
+
+test('per-character reveals use upstream stagger, not a whole-loop spread', () => {
+  /* The defect this pins: a large negative per-index delay spread the phrase
+     across most of the cycle, so ~13 of 29 characters were mid-reveal at any
+     instant and a hole travelled through the sentence. Upstream's stagger() is
+     min(.035, (index - start) * .005) — the chunk lands very nearly together. */
+  assert.doesNotMatch(css, /animation-delay:[^;]*var\(--gl-i\) \* -/,
+    'a negative per-index delay desynchronises characters across the loop');
+  assert.match(css, /animation-delay: min\(calc\(var\(--gl-i\) \* 5ms\), 35ms\)/,
+    'stagger is 5ms per character capped at 35ms');
+  /* Dissolve is the one upstream ripple: min(.2, index * .018). */
+  assert.match(css, /\.tl-dissolve-char > b \{\s*animation-name: gl-dissolve;\s*animation-delay: min\(calc\(var\(--gl-i\) \* 18ms\), 200ms\);/);
+  /* Every reveal must settle and then hold, never dip back out mid-cycle. */
+  for (const name of ['gl-text-in', 'gl-type', 'gl-cascade', 'gl-wave', 'gl-focus', 'gl-flip',
+    'gl-track', 'gl-dissolve', 'gl-coalesce', 'gl-decode', 'gl-fragment', 'gl-slice',
+    'gl-wipe', 'gl-line-stream', 'gl-skeleton-token']) {
+    const block = new RegExp(`@keyframes ${name} \\{([\\s\\S]*?)\\n`).exec(css);
+    assert.ok(block, `${name} defined`);
+    assert.match(block[1], /\d+%, 100% \{/, `${name} holds its settled frame to 100%`);
+  }
+});
+
+test('reveal keyframes carry the upstream initial states', () => {
+  /* Each value below is the framer-motion `initial` upstream sets. */
+  const expected = [
+    [/@keyframes gl-cascade \{[^}]*translateY\(4px\)/, 'cascade y: 4'],
+    [/@keyframes gl-wave \{[^}]*translateY\(4px\) scale\(\.94\)/, 'wave y: 4, scale: .94'],
+    [/@keyframes gl-focus \{[^}]*opacity: \.18; filter: blur\(2px\)/, 'focus opacity .18, blur 2px'],
+    [/@keyframes gl-flip \{[^}]*rotateX\(-42deg\) translateY\(1px\)/, 'flip rotateX -42, y 1'],
+    [/@keyframes gl-track \{[^}]*scaleX\(1\.06\)/, 'tracking scaleX 1.06'],
+    [/@keyframes gl-dissolve \{[^}]*opacity: \.05/, 'dissolve opacity .05'],
+    [/@keyframes gl-coalesce \{[^}]*scale\(\.9\)/, 'coalesce scale .9'],
+    [/@keyframes gl-skeleton-token \{[^}]*blur\(2px\); transform: translateY\(2px\)/, 'skeleton y 2, blur 2px'],
+    [/@keyframes gl-slice \{[^}]*translateX\(var\(--gl-px\)\)/, 'slice shears from its own offset'],
+  ];
+  for (const [pattern, label] of expected) assert.match(css, pattern, label);
+  /* Wave is its own curve upstream; it must not be aliased onto cascade. */
+  assert.doesNotMatch(css, /\.tl-wave \.gl-text-char \{ animation-name: gl-cascade; \}/);
+  /* Both carets blink: upstream animates tl-cursor as well as tl-terminal-cursor. */
+  assert.match(css, /\.tl-cursor \{ animation: gl-caret/, 'the typewriter caret blinks');
+  assert.match(css, /\.tl-terminal-cursor \{ animation: gl-cursor/);
 });
 
 /* --- count-up is a timer upstream, not a frozen number --- */

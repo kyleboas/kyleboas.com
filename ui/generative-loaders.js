@@ -43,6 +43,7 @@ if (typeof document !== 'undefined') {
       gallery.style.setProperty('--gl-text-duration', `${1.2 / speed}s`);
       for (const loader of gallery.querySelectorAll('.il-loader')) loader.style.setProperty('--il-duration', `${1.2 / speed}s`);
       for (const loader of gallery.querySelectorAll('.iml-loader')) loader.style.setProperty('--iml-duration', `${2.35 / speed}s`);
+      for (const loader of gallery.querySelectorAll('[data-speed]')) loader.dataset.speed = String(speed);
       for (const button of gallery.querySelectorAll('[data-gl-speed]')) button.setAttribute('aria-pressed', String(Number(button.dataset.glSpeed) === speed));
       announce(`Animation speed: ${speed}×.`);
     };
@@ -54,6 +55,7 @@ if (typeof document !== 'undefined') {
       const paused = gallery.classList.toggle('is-paused');
       pause.textContent = paused ? 'Play' : 'Pause';
       pause.setAttribute('aria-pressed', String(paused));
+      for (const loader of gallery.querySelectorAll('[data-paused]')) loader.dataset.paused = String(paused);
       if (paused) stopCounters(); else runCounters();
       announce(paused ? 'Loader animations paused.' : 'Loader animations playing.');
     });
