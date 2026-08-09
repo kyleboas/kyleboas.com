@@ -573,56 +573,106 @@
 .gl-demo--image .iml-loader { --iml-size: 116px; --iml-radius: 10%; }
 .gl-card--image { min-height: 194px; }
 /* The upstream reveals are framer-motion transitions over a growing stream.
-   The gallery replays them as one looping CSS animation per character, keyed
-   on the --gl-i index the generator writes, but keeps upstream's element
-   structure so every rule shipped above still has something to target. */
+   The gallery replays them as one looping CSS animation, keyed on the --gl-i
+   index the generator writes, but keeps upstream's element structure so every
+   rule shipped above still has something to target.
+
+   Two numbers have to come from upstream or the loop stops looking like the
+   component. The first is the stagger: upstream's stagger() is
+   min(.035, (index - start) * .005), i.e. at most 35ms across the WHOLE
+   incoming chunk, so a phrase lands very nearly together. Spreading characters
+   across most of the cycle instead (a large negative per-index delay) leaves a
+   wide band mid-reveal at every instant, which reads as a hole travelling
+   through the sentence rather than as text arriving.
+
+   The second is where each reveal ends: upstream's transition duration divided
+   by the 1.2s loop. Past that point the character is simply settled, so every
+   keyframe below holds its final frame out to 100%. */
 .gl-text-char, .tl-decode-char > b, .tl-dissolve-char > b, .tl-coalesce-char > b {
   display: inline-block;
   animation: gl-text-in var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both;
-  animation-delay: calc(var(--gl-i) * -36ms);
+  animation-delay: min(calc(var(--gl-i) * 5ms), 35ms);
 }
 .tl-typewriter .gl-text-char { animation-name: gl-type; }
-.tl-cascade .gl-text-char, .tl-wave .gl-text-char { animation-name: gl-cascade; }
+.tl-cascade .gl-text-char { animation-name: gl-cascade; }
+.tl-wave .gl-text-char { animation-name: gl-wave; }
 .tl-focus .gl-text-char { animation-name: gl-focus; }
-.tl-wipe .gl-text-char, .tl-wipe-stream .gl-text-char { animation-name: gl-wipe; }
-/* Upstream's legacy .tl-line grid puts every child span on its own row; the
-   gallery reveals one wrapped paragraph, so words and gaps stay inline. */
-.tl-line { display: block; }
-.tl-line > span { display: inline; width: auto; }
-.tl-line .gl-text-char { display: inline-block; }
 .tl-flip .gl-text-char { animation-name: gl-flip; }
 .tl-tracking .gl-text-char { animation-name: gl-track; }
 .tl-decode-char > b { animation-name: gl-decode; }
-.tl-dissolve-char > b { animation-name: gl-dissolve; }
 .tl-coalesce-char > b { animation-name: gl-coalesce; }
-/* Decode's scramble glyph sits under the resolved letter and burns off. */
-.tl-decode-char > i { animation: gl-scramble var(--gl-text-duration) steps(1, end) infinite both; animation-delay: calc(var(--gl-i) * -36ms); }
-/* Dissolve throws particles inward; coalesce pulls them into the letter. */
-.tl-dissolve-char > i, .tl-coalesce-char > i {
-  animation: gl-particle var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both;
-  animation-delay: calc(var(--gl-i) * -36ms + var(--gl-p) * 12ms);
+/* Dissolve is the one variant upstream deliberately ripples: its delay is
+   min(.2, (index - start) * .018), an order of magnitude past stagger(). */
+.tl-dissolve-char > b {
+  animation-name: gl-dissolve;
+  animation-delay: min(calc(var(--gl-i) * 18ms), 200ms);
 }
-.tl-coalesce-char > i { animation-name: gl-particle-in; }
-.tl-redact-word > i { animation: gl-redact var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite; animation-delay: calc(var(--gl-i) * -36ms); }
-.tl-slice-char > i { animation: gl-text-in var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both; animation-delay: calc(var(--gl-i) * -36ms); }
-.tl-fragment-char > i { animation: gl-fragment var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both; animation-delay: calc(var(--gl-i) * -36ms); }
+/* Decode's scramble glyph sits over the resolved letter and burns off. */
+.tl-decode-char > i {
+  animation: gl-scramble var(--gl-text-duration) steps(1, end) infinite both;
+  animation-delay: min(calc(var(--gl-i) * 5ms), 35ms);
+}
+/* Dissolve throws particles outward; coalesce pulls them into the letter. */
+.tl-dissolve-char > i {
+  animation: gl-particle var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both;
+  animation-delay: calc(min(calc(var(--gl-i) * 18ms), 200ms) + var(--gl-p) * 12ms);
+}
+.tl-coalesce-char > i {
+  animation: gl-particle-in var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both;
+  animation-delay: calc(min(calc(var(--gl-i) * 5ms), 35ms) + var(--gl-p) * 12ms);
+}
+/* --- stream variants ---
+   Upstream's skeleton, wipe, redact, line and terminal do not animate per
+   character: they transition the incoming remainder as a single element. Each
+   rule below replays that one transition on the token span the generator emits,
+   using the same targets and shapes as the framer-motion originals. */
+.tl-skeleton-token { animation: gl-skeleton-token var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both; }
+.tl-wipe-stream > span:last-child,
+.tl-line-stream > span:last-child {
+  display: inline-block;
+  animation: gl-wipe var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both;
+}
+.tl-line-stream > span:last-child { animation-name: gl-line-stream; }
+.tl-terminal > span > span { animation: gl-type var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both; }
+.tl-redact-word > span { animation: gl-redact-copy var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both; }
+.tl-redact-word > i { animation: gl-redact var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both; }
+/* Slice shears its three bands apart from the upstream x offsets before they
+   settle, each band trailing the one above it by 10ms. */
+.tl-slice-char > i {
+  animation: gl-slice var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both;
+  animation-delay: calc(min(calc(var(--gl-i) * 5ms), 35ms) + var(--gl-p) * 10ms);
+}
+.tl-fragment-char > i {
+  animation: gl-fragment var(--gl-text-duration) cubic-bezier(.22, .65, .3, 1) infinite both;
+  animation-delay: calc(min(calc(var(--gl-i) * 5ms), 35ms) + var(--gl-f) * 10ms);
+}
+.tl-cursor { animation: gl-caret .85s linear infinite; }
 .tl-terminal-cursor { animation: gl-cursor .8s steps(1) infinite; }
-@keyframes gl-text-in { 0%, 12% { opacity: .16; transform: translateY(3px); } 44%, 100% { opacity: 1; transform: none; } }
-@keyframes gl-type { 0%, 18% { opacity: 0; } 42%, 100% { opacity: 1; } }
-@keyframes gl-cascade { 0%, 15% { opacity: 0; transform: translateY(5px); } 42%, 100% { opacity: 1; transform: none; } }
-@keyframes gl-focus { 0%, 15% { opacity: .08; filter: blur(3px); } 44%, 100% { opacity: 1; filter: blur(0); } }
-@keyframes gl-wipe { 0%, 15% { clip-path: inset(0 100% 0 0); } 44%, 100% { clip-path: inset(0 0 0 0); } }
-@keyframes gl-flip { 0%, 15% { opacity: 0; transform: perspective(500px) rotateX(-48deg); } 44%, 100% { opacity: 1; transform: none; } }
-@keyframes gl-track { 0%, 15% { opacity: 0; transform: translateX(4px) scaleX(1.08); } 44%, 100% { opacity: 1; transform: none; } }
-@keyframes gl-dissolve { 0%, 15% { opacity: .04; filter: blur(3px); clip-path: inset(0 100% 0 0); } 44%, 100% { opacity: 1; filter: blur(0); clip-path: inset(0); } }
-@keyframes gl-coalesce { 0%, 15% { opacity: 0; filter: blur(2px); transform: scale(.88); } 44%, 100% { opacity: 1; filter: blur(0); transform: none; } }
-@keyframes gl-decode { 0%, 14% { opacity: .22; } 40%, 100% { opacity: 1; } }
-@keyframes gl-scramble { 0%, 12% { opacity: .42; } 30%, 100% { opacity: 0; } }
-@keyframes gl-particle { 0%, 10% { opacity: 0; transform: translate(var(--gl-px), var(--gl-py)) scale(.35); } 30% { opacity: .72; } 52%, 100% { opacity: 0; transform: translate(0, 0) scale(.12); } }
-@keyframes gl-particle-in { 0%, 10% { opacity: .45; transform: translate(var(--gl-px), var(--gl-py)) scale(.5); } 46%, 100% { opacity: 0; transform: translate(0, 0) scale(0); } }
-@keyframes gl-fragment { 0%, 15% { opacity: 0; transform: translate(var(--gl-px), var(--gl-py)); } 44%, 100% { opacity: 1; transform: none; } }
-@keyframes gl-redact { 0%, 16% { opacity: .7; transform: scaleX(1); } 50%, 100% { opacity: 0; transform: scaleX(0); } }
+/* Each end stop below is the upstream transition duration over the 1.2s loop. */
+@keyframes gl-text-in { 0% { opacity: .16; transform: translateY(3px); } 23%, 100% { opacity: 1; transform: none; } }
+@keyframes gl-type { 0% { opacity: 0; } 17%, 100% { opacity: 1; } }
+@keyframes gl-cascade { 0% { opacity: 0; transform: translateY(4px); } 23%, 100% { opacity: 1; transform: none; } }
+@keyframes gl-wave { 0% { opacity: 0; transform: translateY(4px) scale(.94); } 23%, 100% { opacity: 1; transform: none; } }
+@keyframes gl-focus { 0% { opacity: .18; filter: blur(2px); } 23%, 100% { opacity: 1; filter: blur(0); } }
+@keyframes gl-wipe { 0% { clip-path: inset(0 100% 0 0); } 23%, 100% { clip-path: inset(0 0 0 0); } }
+@keyframes gl-flip { 0% { opacity: 0; transform: perspective(500px) rotateX(-42deg) translateY(1px); } 23%, 100% { opacity: 1; transform: none; } }
+@keyframes gl-track { 0% { opacity: 0; transform: translateX(4px) scaleX(1.06); } 23%, 100% { opacity: 1; transform: none; } }
+@keyframes gl-dissolve { 0% { opacity: .05; filter: blur(3px); clip-path: inset(0 100% 0 0); } 38%, 100% { opacity: 1; filter: blur(0); clip-path: inset(0); } }
+@keyframes gl-coalesce { 0% { opacity: 0; filter: blur(2px); transform: scale(.9); } 23%, 100% { opacity: 1; filter: blur(0); transform: none; } }
+@keyframes gl-decode { 0% { opacity: .22; } 22%, 100% { opacity: 1; } }
+@keyframes gl-scramble { 0% { opacity: .42; } 13%, 100% { opacity: 0; } }
+@keyframes gl-particle { 0% { opacity: 0; transform: translate(var(--gl-px), var(--gl-py)) scale(.35); } 16% { opacity: .72; transform: translate(calc(var(--gl-px) * .28), calc(var(--gl-py) * .3)) scale(1); } 37%, 100% { opacity: 0; transform: translate(0, 0) scale(.12); } }
+@keyframes gl-particle-in { 0% { opacity: .45; transform: translate(var(--gl-px), var(--gl-py)) scale(.5); } 20%, 100% { opacity: 0; transform: translate(0, 0) scale(0); } }
+@keyframes gl-fragment { 0% { opacity: 0; transform: translate(var(--gl-px), var(--gl-py)); } 23%, 100% { opacity: 1; transform: none; } }
+@keyframes gl-slice { 0% { opacity: 0; transform: translateX(var(--gl-px)); } 23%, 100% { opacity: 1; transform: none; } }
+@keyframes gl-skeleton-token { 0% { opacity: 0; filter: blur(2px); transform: translateY(2px); } 30%, 100% { opacity: 1; filter: blur(0); transform: none; } }
+@keyframes gl-line-stream { 0% { opacity: 0; transform: translateX(-3px); clip-path: inset(0 100% 0 0); } 25%, 100% { opacity: 1; transform: none; clip-path: inset(0); } }
+/* Copy lifts out from under the bar after upstream's .08s delay (7%). */
+@keyframes gl-redact-copy { 0%, 7% { opacity: .28; filter: blur(.035em); } 42%, 100% { opacity: 1; filter: blur(0); } }
+/* scaleX [1, 1, .18, 0] and opacity [.2, .2, .14, 0] at times [0, .16, .78, 1]. */
+@keyframes gl-redact { 0%, 6% { opacity: .2; transform: scaleX(1); } 31% { opacity: .14; transform: scaleX(.18); } 40%, 100% { opacity: 0; transform: scaleX(0); } }
 @keyframes gl-cursor { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+@keyframes gl-caret { 0% { opacity: 0; } 10%, 58% { opacity: 1; } 100% { opacity: 0; } }
 .gl-gallery.is-paused *, .gl-gallery.is-paused *::before, .gl-gallery.is-paused *::after { animation-play-state: paused !important; }
 .gl-gallery.is-restarting *, .gl-gallery.is-restarting *::before, .gl-gallery.is-restarting *::after { animation: none !important; }
 .gl-credit { padding: 0 16px 16px; }
@@ -633,7 +683,9 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .gl-text-char, .tl-decode-char > b, .tl-dissolve-char > b, .tl-coalesce-char > b,
-  .tl-slice-char > i, .tl-fragment-char > i { opacity: 1; filter: none; transform: none; clip-path: none; }
+  .tl-slice-char > i, .tl-fragment-char > i,
+  .tl-skeleton-token, .tl-wipe-stream > span, .tl-line-stream > span,
+  .tl-terminal > span > span, .tl-redact-word > span { opacity: 1; filter: none; transform: none; clip-path: none; }
   /* Decorative debris resolves to the settled frame rather than mid-flight. */
   .tl-redact-word > i, .tl-decode-char > i, .tl-dissolve-char > i, .tl-coalesce-char > i { opacity: 0; }
 }
