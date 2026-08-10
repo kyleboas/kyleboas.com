@@ -1,5 +1,5 @@
 import { handleInfiniteFlightRequest } from './infiniteflight-core.js';
-import { InfiniteFlightUpstreamCoordinator } from './infiniteflight-coordinator.js';
+import { InfiniteFlightUpstreamCoordinator } from './infiniteflight-durable-object.js';
 import { handleNewsletterRequest } from './newsletter-core.js';
 
 export { InfiniteFlightUpstreamCoordinator };
