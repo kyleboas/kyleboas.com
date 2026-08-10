@@ -27,3 +27,29 @@ curl -fsS https://kyleboas.com/api/newsletter/latest
 ```
 
 Error responses include a stable machine-readable `code` field; `error` is retained as a compatibility alias. `/api/newsletter/latest` reads the latest item from the public Jekyll feed and does not subscribe or deliver email.
+
+## Infinite Flight Inbounds API
+
+The same Worker also serves `kyleboas.com/api/infiniteflight/*` for the static Inbounds page. It is a constrained proxy, not a general upstream pass-through: it discovers the configured Live session server-side and exposes only `/session`, `/flights`, `/world`, `/atc`, and airport metadata, status, and ATIS endpoints. The browser never receives `INFINITEFLIGHT_API_KEY`.
+
+Operational limits are enforced with temporary cache responses only:
+
+- Session discovery is cached for 600 seconds (`INFINITEFLIGHT_SESSION_NAME` defaults to `Expert Server`).
+- Flight data is cached for 15 seconds; the UI requests it at the same minimum interval.
+- Other session data is cached for 15 seconds to avoid duplicate upstream calls during a page refresh.
+- The browser stops its automatic flight, ATC, and interpolation update timers after 15 minutes without user activity. A new interaction and update action starts them again.
+
+Before an authorized deployment, set the Worker secret through the local broker without displaying it:
+
+```bash
+sudo secret global infiniteflight | npm run secret:infiniteflight
+```
+
+Then deploy the existing Worker configuration through the authorized deployment path (or, only when separately authorized, `npm run deploy:newsletter`). Confirm the route after deployment:
+
+```bash
+curl -fsS https://kyleboas.com/api/infiniteflight/session
+curl -fsS https://kyleboas.com/api/infiniteflight/flights
+```
+
+Do not place the key in this repository, a Wrangler variable, a browser bundle, or a `.env` file. `upstream_rate_limited` (HTTP 429) tells the UI to pause; authentication and other upstream failures return stable error codes without passing through upstream response bodies.

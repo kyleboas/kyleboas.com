@@ -4,8 +4,9 @@ import { updateAircraftOnMap, showMapPopup } from "./inbounds-map.js";
 // Constants and Global State
 // ============================
 
-const PROXY_URL = 'https://infiniteflightapi.deno.dev/api/if';
-const SESSION_ID = 'ed323139-baa7-4834-b9d6-5fb9f19ff11e';
+const PROXY_URL = '/api/infiniteflight';
+const FLIGHT_POLL_INTERVAL_MS = 15_000;
+const CLIENT_INACTIVITY_LIMIT_MS = 15 * 60 * 1000;
 
 let allFlights = [];
 let headingFilterActive = false;
@@ -189,13 +190,29 @@ pairAircraftData(aircraftIds).then(pairedData => {
 // Fetch Functions
 // ============================
 
+function displayApiFailure(code) {
+    const tableBody = document.querySelector('#flightsTable tbody');
+    if (!tableBody) return;
+    const message = code === 'upstream_rate_limited'
+        ? 'Infinite Flight is rate limiting updates. Automatic updates have stopped.'
+        : 'Infinite Flight data is temporarily unavailable. Automatic updates have stopped.';
+    tableBody.innerHTML = `<tr><td colspan="5">${message}</td></tr>`;
+}
+
 async function fetchWithProxy(endpoint) {
     try {
-        const response = await fetch(`${PROXY_URL}${endpoint}`);
+        const response = await fetch(`${PROXY_URL}${endpoint}`, {
+            headers: { accept: 'application/json' },
+        });
         if (!response.ok) {
-            const errorData = await response.text();
-            console.error('Error from proxy:', errorData);
-            throw new Error(`Error fetching data: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            const code = errorData.code || 'upstream_unavailable';
+            console.error('Infinite Flight API request failed:', code);
+            displayApiFailure(code);
+            window.dispatchEvent(new CustomEvent('infiniteflight-api-error', { detail: { code } }));
+            throw new Error(code === 'upstream_rate_limited'
+                ? 'Infinite Flight is rate limiting updates. Please wait before trying again.'
+                : `Infinite Flight data is unavailable (${code}).`);
         }
 
         const textResponse = await response.text();
@@ -206,6 +223,12 @@ async function fetchWithProxy(endpoint) {
         }
     } catch (error) {
         console.error('Error communicating with proxy:', error.message);
+        if (!error.message.includes('Infinite Flight')) {
+            displayApiFailure('upstream_unavailable');
+            window.dispatchEvent(new CustomEvent('infiniteflight-api-error', {
+                detail: { code: 'upstream_unavailable' },
+            }));
+        }
         throw error;
     }
 }
@@ -228,7 +251,7 @@ async function fetchStatusData(icao) {
     }
 
     // Start the fetch process
-    statusDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`)
+    statusDataFetchPromise = fetchWithProxy(`/airport/${icao}/status`)
         .then((data) => {
             // Basic validation
             if (!data || data.errorCode !== 0 || !Array.isArray(data.result)) {
@@ -284,7 +307,7 @@ async function fetchATCData() {
     }
 
     // Start the fetch process
-    atcDataFetchPromise = fetchWithProxy(`/sessions/${SESSION_ID}/atc`)
+    atcDataFetchPromise = fetchWithProxy('/atc')
         .then((data) => {
 
             // Basic validation
@@ -341,7 +364,7 @@ async function fetchActiveATCAirports() {
         }, {});
 
         // Fetch inbound counts for airports
-        const worldData = await fetchWithProxy(`/sessions/${SESSION_ID}/world`);
+        const worldData = await fetchWithProxy('/world');
         const airportsWithInbounds = (worldData.result || []).filter(
             (airport) => airport.inboundFlightsCount > 0
         );
@@ -431,7 +454,7 @@ async function fetchSecondaryATIS(icao) {
     }
 
     try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`);
+        const data = await fetchWithProxy(`/airport/${icao}/atis`);
         const atis = data.result || 'ATIS not available';
         setCache(icao, atis, 'atis'); // Store ATIS in the shared cache
         return atis;
@@ -449,7 +472,7 @@ async function fetchSecondaryControllers(icao) {
     }
 
     try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const data = await fetchWithProxy(`/airport/${icao}/status`);
         const controllers = (data.result.atcFacilities || [])
             .map(facility => {
                 const frequencyTypes = {
@@ -599,7 +622,7 @@ async function fetchAirportATIS(icao) {
     }
 
     try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/atis`);
+        const data = await fetchWithProxy(`/airport/${icao}/atis`);
         const atis = data.result || 'ATIS not available'; // Use `data.result`
         setCache(icao, atis, 'atis');
         displayATIS(atis); // Display fetched ATIS
@@ -620,7 +643,7 @@ async function fetchControllers(icao) {
     }
 
     try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const data = await fetchWithProxy(`/airport/${icao}/status`);
         const controllers = (data.result.atcFacilities || []).map(facility => {
             const frequencyTypes = {
                 0: "Ground",
@@ -678,7 +701,7 @@ async function fetchInboundFlightIds(icao) {
     }
 
     try {
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/airport/${icao}/status`);
+        const data = await fetchWithProxy(`/airport/${icao}/status`);
         const inboundFlights = data.result.inboundFlights || [];
         setCache(icao, inboundFlights, 'inboundFlightIds');
         return inboundFlights;
@@ -691,7 +714,7 @@ async function fetchInboundFlightIds(icao) {
 async function fetchInboundFlightDetails(inboundFlightIds = []) {
     try {
         // Fetch flights data from the proxy API
-        const data = await fetchWithProxy(`/sessions/${SESSION_ID}/flights`);
+        const data = await fetchWithProxy('/flights');
 
         // Validate API response
         if (!data || !data.result || !Array.isArray(data.result)) {
@@ -993,7 +1016,7 @@ async function fetchAndUpdateFlights(icao) {
                     flight.longitude,
                     flight.speed,
                     flight.heading,
-                    18 // 18-second interval
+                    15 // Keep interpolation aligned with the minimum API polling interval
                 );
             } else {
                 flight.interpolatedPositions = [];
@@ -1041,8 +1064,8 @@ function interpolateNextPositions(airportCoordinates) {
     const currentTime = Date.now();
     const secondsSinceLastApiUpdate = Math.floor((currentTime - lastApiUpdateTime) / 1000);
 
-    if (secondsSinceLastApiUpdate > 18) {
-        console.error("Interpolation exceeded 18 seconds. Waiting for the next API update.");
+    if (secondsSinceLastApiUpdate > 15) {
+        console.error("Interpolation exceeded 15 seconds. Waiting for the next API update.");
 
         // Ensure allFlights is rendered when interpolation is skipped
         renderFlightsTable(allFlights);
@@ -1639,7 +1662,7 @@ async function renderInboundTable() {
     try {
         // Fetch world data only once
         if (!worldDataCache) {
-            const worldDataResponse = await fetchWithProxy(`/sessions/${SESSION_ID}/world`);
+            const worldDataResponse = await fetchWithProxy('/world');
             if (!worldDataResponse || !Array.isArray(worldDataResponse.result)) {
                 throw new Error("Invalid world data.");
             }
@@ -1853,6 +1876,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     let flightUpdateInterval = null;
     let interpolateInterval = null;
     let atcUpdateInterval = null;
+    let inactivityTimeout = null;
+    let lastUserActivityAt = Date.now();
+
+    function scheduleInactivityStop() {
+        if (inactivityTimeout) clearTimeout(inactivityTimeout);
+        const remaining = Math.max(0, CLIENT_INACTIVITY_LIMIT_MS - (Date.now() - lastUserActivityAt));
+        inactivityTimeout = setTimeout(() => {
+            if (isAutoUpdateActive) {
+                stopAutoUpdate();
+                updateButton.title = 'Automatic updates stopped after 15 minutes of inactivity.';
+            }
+        }, remaining);
+    }
+
+    function recordUserActivity() {
+        lastUserActivityAt = Date.now();
+        if (isAutoUpdateActive) scheduleInactivityStop();
+    }
 
     async function handleSearch() {
         const icao = icaoInput.value.trim().toUpperCase();
@@ -1901,6 +1942,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function startAutoUpdate(icao) {
     isAutoUpdateActive = true;
+    lastUserActivityAt = Date.now();
+    scheduleInactivityStop();
     updateButton.style.color = "blue";
     const icon = updateButton.querySelector("i");
     if (icon) icon.classList.add("spin");
@@ -1919,7 +1962,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 1000);
 
-    // Fetch new flight data every 18 seconds
+    // Fetch new flight data no more often than every 15 seconds
         flightUpdateInterval = setInterval(async () => {
             try {
                 await fetchAndUpdateFlights(icao);
@@ -1931,7 +1974,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     clearInterval(flightUpdateInterval);
                 }
             }
-        }, 18000);
+        }, FLIGHT_POLL_INTERVAL_MS);
 
         // Fetch ATC data every 60 seconds
         atcUpdateInterval = setInterval(async () => {
@@ -1958,6 +2001,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (flightUpdateInterval) clearInterval(flightUpdateInterval);
         if (interpolateInterval) clearInterval(interpolateInterval);
         if (atcUpdateInterval) clearInterval(atcUpdateInterval);
+        if (inactivityTimeout) clearTimeout(inactivityTimeout);
 
         flightUpdateInterval = null;
         interpolateInterval = null;
@@ -1965,6 +2009,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         console.log("Auto-update and interpolation stopped.");
     }
+
+    for (const eventName of ['pointerdown', 'keydown', 'touchstart', 'scroll', 'focus']) {
+        window.addEventListener(eventName, recordUserActivity, { passive: true });
+    }
+
+    window.addEventListener('infiniteflight-api-error', (event) => {
+        stopAutoUpdate();
+        updateButton.title = event.detail.code === 'upstream_rate_limited'
+            ? 'Automatic updates stopped because Infinite Flight is rate limiting requests.'
+            : 'Automatic updates stopped because Infinite Flight data is unavailable.';
+    });
 
     if (updateButton) {
         updateButton.addEventListener("click", () => {

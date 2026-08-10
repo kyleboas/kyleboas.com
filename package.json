@@ -5,6 +5,7 @@
   "scripts": {
     "test": "node --test",
     "deploy:newsletter": "wrangler deploy --config wrangler.jsonc",
-    "secret:newsletter:resend": "wrangler secret put RESEND_API_KEY --config wrangler.jsonc"
+    "secret:newsletter:resend": "wrangler secret put RESEND_API_KEY --config wrangler.jsonc",
+    "secret:infiniteflight": "wrangler secret put INFINITEFLIGHT_API_KEY --config wrangler.jsonc"
   }
 }

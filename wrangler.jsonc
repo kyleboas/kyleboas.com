@@ -3,7 +3,7 @@
   "name": "kyleboas-newsletter-api",
   "main": "src/newsletter-worker.js",
   "compatibility_date": "2025-03-01",
-  "routes": ["kyleboas.com/api/newsletter/*"],
+  "routes": ["kyleboas.com/api/newsletter/*", "kyleboas.com/api/infiniteflight/*"],
   "d1_databases": [
     {
       "binding": "NEWSLETTER_DB",
@@ -15,6 +15,7 @@
   "vars": {
     "NEWSLETTER_FROM": "Kyle Boas <newsletter@kyleboas.com>",
     "NEWSLETTER_PUBLIC_BASE_URL": "https://kyleboas.com",
-    "CORS_ORIGIN": "https://kyleboas.com"
+    "CORS_ORIGIN": "https://kyleboas.com",
+    "INFINITEFLIGHT_SESSION_NAME": "Expert Server"
   }
 }

@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const route = readFileSync(join(root, 'infiniteflight/inbounds/index.html'), 'utf8');
 const stylesheet = readFileSync(join(root, 'infiniteflight/infiniteflight.css'), 'utf8');
+const inboundsScript = readFileSync(join(root, 'infiniteflight/js/inbounds.js'), 'utf8');
+const apiScript = readFileSync(join(root, 'infiniteflight/js/api.js'), 'utf8');
 
 const requiredFiles = [
   'infiniteflight/infiniteflight.css',
@@ -47,6 +49,17 @@ test('the route manifest keeps its icons within the restored asset directory', (
     assert.match(icon.src, /^\/infiniteflight\/assets\//);
     assert.ok(existsSync(join(root, icon.src.slice(1))), `${icon.src} exists`);
   }
+});
+
+test('the restored UI only calls the same-origin Infinite Flight proxy and bounds polling', () => {
+  assert.match(inboundsScript, /const PROXY_URL = '\/api\/infiniteflight'/);
+  assert.match(inboundsScript, /FLIGHT_POLL_INTERVAL_MS = 15_000/);
+  assert.match(inboundsScript, /CLIENT_INACTIVITY_LIMIT_MS = 15 \* 60 \* 1000/);
+  assert.match(inboundsScript, /scheduleInactivityStop/);
+  assert.match(inboundsScript, /infiniteflight-api-error/);
+  assert.match(apiScript, /AIRPORTDB_URL = "\/api\/infiniteflight\/airport\/"/);
+  assert.doesNotMatch(inboundsScript, /infiniteflightapi\.deno\.dev/);
+  assert.doesNotMatch(apiScript, /infiniteflightapi\.deno\.dev/);
 });
 
 test('map initialization waits for a flight selection', () => {
