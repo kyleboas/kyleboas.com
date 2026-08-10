@@ -1,8 +1,6 @@
-const API_BASE_URL = 'https://api.infiniteflight.com/public/v2';
 const SESSION_CACHE_SECONDS = 600;
 const FLIGHTS_CACHE_SECONDS = 15;
 const DEFAULT_SESSION_NAME = 'Expert Server';
-const AIRPORT_CODE = /^[A-Z]{4}$/;
 
 function json(body, status = 200, headers = {}) {
   return new Response(JSON.stringify(body), {
@@ -35,13 +33,6 @@ function error(code, status, headers = {}) {
   return json({ error: code, code }, status, headers);
 }
 
-function cacheRequest(request, suffix) {
-  const url = new URL(request.url);
-  url.pathname = `${url.pathname}${suffix}`;
-  url.search = '';
-  return new Request(url.toString(), { method: 'GET' });
-}
-
 async function cached(cache, key, seconds, load) {
   const existing = await cache.match(key);
   if (existing) return existing;
@@ -57,19 +48,18 @@ async function cached(cache, key, seconds, load) {
   return loaded;
 }
 
-async function fetchUpstream(path, env, fetchFn) {
+async function fetchUpstream(path, env) {
   if (!env.INFINITEFLIGHT_API_KEY) return error('infiniteflight_not_configured', 503);
+  if (!env.INFINITEFLIGHT_COORDINATOR) return error('upstream_coordinator_not_configured', 503);
 
   let upstream;
   try {
-    upstream = await fetchFn(`${API_BASE_URL}${path}`, {
-      headers: {
-        accept: 'application/json',
-        authorization: `Bearer ${env.INFINITEFLIGHT_API_KEY}`,
-      },
-    });
+    const id = env.INFINITEFLIGHT_COORDINATOR.idFromName('shared-infiniteflight-api-key');
+    upstream = await env.INFINITEFLIGHT_COORDINATOR.get(id).fetch(
+      `https://infiniteflight-coordinator${path}`
+    );
   } catch (cause) {
-    console.error('Infinite Flight upstream request failed', cause);
+    console.error('Infinite Flight coordinator request failed', cause);
     return error('upstream_unavailable', 502);
   }
 
@@ -100,13 +90,13 @@ function selectedSession(payload, sessionName) {
   return sessions.find((session) => session?.name === sessionName) || null;
 }
 
-async function currentSession(request, env, fetchFn, cache) {
+async function currentSession(request, env, cache) {
   const sessionUrl = new URL(request.url);
   sessionUrl.pathname = '/api/infiniteflight/session-cache';
   sessionUrl.search = '';
   const key = new Request(sessionUrl.toString(), { method: 'GET' });
   const response = await cached(cache, key, SESSION_CACHE_SECONDS, async () => {
-    const sessions = await fetchUpstream('/sessions', env, fetchFn);
+    const sessions = await fetchUpstream('/sessions', env);
     if (!sessions.ok) return sessions;
 
     const payload = await sessions.json();
@@ -123,16 +113,11 @@ async function currentSession(request, env, fetchFn, cache) {
 
 function route(pathname) {
   if (pathname === '/session') return { type: 'session' };
-  if (pathname === '/flights' || pathname === '/world' || pathname === '/atc') {
-    return { type: 'session-resource', resource: pathname };
-  }
-
-  const airport = pathname.match(/^\/airport\/([A-Z]{4})(?:\/(status|atis))?$/);
-  if (!airport) return null;
-  return { type: airport[2] ? 'session-resource' : 'airport', icao: airport[1], resource: airport[2] };
+  if (pathname === '/flights') return { type: 'flights' };
+  return null;
 }
 
-export async function handleInfiniteFlightRequest(request, env, fetchFn = fetch, cache = caches.default) {
+export async function handleInfiniteFlightRequest(request, env, cache = caches.default) {
   const url = new URL(request.url);
   const headers = corsHeaders(request, env);
 
@@ -146,7 +131,7 @@ export async function handleInfiniteFlightRequest(request, env, fetchFn = fetch,
   if (!matched) return withCors(request, env, error('not_found', 404));
 
   if (matched.type === 'session') {
-    const result = await currentSession(request, env, fetchFn, cache);
+    const result = await currentSession(request, env, cache);
     return withCors(request, env, result.response || json(
       { errorCode: 0, result: result.session },
       200,
@@ -154,13 +139,7 @@ export async function handleInfiniteFlightRequest(request, env, fetchFn = fetch,
     ));
   }
 
-  if (matched.type === 'airport') {
-    if (!AIRPORT_CODE.test(matched.icao)) return withCors(request, env, error('invalid_airport', 400));
-    const result = await fetchUpstream(`/airport/${matched.icao}`, env, fetchFn);
-    return withCors(request, env, result);
-  }
-
-  const sessionResult = await currentSession(request, env, fetchFn, cache);
+  const sessionResult = await currentSession(request, env, cache);
   if (sessionResult.response) return withCors(request, env, sessionResult.response);
 
   const sessionId = sessionResult.session?.id;
@@ -168,11 +147,11 @@ export async function handleInfiniteFlightRequest(request, env, fetchFn = fetch,
     return withCors(request, env, error('active_session_unavailable', 502));
   }
 
-  const upstreamPath = matched.icao
-    ? `/sessions/${encodeURIComponent(sessionId)}/airport/${matched.icao}/${matched.resource}`
-    : `/sessions/${encodeURIComponent(sessionId)}${matched.resource}`;
-  const ttl = matched.resource === '/flights' ? FLIGHTS_CACHE_SECONDS : 15;
-  const result = await cached(cache, cacheRequest(request, '/upstream-cache'), ttl,
-    () => fetchUpstream(upstreamPath, env, fetchFn));
+  const flightUrl = new URL(request.url);
+  flightUrl.pathname = '/api/infiniteflight/flights-cache';
+  flightUrl.search = '';
+  const key = new Request(flightUrl.toString(), { method: 'GET' });
+  const result = await cached(cache, key, FLIGHTS_CACHE_SECONDS,
+    () => fetchUpstream(`/sessions/${encodeURIComponent(sessionId)}/flights`, env));
   return withCors(request, env, result);
 }

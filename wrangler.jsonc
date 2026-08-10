@@ -4,6 +4,20 @@
   "main": "src/newsletter-worker.js",
   "compatibility_date": "2025-03-01",
   "routes": ["kyleboas.com/api/newsletter/*", "kyleboas.com/api/infiniteflight/*"],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "INFINITEFLIGHT_COORDINATOR",
+        "class_name": "InfiniteFlightUpstreamCoordinator"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["InfiniteFlightUpstreamCoordinator"]
+    }
+  ],
   "d1_databases": [
     {
       "binding": "NEWSLETTER_DB",
@@ -16,6 +30,7 @@
     "NEWSLETTER_FROM": "Kyle Boas <newsletter@kyleboas.com>",
     "NEWSLETTER_PUBLIC_BASE_URL": "https://kyleboas.com",
     "CORS_ORIGIN": "https://kyleboas.com",
-    "INFINITEFLIGHT_SESSION_NAME": "Expert Server"
+    "INFINITEFLIGHT_SESSION_NAME": "Expert Server",
+    "INFINITEFLIGHT_UPSTREAM_REQUESTS_PER_MINUTE": "30"
   }
 }
