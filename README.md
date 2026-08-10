@@ -27,3 +27,34 @@ curl -fsS https://kyleboas.com/api/newsletter/latest
 ```
 
 Error responses include a stable machine-readable `code` field; `error` is retained as a compatibility alias. `/api/newsletter/latest` reads the latest item from the public Jekyll feed and does not subscribe or deliver email.
+
+## Infinite Flight Inbounds API
+
+The separate Cloudflare Worker `infiniteflight-inbounds` serves the shared public Inbounds snapshot at `kyleboas.com/api/infiniteflight/*`. Its scoped route lets the static page at `kyleboas.com/infiniteflight/inbounds/` call the API without exposing the server-side `INFINITEFLIGHT_API_KEY`. It is a constrained proxy, not a general upstream pass-through: the public route exposes only `/session` and `/flights`, so every visitor receives the same configured Live-session and flight snapshot.
+
+A single globally named Durable Object owns all upstream requests for the shared API key. It caches the upstream session list for 600 seconds and the active-session flight list for 15 seconds, then coalesces concurrent misses for either path into one upstream request. Cache misses consume a persistent global token bucket with a capacity of 30 and a refill rate of 30 requests per minute (0.5 request per second); after the bucket is empty, the coordinator returns `429` with the time until one token is available. This bound applies across Worker isolates and edge locations, not per visitor or per edge cache. `INFINITEFLIGHT_UPSTREAM_REQUESTS_PER_MINUTE` is the server-side limit setting.
+
+- Session discovery is cached for 600 seconds (`INFINITEFLIGHT_SESSION_NAME` defaults to `Expert Server`).
+- Flight data is cached for 15 seconds; the UI requests it at the same minimum interval.
+- The browser stops its automatic flight, ATC, and interpolation update timers after 15 minutes without user activity. A new interaction and update action starts them again.
+
+The Infinite Flight Worker has its own Wrangler configuration and Cloudflare Workers Builds service. Its build deploy command is:
+
+```bash
+npx wrangler deploy --config wrangler.infiniteflight.jsonc
+```
+
+Before an authorized deployment, set the Worker secret through the local broker without displaying it:
+
+```bash
+sudo secret global infiniteflight | npm run secret:infiniteflight
+```
+
+Do not configure or deploy this separate Worker as part of the newsletter Worker. Confirm the route after its separately authorized deployment:
+
+```bash
+curl -fsS https://kyleboas.com/api/infiniteflight/session
+curl -fsS https://kyleboas.com/api/infiniteflight/flights
+```
+
+Do not place the key in this repository, a Wrangler variable, a browser bundle, or a `.env` file. `upstream_rate_limited` (HTTP 429) tells the UI to pause; authentication and other upstream failures return stable error codes without passing through upstream response bodies.
