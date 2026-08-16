@@ -78,6 +78,24 @@ test('discovers the configured session server-side and caches flights for 15 sec
   assert.match(first.headers.get('cache-control'), /max-age=15/);
 });
 
+test('accepts the current Expert session label without a redundant Server suffix', async () => {
+  const fetchFn = async (url) => {
+    if (url.endsWith('/sessions')) {
+      return Response.json({ errorCode: 0, result: [{ id: 'expert-123', name: 'Expert' }] });
+    }
+    return Response.json({ errorCode: 0, result: [] });
+  };
+
+  const response = await handleInfiniteFlightRequest(
+    request('/session'), env(fetchFn), new MockCache()
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    errorCode: 0, result: { id: 'expert-123', name: 'Expert' },
+  });
+});
+
 test('does not fetch an upstream session more than once while its ten-minute cache is fresh', async () => {
   let sessionCalls = 0;
   const fetchFn = async (url) => {
