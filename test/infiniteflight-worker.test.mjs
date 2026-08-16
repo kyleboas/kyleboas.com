@@ -121,6 +121,32 @@ test('keeps the upstream key unavailable when missing, rate limited, or inaccess
   assert.equal(rateLimited.headers.get('retry-after'), '30');
 });
 
+test('reports safe diagnostics without exposing upstream response bodies', async () => {
+  const rejected = await handleInfiniteFlightRequest(request('/session'), env(async () => (
+    new Response('provider details stay private', { status: 500 })
+  )), new MockCache());
+  assert.equal(rejected.status, 502);
+  assert.equal(rejected.headers.get('x-infiniteflight-upstream-status'), '500');
+  assert.deepEqual(await rejected.json(), {
+    error: 'upstream_unavailable', code: 'upstream_unavailable',
+  });
+
+  const coordinatorFailure = env();
+  coordinatorFailure.INFINITEFLIGHT_COORDINATOR.get = () => ({
+    fetch() {
+      throw new Error('private runtime details');
+    },
+  });
+  const failed = await handleInfiniteFlightRequest(
+    request('/session'), coordinatorFailure, new MockCache()
+  );
+  assert.equal(failed.status, 502);
+  assert.equal(failed.headers.get('x-infiniteflight-failure'), 'coordinator');
+  assert.deepEqual(await failed.json(), {
+    error: 'upstream_unavailable', code: 'upstream_unavailable',
+  });
+});
+
 test('fails closed when the global upstream coordinator binding is unavailable', async () => {
   const response = await handleInfiniteFlightRequest(request('/session'), {
     INFINITEFLIGHT_API_KEY: 'test-key',

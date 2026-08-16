@@ -60,7 +60,9 @@ async function fetchUpstream(path, env) {
     );
   } catch (cause) {
     console.error('Infinite Flight coordinator request failed', cause);
-    return error('upstream_unavailable', 502);
+    return error('upstream_unavailable', 502, {
+      'x-infiniteflight-failure': 'coordinator',
+    });
   }
 
   if (upstream.status === 429) {
@@ -73,14 +75,18 @@ async function fetchUpstream(path, env) {
   }
   if (!upstream.ok) {
     console.error(`Infinite Flight upstream returned ${upstream.status}`);
-    return error('upstream_unavailable', 502);
+    return error('upstream_unavailable', 502, {
+      'x-infiniteflight-upstream-status': String(upstream.status),
+    });
   }
 
   try {
     return json(await upstream.json());
   } catch (cause) {
     console.error('Infinite Flight upstream returned invalid JSON', cause);
-    return error('upstream_invalid_response', 502);
+    return error('upstream_invalid_response', 502, {
+      'x-infiniteflight-failure': 'invalid-json',
+    });
   }
 }
 
