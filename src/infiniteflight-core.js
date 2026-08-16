@@ -1,5 +1,6 @@
 const SESSION_CACHE_SECONDS = 600;
-const FLIGHTS_CACHE_SECONDS = 15;
+const RESOURCE_CACHE_SECONDS = 15;
+const AIRPORT_CACHE_SECONDS = 600;
 const DEFAULT_SESSION_NAME = 'Expert Server';
 
 function json(body, status = 200, headers = {}) {
@@ -127,8 +128,13 @@ async function currentSession(request, env, cache) {
 
 function route(pathname) {
   if (pathname === '/session') return { type: 'session' };
-  if (pathname === '/flights') return { type: 'flights' };
-  return null;
+  if (pathname === '/flights' || pathname === '/atc' || pathname === '/world') {
+    return { type: pathname.slice(1) };
+  }
+
+  const airport = pathname.match(/^\/airport\/([A-Z0-9]{3,5})(?:\/(status|atis))?$/);
+  if (!airport) return null;
+  return { type: 'airport', icao: airport[1], resource: airport[2] || 'metadata' };
 }
 
 export async function handleInfiniteFlightRequest(request, env, cache = caches.default) {
@@ -153,6 +159,15 @@ export async function handleInfiniteFlightRequest(request, env, cache = caches.d
     ));
   }
 
+  if (matched.type === 'airport' && matched.resource === 'metadata') {
+    const airportUrl = new URL(request.url);
+    airportUrl.pathname = `/api/infiniteflight/airport-cache/${matched.icao}`;
+    const key = new Request(airportUrl.toString(), { method: 'GET' });
+    const result = await cached(cache, key, AIRPORT_CACHE_SECONDS,
+      () => fetchUpstream(`/airport/${matched.icao}`, env));
+    return withCors(request, env, result);
+  }
+
   const sessionResult = await currentSession(request, env, cache);
   if (sessionResult.response) return withCors(request, env, sessionResult.response);
 
@@ -161,11 +176,15 @@ export async function handleInfiniteFlightRequest(request, env, cache = caches.d
     return withCors(request, env, error('active_session_unavailable', 502));
   }
 
-  const flightUrl = new URL(request.url);
-  flightUrl.pathname = '/api/infiniteflight/flights-cache';
-  flightUrl.search = '';
-  const key = new Request(flightUrl.toString(), { method: 'GET' });
-  const result = await cached(cache, key, FLIGHTS_CACHE_SECONDS,
-    () => fetchUpstream(`/sessions/${encodeURIComponent(sessionId)}/flights`, env));
+  let upstreamPath = `/sessions/${encodeURIComponent(sessionId)}/${matched.type}`;
+  if (matched.type === 'airport') {
+    upstreamPath = `/sessions/${encodeURIComponent(sessionId)}/airport/${matched.icao}/${matched.resource}`;
+  }
+
+  const resourceUrl = new URL(request.url);
+  resourceUrl.pathname = `/api/infiniteflight/resource-cache${endpoint}`;
+  const key = new Request(resourceUrl.toString(), { method: 'GET' });
+  const result = await cached(cache, key, RESOURCE_CACHE_SECONDS,
+    () => fetchUpstream(upstreamPath, env));
   return withCors(request, env, result);
 }

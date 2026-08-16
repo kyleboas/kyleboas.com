@@ -176,8 +176,40 @@ test('fails closed when the global upstream coordinator binding is unavailable',
   });
 });
 
-test('exposes only the shared session and flight snapshot routes', async () => {
-  for (const path of ['/sessions/not-a-real-session/flights', '/world', '/atc', '/airport/KJFK']) {
+test('serves the restored UI resources through globally shared snapshots', async () => {
+  const cases = [
+    ['/flights', '/sessions/session-123/flights'],
+    ['/atc', '/sessions/session-123/atc'],
+    ['/world', '/sessions/session-123/world'],
+    ['/airport/KJFK/status', '/sessions/session-123/airport/KJFK/status'],
+    ['/airport/KJFK/atis', '/sessions/session-123/airport/KJFK/atis'],
+    ['/airport/KJFK', '/airport/KJFK'],
+  ];
+
+  for (const [endpoint, expectedUpstream] of cases) {
+    const calls = [];
+    const response = await handleInfiniteFlightRequest(request(endpoint), env(async (url) => {
+      calls.push(new URL(url).pathname.replace('/public/v2', ''));
+      if (url.endsWith('/sessions')) {
+        return Response.json({ errorCode: 0, result: [
+          { id: 'session-123', name: 'Expert Server' },
+        ] });
+      }
+      return Response.json({ errorCode: 0, result: [] });
+    }), new MockCache());
+
+    assert.equal(response.status, 200, endpoint);
+    assert.equal(calls.at(-1), expectedUpstream, endpoint);
+  }
+});
+
+test('rejects arbitrary upstream resource paths', async () => {
+  for (const path of [
+    '/sessions/not-a-real-session/flights',
+    '/airport/kjfk',
+    '/airport/KJFK/runways',
+    '/users',
+  ]) {
     const response = await handleInfiniteFlightRequest(request(path), env(), new MockCache());
     assert.equal(response.status, 404, `${path} is not public`);
     assert.deepEqual(await response.json(), { error: 'not_found', code: 'not_found' });
