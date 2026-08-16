@@ -30,7 +30,7 @@ export class InfiniteFlightUpstreamCoordinator {
   constructor(ctx, env, fetchFn = fetch, now = () => Date.now()) {
     this.ctx = ctx;
     this.env = env;
-    this.fetchFn = fetchFn;
+    this.fetchFn = (...args) => fetchFn(...args);
     this.now = now;
     this.inFlight = new Map();
     this.requestsPerMinute = requestsPerMinute(env);
