@@ -28,6 +28,22 @@ function request(path) {
   return new Request(`https://infiniteflight-coordinator${path}`);
 }
 
+test('invokes the Worker fetch function without an object receiver', async () => {
+  let receiver;
+  const fetchFn = async function () {
+    receiver = this;
+    return Response.json({ errorCode: 0, result: [] });
+  };
+  const coordinator = new InfiniteFlightUpstreamCoordinator(
+    context(), { INFINITEFLIGHT_API_KEY: 'test-key' }, fetchFn, () => 1_000
+  );
+
+  const response = await coordinator.fetch(request('/sessions'));
+
+  assert.equal(response.status, 200);
+  assert.equal(receiver, undefined);
+});
+
 test('coalesces concurrent global cache misses into one upstream request', async () => {
   let resolveUpstream;
   let upstreamCalls = 0;
