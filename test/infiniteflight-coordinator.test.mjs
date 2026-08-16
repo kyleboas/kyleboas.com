@@ -68,6 +68,33 @@ test('coalesces concurrent global cache misses into one upstream request', async
   assert.deepEqual(await secondResponse.json(), { errorCode: 0, result: [{ flightId: 'flight-123' }] });
 });
 
+test('keeps large flight snapshots out of size-limited durable storage', async () => {
+  const storage = new MockStorage();
+  const originalPut = storage.put.bind(storage);
+  storage.put = async (key, value) => {
+    if (key.startsWith('cache:/sessions/') && JSON.stringify(value).length > 1_000) {
+      throw new Error('durable object value too large');
+    }
+    return originalPut(key, value);
+  };
+  let upstreamCalls = 0;
+  const largeFlight = { flightId: 'flight-123', payload: 'x'.repeat(2_000) };
+  const coordinator = new InfiniteFlightUpstreamCoordinator(context(storage), {
+    INFINITEFLIGHT_API_KEY: 'test-key',
+  }, async () => {
+    upstreamCalls += 1;
+    return Response.json({ errorCode: 0, result: [largeFlight] });
+  }, () => 1_000);
+
+  const first = await coordinator.fetch(request('/sessions/session-123/flights'));
+  const second = await coordinator.fetch(request('/sessions/session-123/flights'));
+
+  assert.equal(first.status, 200);
+  assert.equal(second.status, 200);
+  assert.equal(upstreamCalls, 1);
+  assert.equal(storage.entries.has('cache:/sessions/session-123/flights'), false);
+});
+
 test('persists a shared token bucket that bounds cache misses across coordinator instances', async () => {
   let now = 0;
   let upstreamCalls = 0;
