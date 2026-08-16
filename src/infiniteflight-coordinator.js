@@ -33,6 +33,7 @@ export class InfiniteFlightUpstreamCoordinator {
     this.fetchFn = (...args) => fetchFn(...args);
     this.now = now;
     this.inFlight = new Map();
+    this.memoryCache = new Map();
     this.requestsPerMinute = requestsPerMinute(env);
     this.ready = this.initialize();
   }
@@ -55,8 +56,17 @@ export class InfiniteFlightUpstreamCoordinator {
       return response({ error: 'not_found', code: 'not_found' }, 404);
     }
 
-    const cached = await this.ctx.storage.get(`cache:${path}`);
-    if (cached?.expiresAt > this.now()) return this.cachedResponse(cached);
+    const memoryCached = this.memoryCache.get(path);
+    if (memoryCached?.expiresAt > this.now()) return this.cachedResponse(memoryCached);
+    if (memoryCached) this.memoryCache.delete(path);
+
+    if (path === '/sessions') {
+      const persisted = await this.ctx.storage.get(`cache:${path}`);
+      if (persisted?.expiresAt > this.now()) {
+        this.memoryCache.set(path, persisted);
+        return this.cachedResponse(persisted);
+      }
+    }
 
     let loading = this.inFlight.get(path);
     if (!loading) {
@@ -95,7 +105,8 @@ export class InfiniteFlightUpstreamCoordinator {
     const body = await upstream.text();
     if (upstream.status === 200) {
       const entry = { body, expiresAt: this.now() + cacheSeconds(path) * 1000 };
-      await this.ctx.storage.put(`cache:${path}`, entry);
+      this.memoryCache.set(path, entry);
+      if (path === '/sessions') await this.ctx.storage.put(`cache:${path}`, entry);
     }
     return new Response(body, {
       status: upstream.status,
