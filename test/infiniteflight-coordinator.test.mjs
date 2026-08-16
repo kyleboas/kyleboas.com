@@ -95,6 +95,32 @@ test('keeps large flight snapshots out of size-limited durable storage', async (
   assert.equal(storage.entries.has('cache:/sessions/session-123/flights'), false);
 });
 
+test('allows only the bounded resources required by the restored UI', async () => {
+  const coordinator = new InfiniteFlightUpstreamCoordinator(context(), {
+    INFINITEFLIGHT_API_KEY: 'test-key',
+  }, async () => Response.json({ errorCode: 0, result: [] }));
+
+  for (const path of [
+    '/sessions',
+    '/sessions/session-123/flights',
+    '/sessions/session-123/atc',
+    '/sessions/session-123/world',
+    '/sessions/session-123/airport/KJFK/status',
+    '/sessions/session-123/airport/KJFK/atis',
+    '/airport/KJFK',
+  ]) {
+    assert.equal((await coordinator.fetch(request(path))).status, 200, path);
+  }
+
+  for (const path of [
+    '/users',
+    '/airport/kjfk',
+    '/sessions/session-123/airport/KJFK/runways',
+  ]) {
+    assert.equal((await coordinator.fetch(request(path))).status, 404, path);
+  }
+});
+
 test('persists a shared token bucket that bounds cache misses across coordinator instances', async () => {
   let now = 0;
   let upstreamCalls = 0;

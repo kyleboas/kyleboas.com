@@ -12,11 +12,16 @@ function response(body, status, headers = {}) {
 }
 
 function cacheSeconds(path) {
-  return path === '/sessions' ? SESSION_CACHE_SECONDS : RESOURCE_CACHE_SECONDS;
+  return path === '/sessions' || /^\/airport\/[A-Z0-9]{3,5}$/.test(path)
+    ? SESSION_CACHE_SECONDS
+    : RESOURCE_CACHE_SECONDS;
 }
 
 function allowedPath(path) {
-  return path === '/sessions' || /^\/sessions\/[^/]+\/flights$/.test(path);
+  return path === '/sessions' ||
+    /^\/airport\/[A-Z0-9]{3,5}$/.test(path) ||
+    /^\/sessions\/[^/]+\/(flights|atc|world)$/.test(path) ||
+    /^\/sessions\/[^/]+\/airport\/[A-Z0-9]{3,5}\/(status|atis)$/.test(path);
 }
 
 function requestsPerMinute(env) {
