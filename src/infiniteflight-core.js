@@ -90,10 +90,18 @@ async function fetchUpstream(path, env) {
   }
 }
 
+function normalizedSessionName(value) {
+  return typeof value === 'string'
+    ? value.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/server$/, '')
+    : '';
+}
+
 function selectedSession(payload, sessionName) {
   const sessions = payload?.result;
   if (!Array.isArray(sessions)) return null;
-  return sessions.find((session) => session?.name === sessionName) || null;
+
+  const target = normalizedSessionName(sessionName);
+  return sessions.find((session) => normalizedSessionName(session?.name) === target) || null;
 }
 
 async function currentSession(request, env, cache) {
