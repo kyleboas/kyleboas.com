@@ -49,6 +49,7 @@ section{margin-bottom:64px}
 .dot.active{background:var(--c);box-shadow:0 0 0 3px rgba(26,26,26,.12)}
 .tl-a{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:8px;transition:background .2s}
 .tl-a:hover{background:#f6f6f6}
+div.tl-a:hover{background:none}
 .tl-img{width:28px;height:28px;border-radius:6px;object-fit:cover;flex-shrink:0;margin-top:2px}
 .tl-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:2px}
 .yr{font:11.5px var(--mono);color:var(--c3);flex-shrink:0}
